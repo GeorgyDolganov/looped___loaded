@@ -1,0 +1,324 @@
+@namespace LoopedLoaded
+@inherits PanelComponent
+
+<root>
+	<div class="hud">
+
+		<div class="top-left">
+			<div class="lap-chip">
+				<label class="key">LAP</label>
+				<label class="value">@Loop.Lap</label>
+			</div>
+			<div class="meter">
+				<div class="fill lap" style="width: @(LapPercent)%"></div>
+			</div>
+			<label class="clock">@TimeText</label>
+		</div>
+
+		<div class="top-right">
+			<div class="stat"><label class="key">KILLS</label><label class="value">@Loop.Kills</label></div>
+			<div class="stat"><label class="key">SHOTS</label><label class="value">@Loop.Shots</label></div>
+			<div class="stat"><label class="key">CAUGHT</label><label class="value">@Loop.Catches</label></div>
+			<div class="stat"><label class="key">LOST</label><label class="value">@Loop.Losses</label></div>
+		</div>
+
+		<div class="notice @(Loop.NoticeVisible ? "on" : "off")">
+			<label>@Loop.Notice</label>
+		</div>
+
+		<div class="bottom">
+			<div class="slot @StatusClass">
+				<div class="pip"></div>
+				<div class="text">
+					<label class="name">ROUND 01</label>
+					<label class="state">@StatusText</label>
+				</div>
+			</div>
+
+			<div class="dash">
+				<label class="key">DASH</label>
+				<div class="meter">
+					<div class="fill dash @(DashReady ? "ready" : "")" style="width: @(DashPercent)%"></div>
+				</div>
+			</div>
+		</div>
+
+		<label class="help">MOUSE AIM · LMB FIRE · SPACE DASH · R RESTART</label>
+
+	</div>
+</root>
+
+@code
+{
+	public GameLoop Loop { get; set; }
+
+	protected override void OnTreeFirstBuilt()
+	{
+		Panel.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
+	}
+
+	int LapPercent => Loop.IsValid() ? (int)(Loop.LapFraction * 100f) : 0;
+	int DashPercent => Runner.IsValid() ? (int)(Runner.DashCharge * 100f) : 0;
+	bool DashReady => Runner.IsValid() && Runner.DashCharge >= 1f;
+	RingRunner Runner => Loop.IsValid() ? Loop.Runner : null;
+
+	string TimeText
+	{
+		get
+		{
+			if ( !Loop.IsValid() ) return "0:00";
+			var total = (int)Loop.RunTime;
+			return $"{total / 60}:{total % 60:00}";
+		}
+	}
+
+	string StatusClass => Loop.IsValid() ? Loop.Inventory.Status.ToString().ToLower() : "chambered";
+
+	string StatusText
+	{
+		get
+		{
+			if ( !Loop.IsValid() ) return "";
+
+			return Loop.Inventory.Status switch
+			{
+				RoundStatus.Chambered => "CHAMBERED",
+				RoundStatus.InFlight => "IN FLIGHT",
+				_ => $"ON THE RING · {(int)Loop.LostRoundArc}"
+			};
+		}
+	}
+
+	protected override int BuildHash() => System.HashCode.Combine(
+		Loop.IsValid() ? Loop.Lap : 0,
+		LapPercent,
+		DashPercent,
+		Loop.IsValid() ? Loop.Notice : "",
+		Loop.IsValid() && Loop.NoticeVisible,
+		StatusText,
+		TimeText,
+		Loop.IsValid() ? Loop.Kills * 1000 + Loop.Shots * 100 + Loop.Catches * 10 + Loop.Losses : 0 );
+}
+
+<style>
+	.hud {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		font-family: Poppins;
+		color: #cfe6f5;
+		pointer-events: none;
+	}
+
+	.hud label {
+		color: #cfe6f5;
+	}
+
+	.top-left {
+		position: absolute;
+		left: 34px;
+		top: 28px;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.lap-chip {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.lap-chip .key {
+		font-size: 18px;
+		color: #5f7f96;
+		margin-right: 10px;
+	}
+
+	.lap-chip .value {
+		font-size: 46px;
+		font-weight: 700;
+		color: #eaf6ff;
+	}
+
+	.clock {
+		font-size: 16px;
+		color: #5f7f96;
+		margin-top: 6px;
+	}
+
+	.meter {
+		width: 260px;
+		height: 6px;
+		background-color: rgba(120, 170, 200, 0.16);
+		border-radius: 3px;
+		margin-top: 4px;
+	}
+
+	.meter .fill {
+		height: 100%;
+		border-radius: 3px;
+	}
+
+	.meter .fill.lap {
+		background-color: #4fd2e8;
+	}
+
+	.meter .fill.dash {
+		background-color: #6a7f90;
+	}
+
+	.meter .fill.dash.ready {
+		background-color: #ffb83c;
+	}
+
+	.top-right {
+		position: absolute;
+		right: 34px;
+		top: 28px;
+		flex-direction: column;
+		align-items: flex-end;
+	}
+
+	.stat {
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: 2px;
+	}
+
+	.stat .key {
+		font-size: 14px;
+		color: #4f6c80;
+		margin-right: 10px;
+	}
+
+	.stat .value {
+		font-size: 20px;
+		font-weight: 600;
+		width: 46px;
+		text-align: right;
+	}
+
+	.notice {
+		position: absolute;
+		top: 15%;
+		width: 100%;
+		justify-content: center;
+		transition: opacity 0.18s ease-out;
+	}
+
+	.notice label {
+		font-size: 34px;
+		font-weight: 700;
+		letter-spacing: 4px;
+		color: #ffd27a;
+		text-shadow: 0px 0px 22px rgba(255, 180, 60, 0.7);
+	}
+
+	.notice.on {
+		opacity: 1;
+	}
+
+	.notice.off {
+		opacity: 0;
+	}
+
+	.bottom {
+		position: absolute;
+		bottom: 54px;
+		width: 100%;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.slot {
+		flex-direction: row;
+		align-items: center;
+		padding: 12px 26px;
+		border-radius: 10px;
+		background-color: rgba(10, 18, 26, 0.7);
+		border: 2px solid rgba(120, 170, 200, 0.2);
+	}
+
+	.slot .pip {
+		width: 26px;
+		height: 26px;
+		border-radius: 13px;
+		margin-right: 16px;
+		background-color: #3a4a58;
+	}
+
+	.slot .text {
+		flex-direction: column;
+	}
+
+	.slot .name {
+		font-size: 13px;
+		color: #4f6c80;
+	}
+
+	.slot .state {
+		font-size: 22px;
+		font-weight: 700;
+	}
+
+	.slot.chambered {
+		border-color: rgba(255, 184, 60, 0.75);
+	}
+
+	.slot.chambered .pip {
+		background-color: #ffb83c;
+	}
+
+	.slot.chambered .state {
+		color: #ffb83c;
+	}
+
+	.slot.inflight {
+		border-color: rgba(79, 210, 232, 0.7);
+	}
+
+	.slot.inflight .pip {
+		background-color: #4fd2e8;
+	}
+
+	.slot.inflight .state {
+		color: #4fd2e8;
+	}
+
+	.slot.dropped {
+		border-color: rgba(240, 90, 70, 0.7);
+	}
+
+	.slot.dropped .pip {
+		background-color: #f05a46;
+	}
+
+	.slot.dropped .state {
+		color: #f05a46;
+	}
+
+	.dash {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 12px;
+	}
+
+	.dash .key {
+		font-size: 13px;
+		color: #4f6c80;
+		margin-right: 10px;
+	}
+
+	.dash .meter {
+		width: 180px;
+		margin-top: 0px;
+	}
+
+	.help {
+		position: absolute;
+		bottom: 18px;
+		width: 100%;
+		text-align: center;
+		font-size: 13px;
+		color: #3f5666;
+	}
+</style>

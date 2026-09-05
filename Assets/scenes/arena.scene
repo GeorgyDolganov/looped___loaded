@@ -1,0 +1,132 @@
+{
+  "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10001",
+  "GameObjects": [
+    {
+      "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10002",
+      "Flags": 0,
+      "Name": "Sun",
+      "Rotation": "-0.1830127,0.6830127,0.1830127,0.6830127",
+      "Tags": "light_directional,light",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.DirectionalLight",
+          "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10003",
+          "FogMode": "Disabled",
+          "FogStrength": 1,
+          "LightColor": "0.55,0.62,0.78,1",
+          "Shadows": true,
+          "SkyColor": "0.04,0.05,0.08,1"
+        }
+      ]
+    },
+    {
+      "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10004",
+      "Flags": 0,
+      "Name": "Camera",
+      "Position": "0,-1498.4,3707.8",
+      "Rotation": "-0.395409,0.395409,0.586218,0.586218",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.CameraComponent",
+          "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10005",
+          "BackgroundColor": "0.008,0.011,0.018,1",
+          "ClearFlags": "All",
+          "FieldOfView": 60,
+          "IsMainCamera": true,
+          "Orthographic": true,
+          "OrthographicHeight": 2900,
+          "Priority": 1,
+          "RenderExcludeTags": "",
+          "RenderTags": "",
+          "TargetEye": "None",
+          "Viewport": "0,0,1,1",
+          "ZFar": 20000,
+          "ZNear": 10
+        },
+        {
+          "__type": "Sandbox.Bloom",
+          "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10006",
+          "BloomColor": {
+            "color": [
+              {
+                "c": "1,1,1,1"
+              },
+              {
+                "t": 1,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "BloomCurve": [
+            {
+              "y": 0.5
+            },
+            {
+              "x": 1,
+              "y": 1
+            }
+          ],
+          "Mode": "Additive",
+          "Strength": 0.85,
+          "Threshold": 0.35,
+          "ThresholdWidth": 0.6
+        },
+        {
+          "__type": "Sandbox.Tonemapping",
+          "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10007",
+          "__version": 1,
+          "ExposureBias": 2,
+          "ExposureCompensation": 0,
+          "ExposureMethod": "RGB",
+          "MaximumExposure": 2,
+          "MinimumExposure": 1,
+          "Mode": "Legacy",
+          "Rate": 1
+        }
+      ]
+    },
+    {
+      "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10008",
+      "Flags": 0,
+      "Name": "Game",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "LoopedLoaded.GameBootstrap",
+          "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10009",
+          "BuildLighting": true,
+          "TargetCount": 1
+        }
+      ]
+    }
+  ],
+  "SceneProperties": {
+    "FixedUpdateFrequency": 60,
+    "MaxFixedUpdates": 5,
+    "NetworkFrequency": 60,
+    "NetworkInterpolation": true,
+    "ThreadedAnimation": true,
+    "TimeScale": 1,
+    "UseFixedUpdate": true,
+    "NavMesh": {
+      "Enabled": false,
+      "IncludeStaticBodies": true,
+      "IncludeKeyframedBodies": true,
+      "EditorAutoUpdate": true,
+      "AgentHeight": 64,
+      "AgentRadius": 16,
+      "AgentStepSize": 18,
+      "AgentMaxSlope": 40,
+      "ExcludedBodies": "",
+      "IncludedBodies": ""
+    }
+  },
+  "Title": "arena",
+  "Description": "One Round Trip - P0 arena",
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}
