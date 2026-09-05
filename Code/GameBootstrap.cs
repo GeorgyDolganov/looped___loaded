@@ -38,7 +38,8 @@ public sealed class GameBootstrap : Component
 		rig.City = city;
 
 		BuildHud( loop );
-		loop.Restart();
+		loop.RestoreSaves();
+		loop.ShowMenu();
 	}
 
 	void EnsureLighting()

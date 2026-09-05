@@ -37,8 +37,17 @@ public sealed class ArenaBuilder : Component
 
 	ArenaGeometry geometry;
 	GameObject visuals;
+	GameObject panelRoot;
 
 	protected override void OnStart() => EnsureVisuals();
+
+	public void RollLayout( int lap, int seed )
+	{
+		EnsureVisuals();
+		Geometry.ClearBossWalls();
+		Geometry.GeneratePanels( lap, seed );
+		RebuildPanels();
+	}
 
 	public void EnsureVisuals()
 	{
@@ -51,7 +60,7 @@ public sealed class ArenaBuilder : Component
 
 		BuildFloor();
 		BuildTrack();
-		BuildWalls();
+		BuildRingWalls();
 	}
 
 	void BuildFloor()
@@ -104,26 +113,49 @@ public sealed class ArenaBuilder : Component
 		}
 	}
 
-	void BuildWalls()
+	void BuildRingWalls()
 	{
 		for ( var i = 0; i < Geometry.Walls.Count; i++ )
 		{
 			var wall = Geometry.Walls[i];
+			if ( wall.Kind != WallKind.Boundary && wall.Kind != WallKind.Core )
+				continue;
 
-			var (thickness, height, tint) = wall.Kind switch
-			{
-				WallKind.Boundary => (32f, 140f, BoundaryTint),
-				WallKind.Core => (36f, 170f, CoreTint),
-				_ => (26f, 115f, PanelTint)
-			};
-
-			var center = wall.Center;
-
-			Blocks.SpawnBox( visuals, $"Wall {wall.Kind} {i}",
-				new Vector3( center.x, center.y, height * 0.5f ),
-				Blocks.FlatFacing( wall.Direction ),
-				new Vector3( wall.Length + thickness, thickness, height ),
-				tint );
+			SpawnWall( visuals, wall, i );
 		}
+	}
+
+	void RebuildPanels()
+	{
+		panelRoot?.Destroy();
+		panelRoot = Scene.CreateObject();
+		panelRoot.Name = "Panels";
+		panelRoot.Parent = visuals;
+
+		for ( var i = 0; i < Geometry.Walls.Count; i++ )
+		{
+			var wall = Geometry.Walls[i];
+			if ( wall.Kind != WallKind.Panel )
+				continue;
+
+			SpawnWall( panelRoot, wall, i );
+		}
+	}
+
+	void SpawnWall( GameObject parent, WallSegment wall, int index )
+	{
+		var (thickness, height, tint) = wall.Kind switch
+		{
+			WallKind.Boundary => (32f, 140f, BoundaryTint),
+			WallKind.Core => (36f, 170f, CoreTint),
+			_ => (26f, 115f, PanelTint)
+		};
+
+		var center = wall.Center;
+		Blocks.SpawnBox( parent, $"Wall {wall.Kind} {index}",
+			new Vector3( center.x, center.y, height * 0.5f ),
+			Blocks.FlatFacing( wall.Direction ),
+			new Vector3( wall.Length + thickness, thickness, height ),
+			tint );
 	}
 }

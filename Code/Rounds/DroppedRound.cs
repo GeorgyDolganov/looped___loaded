@@ -2,7 +2,7 @@ namespace LoopedLoaded;
 
 public sealed class DroppedRound : Component
 {
-	[Property] public Color Tint { get; set; } = new Color( 1f, 0.72f, 0.22f );
+	[Property] public Color Tint { get; set; } = ShotColors.Player;
 
 	public int SlotIndex { get; private set; }
 	public Vector2 Flat { get; private set; }
@@ -19,10 +19,10 @@ public sealed class DroppedRound : Component
 
 	protected override void OnStart()
 	{
-		shell = Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, 30f, Tint );
+		shell = Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, 30f, ShotColors.Player );
 
 		glow = GameObject.AddComponent<PointLight>();
-		glow.LightColor = Tint * 4f;
+		glow.LightColor = ShotColors.Player * 4f;
 		glow.Radius = 340f;
 	}
 
@@ -34,6 +34,6 @@ public sealed class DroppedRound : Component
 			shell.WorldPosition = WorldPosition + Vector3.Up * (14f * pulse);
 
 		if ( glow.IsValid() )
-			glow.LightColor = Tint * (2f + 4f * pulse);
+			glow.LightColor = ShotColors.Player * (2f + 4f * pulse);
 	}
 }

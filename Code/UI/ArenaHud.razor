@@ -4,11 +4,11 @@
 <root>
 	<div class="hud">
 
-		<div class="notice @(Loop.NoticeVisible ? "on" : "off") @(Loop.HurtAmount > 0.2f ? "hurt" : "")">
+		<div class="notice @(Loop.NoticeVisible && !Loop.InMenu ? "on" : "off") @(Loop.HurtAmount > 0.2f ? "hurt" : "")">
 			<label>@Loop.Notice</label>
 		</div>
 
-		@if ( !Loop.InCity && Loop.HurtAmount > 0.01f )
+		@if ( !Loop.InCity && !Loop.InMenu && Loop.HurtAmount > 0.01f )
 		{
 			<div class="hurt-veil" style="opacity: @HurtVeil"></div>
 			<div class="hurt-stamp">
@@ -16,15 +16,15 @@
 			</div>
 		}
 
-		@if ( !Loop.InCity )
+		@if ( !Loop.InCity && !Loop.InMenu && Loop.Inventory.IsValid() )
 		{
 			<div class="top-left">
 				<div class="lap-chip">
-					<label class="key">LAP</label>
-					<label class="value">@Loop.Lap</label>
+					<label class="key">@(Loop.InBossFight ? "CORE" : "LAP")</label>
+					<label class="value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
 				</div>
 				<div class="meter">
-					<div class="fill lap" style="width: @(LapPercent)%"></div>
+					<div class="fill lap @(Loop.InBossFight ? "boss" : "")" style="width: @(Loop.InBossFight ? BossPercent : LapPercent)%"></div>
 				</div>
 				<div class="hearts">
 					@for ( var i = 0; i < Loop.HeartMax; i++ )
@@ -79,21 +79,101 @@
 			<div class="city">
 				<div class="top-left">
 					<div class="lap-chip">
-						<label class="key">WAREHOUSE</label>
-						<label class="value">@Loop.City.Warehouse</label>
+						<label class="key">@Loop.City.Mode</label>
+						<label class="value">WH @Loop.City.Warehouse</label>
 					</div>
 					<label class="mods">@Loop.City.HoverText()</label>
 					<label class="clock">@CityBonuses</label>
 				</div>
 				<div class="bottom">
+					@if ( Loop.City.Building )
+					{
+						<div class="blueprint">
+							<div class="glyph @KindClass(Loop.City.Selected)">
+								<div class="a"></div>
+								<div class="b"></div>
+								<div class="c"></div>
+							</div>
+							<div class="copy">
+								<label class="title">@Buildings.Title(Loop.City.Selected)</label>
+								<label class="payoff">@Buildings.Promise(Loop.City.Selected)</label>
+								<label class="blurb">@Buildings.Blurb(Loop.City.Selected)</label>
+								<label class="cost">FRAME  ·  @Buildings.FirstCost(Loop.City.Selected) HITS TO WORK</label>
+							</div>
+							<div class="promise">
+								@if ( Loop.City.Selected == BuildingKind.Infirmary )
+								{
+									<div class="hearts">
+										<div class="heart live"></div>
+										<div class="heart live"></div>
+										<div class="heart live"></div>
+										<div class="heart add"></div>
+									</div>
+									<label class="tag">+1 HP</label>
+								}
+								else
+								{
+									@if ( Loop.City.Selected == BuildingKind.Anvil )
+									{
+										<div class="shots">
+											<div class="shot"></div>
+											<div class="shot"></div>
+											<div class="shot big"></div>
+										</div>
+										<label class="tag">+1 DMG</label>
+									}
+									else
+									{
+										@if ( Loop.City.Selected == BuildingKind.Booster )
+										{
+											<div class="compare">
+												<div class="dash">
+													<label class="key">NOW</label>
+													<div class="meter"><div class="fill dash" style="width: 100%"></div></div>
+												</div>
+												<div class="dash">
+													<label class="key">THEN</label>
+													<div class="meter"><div class="fill dash ready" style="width: 86%"></div></div>
+												</div>
+											</div>
+										}
+										else
+										{
+											@if ( Loop.City.Selected == BuildingKind.Brake )
+											{
+												<div class="dash">
+													<label class="key">SLOW</label>
+													<div class="meter"><div class="fill slow on" style="width: 100%"></div></div>
+												</div>
+												<label class="tag">UNLOCKS</label>
+											}
+											else
+											{
+												<div class="mini-cards">
+													<div class="mini-card"></div>
+													<div class="mini-card"></div>
+													<div class="mini-card add"></div>
+												</div>
+												<label class="tag">+1 CARD</label>
+											}
+										}
+									}
+								}
+							</div>
+						</div>
+					}
 					<div class="slots">
 						@foreach ( var kind in Buildings.All )
 						{
-							<div class="slot @(kind == Loop.City.Selected ? "selected chambered" : "")">
-								<div class="pip" style="background-color: @KindColor(kind)"></div>
+							<div class="slot @(kind == Loop.City.Selected ? "selected chambered" : "") @(Loop.City.Building ? "" : "idle")">
+								<div class="glyph @KindClass(kind)">
+									<div class="a"></div>
+									<div class="b"></div>
+									<div class="c"></div>
+								</div>
 								<div class="text">
-									<label class="name">@((int)kind + 1)</label>
-									<label class="idx">@Buildings.Title(kind)</label>
+									<label class="name">@((int)kind + 1)  @Buildings.Title(kind)</label>
+									<label class="idx">@Buildings.Payoff(kind)</label>
 								</div>
 							</div>
 						}
@@ -104,44 +184,146 @@
 
 		<label class="help">@HelpText</label>
 
-		@if ( Loop.Phase == RunPhase.DecideLap )
+		@if ( Loop.Paused )
 		{
-			<div class="overlay">
-				<label class="overlay-title">LAP @Loop.Lap CLEAR</label>
-				<label class="blurb">STASH @Loop.Stash  ·  TAKE IT HOME OR RISK ANOTHER</label>
+			<div class="overlay menu">
+				<label class="kicker">PAUSED</label>
+				<label class="overlay-title">ONE ROUND TRIP</label>
+				<label class="blurb">The ring holds. Trajectories wait.</label>
 				<div class="cards">
-					<div class="card">
+					<div class="card" onclick="@Resume">
 						<label class="key">1</label>
-						<label class="title">EXTRACT</label>
-						<label class="blurb">Bank @Loop.Stash round@(Loop.Stash == 1 ? "" : "s"). End the run.</label>
+						<label class="title">RESUME</label>
+						<label class="blurb">Back to the lap. Nothing moved.</label>
 					</div>
-					<div class="card">
+					<div class="card" onclick="@PauseToMenu">
 						<label class="key">2</label>
-						<label class="title">ONE MORE LAP</label>
-						<label class="blurb">+1 round. Upgrade hits every round. Harder wave.</label>
+						<label class="title">MENU</label>
+						<label class="blurb">Leave the run. City stays.</label>
+					</div>
+					<div class="card" onclick="@QuitGame">
+						<label class="key">3</label>
+						<label class="title">QUIT</label>
+						<label class="blurb">Close the game.</label>
 					</div>
 				</div>
 			</div>
 		}
 
-		@if ( Loop.Phase == RunPhase.PickTrait )
+		@if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Title )
 		{
-			<div class="overlay">
+			<div class="overlay menu">
+				<label class="kicker">ONE MORE LAP</label>
+				<label class="overlay-title">ONE ROUND TRIP</label>
+				<label class="blurb">Aim. Fire. Catch it back. Cash out to the city — or greed another lap.</label>
+				<label class="blurb">SLOT @(Loop.ActiveSlot + 1)@(Loop.HasActiveSave ? $"  ·  {Loop.SlotBlurb(Loop.ActiveSlot)}" : "  ·  NEW")</label>
+				<div class="cards">
+					<div class="card" onclick="@StartRun">
+						<label class="key">1</label>
+						<label class="title">@(Loop.HasActiveSave ? "CONTINUE" : "PLAY")</label>
+						<label class="blurb">@(Loop.HasActiveSave ? "Run with this city's warehouse and buildings." : "Start a run with one round. Extract or go again.")</label>
+					</div>
+					<div class="card" onclick="@OpenCity">
+						<label class="key">2</label>
+						<label class="title">CITY</label>
+						<label class="blurb">Build frames and spend warehouse ammo.</label>
+					</div>
+					<div class="card" onclick="@OpenSaves">
+						<label class="key">3</label>
+						<label class="title">SAVES</label>
+						<label class="blurb">Autosave slots. Load or delete a city.</label>
+					</div>
+				</div>
+			</div>
+		}
+
+		@if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Saves )
+		{
+			<div class="overlay menu">
+				<label class="kicker">AUTOSAVE</label>
+				<label class="overlay-title">SAVES</label>
+				<label class="blurb">City writes itself. Pick a slot, then load or delete.</label>
+				<div class="cards">
+					<div class="card @(Loop.SaveCursor == 0 ? "selected" : "")" onclick="@HighlightSlot1">
+						<label class="key">1</label>
+						<label class="title">SLOT 1</label>
+						<label class="blurb">@Loop.SlotBlurb(0)</label>
+					</div>
+					<div class="card @(Loop.SaveCursor == 1 ? "selected" : "")" onclick="@HighlightSlot2">
+						<label class="key">2</label>
+						<label class="title">SLOT 2</label>
+						<label class="blurb">@Loop.SlotBlurb(1)</label>
+					</div>
+					<div class="card @(Loop.SaveCursor == 2 ? "selected" : "")" onclick="@HighlightSlot3">
+						<label class="key">3</label>
+						<label class="title">SLOT 3</label>
+						<label class="blurb">@Loop.SlotBlurb(2)</label>
+					</div>
+				</div>
+				<div class="cards">
+					<div class="card" onclick="@LoadHighlighted">
+						<label class="key">SPACE</label>
+						<label class="title">LOAD SLOT @(Loop.SaveCursor + 1)</label>
+						<label class="blurb">@(Loop.SlotInfo(Loop.SaveCursor) is not null && Loop.SlotInfo(Loop.SaveCursor).HasProgress ? "Use this city." : "Empty slot. Fresh city.")</label>
+					</div>
+					@if ( Loop.SlotExists( Loop.SaveCursor ) )
+					{
+						<div class="card" onclick="@DeleteHighlighted">
+							<label class="key">R</label>
+							<label class="title">DELETE SLOT @(Loop.SaveCursor + 1)</label>
+							<label class="blurb">Wipe this city. Cannot undo.</label>
+						</div>
+					}
+				</div>
+			</div>
+		}
+
+		@if ( !Loop.Paused && Loop.Phase == RunPhase.DecideLap )
+		{
+			<div class="overlay choose">
+				<label class="overlay-title">LAP @Loop.Lap CLEAR</label>
+				<label class="blurb">STASH @Loop.Stash  ·  TAKE IT HOME OR RISK ANOTHER</label>
+				<div class="cards">
+					<div class="card" onclick="@ChooseExtract">
+						<label class="key">1</label>
+						<label class="title">EXTRACT</label>
+						<label class="blurb">Bank @Loop.Stash round@(Loop.Stash == 1 ? "" : "s"). Return to the city.</label>
+					</div>
+					<div class="card" onclick="@ChooseContinue">
+						<label class="key">2</label>
+						<label class="title">ONE MORE LAP</label>
+						<label class="blurb">Stay on the ring. It gets harder.</label>
+					</div>
+					@if ( Loop.HasBossOffer )
+					{
+						<div class="card" onclick="@ChooseBoss">
+							<label class="key">3</label>
+							<label class="title">FIGHT THE CORE</label>
+							<label class="blurb">Ricochet the nucleus. Win: stash ×2, then city.</label>
+						</div>
+					}
+				</div>
+			</div>
+		}
+
+		@if ( !Loop.Paused && Loop.Phase == RunPhase.PickTrait )
+		{
+			<div class="overlay choose">
 				<label class="overlay-title">UPGRADE ALL ROUNDS</label>
 				<div class="cards">
-					<div class="card">
+					<div class="card upgrade" style="border-color: @TraitBorder(Loop.OfferA)" onclick="@PickOfferA">
 						<label class="key">1</label>
 						<label class="title">@RoundTraits.Title(Loop.OfferA)</label>
 						<label class="blurb">@OfferBlurb(Loop.OfferA)</label>
 					</div>
-					<div class="card">
+					<div class="card upgrade" style="border-color: @TraitBorder(Loop.OfferB)" onclick="@PickOfferB">
 						<label class="key">2</label>
 						<label class="title">@RoundTraits.Title(Loop.OfferB)</label>
 						<label class="blurb">@OfferBlurb(Loop.OfferB)</label>
 					</div>
 					@if ( Loop.HasThirdOffer )
 					{
-						<div class="card">
+						<div class="card upgrade" style="border-color: @TraitBorder(Loop.OfferC)" onclick="@PickOfferC">
 							<label class="key">3</label>
 							<label class="title">@RoundTraits.Title(Loop.OfferC)</label>
 							<label class="blurb">@OfferBlurb(Loop.OfferC)</label>
@@ -151,23 +333,41 @@
 			</div>
 		}
 
-		@if ( Loop.Phase == RunPhase.Dead )
+		@if ( !Loop.Paused && Loop.Phase == RunPhase.Dead )
 		{
-			<div class="overlay">
+			<div class="overlay choose">
 				<label class="overlay-title">RUN OVER</label>
 				<label class="blurb">@Loop.BurnedRounds ROUND@(Loop.BurnedRounds == 1 ? "" : "S") BURNED</label>
-				<label class="blurb">PRESS R TO CITY</label>
+				<div class="cards">
+					<div class="card" onclick="@GoCity">
+						<label class="key">R</label>
+						<label class="title">CITY</label>
+						<label class="blurb">Leave the ring. Build with what you already banked.</label>
+					</div>
+				</div>
 			</div>
 		}
 
-		@if ( Loop.Phase == RunPhase.Extracted )
+		@if ( !Loop.Paused && Loop.Phase == RunPhase.Extracted )
 		{
-			<div class="overlay">
+			<div class="overlay choose">
 				<label class="overlay-title">EXTRACTED</label>
-				<label class="blurb">@Loop.ExtractedRounds ROUND@(Loop.ExtractedRounds == 1 ? "" : "S") BANKED</label>
-				<label class="blurb">BEST @Loop.BestExtract  ·  PRESS R TO CITY</label>
+				<label class="blurb">@Loop.ExtractedRounds ROUND@(Loop.ExtractedRounds == 1 ? "" : "S") BANKED  ·  BEST @Loop.BestExtract</label>
+				<div class="cards">
+					<div class="card" onclick="@GoCity">
+						<label class="key">R</label>
+						<label class="title">CITY</label>
+						<label class="blurb">Return to construction.</label>
+					</div>
+				</div>
 			</div>
 		}
+
+		<div class="cursor-trail"></div>
+		<div class="cursor-aura">
+			<div class="cursor-ring"></div>
+			<div class="cursor-dot"></div>
+		</div>
 
 	</div>
 </root>
@@ -181,7 +381,39 @@
 		Panel.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
 	}
 
+	protected override void OnUpdate()
+	{
+		if ( Panel is null || !Loop.IsValid() )
+			return;
+
+		Panel.Style.PointerEvents = Loop.WantsUiCursor
+			? Sandbox.UI.PointerEvents.All
+			: Sandbox.UI.PointerEvents.None;
+
+		TickCursor();
+	}
+
+	void Resume() => Loop?.Resume();
+	void PauseToMenu() => Loop?.ShowMenu();
+	void StartRun() => Loop?.Restart();
+	void OpenCity() => Loop?.OpenCityFromMenu();
+	void OpenSaves() => Loop?.OpenSaves();
+	void HighlightSlot1() => Loop?.HighlightSave( 0 );
+	void HighlightSlot2() => Loop?.HighlightSave( 1 );
+	void HighlightSlot3() => Loop?.HighlightSave( 2 );
+	void LoadHighlighted() => Loop?.UseSave( Loop.SaveCursor );
+	void DeleteHighlighted() => Loop?.DeleteSave( Loop.SaveCursor );
+	void QuitGame() => Loop?.QuitGame();
+	void ChooseExtract() => Loop?.ChooseExtract();
+	void ChooseContinue() => Loop?.ChooseContinue();
+	void ChooseBoss() => Loop?.ChooseBoss();
+	void PickOfferA() => Loop?.ChooseUpgrade( Loop.OfferA );
+	void PickOfferB() => Loop?.ChooseUpgrade( Loop.OfferB );
+	void PickOfferC() => Loop?.ChooseUpgrade( Loop.OfferC );
+	void GoCity() => Loop?.ChooseCity();
+
 	int LapPercent => Loop.IsValid() ? (int)(Loop.LapFraction * 100f) : 0;
+	int BossPercent => Loop.IsValid() && Loop.BossMaxHealth > 0 ? (int)(Loop.BossHealth / (float)Loop.BossMaxHealth * 100f) : 0;
 	int HurtPercent => Loop.IsValid() ? (int)(Loop.HurtAmount * 100f) : 0;
 	string HurtVeil => (Loop.IsValid() ? Loop.HurtAmount * 0.55f : 0f).ToString( "0.###" );
 	int DashPercent => Runner.IsValid() ? (int)(Runner.DashCharge * 100f) : 0;
@@ -205,7 +437,7 @@
 	{
 		get
 		{
-			if ( !Loop.IsValid() ) return "PLAIN";
+			if ( !Loop.IsValid() || !Loop.Inventory.IsValid() ) return "PLAIN";
 			var parts = new List<string>();
 			foreach ( var trait in RoundTraits.All )
 			{
@@ -214,20 +446,38 @@
 					parts.Add( $"{RoundTraits.Code( trait )}{level}" );
 			}
 
-			return parts.Count == 0 ? "PLAIN" : string.Join( "  ", parts );
+			return parts.Count == 0 ? $"PLAIN  ×{Loop.Threat:0.00}" : string.Join( "  ", parts ) + $"  ×{Loop.Threat:0.00}";
 		}
 	}
 
-	string HelpText => Loop.IsValid()
-		? Loop.Phase switch
+	string HelpText
+	{
+		get
 		{
-			RunPhase.City => "1-5 BUILDING  ·  E PLACE  ·  LMB SHOOT  ·  SPACE/R RUN",
-			RunPhase.DecideLap => "1 EXTRACT  ·  2 ONE MORE LAP",
-			RunPhase.PickTrait => Loop.HasThirdOffer ? "1 / 2 / 3 UPGRADE ALL ROUNDS" : "1 / 2 UPGRADE ALL ROUNDS",
-			RunPhase.Dead or RunPhase.Extracted => "R CITY",
-			_ => "MOUSE AIM · LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART"
+			if ( !Loop.IsValid() )
+				return "";
+
+			if ( Loop.Paused )
+				return "1 RESUME  ·  2 MENU  ·  3 QUIT";
+
+			if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Saves )
+				return "1-3 SELECT  ·  SPACE LOAD  ·  R DELETE  ·  ESC BACK";
+
+			return Loop.Phase switch
+			{
+				RunPhase.Menu => "1 PLAY  ·  2 CITY  ·  3 SAVES  ·  ESC QUIT",
+				RunPhase.City => Loop.City.IsValid() && Loop.City.Building
+					? "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E SHOOT  ·  SPACE/R RUN  ·  ESC PAUSE"
+					: "LMB FIRE  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE",
+				RunPhase.DecideLap => Loop.HasBossOffer ? "1 EXTRACT  ·  2 ONE MORE LAP  ·  3 FIGHT THE CORE  ·  ESC PAUSE" : "1 EXTRACT  ·  2 ONE MORE LAP  ·  ESC PAUSE",
+				RunPhase.PickTrait => Loop.HasThirdOffer ? "1 / 2 / 3 UPGRADE ALL ROUNDS  ·  ESC PAUSE" : "1 / 2 UPGRADE ALL ROUNDS  ·  ESC PAUSE",
+				RunPhase.Dead or RunPhase.Extracted => "R CITY  ·  ESC MENU",
+				_ => Loop.InBossFight
+					? "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
+					: "MOUSE AIM · LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE"
+			};
 		}
-		: "";
+	}
 
 	string CityBonuses
 	{
@@ -247,11 +497,7 @@
 		}
 	}
 
-	string KindColor( BuildingKind kind )
-	{
-		var c = Buildings.Color( kind );
-		return $"rgb({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)})";
-	}
+	string KindClass( BuildingKind kind ) => kind.ToString().ToLowerInvariant();
 
 	string StatusClass( RoundSlot slot ) => slot.Status.ToString().ToLower();
 
@@ -277,7 +523,7 @@
 			LapPercent,
 			DashPercent,
 			Loop.IsValid() ? Loop.Stash : 0,
-			Loop.IsValid() ? Loop.Inventory.SelectedIndex : 0,
+			Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.SelectedIndex : 0,
 			Loop.IsValid() && Loop.NoticeVisible );
 
 		var b = System.HashCode.Combine(
@@ -288,7 +534,7 @@
 			Loop.IsValid() ? Loop.BestExtract : 0,
 			Loop.IsValid() ? Loop.ExtractedRounds : 0,
 			Loop.IsValid() ? Loop.BurnedRounds : 0,
-			Loop.IsValid() ? Loop.Inventory.Slots.Sum( s => s.StatusHash ) : 0 );
+			Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Slots.Sum( s => s.StatusHash ) : 0 );
 
 		var c = System.HashCode.Combine(
 			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.Warehouse : 0,
@@ -297,9 +543,28 @@
 			Loop.IsValid() && Loop.HasThirdOffer,
 			Loop.IsValid() ? Loop.HeartMax : 0,
 			CityBonuses,
-			HurtPercent );
+			HurtPercent,
+			Loop.IsValid() && Loop.InBossFight );
 
-		return System.HashCode.Combine( a, b, c );
+		var d = System.HashCode.Combine(
+			Loop.IsValid() ? Loop.BossHealth : 0,
+			Loop.IsValid() && Loop.HasBossOffer,
+			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.PlacementFacing : 0,
+			Loop.IsValid() && Loop.City.IsValid() ? (int)Loop.City.Mode : 0,
+			Loop.IsValid() && Loop.Paused,
+			Loop.IsValid() ? (int)Loop.MenuView : 0,
+			Loop.IsValid() ? Loop.ActiveSlot : 0,
+			Loop.IsValid() ? Loop.SaveCursor : 0 );
+
+		var e = System.HashCode.Combine(
+			Loop.IsValid() ? Loop.SlotBlurb( 0 ) : "",
+			Loop.IsValid() ? Loop.SlotBlurb( 1 ) : "",
+			Loop.IsValid() ? Loop.SlotBlurb( 2 ) : "",
+			Loop.IsValid() && Loop.SlotExists( 0 ),
+			Loop.IsValid() && Loop.SlotExists( 1 ),
+			Loop.IsValid() && Loop.SlotExists( 2 ) );
+
+		return System.HashCode.Combine( a, b, c, d, e );
 	}
 }
 
@@ -419,6 +684,10 @@
 
 	.meter .fill.lap {
 		background-color: #4fd2e8;
+	}
+
+	.meter .fill.lap.boss {
+		background-color: #e23d4a;
 	}
 
 	.meter .fill.dash {
@@ -543,6 +812,10 @@
 		border-color: rgba(240, 90, 70, 0.7);
 	}
 
+	.slot.idle {
+		opacity: 0.42;
+	}
+
 	.meters {
 		flex-direction: row;
 		align-items: center;
@@ -578,9 +851,357 @@
 	}
 
 	.slot .name {
-		font-size: 18px;
+		font-size: 16px;
 		font-weight: 700;
-		line-height: 18px;
+		line-height: 16px;
+	}
+
+	.city .slot .idx {
+		font-size: 13px;
+		font-weight: 600;
+		color: #8aa4b8;
+		margin-top: 2px;
+	}
+
+	.glyph {
+		position: relative;
+		width: 36px;
+		height: 36px;
+		margin-right: 10px;
+	}
+
+	.glyph .a,
+	.glyph .b,
+	.glyph .c {
+		position: absolute;
+		border-radius: 3px;
+	}
+
+	.glyph.infirmary .a {
+		left: 13px;
+		top: 3px;
+		width: 10px;
+		height: 30px;
+		background-color: #f25160;
+	}
+
+	.glyph.infirmary .b {
+		left: 3px;
+		top: 13px;
+		width: 30px;
+		height: 10px;
+		background-color: #f25160;
+	}
+
+	.glyph.infirmary .c {
+		width: 0px;
+		height: 0px;
+	}
+
+	.glyph.anvil .a {
+		left: 4px;
+		top: 24px;
+		width: 28px;
+		height: 8px;
+		background-color: #d9b259;
+	}
+
+	.glyph.anvil .b {
+		left: 7px;
+		top: 14px;
+		width: 22px;
+		height: 8px;
+		background-color: #d9b259;
+	}
+
+	.glyph.anvil .c {
+		left: 10px;
+		top: 4px;
+		width: 16px;
+		height: 8px;
+		background-color: #d9b259;
+	}
+
+	.glyph.booster .a {
+		left: 4px;
+		top: 22px;
+		width: 28px;
+		height: 8px;
+		background-color: #ff8c33;
+	}
+
+	.glyph.booster .b {
+		left: 9px;
+		top: 12px;
+		width: 18px;
+		height: 8px;
+		background-color: #ff8c33;
+	}
+
+	.glyph.booster .c {
+		left: 14px;
+		top: 3px;
+		width: 8px;
+		height: 8px;
+		background-color: #ff8c33;
+	}
+
+	.glyph.brake .a {
+		left: 4px;
+		top: 4px;
+		width: 8px;
+		height: 28px;
+		background-color: #8c73ff;
+	}
+
+	.glyph.brake .b {
+		left: 4px;
+		top: 24px;
+		width: 28px;
+		height: 8px;
+		background-color: #8c73ff;
+	}
+
+	.glyph.brake .c {
+		left: 24px;
+		top: 4px;
+		width: 8px;
+		height: 28px;
+		background-color: #8c73ff;
+	}
+
+	.glyph.showcase .a {
+		left: 4px;
+		top: 6px;
+		width: 18px;
+		height: 24px;
+		background-color: #59d9f2;
+		border-radius: 4px;
+	}
+
+	.glyph.showcase .b {
+		left: 14px;
+		top: 10px;
+		width: 18px;
+		height: 24px;
+		background-color: #3aa8c0;
+		border-radius: 4px;
+	}
+
+	.glyph.showcase .c {
+		width: 0px;
+		height: 0px;
+	}
+
+	.blueprint {
+		flex-direction: row;
+		align-items: center;
+		padding: 14px 18px;
+		margin-bottom: 10px;
+		border-radius: 12px;
+		background-color: rgba(10, 18, 26, 0.92);
+		border: 2px solid rgba(255, 184, 60, 0.45);
+	}
+
+	.blueprint .glyph {
+		width: 48px;
+		height: 48px;
+		margin-right: 16px;
+	}
+
+	.blueprint .glyph .a,
+	.blueprint .glyph .b,
+	.blueprint .glyph .c {
+		border-radius: 4px;
+	}
+
+	.blueprint .glyph.infirmary .a {
+		left: 18px;
+		top: 4px;
+		width: 12px;
+		height: 40px;
+	}
+
+	.blueprint .glyph.infirmary .b {
+		left: 4px;
+		top: 18px;
+		width: 40px;
+		height: 12px;
+	}
+
+	.blueprint .glyph.anvil .a {
+		left: 4px;
+		top: 32px;
+		width: 40px;
+		height: 10px;
+	}
+
+	.blueprint .glyph.anvil .b {
+		left: 8px;
+		top: 18px;
+		width: 32px;
+		height: 10px;
+	}
+
+	.blueprint .glyph.anvil .c {
+		left: 14px;
+		top: 4px;
+		width: 20px;
+		height: 10px;
+	}
+
+	.blueprint .glyph.booster .a {
+		left: 4px;
+		top: 30px;
+		width: 40px;
+		height: 10px;
+	}
+
+	.blueprint .glyph.booster .b {
+		left: 12px;
+		top: 16px;
+		width: 24px;
+		height: 10px;
+	}
+
+	.blueprint .glyph.booster .c {
+		left: 18px;
+		top: 4px;
+		width: 12px;
+		height: 10px;
+	}
+
+	.blueprint .glyph.brake .a {
+		left: 4px;
+		top: 4px;
+		width: 10px;
+		height: 40px;
+	}
+
+	.blueprint .glyph.brake .b {
+		left: 4px;
+		top: 34px;
+		width: 40px;
+		height: 10px;
+	}
+
+	.blueprint .glyph.brake .c {
+		left: 34px;
+		top: 4px;
+		width: 10px;
+		height: 40px;
+	}
+
+	.blueprint .glyph.showcase .a {
+		left: 4px;
+		top: 8px;
+		width: 24px;
+		height: 32px;
+	}
+
+	.blueprint .glyph.showcase .b {
+		left: 18px;
+		top: 14px;
+		width: 24px;
+		height: 32px;
+	}
+
+	.blueprint .copy {
+		flex-direction: column;
+		align-items: flex-start;
+		width: 280px;
+		margin-right: 18px;
+	}
+
+	.blueprint .title {
+		font-size: 22px;
+		font-weight: 700;
+		letter-spacing: 1px;
+	}
+
+	.blueprint .payoff {
+		font-size: 15px;
+		font-weight: 700;
+		color: #ffd27a;
+		margin-top: 2px;
+	}
+
+	.blueprint .blurb {
+		font-size: 14px;
+		color: #8aa4b8;
+		margin-top: 4px;
+	}
+
+	.blueprint .cost {
+		font-size: 13px;
+		color: #5f7f96;
+		margin-top: 6px;
+	}
+
+	.promise {
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+	}
+
+	.promise .tag {
+		font-size: 14px;
+		font-weight: 700;
+		color: #ffd27a;
+		margin-top: 6px;
+	}
+
+	.heart.add {
+		background-color: rgba(10, 18, 26, 0.2);
+		border: 2px solid #f05a46;
+	}
+
+	.shots {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.shot {
+		width: 14px;
+		height: 14px;
+		border-radius: 7px;
+		margin-right: 8px;
+		background-color: #6a7f90;
+	}
+
+	.shot.big {
+		width: 22px;
+		height: 22px;
+		border-radius: 11px;
+		background-color: #d9b259;
+	}
+
+	.compare {
+		flex-direction: column;
+	}
+
+	.compare .dash {
+		margin: 2px 0px;
+	}
+
+	.mini-cards {
+		flex-direction: row;
+		align-items: flex-end;
+	}
+
+	.mini-card {
+		width: 28px;
+		height: 36px;
+		border-radius: 4px;
+		margin-right: 6px;
+		background-color: rgba(120, 170, 200, 0.25);
+		border: 2px solid rgba(120, 170, 200, 0.45);
+	}
+
+	.mini-card.add {
+		height: 42px;
+		background-color: rgba(53, 216, 242, 0.25);
+		border-color: #59d9f2;
 	}
 
 	.help {
@@ -602,6 +1223,33 @@
 		justify-content: center;
 	}
 
+	.overlay.menu {
+		background-color: rgba(4, 8, 14, 0.78);
+	}
+
+	.overlay .kicker {
+		font-size: 14px;
+		font-weight: 700;
+		letter-spacing: 8px;
+		color: #5f7f96;
+		margin-bottom: 8px;
+	}
+
+	.overlay.menu .overlay-title {
+		font-size: 58px;
+		letter-spacing: 6px;
+		margin-bottom: 8px;
+	}
+
+	.overlay.menu .card {
+		cursor: pointer;
+	}
+
+	.overlay.menu .card.selected {
+		border-color: #ffd27a;
+		background: rgba(255, 210, 122, 0.14);
+	}
+
 	.overlay-title {
 		font-size: 42px;
 		font-weight: 700;
@@ -618,6 +1266,9 @@
 
 	.cards {
 		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: center;
+		max-width: 1100px;
 	}
 
 	.card {

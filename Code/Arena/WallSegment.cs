@@ -28,5 +28,6 @@ public enum WallKind
 {
 	Boundary,
 	Core,
-	Panel
+	Panel,
+	Boss
 }

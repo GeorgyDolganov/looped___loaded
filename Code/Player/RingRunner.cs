@@ -46,6 +46,7 @@ public sealed class RingRunner : Component
 		slowOverheat = false;
 		DashCooldown = 1.1f;
 		SlowDrain = 0.55f;
+		Speed = 330f;
 		ApplyTransform();
 	}
 
@@ -54,6 +55,11 @@ public sealed class RingRunner : Component
 		DashCooldown = 1.1f * stats.DashCooldownScale;
 		SlowUnlocked = stats.SlowUnlocked;
 		SlowDrain = stats.SlowDrain;
+	}
+
+	public void ApplyPace( int lap )
+	{
+		Speed = 330f * Progression.Pace( lap );
 	}
 
 	public bool TryDash()
@@ -65,6 +71,11 @@ public sealed class RingRunner : Component
 		dashElapsed = 0f;
 		dashSpent = 0f;
 		return true;
+	}
+
+	public void ShiftTime( float dt )
+	{
+		lastDash += dt;
 	}
 
 	protected override void OnUpdate()

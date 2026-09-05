@@ -18,6 +18,7 @@ public sealed class ArenaGeometry
 	public float PlayHeight { get; set; } = 40f;
 
 	public List<WallSegment> Walls { get; } = new();
+	public bool CoreSolid { get; set; } = true;
 
 	public float TrackInner => TrackRadius - TrackWidth * 0.5f;
 	public float TrackOuter => TrackRadius + TrackWidth * 0.5f;
@@ -51,7 +52,6 @@ public sealed class ArenaGeometry
 
 		AddRing( BoundaryRadius, 24, MathF.PI / 24f, WallKind.Boundary );
 		AddRing( CoreRadius, 8, 0f, WallKind.Core );
-		AddPanels();
 
 		for ( var i = 0; i < Walls.Count; i++ )
 		{
@@ -60,6 +60,51 @@ public sealed class ArenaGeometry
 			else if ( Walls[i].Kind == WallKind.Core )
 				coreWalls.Add( i );
 		}
+	}
+
+	public void GeneratePanels( int lap, int seed )
+	{
+		for ( var i = Walls.Count - 1; i >= 0; i-- )
+		{
+			if ( Walls[i].Kind == WallKind.Panel )
+				Walls.RemoveAt( i );
+		}
+
+		var rng = new Random( unchecked( seed * 48611 + Math.Max( 1, lap ) * 7919 ) );
+		var count = Math.Clamp( 1 + Math.Max( 1, lap ), 2, 6 );
+		var origin = (float)rng.NextDouble() * MathF.Tau;
+		var inner = CoreRadius + 110f;
+		var outer = TrackInner - 95f;
+		var slice = MathF.Tau / count;
+
+		for ( var i = 0; i < count; i++ )
+		{
+			var angle = origin + slice * i + ( (float)rng.NextDouble() - 0.5f ) * slice * 0.42f;
+			var radial = lap >= 2 && rng.NextDouble() < 0.22 + lap * 0.05;
+
+			if ( radial )
+			{
+				var start = inner + 16f + (float)rng.NextDouble() * 50f;
+				var end = outer - 12f - (float)rng.NextDouble() * 40f;
+				if ( end - start < 150f )
+					end = start + 150f;
+
+				AddRadial( angle, start, MathF.Min( end, outer ) );
+				continue;
+			}
+
+			var radius = inner + ( outer - inner ) * ( 0.18f + (float)rng.NextDouble() * 0.64f );
+			var tilt = ( (float)rng.NextDouble() - 0.5f ) * 72f;
+			var length = MathX.Lerp( 340f, 210f, ( count - 2 ) / 4f );
+			length += ( (float)rng.NextDouble() - 0.5f ) * 48f;
+			AddPanel( angle, radius, tilt, length );
+		}
+	}
+
+	void AddRadial( float angle, float inner, float outer )
+	{
+		var dir = FromAngle( angle );
+		PlacePanel( dir * inner, dir * outer );
 	}
 
 	void AddRing( float radius, int sides, float offset, WallKind kind )
@@ -76,19 +121,80 @@ public sealed class ArenaGeometry
 		}
 	}
 
-	void AddPanels()
-	{
-		AddPanel( 0.35f, 620f, 55f, 300f );
-		AddPanel( 2.45f, 640f, -35f, 340f );
-		AddPanel( 4.35f, 600f, 20f, 280f );
-	}
-
 	void AddPanel( float angle, float radius, float tiltDegrees, float length )
 	{
 		var center = FromAngle( angle ) * radius;
 		var facing = angle + MathF.PI * 0.5f + MathX.DegreeToRadian( tiltDegrees );
 		var along = FromAngle( facing );
-		Walls.Add( new WallSegment( center - along * length * 0.5f, center + along * length * 0.5f, Vector2.Zero, WallKind.Panel ) );
+		PlacePanel( center - along * length * 0.5f, center + along * length * 0.5f );
+	}
+
+	void PlacePanel( Vector2 a, Vector2 b )
+	{
+		a = ClampPlay( a );
+		b = ClampPlay( b );
+
+		if ( ( b - a ).Length < 90f )
+			return;
+
+		var span = b - a;
+		var facing = new Vector2( -span.y, span.x ).Normal;
+		Walls.Add( new WallSegment( a, b, facing, WallKind.Panel ) );
+	}
+
+	Vector2 ClampPlay( Vector2 point )
+	{
+		var min = CoreRadius + 70f;
+		var max = TrackInner - 70f;
+		var length = point.Length;
+
+		if ( length < 1f )
+			return FromAngle( 0f ) * min;
+
+		if ( length < min )
+			return point.Normal * min;
+
+		if ( length > max )
+			return point.Normal * max;
+
+		return point;
+	}
+
+	public void Eject( ref Vector2 flat, float radius )
+	{
+		for ( var pass = 0; pass < 4; pass++ )
+		{
+			var pushed = false;
+
+			for ( var i = 0; i < Walls.Count; i++ )
+			{
+				var wall = Walls[i];
+				if ( wall.Kind == WallKind.Core && !CoreSolid )
+					continue;
+
+				if ( wall.Kind == WallKind.Boss )
+					continue;
+
+				var length = wall.Length;
+				if ( length < 0.001f )
+					continue;
+
+				var along = Math.Clamp( Dot( flat - wall.A, wall.Direction ), 0f, length );
+				var closest = wall.A + wall.Direction * along;
+				var offset = flat - closest;
+				var distance = offset.Length;
+
+				if ( distance >= radius - SurfaceTolerance )
+					continue;
+
+				var normal = distance < 0.001f ? wall.Normal : offset.Normal;
+				flat += normal * ( radius - distance + 1.5f );
+				pushed = true;
+			}
+
+			if ( !pushed )
+				return;
+		}
 	}
 
 	public bool TraceRay( Vector2 origin, Vector2 direction, float maxDistance, out ArenaHit hit )
@@ -101,6 +207,9 @@ public sealed class ArenaGeometry
 		for ( var i = 0; i < Walls.Count; i++ )
 		{
 			var wall = Walls[i];
+			if ( wall.Kind == WallKind.Core && !CoreSolid )
+				continue;
+
 			var span = wall.Delta;
 			var denominator = Cross( direction, span );
 
@@ -160,15 +269,18 @@ public sealed class ArenaGeometry
 		var deepest = -float.MaxValue;
 		var deepestIndex = -1;
 
-		foreach ( var index in coreWalls )
+		if ( CoreSolid )
 		{
-			var distance = Walls[index].SignedDistance( flat );
+			foreach ( var index in coreWalls )
+			{
+				var distance = Walls[index].SignedDistance( flat );
 
-			if ( distance <= deepest )
-				continue;
+				if ( distance <= deepest )
+					continue;
 
-			deepest = distance;
-			deepestIndex = index;
+				deepest = distance;
+				deepestIndex = index;
+			}
 		}
 
 		if ( deepestIndex >= 0 && deepest < radius - SurfaceTolerance )
@@ -210,5 +322,28 @@ public sealed class ArenaGeometry
 		path.Add( contact + bounced * length );
 
 		return path;
+	}
+
+	public int AddBossPanel( Vector2 a, Vector2 b )
+	{
+		Walls.Add( new WallSegment( a, b, Vector2.Zero, WallKind.Boss ) );
+		return Walls.Count - 1;
+	}
+
+	public void WriteBossPanel( int index, Vector2 a, Vector2 b )
+	{
+		if ( index < 0 || index >= Walls.Count )
+			return;
+
+		Walls[index] = new WallSegment( a, b, Vector2.Zero, WallKind.Boss );
+	}
+
+	public void ClearBossWalls()
+	{
+		for ( var i = Walls.Count - 1; i >= 0; i-- )
+		{
+			if ( Walls[i].Kind == WallKind.Boss )
+				Walls.RemoveAt( i );
+		}
 	}
 }

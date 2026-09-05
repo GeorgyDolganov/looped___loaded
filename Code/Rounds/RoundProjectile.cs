@@ -49,10 +49,10 @@ public sealed class RoundProjectile : Component
 
 	protected override void OnStart()
 	{
-		Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, 26f, Tint );
+		Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, 26f, ShotColors.Player );
 
 		var glow = GameObject.AddComponent<PointLight>();
-		glow.LightColor = Tint * 6f;
+		glow.LightColor = ShotColors.Player * 6f;
 		glow.Radius = 420f;
 
 		var trailObject = Scene.CreateObject();
@@ -60,8 +60,8 @@ public sealed class RoundProjectile : Component
 		trailObject.Parent = GameObject;
 
 		trailLine = trailObject.AddComponent<PolyLine>();
-		trailLine.HeadTint = Tint;
-		trailLine.TailTint = Tint * 0.08f;
+		trailLine.HeadTint = ShotColors.Player;
+		trailLine.TailTint = ShotColors.Player * 0.08f;
 		trailLine.HeadWidth = 12f;
 		trailLine.TailWidth = 1f;
 		trailLine.Apply();
@@ -88,6 +88,17 @@ public sealed class RoundProjectile : Component
 		PushTrail( WorldPosition );
 	}
 
+	public void NudgeOut()
+	{
+		if ( geometry is null )
+			return;
+
+		var flat = Flat;
+		geometry.Eject( ref flat, Radius );
+		Flat = flat;
+		WorldPosition = geometry.ToPlayWorld( Flat );
+	}
+
 	bool Step( float step )
 	{
 		if ( geometry.TraceRay( Flat, Direction, step + Radius, out var hit ) )
@@ -102,7 +113,7 @@ public sealed class RoundProjectile : Component
 
 			var world = geometry.ToPlayWorld( Flat );
 			Sound.Play( "sounds/impacts/bullets/impact-bullet-metal.sound", world );
-			ImpactFlash.Spawn( Scene, world, new Color( 0.55f, 0.9f, 1f ), 0.65f );
+			ImpactFlash.Spawn( Scene, world, ShotColors.Player, 0.65f );
 		}
 		else
 		{
@@ -181,12 +192,10 @@ public sealed class RoundProjectile : Component
 			if ( offset.Length > reach )
 				continue;
 
-			struck.Add( target );
-
 			var normal = offset.Length < 0.01f ? -Direction : offset.Normal;
 			PushTrail( geometry.ToPlayWorld( Flat ) );
 
-			if ( target.BlocksFrom( Direction ) )
+			if ( target.BlocksFrom( Direction, this ) )
 			{
 				Flat = target.Flat + normal * (reach + 1f);
 				Direction = ArenaGeometry.Reflect( Direction, normal ).Normal;
@@ -194,7 +203,10 @@ public sealed class RoundProjectile : Component
 
 				var world = geometry.ToPlayWorld( Flat );
 				Sound.Play( "sounds/impacts/bullets/impact-bullet-metal.sound", world );
-				ImpactFlash.Spawn( Scene, world, new Color( 0.75f, 0.85f, 1f ), 0.9f );
+				ImpactFlash.Spawn( Scene, world, ShotColors.Player, 0.9f );
+
+				if ( target.Kind == EnemyKind.Core )
+					Loop.NoteArmor();
 
 				if ( BouncesLeft < 0 )
 				{
@@ -205,6 +217,7 @@ public sealed class RoundProjectile : Component
 				continue;
 			}
 
+			struck.Add( target );
 			target.Damage( Flight.Damage > 0 ? Flight.Damage : 1, this );
 			TargetsHit++;
 

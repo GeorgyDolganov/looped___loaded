@@ -10,11 +10,15 @@ public sealed class EnemyShot : Component
 	public Vector2 Flat { get; private set; }
 	public Vector2 Direction { get; private set; }
 
+	const int TrailPoints = 10;
+
+	readonly List<Vector3> trail = new();
 	ArenaGeometry geometry;
-	Color tint;
+	GameObject bolt;
+	PolyLine trailLine;
 	float born;
 
-	public static void Fire( GameLoop loop, Vector2 origin, Vector2 direction, Color tint, float speed = 0f )
+	public static void Fire( GameLoop loop, Vector2 origin, Vector2 direction, float speed = 0f )
 	{
 		if ( direction.Length < 0.01f )
 			return;
@@ -27,23 +31,45 @@ public sealed class EnemyShot : Component
 		shot.geometry = loop.Geometry;
 		shot.Flat = origin;
 		shot.Direction = direction.Normal;
-		shot.tint = tint;
 		shot.born = Time.Now;
 		shot.Speed = speed > 1f ? speed : 640f;
 		shot.WorldPosition = loop.Geometry.ToPlayWorld( origin );
+		shot.BuildVisuals();
 
 		loop.Shots.Add( shot );
 
 		Sound.Play( "sounds/impacts/bullets/impact-bullet-generic.sound", shot.WorldPosition );
 	}
 
-	protected override void OnStart()
+	public void ShiftTime( float dt )
 	{
-		Blocks.SpawnSphere( GameObject, "Bolt", WorldPosition, 28f, tint );
+		born += dt;
+	}
+
+	protected override void OnStart() => BuildVisuals();
+
+	void BuildVisuals()
+	{
+		if ( bolt.IsValid() )
+			return;
+
+		bolt = Blocks.SpawnBox( GameObject, "Bolt", WorldPosition, Blocks.FlatFacing( Direction ),
+			new Vector3( 42f, 16f, 16f ), ShotColors.Enemy, false );
 
 		var glow = GameObject.AddComponent<PointLight>();
-		glow.LightColor = tint * 5f;
-		glow.Radius = 260f;
+		glow.LightColor = ShotColors.Enemy * 7f;
+		glow.Radius = 280f;
+
+		var trailObject = Scene.CreateObject();
+		trailObject.Name = "Trail";
+		trailObject.Parent = GameObject;
+
+		trailLine = trailObject.AddComponent<PolyLine>();
+		trailLine.HeadTint = ShotColors.Enemy;
+		trailLine.TailTint = ShotColors.Enemy * 0.05f;
+		trailLine.HeadWidth = 18f;
+		trailLine.TailWidth = 2f;
+		trailLine.Apply();
 	}
 
 	protected override void OnUpdate()
@@ -67,19 +93,37 @@ public sealed class EnemyShot : Component
 
 		if ( geometry.TraceRay( Flat, Direction, step + Radius, out var hit ) )
 		{
-			ImpactFlash.Spawn( Scene, geometry.ToPlayWorld( hit.Position ), tint, 0.5f );
+			ImpactFlash.Spawn( Scene, geometry.ToPlayWorld( hit.Position ), ShotColors.Enemy, 0.5f );
 			DestroyShot();
 			return;
 		}
 
 		Flat += Direction * step;
 		WorldPosition = geometry.ToPlayWorld( Flat );
+
+		if ( bolt.IsValid() )
+		{
+			bolt.WorldPosition = WorldPosition;
+			bolt.WorldRotation = Blocks.FlatFacing( Direction );
+		}
+
+		PushTrail( WorldPosition );
 	}
 
 	protected override void OnDestroy()
 	{
 		if ( Loop.IsValid() )
 			Loop.Shots.Remove( this );
+	}
+
+	void PushTrail( Vector3 point )
+	{
+		trail.Add( point );
+
+		while ( trail.Count > TrailPoints )
+			trail.RemoveAt( 0 );
+
+		trailLine?.SetPoints( trail );
 	}
 
 	void DestroyShot() => GameObject.Destroy();

@@ -43,7 +43,7 @@ public sealed class RunLoadout
 		get
 		{
 			var magnet = TraitLevel( RoundTrait.Magnetic );
-			return magnet <= 0 ? 0f : 24f + magnet * 28f;
+			return magnet <= 0 ? 0f : 24f * Progression.TraitMul( magnet );
 		}
 	}
 
@@ -71,16 +71,16 @@ public sealed class RunLoadout
 		return new RoundFlight
 		{
 			SlotIndex = slot.Index,
-			Tint = slot.Tint,
+			Tint = ShotColors.Player,
 			Damage = 1 + BonusDamage,
-			PierceCharges = pierce,
-			MaxBounces = 4 + bounce * 2,
-			Energy = 5500f + bounce * 900f,
-			MagnetRadius = magnet <= 0 ? 0f : 200f + magnet * 140f,
-			MagnetPull = magnet <= 0 ? 0f : 1.4f + magnet * 0.9f,
-			CatchBonus = magnet <= 0 ? 0f : 24f + magnet * 28f,
-			FreezeDuration = freeze <= 0 ? 0f : 1.1f + freeze * 0.7f,
-			FreezeScale = freeze <= 0 ? 1f : MathX.Lerp( 0.55f, 0.22f, (freeze - 1) / 2f )
+			PierceCharges = pierce <= 0 ? 0 : 1 << (pierce - 1),
+			MaxBounces = 4 + Progression.TraitStack( bounce, 2f ),
+			Energy = 5500f * ( bounce <= 0 ? 1f : Progression.TraitMul( bounce ) ),
+			MagnetRadius = magnet <= 0 ? 0f : 200f * Progression.TraitMul( magnet ),
+			MagnetPull = magnet <= 0 ? 0f : 1.4f * Progression.TraitMul( magnet ),
+			CatchBonus = magnet <= 0 ? 0f : 24f * Progression.TraitMul( magnet ),
+			FreezeDuration = freeze <= 0 ? 0f : 1.1f * Progression.TraitMul( freeze ),
+			FreezeScale = freeze <= 0 ? 1f : MathF.Max( 0.18f, 0.55f / Progression.TraitMul( freeze ) ),
 		};
 	}
 }
@@ -102,6 +102,7 @@ public struct RoundFlight
 
 public enum RunPhase
 {
+	Menu,
 	Playing,
 	DecideLap,
 	PickTrait,

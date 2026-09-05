@@ -11,19 +11,28 @@ public sealed class GameLoop : Component
 	[Property] public int MaxHealth { get; set; } = 3;
 
 	public CityBoard City { get; set; }
+	public RunPhase Phase { get; private set; } = RunPhase.Menu;
 	public bool InCity => Phase == RunPhase.City;
+	public bool InMenu => Phase == RunPhase.Menu;
+	public bool WantsUiCursor => InMenu || Paused || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait || Phase == RunPhase.Dead || Phase == RunPhase.Extracted;
 	public ArenaGeometry Geometry => Arena.Geometry;
 	public List<Enemy> Enemies { get; } = new();
 	public List<EnemyShot> Shots { get; } = new();
 
-	public RunPhase Phase { get; private set; } = RunPhase.Playing;
-	public bool IsFrozen => Phase != RunPhase.Playing;
+	public MenuPage MenuView { get; private set; } = MenuPage.Title;
+	public int ActiveSlot { get; private set; }
+	public int SaveCursor { get; private set; }
+	readonly GameSave[] slotCache = new GameSave[SaveStore.Slots];
+	bool savesLoaded;
+	public bool Paused { get; private set; }
+	public bool IsFrozen => Paused || Phase != RunPhase.Playing;
 
 	public string Notice { get; private set; } = "AIM. FIRE. CATCH IT BACK.";
 	public float NoticeAge => Time.Now - noticeAt;
 	public bool NoticeVisible => NoticeAge < NoticeDuration;
 
 	public int Lap { get; private set; } = 1;
+	int layoutSeed;
 	public float LapFraction => Phase == RunPhase.DecideLap ? 1f : Runner.IsValid() ? Runner.LapFraction : 0f;
 	public int Stash => Inventory.IsValid() ? Inventory.Slots.Count : 0;
 	public int HeartMax => MaxHealth + (City.IsValid() ? City.Stats().BonusHealth : 0);
@@ -44,10 +53,168 @@ public sealed class GameLoop : Component
 	public RoundTrait OfferC { get; private set; }
 	public bool HasThirdOffer { get; private set; }
 
+	public float Threat => Progression.Threat( Lap );
+	public bool InBossFight { get; private set; }
+	public bool HasBossOffer => !InBossFight && Lap >= 5;
+	public int BossHealth
+	{
+		get
+		{
+			foreach ( var enemy in Enemies )
+			{
+				if ( enemy.IsValid() && enemy.Alive && enemy.Kind == EnemyKind.Core )
+					return enemy.Health;
+			}
+
+			return 0;
+		}
+	}
+	public int BossMaxHealth
+	{
+		get
+		{
+			foreach ( var enemy in Enemies )
+			{
+				if ( enemy.IsValid() && enemy.Alive && enemy.Kind == EnemyKind.Core )
+					return enemy.MaxHealth;
+			}
+
+			return Progression.BossHealth( Lap );
+		}
+	}
+
 	float noticeAt = -99f;
 	float runStartedAt;
 	float invulnUntil;
 	float lastHurtAt = -99f;
+	float armorNoticeAt = -99f;
+	float pauseStartedAt;
+	bool pendingBoss;
+	bool bossWon;
+
+	public string SlotBlurb( int index )
+	{
+		var save = SlotInfo( index );
+		if ( save is null || !save.HasProgress )
+			return "EMPTY";
+
+		return $"WH {save.Warehouse}  ·  BEST {save.BestExtract}  ·  {save.BuildingCount} BUILDINGS";
+	}
+
+	public bool HasActiveSave => SlotInfo( ActiveSlot ) is not null && SlotInfo( ActiveSlot ).HasProgress;
+
+	public bool SlotExists( int index ) => SaveStore.Exists( index );
+
+	public GameSave SlotInfo( int index )
+	{
+		if ( index < 0 || index >= slotCache.Length )
+			return null;
+
+		return slotCache[index];
+	}
+
+	public void HighlightSave( int index )
+	{
+		SaveCursor = Math.Clamp( index, 0, SaveStore.Slots - 1 );
+		Sound.Play( "sounds/kenney/ui/ui.navigate.forward.sound" );
+	}
+
+	public void RestoreSaves()
+	{
+		if ( savesLoaded )
+			return;
+
+		savesLoaded = true;
+		ActiveSlot = SaveStore.LastSlot();
+		SaveCursor = ActiveSlot;
+		RefreshSaves();
+		ApplySave( SlotInfo( ActiveSlot ) );
+	}
+
+	public void Autosave()
+	{
+		if ( !City.IsValid() )
+			return;
+
+		var save = City.Capture( BestExtract );
+		if ( !save.HasProgress && !SaveStore.Exists( ActiveSlot ) )
+			return;
+
+		if ( SaveStore.Write( ActiveSlot, save ) )
+			slotCache[ActiveSlot] = save;
+	}
+
+	public void OpenSaves()
+	{
+		Autosave();
+		RefreshSaves();
+		SaveCursor = ActiveSlot;
+		MenuView = MenuPage.Saves;
+		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
+	}
+
+	public void CloseSaves()
+	{
+		MenuView = MenuPage.Title;
+		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
+	}
+
+	public void UseSave( int index )
+	{
+		index = Math.Clamp( index, 0, SaveStore.Slots - 1 );
+		Autosave();
+		ActiveSlot = index;
+		SaveStore.SetLastSlot( ActiveSlot );
+		ApplySave( SaveStore.Read( ActiveSlot ) );
+		RefreshSaves();
+		MenuView = MenuPage.Title;
+		Sound.Play( "sounds/kenney/ui/ui.navigate.forward.sound" );
+		Announce( $"SLOT {ActiveSlot + 1}" );
+	}
+
+	public void DeleteSave( int index )
+	{
+		index = Math.Clamp( index, 0, SaveStore.Slots - 1 );
+		if ( !SaveStore.Exists( index ) )
+		{
+			Sound.Play( "sounds/kenney/ui/ui.button.deny.sound" );
+			return;
+		}
+
+		if ( !SaveStore.Delete( index ) )
+		{
+			Sound.Play( "sounds/kenney/ui/ui.button.deny.sound" );
+			return;
+		}
+		if ( index == ActiveSlot )
+		{
+			BestExtract = 0;
+			City?.Wipe();
+		}
+
+		RefreshSaves();
+		Sound.Play( "sounds/kenney/ui/ui.navigate.deny.sound" );
+		Announce( $"SLOT {index + 1} DELETED" );
+	}
+
+	void ApplySave( GameSave save )
+	{
+		if ( save is null || !save.HasProgress )
+		{
+			BestExtract = 0;
+			City?.Wipe();
+			return;
+		}
+
+		BestExtract = save.BestExtract;
+		City?.Apply( save );
+	}
+
+	void RefreshSaves()
+	{
+		for ( var i = 0; i < SaveStore.Slots; i++ )
+			slotCache[i] = SaveStore.Read( i );
+	}
 
 	public void Announce( string text )
 	{
@@ -55,23 +222,225 @@ public sealed class GameLoop : Component
 		noticeAt = Time.Now;
 	}
 
+	public void ShowMenu()
+	{
+		City?.ClearShots();
+		ClearCombat();
+
+		if ( Inventory.IsValid() )
+		{
+			foreach ( var slot in Inventory.Slots )
+				slot.ResetCombat();
+		}
+
+		if ( Runner.IsValid() )
+		{
+			Runner.GameObject.Enabled = true;
+			Runner.ResetToStart( MathF.PI * 0.5f );
+		}
+
+		City?.SetVisible( false );
+		Phase = RunPhase.Menu;
+		pendingBoss = false;
+		bossWon = false;
+		InBossFight = false;
+		lastHurtAt = -99f;
+		invulnUntil = 0f;
+		ClearPause();
+		MenuView = MenuPage.Title;
+		Autosave();
+		if ( Arena.IsValid() )
+			Arena.RollLayout( 1, Game.Random.Int( 1, int.MaxValue - 1 ) );
+		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
+	}
+
+	public void OpenCityFromMenu()
+	{
+		EnterCity( false );
+	}
+
+	public void QuitGame()
+	{
+		Autosave();
+		Game.Close();
+	}
+
+	void TickMenu()
+	{
+		Mouse.CursorType = "pointer";
+
+		if ( MenuView == MenuPage.Saves )
+		{
+			TickSaves();
+			return;
+		}
+
+		if ( Input.Pressed( "Jump" ) || Input.Pressed( "Slot1" ) )
+		{
+			Restart();
+			return;
+		}
+
+		if ( Input.Pressed( "Slot2" ) )
+		{
+			OpenCityFromMenu();
+			return;
+		}
+
+		if ( Input.Pressed( "Slot3" ) )
+		{
+			OpenSaves();
+			return;
+		}
+
+		if ( Input.Pressed( "Menu" ) )
+			QuitGame();
+	}
+
+	void TickSaves()
+	{
+		for ( var i = 0; i < SaveStore.Slots; i++ )
+		{
+			if ( !Input.Pressed( $"Slot{i + 1}" ) )
+				continue;
+
+			SaveCursor = i;
+			Sound.Play( "sounds/kenney/ui/ui.navigate.forward.sound" );
+		}
+
+		if ( Input.Pressed( "Jump" ) )
+		{
+			UseSave( SaveCursor );
+			return;
+		}
+
+		if ( Input.Pressed( "Reload" ) )
+		{
+			DeleteSave( SaveCursor );
+			return;
+		}
+
+		if ( Input.Pressed( "Menu" ) )
+			CloseSaves();
+	}
+
+	public void TogglePause()
+	{
+		if ( Paused )
+			Resume();
+		else
+			Pause();
+	}
+
+	public void Pause()
+	{
+		if ( Paused || InMenu )
+			return;
+
+		Paused = true;
+		pauseStartedAt = Time.Now;
+		Mouse.CursorType = "pointer";
+		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
+	}
+
+	public void Resume()
+	{
+		if ( !Paused )
+			return;
+
+		ShiftClocks( Time.Now - pauseStartedAt );
+		ClearPause();
+		Mouse.CursorType = "crosshair";
+		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
+	}
+
+	void ClearPause()
+	{
+		Paused = false;
+		pauseStartedAt = 0f;
+	}
+
+	void TickPause()
+	{
+		Mouse.CursorType = "pointer";
+
+		if ( Input.Pressed( "Menu" ) || Input.Pressed( "Jump" ) || Input.Pressed( "Slot1" ) )
+		{
+			Resume();
+			return;
+		}
+
+		if ( Input.Pressed( "Slot2" ) )
+		{
+			ShowMenu();
+			return;
+		}
+
+		if ( Input.Pressed( "Slot3" ) )
+			QuitGame();
+	}
+
+	void ShiftClocks( float dt )
+	{
+		if ( dt <= 0f )
+			return;
+
+		noticeAt += dt;
+		runStartedAt += dt;
+		lastHurtAt += dt;
+		armorNoticeAt += dt;
+		if ( invulnUntil > 0f )
+			invulnUntil += dt;
+
+		Runner?.ShiftTime( dt );
+
+		foreach ( var enemy in Enemies )
+		{
+			if ( !enemy.IsValid() )
+				continue;
+
+			enemy.ShiftTime( dt );
+			enemy.GetComponent<ArenaBoss>()?.ShiftTime( dt );
+		}
+
+		foreach ( var shot in Shots )
+		{
+			if ( shot.IsValid() )
+				shot.ShiftTime( dt );
+		}
+	}
+
 	public void Restart()
 	{
-		if ( Runner.IsValid() )
-			Runner.GameObject.Enabled = true;
+		Autosave();
 
 		City?.ClearShots();
 		ClearCombat();
-		Inventory.ResetLoadout();
-		Runner.ResetToStart( MathF.PI * 0.5f );
+
+		if ( Inventory.IsValid() )
+			Inventory.ResetLoadout();
+
+		if ( Runner.IsValid() )
+		{
+			Runner.GameObject.Enabled = true;
+			Runner.ResetToStart( MathF.PI * 0.5f );
+			Runner.ApplyPace( 1 );
+		}
 
 		Phase = RunPhase.Playing;
 		Health = HeartMax;
 		if ( City.IsValid() )
 		{
 			var stats = City.Stats();
-			Runner.ApplyCity( stats );
-			Inventory.Loadout.BonusDamage = stats.BonusDamage;
+			if ( Runner.IsValid() )
+			{
+				Runner.ApplyCity( stats );
+				Runner.ApplyPace( 1 );
+			}
+
+			if ( Inventory.IsValid() )
+				Inventory.Loadout.BonusDamage = stats.BonusDamage;
+
 			City.SetVisible( false );
 		}
 		Kills = 0;
@@ -79,13 +448,24 @@ public sealed class GameLoop : Component
 		Catches = 0;
 		Losses = 0;
 		Lap = 1;
+		layoutSeed = Game.Random.Int( 1, int.MaxValue - 1 );
 		ExtractedRounds = 0;
 		BurnedRounds = 0;
 		invulnUntil = 0f;
 		lastHurtAt = -99f;
+		pendingBoss = false;
+		InBossFight = false;
+		bossWon = false;
+		ClearPause();
+		if ( Arena.IsValid() )
+		{
+			Geometry.CoreSolid = true;
+			Geometry.ClearBossWalls();
+		}
 		runStartedAt = Time.Now;
 
 		SpawnWave( 1 );
+		Mouse.CursorType = "crosshair";
 		Announce( "ONE LAP. ONE ROUND. CASH OUT OR GO AGAIN." );
 	}
 
@@ -152,12 +532,39 @@ public sealed class GameLoop : Component
 		if ( !Arena.IsValid() || !Runner.IsValid() || !Inventory.IsValid() )
 			return;
 
+		if ( Phase == RunPhase.Menu )
+		{
+			TickMenu();
+			return;
+		}
+
+		if ( Paused )
+		{
+			TickPause();
+			return;
+		}
+
+		if ( Input.Pressed( "Menu" ) )
+		{
+			if ( Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait )
+				Pause();
+			else
+				ShowMenu();
+			return;
+		}
+
 		if ( Input.Pressed( "Reload" ) )
 		{
 			if ( Phase == RunPhase.City || Phase == RunPhase.Playing || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait )
 				Restart();
 			else
 				EnterCity( false );
+			return;
+		}
+
+		if ( bossWon )
+		{
+			FinishBossWin();
 			return;
 		}
 
@@ -175,21 +582,49 @@ public sealed class GameLoop : Component
 
 		if ( Phase == RunPhase.DecideLap )
 		{
-			if ( Input.Pressed( "Slot1" ) ) Extract();
-			if ( Input.Pressed( "Slot2" ) ) ContinueRun();
+			Mouse.CursorType = "pointer";
+			if ( Input.Pressed( "Slot1" ) )
+			{
+				Extract();
+				return;
+			}
+
+			if ( Input.Pressed( "Slot2" ) )
+			{
+				ContinueRun();
+				return;
+			}
+
+			if ( HasBossOffer && Input.Pressed( "Slot3" ) )
+				ContinueBoss();
 			return;
 		}
 
 		if ( Phase == RunPhase.PickTrait )
 		{
-			if ( Input.Pressed( "Slot1" ) ) InstallOffer( OfferA );
-			if ( Input.Pressed( "Slot2" ) ) InstallOffer( OfferB );
-			if ( HasThirdOffer && Input.Pressed( "Slot3" ) ) InstallOffer( OfferC );
+			Mouse.CursorType = "pointer";
+			if ( Input.Pressed( "Slot1" ) )
+			{
+				InstallOffer( OfferA );
+				return;
+			}
+
+			if ( Input.Pressed( "Slot2" ) )
+			{
+				InstallOffer( OfferB );
+				return;
+			}
+
+			if ( HasThirdOffer && Input.Pressed( "Slot3" ) )
+				InstallOffer( OfferC );
 			return;
 		}
 
-		if ( Phase != RunPhase.Playing )
+		if ( Phase == RunPhase.Dead || Phase == RunPhase.Extracted )
+		{
+			Mouse.CursorType = "pointer";
 			return;
+		}
 
 		HandleSelect();
 
@@ -335,19 +770,110 @@ public sealed class GameLoop : Component
 			return;
 		}
 
+		InBossFight = false;
 		Phase = RunPhase.Dead;
 		BurnedRounds = Stash;
 		Announce( "RUN OVER" );
 	}
 
+	public void TryHurt()
+	{
+		if ( Time.Now < invulnUntil || (Runner.IsValid() && Runner.Dashing) )
+			return;
+
+		Hurt();
+	}
+
+	public void NoteArmor()
+	{
+		if ( Time.Now < armorNoticeAt )
+			return;
+
+		armorNoticeAt = Time.Now + 0.85f;
+		Announce( "ARMOR  ·  RICOCHET FIRST" );
+	}
+
+	public void BeatBoss()
+	{
+		if ( bossWon )
+			return;
+
+		bossWon = true;
+		InBossFight = false;
+		Sound.Play( "sounds/kenney/ui/ui.upvote.sound" );
+		Announce( "NO MORE ROUNDS  ·  ×2" );
+	}
+
+	void FinishBossWin()
+	{
+		bossWon = false;
+
+		if ( Arena.IsValid() )
+		{
+			Geometry.CoreSolid = true;
+			Geometry.ClearBossWalls();
+		}
+
+		var doubled = Math.Max( 1, Stash ) * 2;
+		ExtractedRounds = doubled;
+		if ( ExtractedRounds > BestExtract )
+			BestExtract = ExtractedRounds;
+
+		EnterCity( true, doubled );
+		Announce( $"NO MORE ROUNDS  ·  ×2  ·  +{doubled}" );
+	}
+
 	void CheckLap()
 	{
+		if ( InBossFight )
+			return;
+
 		if ( !Runner.IsValid() || Runner.Lap <= Lap )
 			return;
 
 		Phase = RunPhase.DecideLap;
 		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
 		Announce( $"LAP {Lap} CLEAR" );
+	}
+
+	public void ChooseExtract()
+	{
+		if ( Paused || Phase != RunPhase.DecideLap )
+			return;
+
+		Extract();
+	}
+
+	public void ChooseContinue()
+	{
+		if ( Paused || Phase != RunPhase.DecideLap )
+			return;
+
+		ContinueRun();
+	}
+
+	public void ChooseBoss()
+	{
+		if ( Paused || Phase != RunPhase.DecideLap || !HasBossOffer )
+			return;
+
+		ContinueBoss();
+	}
+
+	public void ChooseUpgrade( RoundTrait trait )
+	{
+		if ( Paused || Phase != RunPhase.PickTrait )
+			return;
+
+		InstallOffer( trait );
+	}
+
+	public void ChooseCity()
+	{
+		if ( Paused || (Phase != RunPhase.Dead && Phase != RunPhase.Extracted) )
+			return;
+
+		EnterCity( false );
 	}
 
 	void Extract()
@@ -359,13 +885,17 @@ public sealed class GameLoop : Component
 		EnterCity( true );
 	}
 
-	void EnterCity( bool deposit )
+	void EnterCity( bool deposit, int rounds = -1 )
 	{
+		var packed = rounds >= 0 ? rounds : Stash;
 		if ( deposit && City.IsValid() )
-			City.Deposit( Stash );
+			City.Deposit( packed );
 
-		foreach ( var slot in Inventory.Slots )
-			slot.ResetCombat();
+		if ( Inventory.IsValid() )
+		{
+			foreach ( var slot in Inventory.Slots )
+				slot.ResetCombat();
+		}
 
 		ClearCombat();
 		Phase = RunPhase.City;
@@ -375,18 +905,54 @@ public sealed class GameLoop : Component
 		if ( Runner.IsValid() )
 			Runner.GameObject.Enabled = false;
 		Sound.Play( "sounds/kenney/ui/ui.upvote.sound" );
+		Mouse.CursorType = "crosshair";
 		Announce( deposit ? $"CITY  ·  +{ExtractedRounds} WAREHOUSE" : "CITY" );
+		Autosave();
 	}
 
 	void ContinueRun()
 	{
+		pendingBoss = false;
 		Lap = Runner.Lap;
-		var granted = Inventory.GrantSlot();
-		if ( granted is not null )
-			Inventory.TrySelect( granted.Index );
+		Runner.ApplyPace( Lap );
+		var added = GrantContinueRounds();
 		BeginTraitPick();
 		Sound.Play( "sounds/kenney/ui/ui.favourite.sound" );
-		Announce( $"+1 ROUND  ·  STASH {Stash}" );
+		Announce( added > 0
+			? $"+{added} ROUND  ·  STASH {Stash}  ·  ×{Threat:0.00}"
+			: $"STASH MAX  ·  ×{Threat:0.00}" );
+	}
+
+	void ContinueBoss()
+	{
+		pendingBoss = true;
+		Lap = Runner.Lap;
+		Runner.ApplyPace( Lap );
+		var added = GrantContinueRounds();
+		BeginTraitPick();
+		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
+		Announce( $"CORE FIGHT  ·  +{added}  ·  STASH {Stash}" );
+	}
+
+	int GrantContinueRounds()
+	{
+		var want = Progression.RoundsGranted( Lap );
+		var added = 0;
+
+		for ( var i = 0; i < want; i++ )
+		{
+			if ( Inventory.Slots.Count >= Progression.MaxSlots )
+				break;
+
+			var granted = Inventory.GrantSlot();
+			if ( granted is null )
+				break;
+
+			Inventory.TrySelect( granted.Index );
+			added++;
+		}
+
+		return added;
 	}
 
 	void BeginTraitPick()
@@ -414,16 +980,54 @@ public sealed class GameLoop : Component
 	void InstallOffer( RoundTrait trait )
 	{
 		Inventory.Loadout.Install( trait );
-		SpawnWave( Lap );
+
+		var fight = pendingBoss;
+		pendingBoss = false;
+
+		if ( fight )
+			SpawnBoss();
+		else
+			SpawnWave( Lap );
+
 		Phase = RunPhase.Playing;
 
 		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
-		Announce( $"{RoundTraits.Title( trait )} LV{Inventory.Loadout.TraitLevel( trait )}  ·  ALL ROUNDS" );
+		Announce( fight
+			? "THE CORE  ·  RICOCHET TO BREAK IT"
+			: $"{RoundTraits.Title( trait )} LV{Inventory.Loadout.TraitLevel( trait )}  ·  ALL ROUNDS" );
+	}
+
+	void SpawnBoss()
+	{
+		ClearEnemies();
+		Geometry.CoreSolid = false;
+		Geometry.ClearBossWalls();
+		InBossFight = true;
+		RollArena( Lap );
+
+		var go = Scene.CreateObject();
+		go.Name = "Core";
+
+		var enemy = go.AddComponent<Enemy>();
+		enemy.Arena = Arena;
+		enemy.Loop = this;
+		enemy.Setup( EnemyKind.Core, Vector2.Zero, Progression.BossHealth( Lap ) );
+		Enemies.Add( enemy );
+
+		var boss = go.AddComponent<ArenaBoss>();
+		boss.Arm( enemy );
 	}
 
 	void SpawnWave( int lap )
 	{
 		ClearEnemies();
+		if ( Arena.IsValid() )
+		{
+			Geometry.CoreSolid = true;
+			Geometry.ClearBossWalls();
+		}
+
+		RollArena( lap );
 
 		var inner = Geometry.CoreRadius + 190f;
 		var hunt = MathX.Lerp( inner, Geometry.TrackInner - 110f, 0.32f );
@@ -439,7 +1043,7 @@ public sealed class GameLoop : Component
 			var enemy = go.AddComponent<Enemy>();
 			enemy.Arena = Arena;
 			enemy.Loop = this;
-			enemy.Setup( kind, ArenaGeometry.FromAngle( angle ) * radius, hp );
+			enemy.Setup( kind, ArenaGeometry.FromAngle( angle ) * radius, Progression.EnemyHealth( hp, lap ) );
 			Enemies.Add( enemy );
 		}
 
@@ -489,10 +1093,39 @@ public sealed class GameLoop : Component
 				Add( EnemyKind.Shooter, offset + 5.0f, mid, 2 );
 				break;
 		}
+
+		var extra = Progression.ExtraBodies( lap );
+		for ( var i = 0; i < extra; i++ )
+			Add( EnemyKind.Chaser, offset + 0.85f * ( i + 3 ), hunt, 1 );
+	}
+
+	void RollArena( int lap )
+	{
+		if ( !Arena.IsValid() )
+			return;
+
+		Arena.RollLayout( lap, layoutSeed );
+		NudgeLiveRounds();
+	}
+
+	void NudgeLiveRounds()
+	{
+		if ( !Inventory.IsValid() )
+			return;
+
+		foreach ( var slot in Inventory.Slots )
+			slot.Flying?.NudgeOut();
 	}
 
 	void ClearCombat()
 	{
+		InBossFight = false;
+		if ( Arena.IsValid() )
+		{
+			Geometry.CoreSolid = true;
+			Geometry.ClearBossWalls();
+		}
+
 		ClearEnemies();
 
 		foreach ( var shot in Shots.ToArray() )

@@ -26,8 +26,8 @@ public sealed class PlayerAim : Component
 		previewObject.Parent = GameObject;
 
 		preview = previewObject.AddComponent<PolyLine>();
-		preview.HeadTint = new Color( 0.35f, 0.95f, 1f );
-		preview.TailTint = new Color( 1f, 0.85f, 0.35f );
+		preview.HeadTint = ShotColors.Player;
+		preview.TailTint = ShotColors.Player * 0.35f;
 		preview.HeadWidth = 3f;
 		preview.TailWidth = 7f;
 		preview.Apply();
@@ -37,7 +37,7 @@ public sealed class PlayerAim : Component
 
 	protected override void OnUpdate()
 	{
-		if ( Loop.IsValid() && Loop.InCity )
+		if ( Loop.IsValid() && (Loop.InCity || Loop.InMenu) )
 		{
 			preview?.Clear();
 			if ( reticle.IsValid() )
@@ -93,7 +93,7 @@ public sealed class PlayerAim : Component
 	{
 		var slot = Inventory.IsValid() ? Inventory.Selected : null;
 		var ready = slot is not null && slot.Status == RoundStatus.Chambered;
-		var tint = ready ? slot.Tint : new Color( 0.4f, 0.5f, 0.6f );
+		var tint = ready ? ShotColors.Player : new Color( 0.4f, 0.5f, 0.6f );
 
 		if ( preview.IsValid() )
 		{

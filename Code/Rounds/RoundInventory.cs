@@ -10,18 +10,6 @@ public sealed class RoundInventory : Component
 	[Property] public float CatchOffset { get; set; } = 60f;
 	[Property] public float PickupRadius { get; set; } = 145f;
 
-	public static readonly Color[] Tints =
-	{
-		new Color( 1f, 0.72f, 0.22f ),
-		new Color( 0.32f, 0.82f, 1f ),
-		new Color( 0.95f, 0.38f, 0.72f ),
-		new Color( 0.45f, 0.95f, 0.42f ),
-		new Color( 0.72f, 0.48f, 1f ),
-		new Color( 1f, 0.92f, 0.35f ),
-		new Color( 1f, 0.45f, 0.28f ),
-		new Color( 0.4f, 0.95f, 0.88f )
-	};
-
 	public RunLoadout Loadout { get; } = new();
 	public List<RoundSlot> Slots { get; } = new();
 	public int SelectedIndex { get; private set; }
@@ -47,10 +35,13 @@ public sealed class RoundInventory : Component
 
 	public RoundSlot GrantSlot()
 	{
+		if ( Slots.Count >= Progression.MaxSlots )
+			return null;
+
 		var slot = new RoundSlot
 		{
 			Index = Slots.Count,
-			Tint = Tints[Slots.Count % Tints.Length],
+			Tint = ShotColors.Player,
 			Status = RoundStatus.Chambered
 		};
 
@@ -90,7 +81,7 @@ public sealed class RoundInventory : Component
 	{
 		SelectNextChambered( 1 );
 
-		if ( Selected.Status != RoundStatus.Chambered )
+		if ( Selected is null || Selected.Status != RoundStatus.Chambered )
 			SelectedIndex = slot.Index;
 	}
 
@@ -123,12 +114,12 @@ public sealed class RoundInventory : Component
 		catchRing.TailWidth = 4f;
 		catchRing.Apply();
 
-		chamberedMarker = Blocks.SpawnSphere( GameObject, "Chambered", Vector3.Zero, 20f, Tints[0] );
+		chamberedMarker = Blocks.SpawnSphere( GameObject, "Chambered", Vector3.Zero, 20f, ShotColors.Player );
 	}
 
 	protected override void OnUpdate()
 	{
-		if ( Loop.IsValid() && Loop.InCity )
+		if ( Loop.IsValid() && (Loop.InCity || Loop.InMenu) )
 		{
 			if ( catchRing.IsValid() )
 				catchRing.Clear();
