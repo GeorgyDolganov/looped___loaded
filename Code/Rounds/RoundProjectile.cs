@@ -4,43 +4,45 @@ public sealed class RoundProjectile : Component
 {
 	[Property] public float BaseSpeed { get; set; } = 950f;
 	[Property] public float Radius { get; set; } = 13f;
-	[Property] public int MaxBounces { get; set; } = 4;
-	[Property] public float Energy { get; set; } = 5500f;
-	[Property] public float ArmDelay { get; set; } = 0.14f;
-	[Property] public Color Tint { get; set; } = new Color( 1f, 0.72f, 0.22f );
 
 	public GameLoop Loop { get; private set; }
+	public RoundFlight Flight { get; private set; }
 	public Vector2 Flat { get; private set; }
 	public Vector2 Direction { get; private set; }
 	public float Speed { get; private set; }
 	public int BouncesLeft { get; private set; }
 	public float EnergyLeft { get; private set; }
-	public bool Armed => Time.Now - born >= ArmDelay;
+	public bool Armed => leftCatchZone;
 	public int TargetsHit { get; private set; }
 	public int Ricochets { get; private set; }
+	public Color Tint => Flight.Tint;
+	public int SlotIndex => Flight.SlotIndex;
 
 	const float StepLength = 18f;
 	const int TrailPoints = 24;
 
 	readonly List<Vector3> trail = new();
+	readonly HashSet<Enemy> struck = new();
 	ArenaGeometry geometry;
 	PolyLine trailLine;
-	PointLight glow;
-	float born;
+	int pierceLeft;
+	bool leftCatchZone;
 
-	public void Launch( GameLoop loop, Vector2 origin, Vector2 direction )
+	public void Launch( GameLoop loop, RoundFlight flight, Vector2 origin, Vector2 direction )
 	{
 		Loop = loop;
+		Flight = flight;
 		geometry = loop.Geometry;
 		Flat = origin;
 		Direction = direction.Normal;
 		Speed = BaseSpeed;
-		BouncesLeft = MaxBounces;
-		EnergyLeft = Energy;
+		BouncesLeft = flight.MaxBounces;
+		EnergyLeft = flight.Energy;
+		pierceLeft = flight.PierceCharges;
 		Ricochets = 0;
 		TargetsHit = 0;
-		born = Time.Now;
-
+		leftCatchZone = false;
+		struck.Clear();
 		trail.Clear();
 		WorldPosition = geometry.ToPlayWorld( Flat );
 	}
@@ -49,7 +51,7 @@ public sealed class RoundProjectile : Component
 	{
 		Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, 26f, Tint );
 
-		glow = GameObject.AddComponent<PointLight>();
+		var glow = GameObject.AddComponent<PointLight>();
 		glow.LightColor = Tint * 6f;
 		glow.Radius = 420f;
 
@@ -67,7 +69,7 @@ public sealed class RoundProjectile : Component
 
 	protected override void OnUpdate()
 	{
-		if ( geometry is null || !Loop.IsValid() )
+		if ( geometry is null || !Loop.IsValid() || Loop.IsFrozen )
 			return;
 
 		var toTravel = Speed * Time.Delta;
@@ -81,6 +83,7 @@ public sealed class RoundProjectile : Component
 				return;
 		}
 
+		SteerHome();
 		WorldPosition = geometry.ToPlayWorld( Flat );
 		PushTrail( WorldPosition );
 	}
@@ -118,13 +121,39 @@ public sealed class RoundProjectile : Component
 			return false;
 		}
 
-		if ( Armed && Loop.Inventory.IsValid() && Loop.Inventory.InCatchZone( Flat, Radius ) )
+		if ( Loop.Inventory.IsValid() )
 		{
-			Loop.CatchRound( this );
-			return false;
+			var inside = Loop.Inventory.InCatchZone( Flat, Radius, Flight.CatchBonus );
+
+			if ( !leftCatchZone )
+			{
+				if ( !inside )
+					leftCatchZone = true;
+			}
+			else if ( inside )
+			{
+				Loop.CatchRound( this );
+				return false;
+			}
 		}
 
 		return true;
+	}
+
+	void SteerHome()
+	{
+		if ( Flight.MagnetRadius <= 0f || !Armed || !Loop.Inventory.IsValid() )
+			return;
+
+		var toCatch = Loop.Inventory.CatchPoint - Flat;
+		var distance = toCatch.Length;
+
+		if ( distance < 1f || distance > Flight.MagnetRadius )
+			return;
+
+		var weight = 1f - distance / Flight.MagnetRadius;
+		var turn = 1f - MathF.Exp( -Flight.MagnetPull * weight * Time.Delta );
+		Direction = (Direction + toCatch.Normal * turn).Normal;
 	}
 
 	void Contain()
@@ -141,9 +170,9 @@ public sealed class RoundProjectile : Component
 
 	bool HitTarget()
 	{
-		foreach ( var target in Loop.Targets )
+		foreach ( var target in Loop.Enemies )
 		{
-			if ( !target.IsValid() || !target.Alive )
+			if ( !target.IsValid() || !target.Alive || struck.Contains( target ) )
 				continue;
 
 			var offset = Flat - target.Flat;
@@ -152,25 +181,50 @@ public sealed class RoundProjectile : Component
 			if ( offset.Length > reach )
 				continue;
 
-			var normal = offset.Length < 0.01f ? -Direction : offset.Normal;
+			struck.Add( target );
 
+			var normal = offset.Length < 0.01f ? -Direction : offset.Normal;
 			PushTrail( geometry.ToPlayWorld( Flat ) );
+
+			if ( target.BlocksFrom( Direction ) )
+			{
+				Flat = target.Flat + normal * (reach + 1f);
+				Direction = ArenaGeometry.Reflect( Direction, normal ).Normal;
+				BouncesLeft--;
+
+				var world = geometry.ToPlayWorld( Flat );
+				Sound.Play( "sounds/impacts/bullets/impact-bullet-metal.sound", world );
+				ImpactFlash.Spawn( Scene, world, new Color( 0.75f, 0.85f, 1f ), 0.9f );
+
+				if ( BouncesLeft < 0 )
+				{
+					Loop.LoseRound( this );
+					return true;
+				}
+
+				continue;
+			}
+
+			target.Damage( 1, this );
+			TargetsHit++;
+
+			if ( pierceLeft > 0 )
+			{
+				pierceLeft--;
+				Flat = target.Flat + Direction * (reach + 4f);
+				continue;
+			}
 
 			Flat = target.Flat + normal * (reach + 1f);
 			Direction = ArenaGeometry.Reflect( Direction, normal ).Normal;
 			Speed *= 0.94f;
 			BouncesLeft--;
-			TargetsHit++;
-
-			target.Damage( 1 );
 
 			if ( BouncesLeft < 0 )
 			{
 				Loop.LoseRound( this );
 				return true;
 			}
-
-			return false;
 		}
 
 		return false;

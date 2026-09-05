@@ -2,7 +2,6 @@ namespace LoopedLoaded;
 
 public sealed class GameBootstrap : Component
 {
-	[Property] public int TargetCount { get; set; } = 1;
 	[Property] public bool BuildLighting { get; set; } = true;
 
 	static readonly Color PlayerTint = new Color( 0.82f, 0.94f, 1f );
@@ -23,13 +22,16 @@ public sealed class GameBootstrap : Component
 		loop.Aim = player.GetComponent<PlayerAim>();
 		loop.Inventory = player.GetComponent<RoundInventory>();
 
+		loop.Runner.Loop = loop;
+		loop.Aim.Loop = loop;
+		loop.Aim.Inventory = loop.Inventory;
+		loop.Inventory.Loop = loop;
+
 		var rig = camera.AddComponent<ArenaCamera>();
 		rig.Arena = arena;
 		rig.Runner = loop.Runner;
 
-		BuildTargets( arena, loop );
 		BuildHud( loop );
-
 		loop.Restart();
 	}
 
@@ -121,21 +123,6 @@ public sealed class GameBootstrap : Component
 		inventory.Aim = aim;
 
 		return go;
-	}
-
-	void BuildTargets( ArenaBuilder arena, GameLoop loop )
-	{
-		for ( var i = 0; i < TargetCount; i++ )
-		{
-			var go = Scene.CreateObject();
-			go.Name = $"Dummy {i + 1}";
-
-			var target = go.AddComponent<DummyTarget>();
-			target.Arena = arena;
-			target.Loop = loop;
-
-			loop.Targets.Add( target );
-		}
 	}
 
 	void BuildHud( GameLoop loop )

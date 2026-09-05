@@ -4,6 +4,8 @@ public sealed class PlayerAim : Component
 {
 	[Property] public ArenaBuilder Arena { get; set; }
 	[Property] public RingRunner Runner { get; set; }
+	[Property] public RoundInventory Inventory { get; set; }
+	[Property] public GameLoop Loop { get; set; }
 	[Property] public float MuzzleOffset { get; set; } = 52f;
 	[Property] public float PreviewLength { get; set; } = 1500f;
 	[Property] public float PreviewBounceLength { get; set; } = 340f;
@@ -49,6 +51,9 @@ public sealed class PlayerAim : Component
 		if ( reticle.IsValid() )
 			reticle.WorldPosition = Arena.Geometry.ToPlayWorld( Cursor );
 
+		if ( Loop.IsValid() && Loop.IsFrozen )
+			return;
+
 		UpdatePreview();
 	}
 
@@ -75,6 +80,30 @@ public sealed class PlayerAim : Component
 
 	void UpdatePreview()
 	{
+		var slot = Inventory.IsValid() ? Inventory.Selected : null;
+		var ready = slot is not null && slot.Status == RoundStatus.Chambered;
+		var tint = ready ? slot.Tint : new Color( 0.4f, 0.5f, 0.6f );
+
+		if ( preview.IsValid() )
+		{
+			preview.HeadTint = tint;
+			preview.TailTint = Color.Lerp( tint, Color.White, 0.35f );
+			preview.Apply();
+		}
+
+		if ( reticle.IsValid() )
+		{
+			var renderer = reticle.GetComponent<ModelRenderer>();
+			if ( renderer.IsValid() )
+				renderer.Tint = tint;
+		}
+
+		if ( !ready )
+		{
+			preview?.Clear();
+			return;
+		}
+
 		var flat = Arena.Geometry.PredictPath( Muzzle, Direction, RoundRadius, PreviewLength, PreviewBounceLength );
 		var world = new List<Vector3>( flat.Count );
 

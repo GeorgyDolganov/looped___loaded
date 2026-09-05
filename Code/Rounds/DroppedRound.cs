@@ -4,17 +4,17 @@ public sealed class DroppedRound : Component
 {
 	[Property] public Color Tint { get; set; } = new Color( 1f, 0.72f, 0.22f );
 
+	public int SlotIndex { get; private set; }
 	public Vector2 Flat { get; private set; }
 
-	ArenaGeometry geometry;
 	GameObject shell;
 	PointLight glow;
 
-	public void Place( ArenaGeometry arena, Vector2 flat )
+	public void Place( ArenaGeometry arena, Vector2 flat, int slotIndex )
 	{
-		geometry = arena;
+		SlotIndex = slotIndex;
 		Flat = flat;
-		WorldPosition = geometry.ToPlayWorld( Flat );
+		WorldPosition = arena.ToPlayWorld( Flat );
 	}
 
 	protected override void OnStart()

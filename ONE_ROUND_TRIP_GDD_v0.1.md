@@ -1,6 +1,8 @@
 # ONE ROUND TRIP
 
-## Game Design Document — v0.1
+> Документ сменён. Актуальная версия: [ONE_ROUND_TRIP_GDD_v0.2.md](ONE_ROUND_TRIP_GDD_v0.2.md)
+
+## Game Design Document — v0.1 (архив)
 
 **Дата:** 5 сентября 2026  
 **Статус:** рабочий документ для Game Jam III  

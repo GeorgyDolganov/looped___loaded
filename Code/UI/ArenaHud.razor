@@ -8,16 +8,23 @@
 			<div class="lap-chip">
 				<label class="key">LAP</label>
 				<label class="value">@Loop.Lap</label>
+				<label class="max">/ @Loop.FinalLap</label>
 			</div>
 			<div class="meter">
 				<div class="fill lap" style="width: @(LapPercent)%"></div>
+			</div>
+			<div class="hearts">
+				@for ( var i = 0; i < Loop.MaxHealth; i++ )
+				{
+					<div class="heart @(i < Loop.Health ? "live" : "dead")"></div>
+				}
 			</div>
 			<label class="clock">@TimeText</label>
 		</div>
 
 		<div class="top-right">
 			<div class="stat"><label class="key">KILLS</label><label class="value">@Loop.Kills</label></div>
-			<div class="stat"><label class="key">SHOTS</label><label class="value">@Loop.Shots</label></div>
+			<div class="stat"><label class="key">SHOTS</label><label class="value">@Loop.ShotsFired</label></div>
 			<div class="stat"><label class="key">CAUGHT</label><label class="value">@Loop.Catches</label></div>
 			<div class="stat"><label class="key">LOST</label><label class="value">@Loop.Losses</label></div>
 		</div>
@@ -27,23 +34,84 @@
 		</div>
 
 		<div class="bottom">
-			<div class="slot @StatusClass">
-				<div class="pip"></div>
-				<div class="text">
-					<label class="name">ROUND 01</label>
-					<label class="state">@StatusText</label>
-				</div>
+			<div class="slots">
+				@foreach ( var slot in Loop.Inventory.Slots )
+				{
+					<div class="slot @StatusClass(slot) @(slot.Index == Loop.Inventory.SelectedIndex ? "selected" : "")">
+						<div class="pip" style="background-color: @PipColor(slot)"></div>
+						<div class="text">
+							<label class="name">ROUND 0@(slot.Index + 1)</label>
+							<label class="state">@StatusText(slot)</label>
+							<label class="traits">@TraitText(slot)</label>
+						</div>
+					</div>
+				}
 			</div>
 
-			<div class="dash">
-				<label class="key">DASH</label>
-				<div class="meter">
-					<div class="fill dash @(DashReady ? "ready" : "")" style="width: @(DashPercent)%"></div>
+			<div class="meters">
+				<div class="dash">
+					<label class="key">DASH</label>
+					<div class="meter">
+						<div class="fill dash @(DashReady ? "ready" : "")" style="width: @(DashPercent)%"></div>
+					</div>
 				</div>
+				@if ( SlowUnlocked )
+				{
+					<div class="dash">
+						<label class="key">SLOW</label>
+						<div class="meter">
+							<div class="fill slow @(Slowing ? "on" : "")" style="width: @(SlowPercent)%"></div>
+						</div>
+					</div>
+				}
 			</div>
 		</div>
 
-		<label class="help">MOUSE AIM · LMB FIRE · SPACE DASH · R RESTART</label>
+		<label class="help">@HelpText</label>
+
+		@if ( Loop.Phase == RunPhase.PickTrait )
+		{
+			<div class="overlay">
+				<label class="overlay-title">INSTALL A TRAIT</label>
+				<div class="cards">
+					<div class="card">
+						<label class="key">1</label>
+						<label class="title">@RoundTraits.Title(Loop.OfferA)</label>
+						<label class="blurb">@RoundTraits.Blurb(Loop.OfferA)</label>
+					</div>
+					<div class="card">
+						<label class="key">2</label>
+						<label class="title">@RoundTraits.Title(Loop.OfferB)</label>
+						<label class="blurb">@RoundTraits.Blurb(Loop.OfferB)</label>
+					</div>
+				</div>
+			</div>
+		}
+
+		@if ( Loop.Phase == RunPhase.PickRound )
+		{
+			<div class="overlay">
+				<label class="overlay-title">ASSIGN @RoundTraits.Title(Loop.PendingTrait)</label>
+				<div class="cards">
+					@foreach ( var slot in Loop.Inventory.Slots )
+					{
+						<div class="card">
+							<label class="key">@(slot.Index + 1)</label>
+							<label class="title">ROUND 0@(slot.Index + 1)</label>
+							<label class="blurb">@TraitText(slot)</label>
+						</div>
+					}
+				</div>
+			</div>
+		}
+
+		@if ( Loop.Phase == RunPhase.Dead || Loop.Phase == RunPhase.Won )
+		{
+			<div class="overlay">
+				<label class="overlay-title">@(Loop.Phase == RunPhase.Won ? "NO MORE ROUNDS" : "RUN OVER")</label>
+				<label class="blurb">PRESS R TO RESTART</label>
+			</div>
+		}
 
 	</div>
 </root>
@@ -59,7 +127,10 @@
 
 	int LapPercent => Loop.IsValid() ? (int)(Loop.LapFraction * 100f) : 0;
 	int DashPercent => Runner.IsValid() ? (int)(Runner.DashCharge * 100f) : 0;
+	int SlowPercent => Runner.IsValid() ? (int)(Runner.SlowCharge * 100f) : 0;
 	bool DashReady => Runner.IsValid() && Runner.DashCharge >= 1f;
+	bool SlowUnlocked => Runner.IsValid() && Runner.SlowUnlocked;
+	bool Slowing => Runner.IsValid() && Runner.Slowing;
 	RingRunner Runner => Loop.IsValid() ? Loop.Runner : null;
 
 	string TimeText
@@ -72,32 +143,69 @@
 		}
 	}
 
-	string StatusClass => Loop.IsValid() ? Loop.Inventory.Status.ToString().ToLower() : "chambered";
-
-	string StatusText
-	{
-		get
+	string HelpText => Loop.IsValid()
+		? Loop.Phase switch
 		{
-			if ( !Loop.IsValid() ) return "";
-
-			return Loop.Inventory.Status switch
-			{
-				RoundStatus.Chambered => "CHAMBERED",
-				RoundStatus.InFlight => "IN FLIGHT",
-				_ => $"ON THE RING · {(int)Loop.LostRoundArc}"
-			};
+			RunPhase.PickTrait => "1 / 2 SELECT TRAIT",
+			RunPhase.PickRound => "1 / 2 ASSIGN ROUND",
+			RunPhase.Dead or RunPhase.Won => "R RESTART",
+			_ => SlowUnlocked
+				? "MOUSE AIM · LMB FIRE · 1/2 ROUNDS · SPACE DASH · RMB SLOW · R RESTART"
+				: "MOUSE AIM · LMB FIRE · SPACE DASH · R RESTART"
 		}
+		: "";
+
+	string StatusClass( RoundSlot slot ) => slot.Status.ToString().ToLower();
+
+	string StatusText( RoundSlot slot ) => slot.Status switch
+	{
+		RoundStatus.Chambered => "CHAMBERED",
+		RoundStatus.InFlight => "IN FLIGHT",
+		_ => $"ON RING · {(int)Loop.Inventory.ArcTo( slot.Lost.IsValid() ? slot.Lost.Flat : Vector2.Zero )}"
+	};
+
+	string TraitText( RoundSlot slot )
+	{
+		var parts = new List<string>();
+		foreach ( var trait in RoundTraits.All )
+		{
+			var level = slot.TraitLevel( trait );
+			if ( level > 0 )
+				parts.Add( $"{RoundTraits.Code( trait )}{level}" );
+		}
+
+		return parts.Count == 0 ? "PLAIN" : string.Join( "  ", parts );
 	}
 
-	protected override int BuildHash() => System.HashCode.Combine(
-		Loop.IsValid() ? Loop.Lap : 0,
-		LapPercent,
-		DashPercent,
-		Loop.IsValid() ? Loop.Notice : "",
-		Loop.IsValid() && Loop.NoticeVisible,
-		StatusText,
-		TimeText,
-		Loop.IsValid() ? Loop.Kills * 1000 + Loop.Shots * 100 + Loop.Catches * 10 + Loop.Losses : 0 );
+	string PipColor( RoundSlot slot )
+	{
+		var c = slot.Tint;
+		return $"rgb({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)})";
+	}
+
+	protected override int BuildHash()
+	{
+		var a = System.HashCode.Combine(
+			Loop.IsValid() ? Loop.Lap : 0,
+			Loop.IsValid() ? Loop.Health : 0,
+			Loop.IsValid() ? (int)Loop.Phase : 0,
+			LapPercent,
+			DashPercent,
+			SlowPercent,
+			Loop.IsValid() ? Loop.Inventory.SelectedIndex : 0,
+			Loop.IsValid() && Loop.NoticeVisible );
+
+		var b = System.HashCode.Combine(
+			Loop.IsValid() ? Loop.Notice : "",
+			TimeText,
+			Loop.IsValid() ? Loop.Kills : 0,
+			Loop.IsValid() ? Loop.ShotsFired : 0,
+			Loop.IsValid() ? Loop.Catches : 0,
+			Loop.IsValid() ? Loop.Losses : 0,
+			Loop.IsValid() ? Loop.Inventory.Slots.Sum( s => s.TraitHash ) : 0 );
+
+		return System.HashCode.Combine( a, b );
+	}
 }
 
 <style>
@@ -124,7 +232,7 @@
 
 	.lap-chip {
 		flex-direction: row;
-		align-items: center;
+		align-items: baseline;
 	}
 
 	.lap-chip .key {
@@ -137,6 +245,29 @@
 		font-size: 46px;
 		font-weight: 700;
 		color: #eaf6ff;
+	}
+
+	.lap-chip .max {
+		font-size: 18px;
+		color: #5f7f96;
+		margin-left: 8px;
+	}
+
+	.hearts {
+		flex-direction: row;
+		margin-top: 8px;
+	}
+
+	.heart {
+		width: 18px;
+		height: 18px;
+		border-radius: 4px;
+		margin-right: 6px;
+		background-color: #3a4a58;
+	}
+
+	.heart.live {
+		background-color: #f05a46;
 	}
 
 	.clock {
@@ -168,6 +299,14 @@
 
 	.meter .fill.dash.ready {
 		background-color: #ffb83c;
+	}
+
+	.meter .fill.slow {
+		background-color: #7a6a90;
+	}
+
+	.meter .fill.slow.on {
+		background-color: #b48cff;
 	}
 
 	.top-right {
@@ -229,13 +368,24 @@
 		align-items: center;
 	}
 
+	.slots {
+		flex-direction: row;
+		align-items: stretch;
+	}
+
 	.slot {
 		flex-direction: row;
 		align-items: center;
-		padding: 12px 26px;
+		padding: 12px 22px;
 		border-radius: 10px;
 		background-color: rgba(10, 18, 26, 0.7);
 		border: 2px solid rgba(120, 170, 200, 0.2);
+		margin: 0px 8px;
+		min-width: 220px;
+	}
+
+	.slot.selected {
+		background-color: rgba(18, 28, 40, 0.9);
 	}
 
 	.slot .pip {
@@ -256,16 +406,17 @@
 	}
 
 	.slot .state {
-		font-size: 22px;
+		font-size: 20px;
 		font-weight: 700;
+	}
+
+	.slot .traits {
+		font-size: 12px;
+		color: #6a8496;
 	}
 
 	.slot.chambered {
 		border-color: rgba(255, 184, 60, 0.75);
-	}
-
-	.slot.chambered .pip {
-		background-color: #ffb83c;
 	}
 
 	.slot.chambered .state {
@@ -276,10 +427,6 @@
 		border-color: rgba(79, 210, 232, 0.7);
 	}
 
-	.slot.inflight .pip {
-		background-color: #4fd2e8;
-	}
-
 	.slot.inflight .state {
 		color: #4fd2e8;
 	}
@@ -288,18 +435,20 @@
 		border-color: rgba(240, 90, 70, 0.7);
 	}
 
-	.slot.dropped .pip {
-		background-color: #f05a46;
-	}
-
 	.slot.dropped .state {
 		color: #f05a46;
+	}
+
+	.meters {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 12px;
 	}
 
 	.dash {
 		flex-direction: row;
 		align-items: center;
-		margin-top: 12px;
+		margin: 0px 12px;
 	}
 
 	.dash .key {
@@ -309,7 +458,7 @@
 	}
 
 	.dash .meter {
-		width: 180px;
+		width: 160px;
 		margin-top: 0px;
 	}
 
@@ -320,5 +469,54 @@
 		text-align: center;
 		font-size: 13px;
 		color: #3f5666;
+	}
+
+	.overlay {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(4, 8, 14, 0.55);
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.overlay-title {
+		font-size: 42px;
+		font-weight: 700;
+		letter-spacing: 4px;
+		color: #ffd27a;
+		margin-bottom: 28px;
+	}
+
+	.cards {
+		flex-direction: row;
+	}
+
+	.card {
+		width: 280px;
+		padding: 22px;
+		margin: 0px 12px;
+		border-radius: 12px;
+		background-color: rgba(10, 18, 26, 0.92);
+		border: 2px solid rgba(255, 184, 60, 0.55);
+		flex-direction: column;
+	}
+
+	.card .key {
+		font-size: 16px;
+		color: #ffb83c;
+	}
+
+	.card .title {
+		font-size: 26px;
+		font-weight: 700;
+		margin-top: 6px;
+	}
+
+	.card .blurb {
+		font-size: 16px;
+		color: #8aa4b8;
+		margin-top: 8px;
 	}
 </style>
