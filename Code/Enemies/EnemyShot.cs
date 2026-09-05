@@ -2,9 +2,9 @@ namespace LoopedLoaded;
 
 public sealed class EnemyShot : Component
 {
-	[Property] public float Speed { get; set; } = 420f;
-	[Property] public float Radius { get; set; } = 16f;
-	[Property] public float Lifetime { get; set; } = 3.4f;
+	[Property] public float Speed { get; set; } = 640f;
+	[Property] public float Radius { get; set; } = 18f;
+	[Property] public float Lifetime { get; set; } = 3.2f;
 
 	public GameLoop Loop { get; private set; }
 	public Vector2 Flat { get; private set; }
@@ -14,7 +14,7 @@ public sealed class EnemyShot : Component
 	Color tint;
 	float born;
 
-	public static void Fire( GameLoop loop, Vector2 origin, Vector2 direction, Color tint )
+	public static void Fire( GameLoop loop, Vector2 origin, Vector2 direction, Color tint, float speed = 0f )
 	{
 		if ( direction.Length < 0.01f )
 			return;
@@ -29,6 +29,7 @@ public sealed class EnemyShot : Component
 		shot.Direction = direction.Normal;
 		shot.tint = tint;
 		shot.born = Time.Now;
+		shot.Speed = speed > 1f ? speed : 640f;
 		shot.WorldPosition = loop.Geometry.ToPlayWorld( origin );
 
 		loop.Shots.Add( shot );

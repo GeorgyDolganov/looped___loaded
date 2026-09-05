@@ -37,6 +37,17 @@ public sealed class PlayerAim : Component
 
 	protected override void OnUpdate()
 	{
+		if ( Loop.IsValid() && Loop.InCity )
+		{
+			preview?.Clear();
+			if ( reticle.IsValid() )
+				reticle.Enabled = false;
+			return;
+		}
+
+		if ( reticle.IsValid() )
+			reticle.Enabled = true;
+
 		if ( !Runner.IsValid() || !Arena.IsValid() )
 			return;
 

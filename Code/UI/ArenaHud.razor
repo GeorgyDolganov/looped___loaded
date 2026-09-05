@@ -4,112 +4,168 @@
 <root>
 	<div class="hud">
 
-		<div class="top-left">
-			<div class="lap-chip">
-				<label class="key">LAP</label>
-				<label class="value">@Loop.Lap</label>
-				<label class="max">/ @Loop.FinalLap</label>
-			</div>
-			<div class="meter">
-				<div class="fill lap" style="width: @(LapPercent)%"></div>
-			</div>
-			<div class="hearts">
-				@for ( var i = 0; i < Loop.MaxHealth; i++ )
-				{
-					<div class="heart @(i < Loop.Health ? "live" : "dead")"></div>
-				}
-			</div>
-			<label class="clock">@TimeText</label>
-		</div>
-
-		<div class="top-right">
-			<div class="stat"><label class="key">KILLS</label><label class="value">@Loop.Kills</label></div>
-			<div class="stat"><label class="key">SHOTS</label><label class="value">@Loop.ShotsFired</label></div>
-			<div class="stat"><label class="key">CAUGHT</label><label class="value">@Loop.Catches</label></div>
-			<div class="stat"><label class="key">LOST</label><label class="value">@Loop.Losses</label></div>
-		</div>
-
-		<div class="notice @(Loop.NoticeVisible ? "on" : "off")">
+		<div class="notice @(Loop.NoticeVisible ? "on" : "off") @(Loop.HurtAmount > 0.2f ? "hurt" : "")">
 			<label>@Loop.Notice</label>
 		</div>
 
-		<div class="bottom">
-			<div class="slots">
-				@foreach ( var slot in Loop.Inventory.Slots )
-				{
-					<div class="slot @StatusClass(slot) @(slot.Index == Loop.Inventory.SelectedIndex ? "selected" : "")">
-						<div class="pip" style="background-color: @PipColor(slot)"></div>
-						<div class="text">
-							<label class="name">ROUND 0@(slot.Index + 1)</label>
-							<label class="state">@StatusText(slot)</label>
-							<label class="traits">@TraitText(slot)</label>
-						</div>
-					</div>
-				}
-			</div>
-
-			<div class="meters">
-				<div class="dash">
-					<label class="key">DASH</label>
-					<div class="meter">
-						<div class="fill dash @(DashReady ? "ready" : "")" style="width: @(DashPercent)%"></div>
-					</div>
-				</div>
-				@if ( SlowUnlocked )
-				{
-					<div class="dash">
-						<label class="key">SLOW</label>
-						<div class="meter">
-							<div class="fill slow @(Slowing ? "on" : "")" style="width: @(SlowPercent)%"></div>
-						</div>
-					</div>
-				}
-			</div>
-		</div>
-
-		<label class="help">@HelpText</label>
-
-		@if ( Loop.Phase == RunPhase.PickTrait )
+		@if ( !Loop.InCity && Loop.HurtAmount > 0.01f )
 		{
-			<div class="overlay">
-				<label class="overlay-title">INSTALL A TRAIT</label>
-				<div class="cards">
-					<div class="card">
-						<label class="key">1</label>
-						<label class="title">@RoundTraits.Title(Loop.OfferA)</label>
-						<label class="blurb">@RoundTraits.Blurb(Loop.OfferA)</label>
-					</div>
-					<div class="card">
-						<label class="key">2</label>
-						<label class="title">@RoundTraits.Title(Loop.OfferB)</label>
-						<label class="blurb">@RoundTraits.Blurb(Loop.OfferB)</label>
-					</div>
-				</div>
+			<div class="hurt-veil" style="opacity: @HurtVeil"></div>
+			<div class="hurt-stamp">
+				<label>-1</label>
 			</div>
 		}
 
-		@if ( Loop.Phase == RunPhase.PickRound )
+		@if ( !Loop.InCity )
 		{
-			<div class="overlay">
-				<label class="overlay-title">ASSIGN @RoundTraits.Title(Loop.PendingTrait)</label>
-				<div class="cards">
+			<div class="top-left">
+				<div class="lap-chip">
+					<label class="key">LAP</label>
+					<label class="value">@Loop.Lap</label>
+				</div>
+				<div class="meter">
+					<div class="fill lap" style="width: @(LapPercent)%"></div>
+				</div>
+				<div class="hearts">
+					@for ( var i = 0; i < Loop.HeartMax; i++ )
+					{
+						<div class="heart @(i < Loop.Health ? "live" : "dead") @(i < Loop.Health && Loop.HurtAmount > 0.08f ? "sting" : "")"></div>
+					}
+				</div>
+				<label class="clock">@TimeText</label>
+				<label class="mods">@GlobalMods</label>
+			</div>
+
+			<div class="top-right">
+				<div class="stat"><label class="key">STASH</label><label class="value">@Loop.Stash</label></div>
+				<div class="stat"><label class="key">BEST</label><label class="value">@Loop.BestExtract</label></div>
+				<div class="stat"><label class="key">KILLS</label><label class="value">@Loop.Kills</label></div>
+				<div class="stat"><label class="key">CAUGHT</label><label class="value">@Loop.Catches</label></div>
+			</div>
+
+			<div class="bottom">
+				<div class="slots">
 					@foreach ( var slot in Loop.Inventory.Slots )
 					{
-						<div class="card">
-							<label class="key">@(slot.Index + 1)</label>
-							<label class="title">ROUND 0@(slot.Index + 1)</label>
-							<label class="blurb">@TraitText(slot)</label>
+						<div class="slot @StatusClass(slot) @(slot.Index == Loop.Inventory.SelectedIndex ? "selected" : "")">
+							<div class="pip" style="background-color: @PipColor(slot)"></div>
+							<label class="idx">@(slot.Index + 1)</label>
+						</div>
+					}
+				</div>
+
+				<div class="meters">
+					<div class="dash">
+						<label class="key">DASH</label>
+						<div class="meter">
+							<div class="fill dash @(DashReady ? "ready" : "")" style="width: @(DashPercent)%"></div>
+						</div>
+					</div>
+					@if ( SlowUnlocked )
+					{
+						<div class="dash">
+							<label class="key">SLOW</label>
+							<div class="meter">
+								<div class="fill slow @(Slowing ? "on" : "")" style="width: @(SlowPercent)%"></div>
+							</div>
 						</div>
 					}
 				</div>
 			</div>
 		}
 
-		@if ( Loop.Phase == RunPhase.Dead || Loop.Phase == RunPhase.Won )
+		@if ( Loop.InCity && Loop.City.IsValid() )
+		{
+			<div class="city">
+				<div class="top-left">
+					<div class="lap-chip">
+						<label class="key">WAREHOUSE</label>
+						<label class="value">@Loop.City.Warehouse</label>
+					</div>
+					<label class="mods">@Loop.City.HoverText()</label>
+					<label class="clock">@CityBonuses</label>
+				</div>
+				<div class="bottom">
+					<div class="slots">
+						@foreach ( var kind in Buildings.All )
+						{
+							<div class="slot @(kind == Loop.City.Selected ? "selected chambered" : "")">
+								<div class="pip" style="background-color: @KindColor(kind)"></div>
+								<div class="text">
+									<label class="name">@((int)kind + 1)</label>
+									<label class="idx">@Buildings.Title(kind)</label>
+								</div>
+							</div>
+						}
+					</div>
+				</div>
+			</div>
+		}
+
+		<label class="help">@HelpText</label>
+
+		@if ( Loop.Phase == RunPhase.DecideLap )
 		{
 			<div class="overlay">
-				<label class="overlay-title">@(Loop.Phase == RunPhase.Won ? "NO MORE ROUNDS" : "RUN OVER")</label>
-				<label class="blurb">PRESS R TO RESTART</label>
+				<label class="overlay-title">LAP @Loop.Lap CLEAR</label>
+				<label class="blurb">STASH @Loop.Stash  ·  TAKE IT HOME OR RISK ANOTHER</label>
+				<div class="cards">
+					<div class="card">
+						<label class="key">1</label>
+						<label class="title">EXTRACT</label>
+						<label class="blurb">Bank @Loop.Stash round@(Loop.Stash == 1 ? "" : "s"). End the run.</label>
+					</div>
+					<div class="card">
+						<label class="key">2</label>
+						<label class="title">ONE MORE LAP</label>
+						<label class="blurb">+1 round. Upgrade hits every round. Harder wave.</label>
+					</div>
+				</div>
+			</div>
+		}
+
+		@if ( Loop.Phase == RunPhase.PickTrait )
+		{
+			<div class="overlay">
+				<label class="overlay-title">UPGRADE ALL ROUNDS</label>
+				<div class="cards">
+					<div class="card">
+						<label class="key">1</label>
+						<label class="title">@RoundTraits.Title(Loop.OfferA)</label>
+						<label class="blurb">@OfferBlurb(Loop.OfferA)</label>
+					</div>
+					<div class="card">
+						<label class="key">2</label>
+						<label class="title">@RoundTraits.Title(Loop.OfferB)</label>
+						<label class="blurb">@OfferBlurb(Loop.OfferB)</label>
+					</div>
+					@if ( Loop.HasThirdOffer )
+					{
+						<div class="card">
+							<label class="key">3</label>
+							<label class="title">@RoundTraits.Title(Loop.OfferC)</label>
+							<label class="blurb">@OfferBlurb(Loop.OfferC)</label>
+						</div>
+					}
+				</div>
+			</div>
+		}
+
+		@if ( Loop.Phase == RunPhase.Dead )
+		{
+			<div class="overlay">
+				<label class="overlay-title">RUN OVER</label>
+				<label class="blurb">@Loop.BurnedRounds ROUND@(Loop.BurnedRounds == 1 ? "" : "S") BURNED</label>
+				<label class="blurb">PRESS R TO CITY</label>
+			</div>
+		}
+
+		@if ( Loop.Phase == RunPhase.Extracted )
+		{
+			<div class="overlay">
+				<label class="overlay-title">EXTRACTED</label>
+				<label class="blurb">@Loop.ExtractedRounds ROUND@(Loop.ExtractedRounds == 1 ? "" : "S") BANKED</label>
+				<label class="blurb">BEST @Loop.BestExtract  ·  PRESS R TO CITY</label>
 			</div>
 		}
 
@@ -126,6 +182,8 @@
 	}
 
 	int LapPercent => Loop.IsValid() ? (int)(Loop.LapFraction * 100f) : 0;
+	int HurtPercent => Loop.IsValid() ? (int)(Loop.HurtAmount * 100f) : 0;
+	string HurtVeil => (Loop.IsValid() ? Loop.HurtAmount * 0.55f : 0f).ToString( "0.###" );
 	int DashPercent => Runner.IsValid() ? (int)(Runner.DashCharge * 100f) : 0;
 	int SlowPercent => Runner.IsValid() ? (int)(Runner.SlowCharge * 100f) : 0;
 	bool DashReady => Runner.IsValid() && Runner.DashCharge >= 1f;
@@ -143,38 +201,65 @@
 		}
 	}
 
+	string GlobalMods
+	{
+		get
+		{
+			if ( !Loop.IsValid() ) return "PLAIN";
+			var parts = new List<string>();
+			foreach ( var trait in RoundTraits.All )
+			{
+				var level = Loop.Inventory.Loadout.TraitLevel( trait );
+				if ( level > 0 )
+					parts.Add( $"{RoundTraits.Code( trait )}{level}" );
+			}
+
+			return parts.Count == 0 ? "PLAIN" : string.Join( "  ", parts );
+		}
+	}
+
 	string HelpText => Loop.IsValid()
 		? Loop.Phase switch
 		{
-			RunPhase.PickTrait => "1 / 2 SELECT TRAIT",
-			RunPhase.PickRound => "1 / 2 ASSIGN ROUND",
-			RunPhase.Dead or RunPhase.Won => "R RESTART",
-			_ => SlowUnlocked
-				? "MOUSE AIM · LMB FIRE · 1/2 ROUNDS · SPACE DASH · RMB SLOW · R RESTART"
-				: "MOUSE AIM · LMB FIRE · SPACE DASH · R RESTART"
+			RunPhase.City => "1-5 BUILDING  ·  E PLACE  ·  LMB SHOOT  ·  SPACE/R RUN",
+			RunPhase.DecideLap => "1 EXTRACT  ·  2 ONE MORE LAP",
+			RunPhase.PickTrait => Loop.HasThirdOffer ? "1 / 2 / 3 UPGRADE ALL ROUNDS" : "1 / 2 UPGRADE ALL ROUNDS",
+			RunPhase.Dead or RunPhase.Extracted => "R CITY",
+			_ => "MOUSE AIM · LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART"
 		}
 		: "";
 
+	string CityBonuses
+	{
+		get
+		{
+			if ( !Loop.IsValid() || !Loop.City.IsValid() )
+				return "NO BONUSES YET";
+
+			var stats = Loop.City.Stats();
+			var parts = new List<string>();
+			if ( stats.BonusHealth > 0 ) parts.Add( $"HP+{stats.BonusHealth}" );
+			if ( stats.BonusDamage > 0 ) parts.Add( $"DMG+{stats.BonusDamage}" );
+			if ( stats.DashCooldownScale < 0.99f ) parts.Add( "DASH" );
+			if ( stats.SlowUnlocked ) parts.Add( "SLOW" );
+			if ( stats.OfferCount >= 3 ) parts.Add( "3 CARDS" );
+			return parts.Count == 0 ? "NO BONUSES YET" : string.Join( "  ", parts );
+		}
+	}
+
+	string KindColor( BuildingKind kind )
+	{
+		var c = Buildings.Color( kind );
+		return $"rgb({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)})";
+	}
+
 	string StatusClass( RoundSlot slot ) => slot.Status.ToString().ToLower();
 
-	string StatusText( RoundSlot slot ) => slot.Status switch
+	string OfferBlurb( RoundTrait trait )
 	{
-		RoundStatus.Chambered => "CHAMBERED",
-		RoundStatus.InFlight => "IN FLIGHT",
-		_ => $"ON RING · {(int)Loop.Inventory.ArcTo( slot.Lost.IsValid() ? slot.Lost.Flat : Vector2.Zero )}"
-	};
-
-	string TraitText( RoundSlot slot )
-	{
-		var parts = new List<string>();
-		foreach ( var trait in RoundTraits.All )
-		{
-			var level = slot.TraitLevel( trait );
-			if ( level > 0 )
-				parts.Add( $"{RoundTraits.Code( trait )}{level}" );
-		}
-
-		return parts.Count == 0 ? "PLAIN" : string.Join( "  ", parts );
+		var next = Loop.Inventory.Loadout.TraitLevel( trait ) + 1;
+		if ( next > 3 ) next = 3;
+		return $"{RoundTraits.Blurb( trait )}  LV{next}";
 	}
 
 	string PipColor( RoundSlot slot )
@@ -191,20 +276,30 @@
 			Loop.IsValid() ? (int)Loop.Phase : 0,
 			LapPercent,
 			DashPercent,
-			SlowPercent,
+			Loop.IsValid() ? Loop.Stash : 0,
 			Loop.IsValid() ? Loop.Inventory.SelectedIndex : 0,
 			Loop.IsValid() && Loop.NoticeVisible );
 
 		var b = System.HashCode.Combine(
 			Loop.IsValid() ? Loop.Notice : "",
 			TimeText,
+			GlobalMods,
 			Loop.IsValid() ? Loop.Kills : 0,
-			Loop.IsValid() ? Loop.ShotsFired : 0,
-			Loop.IsValid() ? Loop.Catches : 0,
-			Loop.IsValid() ? Loop.Losses : 0,
-			Loop.IsValid() ? Loop.Inventory.Slots.Sum( s => s.TraitHash ) : 0 );
+			Loop.IsValid() ? Loop.BestExtract : 0,
+			Loop.IsValid() ? Loop.ExtractedRounds : 0,
+			Loop.IsValid() ? Loop.BurnedRounds : 0,
+			Loop.IsValid() ? Loop.Inventory.Slots.Sum( s => s.StatusHash ) : 0 );
 
-		return System.HashCode.Combine( a, b );
+		var c = System.HashCode.Combine(
+			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.Warehouse : 0,
+			Loop.IsValid() && Loop.City.IsValid() ? (int)Loop.City.Selected : 0,
+			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.HoverText() : "",
+			Loop.IsValid() && Loop.HasThirdOffer,
+			Loop.IsValid() ? Loop.HeartMax : 0,
+			CityBonuses,
+			HurtPercent );
+
+		return System.HashCode.Combine( a, b, c );
 	}
 }
 
@@ -247,12 +342,6 @@
 		color: #eaf6ff;
 	}
 
-	.lap-chip .max {
-		font-size: 18px;
-		color: #5f7f96;
-		margin-left: 8px;
-	}
-
 	.hearts {
 		flex-direction: row;
 		margin-top: 8px;
@@ -270,10 +359,49 @@
 		background-color: #f05a46;
 	}
 
+	.heart.live.sting {
+		background-color: #ffffff;
+	}
+
+	.hurt-veil {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background-color: #c4121c;
+		border: 28px solid #ff2a22;
+	}
+
+	.hurt-stamp {
+		position: absolute;
+		top: 26%;
+		width: 100%;
+		justify-content: center;
+	}
+
+	.hurt-stamp label {
+		font-size: 92px;
+		font-weight: 800;
+		letter-spacing: 10px;
+		color: #ff3b2e;
+		text-shadow: 0px 0px 28px rgba(255, 40, 30, 0.95);
+	}
+
+	.notice.hurt label {
+		color: #ff4a3a;
+		font-size: 42px;
+	}
+
 	.clock {
 		font-size: 16px;
 		color: #5f7f96;
 		margin-top: 6px;
+	}
+
+	.mods {
+		font-size: 13px;
+		color: #8aa4b8;
+		margin-top: 8px;
+		letter-spacing: 1px;
 	}
 
 	.meter {
@@ -370,73 +498,49 @@
 
 	.slots {
 		flex-direction: row;
-		align-items: stretch;
+		align-items: center;
+		flex-wrap: wrap;
+		justify-content: center;
 	}
 
 	.slot {
 		flex-direction: row;
 		align-items: center;
-		padding: 12px 22px;
+		padding: 8px 10px;
 		border-radius: 10px;
 		background-color: rgba(10, 18, 26, 0.7);
 		border: 2px solid rgba(120, 170, 200, 0.2);
-		margin: 0px 8px;
-		min-width: 220px;
+		margin: 4px;
 	}
 
 	.slot.selected {
 		background-color: rgba(18, 28, 40, 0.9);
+		border-color: #eaf6ff;
 	}
 
 	.slot .pip {
-		width: 26px;
-		height: 26px;
-		border-radius: 13px;
-		margin-right: 16px;
+		width: 18px;
+		height: 18px;
+		border-radius: 9px;
+		margin-right: 8px;
 		background-color: #3a4a58;
 	}
 
-	.slot .text {
-		flex-direction: column;
-	}
-
-	.slot .name {
-		font-size: 13px;
-		color: #4f6c80;
-	}
-
-	.slot .state {
-		font-size: 20px;
+	.slot .idx {
+		font-size: 16px;
 		font-weight: 700;
-	}
-
-	.slot .traits {
-		font-size: 12px;
-		color: #6a8496;
 	}
 
 	.slot.chambered {
 		border-color: rgba(255, 184, 60, 0.75);
 	}
 
-	.slot.chambered .state {
-		color: #ffb83c;
-	}
-
 	.slot.inflight {
 		border-color: rgba(79, 210, 232, 0.7);
 	}
 
-	.slot.inflight .state {
-		color: #4fd2e8;
-	}
-
 	.slot.dropped {
 		border-color: rgba(240, 90, 70, 0.7);
-	}
-
-	.slot.dropped .state {
-		color: #f05a46;
 	}
 
 	.meters {
@@ -460,6 +564,23 @@
 	.dash .meter {
 		width: 160px;
 		margin-top: 0px;
+	}
+
+	.city {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+	}
+
+	.slot .text {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.slot .name {
+		font-size: 18px;
+		font-weight: 700;
+		line-height: 18px;
 	}
 
 	.help {
@@ -486,7 +607,13 @@
 		font-weight: 700;
 		letter-spacing: 4px;
 		color: #ffd27a;
-		margin-bottom: 28px;
+		margin-bottom: 12px;
+	}
+
+	.overlay .blurb {
+		font-size: 16px;
+		color: #8aa4b8;
+		margin-bottom: 22px;
 	}
 
 	.cards {
@@ -518,5 +645,6 @@
 		font-size: 16px;
 		color: #8aa4b8;
 		margin-top: 8px;
+		margin-bottom: 0px;
 	}
 </style>

@@ -22,6 +22,10 @@ public sealed class GameBootstrap : Component
 		loop.Aim = player.GetComponent<PlayerAim>();
 		loop.Inventory = player.GetComponent<RoundInventory>();
 
+		var city = GameObject.AddComponent<CityBoard>();
+		city.Loop = loop;
+		loop.City = city;
+
 		loop.Runner.Loop = loop;
 		loop.Aim.Loop = loop;
 		loop.Aim.Inventory = loop.Inventory;
@@ -30,6 +34,8 @@ public sealed class GameBootstrap : Component
 		var rig = camera.AddComponent<ArenaCamera>();
 		rig.Arena = arena;
 		rig.Runner = loop.Runner;
+		rig.Loop = loop;
+		rig.City = city;
 
 		BuildHud( loop );
 		loop.Restart();

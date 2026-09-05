@@ -9,8 +9,9 @@ public sealed class GameLoop : Component
 	[Property] public float LostRoundMinArc { get; set; } = 460f;
 	[Property] public float NoticeDuration { get; set; } = 1.6f;
 	[Property] public int MaxHealth { get; set; } = 3;
-	[Property] public int FinalLap { get; set; } = 8;
 
+	public CityBoard City { get; set; }
+	public bool InCity => Phase == RunPhase.City;
 	public ArenaGeometry Geometry => Arena.Geometry;
 	public List<Enemy> Enemies { get; } = new();
 	public List<EnemyShot> Shots { get; } = new();
@@ -22,23 +23,31 @@ public sealed class GameLoop : Component
 	public float NoticeAge => Time.Now - noticeAt;
 	public bool NoticeVisible => NoticeAge < NoticeDuration;
 
-	public int Lap => Runner.IsValid() ? Math.Clamp( Runner.Lap, 1, FinalLap ) : 1;
-	public float LapFraction => Runner.IsValid() && Runner.Lap <= FinalLap ? Runner.LapFraction : 1f;
+	public int Lap { get; private set; } = 1;
+	public float LapFraction => Phase == RunPhase.DecideLap ? 1f : Runner.IsValid() ? Runner.LapFraction : 0f;
+	public int Stash => Inventory.IsValid() ? Inventory.Slots.Count : 0;
+	public int HeartMax => MaxHealth + (City.IsValid() ? City.Stats().BonusHealth : 0);
 	public int Health { get; private set; }
+	public float HurtAmount => Math.Clamp( 1f - (Time.Now - lastHurtAt) / 0.55f, 0f, 1f );
+	public bool Invulnerable => Time.Now < invulnUntil;
 	public int Kills { get; private set; }
 	public int ShotsFired { get; private set; }
 	public int Catches { get; private set; }
 	public int Losses { get; private set; }
+	public int ExtractedRounds { get; private set; }
+	public int BurnedRounds { get; private set; }
+	public int BestExtract { get; private set; }
 	public float RunTime => Time.Now - runStartedAt;
 
 	public RoundTrait OfferA { get; private set; }
 	public RoundTrait OfferB { get; private set; }
-	public RoundTrait PendingTrait { get; private set; }
+	public RoundTrait OfferC { get; private set; }
+	public bool HasThirdOffer { get; private set; }
 
 	float noticeAt = -99f;
 	float runStartedAt;
 	float invulnUntil;
-	int lastLap = 1;
+	float lastHurtAt = -99f;
 
 	public void Announce( string text )
 	{
@@ -48,22 +57,36 @@ public sealed class GameLoop : Component
 
 	public void Restart()
 	{
+		if ( Runner.IsValid() )
+			Runner.GameObject.Enabled = true;
+
+		City?.ClearShots();
 		ClearCombat();
 		Inventory.ResetLoadout();
 		Runner.ResetToStart( MathF.PI * 0.5f );
 
 		Phase = RunPhase.Playing;
-		Health = MaxHealth;
+		Health = HeartMax;
+		if ( City.IsValid() )
+		{
+			var stats = City.Stats();
+			Runner.ApplyCity( stats );
+			Inventory.Loadout.BonusDamage = stats.BonusDamage;
+			City.SetVisible( false );
+		}
 		Kills = 0;
 		ShotsFired = 0;
 		Catches = 0;
 		Losses = 0;
-		lastLap = 1;
+		Lap = 1;
+		ExtractedRounds = 0;
+		BurnedRounds = 0;
 		invulnUntil = 0f;
+		lastHurtAt = -99f;
 		runStartedAt = Time.Now;
 
 		SpawnWave( 1 );
-		Announce( "ONE LAP. ONE ROUND. BRING IT BACK." );
+		Announce( "ONE LAP. ONE ROUND. CASH OUT OR GO AGAIN." );
 	}
 
 	public void RegisterKill()
@@ -131,21 +154,37 @@ public sealed class GameLoop : Component
 
 		if ( Input.Pressed( "Reload" ) )
 		{
-			Restart();
+			if ( Phase == RunPhase.City || Phase == RunPhase.Playing || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait )
+				Restart();
+			else
+				EnterCity( false );
+			return;
+		}
+
+		if ( Phase == RunPhase.City )
+		{
+			if ( Input.Pressed( "Jump" ) )
+			{
+				Restart();
+				return;
+			}
+
+			City?.Tick();
+			return;
+		}
+
+		if ( Phase == RunPhase.DecideLap )
+		{
+			if ( Input.Pressed( "Slot1" ) ) Extract();
+			if ( Input.Pressed( "Slot2" ) ) ContinueRun();
 			return;
 		}
 
 		if ( Phase == RunPhase.PickTrait )
 		{
-			if ( Input.Pressed( "Slot1" ) ) PickTrait( OfferA );
-			if ( Input.Pressed( "Slot2" ) ) PickTrait( OfferB );
-			return;
-		}
-
-		if ( Phase == RunPhase.PickRound )
-		{
-			if ( Input.Pressed( "Slot1" ) ) AssignTrait( 0 );
-			if ( Input.Pressed( "Slot2" ) ) AssignTrait( 1 );
+			if ( Input.Pressed( "Slot1" ) ) InstallOffer( OfferA );
+			if ( Input.Pressed( "Slot2" ) ) InstallOffer( OfferB );
+			if ( HasThirdOffer && Input.Pressed( "Slot3" ) ) InstallOffer( OfferC );
 			return;
 		}
 
@@ -167,11 +206,11 @@ public sealed class GameLoop : Component
 
 	void HandleSelect()
 	{
-		if ( Input.Pressed( "Slot1" ) )
-			Inventory.TrySelect( 0 );
-
-		if ( Input.Pressed( "Slot2" ) )
-			Inventory.TrySelect( 1 );
+		for ( var i = 0; i < 9; i++ )
+		{
+			if ( Input.Pressed( $"Slot{i + 1}" ) )
+				Inventory.TrySelect( i );
+		}
 
 		if ( Input.Pressed( "SlotPrev" ) )
 			Inventory.SelectNextChambered( -1 );
@@ -201,7 +240,7 @@ public sealed class GameLoop : Component
 		go.Name = $"Round {slot.Index + 1}";
 
 		var projectile = go.AddComponent<RoundProjectile>();
-		projectile.Launch( this, slot.BuildFlight(), Aim.Muzzle, Aim.Direction );
+		projectile.Launch( this, Inventory.Loadout.BuildFlight( slot ), Aim.Muzzle, Aim.Direction );
 
 		slot.Flying = projectile;
 		slot.Lost = null;
@@ -281,122 +320,105 @@ public sealed class GameLoop : Component
 	void Hurt()
 	{
 		Health--;
+		lastHurtAt = Time.Now;
 		invulnUntil = Time.Now + 1.05f;
 
+		var world = Geometry.ToPlayWorld( Runner.Flat );
 		Sound.Play( "sounds/impacts/melee/impact-melee-flesh.sound", Runner.WorldPosition );
-		ImpactFlash.Spawn( Scene, Geometry.ToPlayWorld( Runner.Flat ), new Color( 1f, 0.3f, 0.2f ), 1.6f );
+		Sound.Play( "sounds/kenney/ui/ui.navigate.deny.sound" );
+		ImpactFlash.Spawn( Scene, world, new Color( 1f, 0.12f, 0.08f ), 3.4f );
+		ImpactFlash.Spawn( Scene, world + Vector3.Up * 40f, Color.White, 1.8f );
 
 		if ( Health > 0 )
 		{
-			Announce( "HIT" );
+			Announce( $"-1  ·  {Health} LEFT" );
 			return;
 		}
 
 		Phase = RunPhase.Dead;
+		BurnedRounds = Stash;
 		Announce( "RUN OVER" );
 	}
 
 	void CheckLap()
 	{
-		var lap = Runner.Lap;
-		if ( lap == lastLap )
+		if ( !Runner.IsValid() || Runner.Lap <= Lap )
 			return;
 
-		lastLap = lap;
-
-		if ( lap > FinalLap )
-		{
-			Win();
-			return;
-		}
-
+		Phase = RunPhase.DecideLap;
 		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
-		Announce( $"LAP {lap}" );
-		OnLapEntered( lap );
+		Announce( $"LAP {Lap} CLEAR" );
 	}
 
-	void OnLapEntered( int lap )
+	void Extract()
 	{
-		SpawnWave( lap );
+		ExtractedRounds = Stash;
+		if ( ExtractedRounds > BestExtract )
+			BestExtract = ExtractedRounds;
 
-		switch ( lap )
-		{
-			case 2:
-				BeginTraitPick();
-				break;
-			case 3:
-				GrantSecondRound();
-				break;
-			case 4:
-				UnlockSlow();
-				break;
-			case 5:
-			case 7:
-				BeginTraitPick();
-				break;
-		}
+		EnterCity( true );
 	}
 
-	void GrantSecondRound()
+	void EnterCity( bool deposit )
 	{
-		var slot = Inventory.GrantSlot();
-		if ( slot is null )
-			return;
+		if ( deposit && City.IsValid() )
+			City.Deposit( Stash );
 
-		Inventory.TrySelect( slot.Index );
-		Announce( "SECOND ROUND CHAMBERED" );
+		foreach ( var slot in Inventory.Slots )
+			slot.ResetCombat();
+
+		ClearCombat();
+		Phase = RunPhase.City;
+		City?.EnsureBuilt();
+		City?.SetVisible( true );
+
+		if ( Runner.IsValid() )
+			Runner.GameObject.Enabled = false;
+		Sound.Play( "sounds/kenney/ui/ui.upvote.sound" );
+		Announce( deposit ? $"CITY  ·  +{ExtractedRounds} WAREHOUSE" : "CITY" );
+	}
+
+	void ContinueRun()
+	{
+		Lap = Runner.Lap;
+		var granted = Inventory.GrantSlot();
+		if ( granted is not null )
+			Inventory.TrySelect( granted.Index );
+		BeginTraitPick();
 		Sound.Play( "sounds/kenney/ui/ui.favourite.sound" );
-	}
-
-	void UnlockSlow()
-	{
-		Runner.SlowUnlocked = true;
-		Announce( "SLOW UNLOCKED  ·  RMB" );
-		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
+		Announce( $"+1 ROUND  ·  STASH {Stash}" );
 	}
 
 	void BeginTraitPick()
 	{
 		var pool = RoundTraits.All.ToList();
-		OfferA = pool[Game.Random.Int( 0, pool.Count - 1 )];
-		pool.Remove( OfferA );
-		OfferB = pool[Game.Random.Int( 0, pool.Count - 1 )];
+		var count = City.IsValid() ? City.Stats().OfferCount : 2;
+		count = Math.Clamp( count, 2, 3 );
+
+		OfferA = TakeTrait( pool );
+		OfferB = TakeTrait( pool );
+		HasThirdOffer = count >= 3;
+		if ( HasThirdOffer )
+			OfferC = TakeTrait( pool );
+
 		Phase = RunPhase.PickTrait;
-		Announce( "INSTALL A TRAIT" );
 	}
 
-	void PickTrait( RoundTrait trait )
+	static RoundTrait TakeTrait( List<RoundTrait> pool )
 	{
-		PendingTrait = trait;
-
-		if ( Inventory.Slots.Count == 1 )
-		{
-			AssignTrait( 0 );
-			return;
-		}
-
-		Phase = RunPhase.PickRound;
-		Announce( $"ASSIGN {RoundTraits.Title( trait )}" );
+		var pick = pool[Game.Random.Int( 0, pool.Count - 1 )];
+		pool.Remove( pick );
+		return pick;
 	}
 
-	void AssignTrait( int index )
+	void InstallOffer( RoundTrait trait )
 	{
-		if ( index < 0 || index >= Inventory.Slots.Count )
-			return;
-
-		var slot = Inventory.Slots[index];
-		slot.Install( PendingTrait );
+		Inventory.Loadout.Install( trait );
+		SpawnWave( Lap );
 		Phase = RunPhase.Playing;
 
 		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
-		Announce( $"{RoundTraits.Title( PendingTrait )} LV{slot.TraitLevel( PendingTrait )} · ROUND {slot.Index + 1}" );
-	}
-
-	void Win()
-	{
-		Phase = RunPhase.Won;
-		Announce( "NO MORE ROUNDS" );
-		Sound.Play( "sounds/kenney/ui/ui.upvote.sound" );
+		Announce( $"{RoundTraits.Title( trait )} LV{Inventory.Loadout.TraitLevel( trait )}  ·  ALL ROUNDS" );
 	}
 
 	void SpawnWave( int lap )
@@ -404,6 +426,7 @@ public sealed class GameLoop : Component
 		ClearEnemies();
 
 		var inner = Geometry.CoreRadius + 190f;
+		var hunt = MathX.Lerp( inner, Geometry.TrackInner - 110f, 0.32f );
 		var mid = MathX.Lerp( inner, Geometry.TrackInner - 140f, 0.45f );
 		var outer = Geometry.TrackInner - 90f;
 		var offset = Runner.Angle + MathF.PI;
@@ -423,38 +446,43 @@ public sealed class GameLoop : Component
 		switch ( lap )
 		{
 			case 1:
-				Add( EnemyKind.Chaser, offset, inner, 1 );
+				Add( EnemyKind.Chaser, offset, hunt, 1 );
 				break;
 			case 2:
-				Add( EnemyKind.Chaser, offset - 0.7f, inner, 1 );
-				Add( EnemyKind.Chaser, offset + 0.7f, inner + 40f, 1 );
+				Add( EnemyKind.Chaser, offset - 0.7f, hunt, 1 );
+				Add( EnemyKind.Chaser, offset + 0.7f, hunt + 40f, 1 );
 				break;
 			case 3:
 				Add( EnemyKind.Shield, offset, mid, 2 );
-				Add( EnemyKind.Chaser, offset + 1.6f, inner, 2 );
+				Add( EnemyKind.Chaser, offset + 1.6f, hunt, 2 );
+				Add( EnemyKind.Chaser, offset - 1.4f, inner, 2 );
 				break;
 			case 4:
 				Add( EnemyKind.Shield, offset - 0.5f, mid, 2 );
 				Add( EnemyKind.Shooter, offset + 1.8f, mid, 2 );
+				Add( EnemyKind.Chaser, offset + 2.8f, hunt, 2 );
 				break;
 			case 5:
-				Add( EnemyKind.Chaser, offset - 1.1f, inner, 2 );
-				Add( EnemyKind.Chaser, offset + 0.4f, inner, 2 );
+				Add( EnemyKind.Chaser, offset - 1.1f, hunt, 2 );
+				Add( EnemyKind.Chaser, offset + 0.4f, hunt, 2 );
 				Add( EnemyKind.Shooter, offset + 2.2f, mid, 2 );
+				Add( EnemyKind.Chaser, offset + 3.4f, inner, 2 );
 				break;
 			case 6:
-				Add( EnemyKind.Chaser, offset, inner, 2 );
+				Add( EnemyKind.Chaser, offset, hunt, 2 );
 				Add( EnemyKind.Shield, offset + 2.1f, mid, 2 );
 				Add( EnemyKind.Shooter, offset + 4.0f, mid, 2 );
+				Add( EnemyKind.Shooter, offset - 2.2f, mid, 2 );
 				break;
 			case 7:
-				Add( EnemyKind.Chaser, offset - 0.8f, inner, 2 );
+				Add( EnemyKind.Chaser, offset - 0.8f, hunt, 2 );
 				Add( EnemyKind.Chaser, offset + 0.8f, outer - 40f, 2 );
 				Add( EnemyKind.Shield, offset + 2.4f, mid, 2 );
 				Add( EnemyKind.Shooter, offset + 4.2f, mid, 2 );
 				break;
 			default:
-				Add( EnemyKind.Chaser, offset, inner, 2 );
+				Add( EnemyKind.Chaser, offset, hunt, 2 );
+				Add( EnemyKind.Chaser, offset + 3.1f, hunt, 2 );
 				Add( EnemyKind.Shield, offset + 1.5f, mid, 2 );
 				Add( EnemyKind.Shield, offset + 3.6f, mid, 2 );
 				Add( EnemyKind.Shooter, offset + 2.5f, mid, 2 );

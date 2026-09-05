@@ -205,7 +205,7 @@ public sealed class RoundProjectile : Component
 				continue;
 			}
 
-			target.Damage( 1, this );
+			target.Damage( Flight.Damage > 0 ? Flight.Damage : 1, this );
 			TargetsHit++;
 
 			if ( pierceLeft > 0 )

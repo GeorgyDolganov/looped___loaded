@@ -48,7 +48,7 @@ public sealed class Enemy : Component
 		Alive = true;
 		freezeUntil = 0f;
 		freezeScale = 1f;
-		shotAt = Time.Now + Game.Random.Float( 0.4f, 1.4f );
+		shotAt = Time.Now + Game.Random.Float( 0.12f, 0.45f );
 		telegraphUntil = 0f;
 		Radius = kind == EnemyKind.Shield ? 62f : 52f;
 
@@ -140,28 +140,36 @@ public sealed class Enemy : Component
 		Paint();
 	}
 
+	float Pressure => Loop.IsValid() ? 1f + MathF.Max( 0, Loop.Lap - 1 ) * 0.16f : 1f;
+
 	void Move()
 	{
+		if ( !Loop.IsValid() || !Loop.Runner.IsValid() )
+			return;
+
 		var frozen = Time.Now < freezeUntil;
 		var scale = frozen ? freezeScale : 1f;
-		var inner = Arena.Geometry.CoreRadius + 170f;
-		var outer = Arena.Geometry.TrackRadius - 28f;
+		var inner = Arena.Geometry.CoreRadius + 160f;
+		var track = Arena.Geometry.TrackRadius - 28f;
 
 		switch ( Kind )
 		{
 			case EnemyKind.Chaser:
 			{
-				var outward = Flat.Length < 1f ? Vector2.Right : Flat.Normal;
-				Flat += outward * (95f * scale * Time.Delta);
-				if ( Flat.Length > outer )
-					Flat = Flat.Normal * outer;
+				var lead = Loop.Runner.Tangent * (160f + 50f * Pressure);
+				Seek( Loop.Runner.Flat + lead, 185f * Pressure * scale, inner, track );
+				break;
+			}
+			case EnemyKind.Shield:
+			{
+				Seek( Loop.Runner.Flat, 170f * Pressure * scale, inner, Arena.Geometry.TrackRadius + 8f );
 				break;
 			}
 			case EnemyKind.Shooter:
 			{
-				var orbit = 0.18f * scale * Time.Delta;
+				var orbit = 0.34f * Pressure * scale * Time.Delta;
 				var angle = ArenaGeometry.ToAngle( Flat ) - orbit;
-				var radius = MathX.Lerp( inner + 40f, Arena.Geometry.TrackInner - 180f, 0.35f );
+				var radius = MathX.Lerp( inner + 30f, Arena.Geometry.TrackInner - 140f, 0.42f );
 				Flat = ArenaGeometry.FromAngle( angle ) * radius;
 				break;
 			}
@@ -170,19 +178,39 @@ public sealed class Enemy : Component
 		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
 	}
 
+	void Seek( Vector2 goal, float speed, float minRadius, float maxRadius )
+	{
+		var to = goal - Flat;
+		if ( to.Length > 6f )
+			Flat += to.Normal * speed * Time.Delta;
+
+		var length = Flat.Length;
+		if ( length < 1f )
+		{
+			Flat = Vector2.Right * minRadius;
+			return;
+		}
+
+		if ( length < minRadius )
+			Flat = Flat.Normal * minRadius;
+		else if ( length > maxRadius )
+			Flat = Flat.Normal * maxRadius;
+	}
+
 	void ThinkShoot()
 	{
 		if ( Kind != EnemyKind.Shooter || !Loop.IsValid() || !Loop.Runner.IsValid() )
 			return;
 
-		var interval = 2.35f;
+		var interval = MathF.Max( 0.8f, 1.65f / Pressure );
+		var telegraph = MathF.Max( 0.14f, 0.28f / MathF.Sqrt( Pressure ) );
 
 		if ( Time.Now < telegraphUntil )
 			return;
 
 		if ( Time.Now >= shotAt && telegraphUntil <= 0f )
 		{
-			telegraphUntil = Time.Now + 0.38f;
+			telegraphUntil = Time.Now + telegraph;
 			return;
 		}
 
@@ -190,8 +218,24 @@ public sealed class Enemy : Component
 		{
 			telegraphUntil = 0f;
 			shotAt = Time.Now + interval;
-			EnemyShot.Fire( Loop, Flat, (Loop.Runner.Flat - Flat).Normal, LiveTint );
+			EnemyShot.Fire( Loop, Flat, LeadDirection(), LiveTint, 560f + Loop.Lap * 45f );
 		}
+	}
+
+	Vector2 LeadDirection()
+	{
+		var runner = Loop.Runner;
+		var to = runner.Flat - Flat;
+		var dist = MathF.Max( 80f, to.Length );
+		var shotSpeed = 560f + Loop.Lap * 45f;
+		var travel = dist / shotSpeed;
+		var pace = runner.Speed;
+		if ( runner.Slowing )
+			pace *= runner.SlowSpeedScale;
+
+		var predicted = runner.Flat + runner.Tangent * (pace * travel);
+		var lead = predicted - Flat;
+		return lead.Length > 1f ? lead.Normal : to.Normal;
 	}
 
 	void Paint()

@@ -2,6 +2,8 @@ namespace LoopedLoaded;
 
 public sealed class ArenaCamera : Component
 {
+	[Property] public GameLoop Loop { get; set; }
+	[Property] public CityBoard City { get; set; }
 	[Property] public ArenaBuilder Arena { get; set; }
 	[Property] public RingRunner Runner { get; set; }
 	[Property] public float Pitch { get; set; } = 68f;
@@ -15,6 +17,7 @@ public sealed class ArenaCamera : Component
 
 	CameraComponent camera;
 	Vector3 focus;
+	bool framingCity;
 
 	protected override void OnAwake()
 	{
@@ -24,14 +27,34 @@ public sealed class ArenaCamera : Component
 
 	protected override void OnUpdate()
 	{
-		if ( !camera.IsValid() || !Arena.IsValid() )
+		if ( !camera.IsValid() )
 			return;
 
 		camera.Orthographic = true;
-		camera.OrthographicHeight = Arena.Geometry.BoundaryRadius * 2f * FrameMargin;
 		camera.ZNear = 10f;
 		camera.ZFar = 20000f;
 		camera.BackgroundColor = Backdrop;
+
+		if ( Loop.IsValid() && Loop.InCity && City.IsValid() )
+		{
+			camera.OrthographicHeight = City.Span * 1.9f;
+			var cityFocus = City.Center + new Vector3( 0f, -City.Span * 0.18f, 0f );
+			if ( !framingCity )
+				focus = cityFocus;
+			else
+				focus = focus.LerpTo( cityFocus, MathF.Min( 1f, Time.Delta * FollowSmoothing ) );
+
+			framingCity = true;
+			var cityRotation = Rotation.From( Pitch, Yaw, 0f );
+			camera.WorldRotation = cityRotation;
+			camera.WorldPosition = focus - cityRotation.Forward * Distance;
+			return;
+		}
+
+		if ( !Arena.IsValid() )
+			return;
+
+		camera.OrthographicHeight = Arena.Geometry.BoundaryRadius * 2f * FrameMargin;
 
 		var target = Vector3.Zero;
 
@@ -41,10 +64,35 @@ public sealed class ArenaCamera : Component
 			target = new Vector3( flat.x, flat.y, 0f );
 		}
 
-		focus = focus.LerpTo( target, MathF.Min( 1f, Time.Delta * FollowSmoothing ) );
+		if ( framingCity )
+			focus = target;
+		else
+			focus = focus.LerpTo( target, MathF.Min( 1f, Time.Delta * FollowSmoothing ) );
+
+		framingCity = false;
 
 		var rotation = Rotation.From( Pitch, Yaw, 0f );
 		camera.WorldRotation = rotation;
 		camera.WorldPosition = focus - rotation.Forward * Distance;
+		ShakeIfHurt();
+	}
+
+	void ShakeIfHurt()
+	{
+		if ( !camera.IsValid() || !Loop.IsValid() || Loop.InCity )
+			return;
+
+		var hurt = Loop.HurtAmount;
+		if ( hurt <= 0.01f )
+		{
+			camera.BackgroundColor = Backdrop;
+			return;
+		}
+
+		var amp = hurt * 52f;
+		var t = Time.Now * 54f;
+		camera.WorldPosition += camera.WorldRotation.Right * MathF.Sin( t ) * amp
+			+ camera.WorldRotation.Up * MathF.Cos( t * 1.37f ) * amp * 0.72f;
+		camera.BackgroundColor = Color.Lerp( Backdrop, new Color( 0.22f, 0.02f, 0.03f ), hurt );
 	}
 }

@@ -6,8 +6,8 @@ public sealed class RingRunner : Component
 	[Property] public GameLoop Loop { get; set; }
 	[Property] public float Speed { get; set; } = 330f;
 	[Property] public float DashDistance { get; set; } = 430f;
-	[Property] public float DashDuration { get; set; } = 0.17f;
 	[Property] public float DashCooldown { get; set; } = 1.1f;
+	[Property] public float DashDuration { get; set; } = 0.17f;
 	[Property] public float SlowSpeedScale { get; set; } = 0.38f;
 	[Property] public float SlowDrain { get; set; } = 0.55f;
 	[Property] public float SlowRegen { get; set; } = 0.28f;
@@ -31,6 +31,7 @@ public sealed class RingRunner : Component
 	float lastDash = -999f;
 	float dashSpent;
 	bool slowOverheat;
+	readonly List<(ModelRenderer Renderer, Color Tint)> meshes = new();
 
 	public void ResetToStart( float startAngle )
 	{
@@ -43,7 +44,16 @@ public sealed class RingRunner : Component
 		SlowCharge = 1f;
 		Slowing = false;
 		slowOverheat = false;
+		DashCooldown = 1.1f;
+		SlowDrain = 0.55f;
 		ApplyTransform();
+	}
+
+	public void ApplyCity( CityStats stats )
+	{
+		DashCooldown = 1.1f * stats.DashCooldownScale;
+		SlowUnlocked = stats.SlowUnlocked;
+		SlowDrain = stats.SlowDrain;
 	}
 
 	public bool TryDash()
@@ -62,6 +72,7 @@ public sealed class RingRunner : Component
 		if ( Loop.IsValid() && Loop.IsFrozen )
 		{
 			ApplyTransform();
+			PaintHurt();
 			return;
 		}
 
@@ -82,6 +93,32 @@ public sealed class RingRunner : Component
 
 		Advance( arc );
 		ApplyTransform();
+		PaintHurt();
+	}
+
+	void PaintHurt()
+	{
+		if ( meshes.Count == 0 )
+		{
+			foreach ( var renderer in GameObject.GetComponentsInChildren<ModelRenderer>( true ) )
+				meshes.Add( (renderer, renderer.Tint) );
+		}
+
+		var hurt = Loop.IsValid() ? Loop.HurtAmount : 0f;
+		var blink = Loop.IsValid() && Loop.Invulnerable && (Time.Now * 16f % 1f) < 0.5f;
+
+		foreach ( var mesh in meshes )
+		{
+			if ( !mesh.Renderer.IsValid() )
+				continue;
+
+			if ( hurt > 0.01f )
+				mesh.Renderer.Tint = Color.Lerp( mesh.Tint, new Color( 1f, 0.12f, 0.08f ), hurt );
+			else if ( blink )
+				mesh.Renderer.Tint = Color.Lerp( mesh.Tint, new Color( 1f, 0.35f, 0.28f ), 0.7f );
+			else
+				mesh.Renderer.Tint = mesh.Tint;
+		}
 	}
 
 	void TickSlow()

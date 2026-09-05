@@ -13,9 +13,16 @@ public sealed class RoundInventory : Component
 	public static readonly Color[] Tints =
 	{
 		new Color( 1f, 0.72f, 0.22f ),
-		new Color( 0.32f, 0.82f, 1f )
+		new Color( 0.32f, 0.82f, 1f ),
+		new Color( 0.95f, 0.38f, 0.72f ),
+		new Color( 0.45f, 0.95f, 0.42f ),
+		new Color( 0.72f, 0.48f, 1f ),
+		new Color( 1f, 0.92f, 0.35f ),
+		new Color( 1f, 0.45f, 0.28f ),
+		new Color( 0.4f, 0.95f, 0.88f )
 	};
 
+	public RunLoadout Loadout { get; } = new();
 	public List<RoundSlot> Slots { get; } = new();
 	public int SelectedIndex { get; private set; }
 	public RoundSlot Selected => Slots.Count == 0 ? null : Slots[Math.Clamp( SelectedIndex, 0, Slots.Count - 1 )];
@@ -33,19 +40,17 @@ public sealed class RoundInventory : Component
 			slot.ResetCombat();
 
 		Slots.Clear();
+		Loadout.Clear();
 		GrantSlot();
 		SelectedIndex = 0;
 	}
 
 	public RoundSlot GrantSlot()
 	{
-		if ( Slots.Count >= Tints.Length )
-			return null;
-
 		var slot = new RoundSlot
 		{
 			Index = Slots.Count,
-			Tint = Tints[Slots.Count],
+			Tint = Tints[Slots.Count % Tints.Length],
 			Status = RoundStatus.Chambered
 		};
 
@@ -123,6 +128,15 @@ public sealed class RoundInventory : Component
 
 	protected override void OnUpdate()
 	{
+		if ( Loop.IsValid() && Loop.InCity )
+		{
+			if ( catchRing.IsValid() )
+				catchRing.Clear();
+			if ( chamberedMarker.IsValid() )
+				chamberedMarker.Enabled = false;
+			return;
+		}
+
 		if ( !Arena.IsValid() || !Runner.IsValid() || !Aim.IsValid() )
 			return;
 
@@ -152,7 +166,7 @@ public sealed class RoundInventory : Component
 	List<Vector3> BuildRing( RoundSlot slot )
 	{
 		const int segments = 24;
-		var bonus = slot?.BuildFlight().CatchBonus ?? 0f;
+		var bonus = Loadout.CatchBonus;
 		var radius = CatchRadius + bonus;
 		var center = CatchPoint;
 		var points = new List<Vector3>( segments + 1 );

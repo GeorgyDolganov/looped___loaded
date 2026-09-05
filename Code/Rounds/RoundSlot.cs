@@ -7,59 +7,8 @@ public sealed class RoundSlot
 	public RoundStatus Status = RoundStatus.Chambered;
 	public RoundProjectile Flying;
 	public DroppedRound Lost;
-	public readonly int[] Levels = new int[4];
 
-	public int TraitLevel( RoundTrait trait ) => Levels[(int)trait];
-
-	public int DistinctTraits
-	{
-		get
-		{
-			var count = 0;
-			foreach ( var level in Levels )
-			{
-				if ( level > 0 )
-					count++;
-			}
-
-			return count;
-		}
-	}
-
-	public int TraitHash
-	{
-		get
-		{
-			var hash = Index * 17 + (int)Status;
-			for ( var i = 0; i < Levels.Length; i++ )
-				hash = hash * 8 + Levels[i];
-			return hash;
-		}
-	}
-
-	public bool CanInstall( RoundTrait trait )
-	{
-		if ( TraitLevel( trait ) > 0 )
-			return TraitLevel( trait ) < 3;
-
-		return DistinctTraits < 3;
-	}
-
-	public void Install( RoundTrait trait )
-	{
-		var index = (int)trait;
-
-		if ( Levels[index] > 0 )
-		{
-			Levels[index] = Math.Min( 3, Levels[index] + 1 );
-			return;
-		}
-
-		if ( DistinctTraits >= 3 )
-			return;
-
-		Levels[index] = 1;
-	}
+	public int StatusHash => Index * 17 + (int)Status;
 
 	public void ResetCombat()
 	{
@@ -69,8 +18,50 @@ public sealed class RoundSlot
 		Lost = null;
 		Status = RoundStatus.Chambered;
 	}
+}
 
-	public RoundFlight BuildFlight()
+public sealed class RunLoadout
+{
+	public int BonusDamage;
+	public readonly int[] Levels = new int[4];
+
+	public int TraitLevel( RoundTrait trait ) => Levels[(int)trait];
+
+	public int Hash
+	{
+		get
+		{
+			var hash = 0;
+			foreach ( var level in Levels )
+				hash = hash * 8 + level;
+			return hash;
+		}
+	}
+
+	public float CatchBonus
+	{
+		get
+		{
+			var magnet = TraitLevel( RoundTrait.Magnetic );
+			return magnet <= 0 ? 0f : 24f + magnet * 28f;
+		}
+	}
+
+	public void Clear()
+	{
+		for ( var i = 0; i < Levels.Length; i++ )
+			Levels[i] = 0;
+
+		BonusDamage = 0;
+	}
+
+	public void Install( RoundTrait trait )
+	{
+		var index = (int)trait;
+		Levels[index] = Math.Min( 3, Levels[index] + 1 );
+	}
+
+	public RoundFlight BuildFlight( RoundSlot slot )
 	{
 		var pierce = TraitLevel( RoundTrait.Pierce );
 		var bounce = TraitLevel( RoundTrait.Bounce );
@@ -79,8 +70,9 @@ public sealed class RoundSlot
 
 		return new RoundFlight
 		{
-			SlotIndex = Index,
-			Tint = Tint,
+			SlotIndex = slot.Index,
+			Tint = slot.Tint,
+			Damage = 1 + BonusDamage,
 			PierceCharges = pierce,
 			MaxBounces = 4 + bounce * 2,
 			Energy = 5500f + bounce * 900f,
@@ -97,6 +89,7 @@ public struct RoundFlight
 {
 	public int SlotIndex;
 	public Color Tint;
+	public int Damage;
 	public int PierceCharges;
 	public int MaxBounces;
 	public float Energy;
@@ -110,8 +103,9 @@ public struct RoundFlight
 public enum RunPhase
 {
 	Playing,
+	DecideLap,
 	PickTrait,
-	PickRound,
 	Dead,
-	Won
+	Extracted,
+	City
 }
