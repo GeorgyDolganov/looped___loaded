@@ -6,7 +6,7 @@ public sealed class PlayerAim : Component
 	[Property] public RingRunner Runner { get; set; }
 	[Property] public RoundInventory Inventory { get; set; }
 	[Property] public GameLoop Loop { get; set; }
-	[Property] public float MuzzleOffset { get; set; } = 52f;
+	[Property] public float MuzzleOffset { get; set; } = 82f;
 	[Property] public float PreviewLength { get; set; } = 1500f;
 	[Property] public float PreviewBounceLength { get; set; } = 340f;
 	[Property] public float RoundRadius { get; set; } = 13f;

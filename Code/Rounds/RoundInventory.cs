@@ -7,7 +7,7 @@ public sealed class RoundInventory : Component
 	[Property] public PlayerAim Aim { get; set; }
 	[Property] public GameLoop Loop { get; set; }
 	[Property] public float CatchRadius { get; set; } = 105f;
-	[Property] public float CatchOffset { get; set; } = 60f;
+	[Property] public float CatchOffset { get; set; } = 82f;
 	[Property] public float PickupRadius { get; set; } = 145f;
 
 	public RunLoadout Loadout { get; } = new();
@@ -146,7 +146,7 @@ public sealed class RoundInventory : Component
 		if ( chamberedMarker.IsValid() )
 		{
 			chamberedMarker.Enabled = ready;
-			chamberedMarker.WorldPosition = Arena.Geometry.ToPlayWorld( Runner.Flat ) + Vector3.Up * 66f;
+			chamberedMarker.WorldPosition = Arena.Geometry.ToPlayWorld( Runner.Flat ) + Vector3.Up * 140f;
 
 			var renderer = chamberedMarker.GetComponent<ModelRenderer>();
 			if ( renderer.IsValid() && slot is not null )

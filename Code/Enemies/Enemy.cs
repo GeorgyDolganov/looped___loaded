@@ -23,7 +23,6 @@ public sealed class Enemy : Component
 	static readonly Color ShieldTint = new Color( 0.55f, 0.72f, 0.95f );
 	static readonly Color ShooterTint = new Color( 1f, 0.55f, 0.18f );
 	static readonly Color CoreTint = new Color( 0.78f, 0.18f, 0.32f );
-	static readonly Color ArmorTint = new Color( 0.55f, 0.62f, 0.78f );
 	static readonly Color HurtTint = new Color( 1f, 0.9f, 0.6f );
 
 	GameObject body;
@@ -31,8 +30,11 @@ public sealed class Enemy : Component
 	PolyLine outline;
 	PolyLine hpBack;
 	PolyLine hpFill;
+	SkinnedModelRenderer terry;
 	EnemyKind builtKind;
+	Vector2 moveVelocity;
 	float hitAt = -99f;
+	readonly List<(ModelRenderer Renderer, Color Tint)> dressed = new();
 	float freezeUntil;
 	float freezeScale = 1f;
 	float shotAt = -99f;
@@ -64,9 +66,16 @@ public sealed class Enemy : Component
 		Radius = kind switch
 		{
 			EnemyKind.Core => Arena.IsValid() ? Arena.Geometry.CoreRadius : 230f,
-			EnemyKind.Shield => 62f,
-			_ => 52f
+			EnemyKind.Shield => 72f,
+			_ => 64f
 		};
+
+		if ( Arena.IsValid() && Kind != EnemyKind.Core )
+		{
+			var pos = Flat;
+			Arena.Geometry.Eject( ref pos, Radius, true, pos );
+			Flat = pos;
+		}
 
 		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
 		RebuildVisuals();
@@ -136,6 +145,67 @@ public sealed class Enemy : Component
 			Loop.RegisterKill();
 	}
 
+	Vector2 LookFlat
+	{
+		get
+		{
+			if ( Kind == EnemyKind.Core )
+				return ArenaGeometry.FromAngle( Time.Now * 0.35f );
+
+			if ( Kind == EnemyKind.Shield )
+				return ShieldFacing;
+
+			if ( moveVelocity.Length > 8f )
+				return moveVelocity.Normal;
+
+			if ( Loop.IsValid() && Loop.Runner.IsValid() )
+			{
+				var to = Loop.Runner.Flat - Flat;
+				if ( to.Length > 1f )
+					return to.Normal;
+			}
+
+			return new Vector2( -1f, 0f );
+		}
+	}
+
+	void PaintDressed( float flash, bool frozen )
+	{
+		if ( !body.IsValid() )
+			return;
+
+		var renderers = body.GetComponentsInChildren<ModelRenderer>( true );
+		if ( dressed.Count != renderers.Count() )
+		{
+			dressed.Clear();
+			foreach ( var renderer in renderers )
+				dressed.Add( (renderer, renderer.Tint) );
+		}
+
+		var overlay = HurtTint;
+		var blend = flash;
+		if ( frozen )
+		{
+			overlay = new Color( 0.45f, 0.9f, 1f );
+			blend = MathF.Max( blend, 0.55f );
+		}
+
+		if ( Kind == EnemyKind.Shooter && telegraphUntil > Time.Now )
+		{
+			overlay = Color.White;
+			blend = MathF.Max( blend, 0.45f );
+		}
+
+		foreach ( var mesh in dressed )
+		{
+			if ( !mesh.Renderer.IsValid() )
+				continue;
+
+			var painted = Color.Lerp( mesh.Tint, LiveTint, 0.88f );
+			mesh.Renderer.Tint = Color.Lerp( painted, overlay, blend );
+		}
+	}
+
 	Vector2 ShieldFacing
 	{
 		get
@@ -188,6 +258,7 @@ public sealed class Enemy : Component
 		var scale = frozen ? freezeScale : 1f;
 		var inner = Arena.Geometry.CoreRadius + 160f;
 		var track = Arena.Geometry.TrackRadius - 28f;
+		var before = Flat;
 
 		switch ( Kind )
 		{
@@ -209,31 +280,41 @@ public sealed class Enemy : Component
 				var orbit = 0.34f * Pressure * scale * Time.Delta;
 				var angle = ArenaGeometry.ToAngle( Flat ) - orbit;
 				var radius = MathX.Lerp( inner + 30f, Arena.Geometry.TrackInner - 140f, 0.42f );
-				Flat = ArenaGeometry.FromAngle( angle ) * radius;
+				var want = ArenaGeometry.FromAngle( angle ) * radius;
+				var travel = (want - Flat).Length;
+				var pace = Time.Delta > 0.0001f ? travel / Time.Delta : 160f;
+				Seek( want, MathF.Max( 120f, pace ), inner, Arena.Geometry.TrackInner - 40f );
 				break;
 			}
 		}
 
+		moveVelocity = Time.Delta > 0.0001f ? (Flat - before) / Time.Delta : Vector2.Zero;
 		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
 	}
 
 	void Seek( Vector2 goal, float speed, float minRadius, float maxRadius )
 	{
-		var to = goal - Flat;
+		var geo = Arena.Geometry;
+		var from = Flat;
+		var pos = Flat;
+		var to = goal - pos;
 		if ( to.Length > 6f )
-			Flat += to.Normal * speed * Time.Delta;
-
-		var length = Flat.Length;
-		if ( length < 1f )
 		{
-			Flat = Vector2.Right * minRadius;
-			return;
+			var dir = geo.SteerAround( pos, to.Normal, goal, Radius );
+			if ( dir.Length > 0.01f )
+				geo.MoveBody( ref pos, dir.Normal * (speed * Time.Delta), Radius, true );
 		}
 
-		if ( length < minRadius )
-			Flat = Flat.Normal * minRadius;
+		var length = pos.Length;
+		if ( length < 1f )
+			pos = Vector2.Right * minRadius;
+		else if ( length < minRadius )
+			pos = pos.Normal * minRadius;
 		else if ( length > maxRadius )
-			Flat = Flat.Normal * maxRadius;
+			pos = pos.Normal * maxRadius;
+
+		geo.Eject( ref pos, Radius, true, from );
+		Flat = pos;
 	}
 
 	void ThinkShoot()
@@ -291,16 +372,22 @@ public sealed class Enemy : Component
 		if ( Kind == EnemyKind.Shooter && telegraphUntil > Time.Now )
 			tint = Color.Lerp( tint, Color.White, 0.45f );
 
-		if ( body.IsValid() )
+		var look = LookFlat;
+		if ( look.Length > 0.1f && body.IsValid() )
+			body.WorldRotation = Blocks.FlatFacing( look );
+
+		if ( terry.IsValid() )
 		{
-			foreach ( var renderer in body.GetComponentsInChildren<ModelRenderer>() )
-				renderer.Tint = tint;
+			var hold = Kind == EnemyKind.Shooter ? 1 : Kind == EnemyKind.Shield ? 5 : 0;
+			TerryLook.Drive( terry, new Vector3( moveVelocity.x, moveVelocity.y, 0f ), new Vector3( look.x, look.y, 0f ), hold );
 		}
+
+		PaintDressed( flash, frozen );
 
 		if ( shieldPlate.IsValid() )
 		{
 			var facing = ShieldFacing;
-			shieldPlate.WorldPosition = WorldPosition + new Vector3( facing.x, facing.y, 0f ) * 36f + Vector3.Up * 70f;
+			shieldPlate.WorldPosition = WorldPosition + new Vector3( facing.x, facing.y, 0f ) * 58f + Vector3.Up * 120f;
 			shieldPlate.WorldRotation = Blocks.FlatFacing( facing );
 
 			var plate = shieldPlate.GetComponent<ModelRenderer>();
@@ -337,31 +424,18 @@ public sealed class Enemy : Component
 		body = Scene.CreateObject();
 		body.Name = "Enemy Body";
 		body.Parent = GameObject;
+		body.LocalPosition = Vector3.Zero;
+		body.LocalRotation = Rotation.Identity;
 
-		var tint = LiveTint;
-
-		if ( Kind == EnemyKind.Core )
-		{
-			var span = Radius * 1.85f;
-			Blocks.SpawnBox( body, "Nucleus", WorldPosition + Vector3.Up * 90f, Rotation.Identity, new Vector3( span, span, 180f ), tint );
-			Blocks.SpawnBox( body, "Crown", WorldPosition + Vector3.Up * 200f, Rotation.Identity, new Vector3( span * 0.55f, span * 0.55f, 70f ), tint * 1.35f );
-			Blocks.SpawnBox( body, "Armor", WorldPosition + Vector3.Up * 70f, Rotation.Identity, new Vector3( span * 1.12f, span * 1.12f, 40f ), ArmorTint );
-		}
-		else
-		{
-			Blocks.SpawnBox( body, "Torso", WorldPosition + Vector3.Up * 62f, Rotation.Identity, new Vector3( 74f, 74f, 124f ), tint );
-			Blocks.SpawnBox( body, "Head", WorldPosition + Vector3.Up * 148f, Rotation.Identity, new Vector3( 44f, 44f, 44f ), tint * 1.4f );
-		}
+		dressed.Clear();
+		terry = TerryLook.Attach( body, false, Kind == EnemyKind.Core ? TerryLook.CoreScale : TerryLook.BodyScale );
 
 		if ( Kind == EnemyKind.Shield )
 		{
-			shieldPlate = Blocks.SpawnBox( GameObject, "Shield", WorldPosition + Vector3.Up * 70f, Rotation.Identity, new Vector3( 18f, 110f, 150f ), ShieldTint * 1.3f );
+			shieldPlate = Blocks.SpawnBox( GameObject, "Shield", WorldPosition + Vector3.Up * 120f, Rotation.Identity, new Vector3( 28f, 160f, 220f ), ShieldTint * 1.3f );
 		}
 
-		if ( Kind == EnemyKind.Shooter )
-		{
-			Blocks.SpawnBox( body, "Barrel", WorldPosition + new Vector3( 40f, 0f, 70f ), Rotation.Identity, new Vector3( 70f, 16f, 16f ), tint * 0.5f );
-		}
+		var tint = LiveTint;
 
 		var outlineObject = Scene.CreateObject();
 		outlineObject.Name = "Hit Circle";
@@ -403,9 +477,9 @@ public sealed class Enemy : Component
 		var tint = Color.Lerp( HealthTint( ratio ), HurtTint, flash );
 		var camera = Scene.Camera;
 		var rot = camera.IsValid() ? camera.WorldRotation : Rotation.Identity;
-		var lift = Kind == EnemyKind.Core ? 220f : 98f;
-		var half = Kind == EnemyKind.Core ? 110f : 42f;
-		var center = WorldPosition + rot.Up * lift - rot.Forward * 24f;
+		var head = TerryLook.Height( Kind == EnemyKind.Core ) + 24f;
+		var half = Kind == EnemyKind.Core ? 110f : 48f;
+		var center = WorldPosition + Vector3.Up * head - rot.Forward * 28f;
 		var left = center - rot.Right * half;
 		var right = center + rot.Right * half;
 
@@ -414,7 +488,7 @@ public sealed class Enemy : Component
 		hpBack.Apply();
 		hpBack.SetPoints( new List<Vector3> { left, right } );
 
-		if ( ratio <= 0.02f )
+		if ( Health <= 0 || ratio <= 0f )
 		{
 			hpFill.Clear();
 			return;
@@ -423,7 +497,7 @@ public sealed class Enemy : Component
 		hpFill.HeadTint = tint;
 		hpFill.TailTint = tint;
 		hpFill.Apply();
-		hpFill.SetPoints( new List<Vector3> { left, left + rot.Right * (half * 2f * ratio) } );
+		hpFill.SetPoints( new List<Vector3> { left, right - rot.Right * (half * 2f * (1f - ratio)) } );
 	}
 
 	static Color HealthTint( float ratio )

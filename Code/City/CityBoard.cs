@@ -261,12 +261,12 @@ public sealed class CityBoard : Component
 		if ( Building )
 		{
 			TickRotate();
-			if ( Input.Pressed( "Attack1" ) )
+			if ( Input.Pressed( "Attack1" ) && !(Loop.IsValid() && Loop.BlocksShot) )
 				TryPlace();
 			return;
 		}
 
-		if ( Input.Pressed( "Attack1" ) )
+		if ( Input.Pressed( "Attack1" ) && !(Loop.IsValid() && Loop.BlocksShot) )
 			TryFire();
 	}
 

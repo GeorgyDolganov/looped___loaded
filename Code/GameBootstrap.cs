@@ -4,9 +4,6 @@ public sealed class GameBootstrap : Component
 {
 	[Property] public bool BuildLighting { get; set; } = true;
 
-	static readonly Color PlayerTint = new Color( 0.82f, 0.94f, 1f );
-	static readonly Color WeaponTint = new Color( 0.22f, 0.30f, 0.40f );
-
 	protected override void OnStart()
 	{
 		if ( BuildLighting )
@@ -112,10 +109,6 @@ public sealed class GameBootstrap : Component
 	{
 		var go = Scene.CreateObject();
 		go.Name = "Player";
-
-		Blocks.SpawnBox( go, "Torso", new Vector3( 0f, 0f, 40f ), Rotation.Identity, new Vector3( 46f, 46f, 80f ), PlayerTint );
-		Blocks.SpawnBox( go, "Barrel", new Vector3( 54f, 0f, 46f ), Rotation.Identity, new Vector3( 76f, 16f, 16f ), WeaponTint );
-		Blocks.SpawnBox( go, "Shoulder", new Vector3( 8f, 0f, 46f ), Rotation.Identity, new Vector3( 34f, 40f, 26f ), WeaponTint );
 
 		var runner = go.AddComponent<RingRunner>();
 		runner.Arena = arena;

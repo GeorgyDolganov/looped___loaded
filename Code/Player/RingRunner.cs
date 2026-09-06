@@ -11,7 +11,7 @@ public sealed class RingRunner : Component
 	[Property] public float SlowSpeedScale { get; set; } = 0.38f;
 	[Property] public float SlowDrain { get; set; } = 0.55f;
 	[Property] public float SlowRegen { get; set; } = 0.28f;
-	[Property] public float PlayerRadius { get; set; } = 34f;
+	[Property] public float PlayerRadius { get; set; } = 48f;
 
 	public float Angle { get; private set; }
 	public float TravelledArc { get; private set; }
@@ -31,6 +31,7 @@ public sealed class RingRunner : Component
 	float lastDash = -999f;
 	float dashSpent;
 	bool slowOverheat;
+	SkinnedModelRenderer terry;
 	readonly List<(ModelRenderer Renderer, Color Tint)> meshes = new();
 
 	public void ResetToStart( float startAngle )
@@ -73,6 +74,24 @@ public sealed class RingRunner : Component
 		return true;
 	}
 
+	public void FinishCurrentLap()
+	{
+		var lapLength = MathF.Tau * Radius;
+		if ( lapLength <= 0.001f )
+			return;
+
+		var into = TravelledArc % lapLength;
+		if ( into < 0f )
+			into += lapLength;
+
+		TravelledArc += into < 0.001f ? lapLength : lapLength - into;
+		Angle = ArenaBuilder.StartAngle;
+		dashElapsed = 999f;
+		dashSpent = 0f;
+		Slowing = false;
+		ApplyTransform();
+	}
+
 	public void ShiftTime( float dt )
 	{
 		lastDash += dt;
@@ -83,6 +102,7 @@ public sealed class RingRunner : Component
 		if ( Loop.IsValid() && Loop.IsFrozen )
 		{
 			ApplyTransform();
+			DriveTerry( 0f );
 			PaintHurt();
 			return;
 		}
@@ -104,14 +124,27 @@ public sealed class RingRunner : Component
 
 		Advance( arc );
 		ApplyTransform();
+		DriveTerry( arc );
 		PaintHurt();
+	}
+
+	void DriveTerry( float arc )
+	{
+		if ( !terry.IsValid() )
+			terry = TerryLook.Attach( GameObject, true, TerryLook.BodyScale );
+
+		var speed = Time.Delta > 0.0001f ? arc / Time.Delta : 0f;
+		var vel = new Vector3( Tangent.x, Tangent.y, 0f ) * speed;
+		TerryLook.Drive( terry, vel, WorldRotation.Forward, 1 );
 	}
 
 	void PaintHurt()
 	{
-		if ( meshes.Count == 0 )
+		var renderers = GameObject.GetComponentsInChildren<ModelRenderer>( true );
+		if ( meshes.Count != renderers.Count() )
 		{
-			foreach ( var renderer in GameObject.GetComponentsInChildren<ModelRenderer>( true ) )
+			meshes.Clear();
+			foreach ( var renderer in renderers )
 				meshes.Add( (renderer, renderer.Tint) );
 		}
 

@@ -111,6 +111,12 @@ public sealed class RoundProjectile : Component
 			BouncesLeft--;
 			Ricochets++;
 
+			if ( hit.Kind == WallKind.Panel && Loop.Arena.IsValid() )
+			{
+				Loop.Arena.KickPanel( hit.WallIndex, hit.Position, hit.Normal );
+				NudgeOut();
+			}
+
 			var world = geometry.ToPlayWorld( Flat );
 			Sound.Play( "sounds/impacts/bullets/impact-bullet-metal.sound", world );
 			ImpactFlash.Spawn( Scene, world, ShotColors.Player, 0.65f );

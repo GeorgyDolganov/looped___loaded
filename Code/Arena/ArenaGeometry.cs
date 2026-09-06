@@ -160,41 +160,69 @@ public sealed class ArenaGeometry
 		return point;
 	}
 
-	public void Eject( ref Vector2 flat, float radius )
+	public void Eject( ref Vector2 flat, float radius, bool includeBoss = false )
+		=> Eject( ref flat, radius, includeBoss, flat );
+
+	public void Eject( ref Vector2 flat, float radius, bool includeBoss, Vector2 preferFrom )
 	{
-		for ( var pass = 0; pass < 4; pass++ )
+		for ( var pass = 0; pass < 6; pass++ )
 		{
 			var pushed = false;
 
 			for ( var i = 0; i < Walls.Count; i++ )
 			{
 				var wall = Walls[i];
-				if ( wall.Kind == WallKind.Core && !CoreSolid )
+				if ( !BlocksWalk( wall.Kind, includeBoss ) )
 					continue;
 
-				if ( wall.Kind == WallKind.Boss )
+				if ( !OverlapObb( flat, radius, wall, preferFrom, out var push ) )
 					continue;
 
-				var length = wall.Length;
-				if ( length < 0.001f )
-					continue;
-
-				var along = Math.Clamp( Dot( flat - wall.A, wall.Direction ), 0f, length );
-				var closest = wall.A + wall.Direction * along;
-				var offset = flat - closest;
-				var distance = offset.Length;
-
-				if ( distance >= radius - SurfaceTolerance )
-					continue;
-
-				var normal = distance < 0.001f ? wall.Normal : offset.Normal;
-				flat += normal * ( radius - distance + 1.5f );
+				flat += push;
 				pushed = true;
 			}
 
 			if ( !pushed )
 				return;
 		}
+	}
+
+	public void MoveBody( ref Vector2 flat, Vector2 delta, float radius, bool includeBoss )
+	{
+		var from = flat;
+		Eject( ref flat, radius, includeBoss, from );
+
+		var remain = delta.Length;
+		if ( remain < 0.001f )
+			return;
+
+		var dir = delta.Normal;
+
+		for ( var pass = 0; pass < 2; pass++ )
+		{
+			if ( remain < 0.001f )
+				break;
+
+			if ( !TraceDisk( flat, dir, remain + 2f, radius, includeBoss, out var hit ) )
+			{
+				flat += dir * remain;
+				break;
+			}
+
+			var travel = MathF.Min( remain, MathF.Max( 0f, hit.Distance - 0.35f ) );
+			flat += dir * travel;
+			remain -= travel;
+			if ( remain < 0.001f )
+				break;
+
+			var tangent = new Vector2( -hit.Normal.y, hit.Normal.x );
+			if ( Dot( tangent, delta ) < 0f )
+				tangent = -tangent;
+
+			dir = tangent;
+		}
+
+		Eject( ref flat, radius, includeBoss, from );
 	}
 
 	public bool TraceRay( Vector2 origin, Vector2 direction, float maxDistance, out ArenaHit hit )
@@ -244,6 +272,231 @@ public sealed class ArenaGeometry
 		}
 
 		return found;
+	}
+
+	public Vector2 SteerAround( Vector2 origin, Vector2 desired, Vector2 goal, float radius )
+	{
+		if ( desired.Length < 0.01f )
+			return desired;
+
+		desired = desired.Normal;
+		var look = MathF.Max( 220f, radius * 3.2f );
+
+		if ( !BlockedAhead( origin, desired, look, radius, out var hit ) )
+			return desired;
+
+		var bestDir = Vector2.Zero;
+		var bestScore = float.NegativeInfinity;
+		var heading = ToAngle( desired );
+		var toGoal = goal - origin;
+		var goalDir = toGoal.Length > 1f ? toGoal.Normal : desired;
+
+		for ( var i = -7; i <= 7; i++ )
+		{
+			if ( i == 0 )
+				continue;
+
+			var dir = FromAngle( heading + i * 0.28f );
+			if ( BlockedAhead( origin, dir, look, radius, out _ ) )
+				continue;
+
+			var score = Dot( dir, desired ) * 1.15f + Dot( dir, goalDir ) - MathF.Abs( i ) * 0.03f;
+			if ( score <= bestScore )
+				continue;
+
+			bestScore = score;
+			bestDir = dir;
+		}
+
+		if ( bestDir.Length > 0.01f )
+			return bestDir;
+
+		return Detour( origin, goal, radius, hit );
+	}
+
+	bool BlockedAhead( Vector2 origin, Vector2 direction, float look, float radius, out ArenaHit hit )
+	{
+		if ( !TraceDisk( origin, direction, look, radius, true, out hit ) )
+			return false;
+
+		return hit.Distance < MathF.Max( radius + 28f, look * 0.55f );
+	}
+
+	public bool TraceDisk( Vector2 origin, Vector2 direction, float maxDistance, float radius, out ArenaHit hit )
+		=> TraceDisk( origin, direction, maxDistance, radius, true, out hit );
+
+	public bool TraceDisk( Vector2 origin, Vector2 direction, float maxDistance, float radius, bool includeBoss, out ArenaHit hit )
+	{
+		hit = default;
+		if ( direction.Length < 0.01f || maxDistance <= 0f )
+			return false;
+
+		direction = direction.Normal;
+		var best = maxDistance;
+		var found = false;
+
+		for ( var i = 0; i < Walls.Count; i++ )
+		{
+			var wall = Walls[i];
+			if ( wall.Length < 1f || !BlocksWalk( wall.Kind, includeBoss ) )
+				continue;
+
+			WallBox( wall, radius, out var center, out var axisX, out var axisY, out var hx, out var hy );
+			if ( !RayObb( origin, direction, best, center, axisX, axisY, hx, hy, out var travel, out var normal ) )
+				continue;
+
+			best = MathF.Max( 0f, travel );
+			found = true;
+			hit = new ArenaHit
+			{
+				Distance = best,
+				Position = origin + direction * best,
+				Normal = normal,
+				WallIndex = i,
+				Kind = wall.Kind
+			};
+		}
+
+		return found;
+	}
+
+	bool BlocksWalk( WallKind kind, bool includeBoss )
+	{
+		if ( kind == WallKind.Boundary )
+			return false;
+
+		if ( kind == WallKind.Core && !CoreSolid )
+			return false;
+
+		if ( kind == WallKind.Boss && !includeBoss )
+			return false;
+
+		return true;
+	}
+
+	static float WallThickness( WallKind kind ) => kind switch
+	{
+		WallKind.Core => 36f,
+		WallKind.Boundary => 32f,
+		_ => 26f
+	};
+
+	static void WallBox( WallSegment wall, float bodyRadius, out Vector2 center, out Vector2 axisX, out Vector2 axisY, out float hx, out float hy )
+	{
+		var thick = WallThickness( wall.Kind );
+		center = wall.Center;
+		axisX = wall.Direction;
+		axisY = wall.Normal;
+		hx = wall.Length * 0.5f + thick * 0.5f + bodyRadius + 2f;
+		hy = thick * 0.5f + bodyRadius + 2f;
+	}
+
+	static bool OverlapObb( Vector2 point, float bodyRadius, WallSegment wall, Vector2 preferFrom, out Vector2 push )
+	{
+		push = Vector2.Zero;
+		if ( wall.Length < 1f )
+			return false;
+		WallBox( wall, bodyRadius, out var center, out var axisX, out var axisY, out var hx, out var hy );
+		var to = point - center;
+		var lx = Dot( to, axisX );
+		var ly = Dot( to, axisY );
+		if ( hx - MathF.Abs( lx ) <= 0f || hy - MathF.Abs( ly ) <= 0f )
+			return false;
+
+		var prefer = Dot( preferFrom - center, axisY );
+		var side = prefer >= 0f ? 1f : -1f;
+		if ( MathF.Abs( prefer ) < 0.01f )
+			side = ly >= 0f ? 1f : -1f;
+
+		push = axisY * (side * hy - ly + side * 2.5f);
+		return true;
+	}
+
+	static bool RayObb( Vector2 origin, Vector2 dir, float maxDistance, Vector2 center, Vector2 axisX, Vector2 axisY, float hx, float hy, out float travel, out Vector2 normal )
+	{
+		travel = 0f;
+		normal = axisY;
+		var to = origin - center;
+		var ox = Dot( to, axisX );
+		var oy = Dot( to, axisY );
+
+		if ( MathF.Abs( ox ) < hx - 1f && MathF.Abs( oy ) < hy - 1f )
+		{
+			var px = hx - MathF.Abs( ox );
+			var py = hy - MathF.Abs( oy );
+			normal = px < py
+				? axisX * (ox >= 0f ? 1f : -1f)
+				: axisY * (oy >= 0f ? 1f : -1f);
+			return true;
+		}
+
+		var dx = Dot( dir, axisX );
+		var dy = Dot( dir, axisY );
+		var tmin = 0f;
+		var tmax = maxDistance;
+		var nmin = axisY;
+
+		if ( !Slab( ox, dx, hx, axisX, ref tmin, ref tmax, ref nmin ) )
+			return false;
+
+		if ( !Slab( oy, dy, hy, axisY, ref tmin, ref tmax, ref nmin ) )
+			return false;
+
+		if ( tmax < 0f || tmin > maxDistance )
+			return false;
+
+		travel = tmin >= 0f ? tmin : 0f;
+		if ( travel > maxDistance )
+			return false;
+
+		normal = nmin;
+		if ( Dot( normal, dir ) > 0f )
+			normal = -normal;
+
+		return true;
+	}
+
+	static bool Slab( float origin, float speed, float half, Vector2 axis, ref float tmin, ref float tmax, ref Vector2 nmin )
+	{
+		if ( MathF.Abs( speed ) < 0.000001f )
+			return MathF.Abs( origin ) <= half;
+
+		var inv = 1f / speed;
+		var t1 = (-half - origin) * inv;
+		var t2 = (half - origin) * inv;
+		var n1 = -axis;
+		var n2 = axis;
+		if ( t1 > t2 )
+		{
+			(t1, t2) = (t2, t1);
+			(n1, n2) = (n2, n1);
+		}
+
+		if ( t1 > tmin )
+		{
+			tmin = t1;
+			nmin = n1;
+		}
+
+		if ( t2 < tmax )
+			tmax = t2;
+
+		return tmin <= tmax;
+	}
+
+	Vector2 Detour( Vector2 origin, Vector2 goal, float radius, ArenaHit hit )
+	{
+		if ( hit.WallIndex < 0 || hit.WallIndex >= Walls.Count )
+			return hit.Normal;
+
+		var wall = Walls[hit.WallIndex];
+		WallBox( wall, radius, out var center, out var axisX, out var axisY, out var hx, out var hy );
+		var side = Dot( origin - center, axisY ) >= 0f ? 1f : -1f;
+		var a = center - axisX * (hx + 24f) + axisY * side * (hy + 12f);
+		var b = center + axisX * (hx + 24f) + axisY * side * (hy + 12f);
+		var pick = (a - origin).Length + (goal - a).Length <= (b - origin).Length + (goal - b).Length ? a : b;
+		var to = pick - origin;
+		return to.Length > 1f ? to.Normal : hit.Normal;
 	}
 
 	public bool Contain( ref Vector2 flat, ref Vector2 direction, float radius )
@@ -323,6 +576,39 @@ public sealed class ArenaGeometry
 
 		return path;
 	}
+
+	public void KickPanel( int index, Vector2 hitPos, Vector2 hitNormal )
+	{
+		if ( index < 0 || index >= Walls.Count )
+			return;
+
+		var wall = Walls[index];
+		if ( wall.Kind != WallKind.Panel )
+			return;
+
+		var n = hitNormal.Length > 0.01f ? hitNormal.Normal : wall.Normal;
+		var look = -n;
+		var right = new Vector2( look.y, -look.x );
+		var side = Dot( hitPos - wall.Center, right );
+		var yaw = MathX.DegreeToRadian( side >= 0f ? 15f : -15f );
+		var cos = MathF.Cos( yaw );
+		var sin = MathF.Sin( yaw );
+		var c = wall.Center;
+		var a = Turn( wall.A - c, cos, sin ) + c;
+		var b = Turn( wall.B - c, cos, sin ) + c;
+		a = ClampPlay( a );
+		b = ClampPlay( b );
+
+		if ( (b - a).Length < 90f )
+			return;
+
+		var span = b - a;
+		var facing = new Vector2( -span.y, span.x ).Normal;
+		Walls[index] = new WallSegment( a, b, facing, WallKind.Panel );
+	}
+
+	static Vector2 Turn( Vector2 p, float cos, float sin )
+		=> new Vector2( p.x * cos - p.y * sin, p.x * sin + p.y * cos );
 
 	public int AddBossPanel( Vector2 a, Vector2 b )
 	{

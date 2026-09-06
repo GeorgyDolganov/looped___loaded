@@ -15,6 +15,8 @@ public sealed class GameLoop : Component
 	public bool InCity => Phase == RunPhase.City;
 	public bool InMenu => Phase == RunPhase.Menu;
 	public bool WantsUiCursor => InMenu || Paused || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait || Phase == RunPhase.Dead || Phase == RunPhase.Extracted;
+	public bool CanPause => !InMenu && !Paused && (Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait);
+	public bool BlocksShot => Time.Now < uiClickUntil;
 	public ArenaGeometry Geometry => Arena.Geometry;
 	public List<Enemy> Enemies { get; } = new();
 	public List<EnemyShot> Shots { get; } = new();
@@ -56,6 +58,22 @@ public sealed class GameLoop : Component
 	public float Threat => Progression.Threat( Lap );
 	public bool InBossFight { get; private set; }
 	public bool HasBossOffer => !InBossFight && Lap >= 5;
+	public bool CanSkipLap
+	{
+		get
+		{
+			if ( Phase != RunPhase.Playing || InBossFight || Paused || !Runner.IsValid() )
+				return false;
+
+			foreach ( var enemy in Enemies )
+			{
+				if ( enemy.IsValid() && enemy.Alive )
+					return false;
+			}
+
+			return true;
+		}
+	}
 	public int BossHealth
 	{
 		get
@@ -89,8 +107,10 @@ public sealed class GameLoop : Component
 	float lastHurtAt = -99f;
 	float armorNoticeAt = -99f;
 	float pauseStartedAt;
+	float uiClickUntil;
 	bool pendingBoss;
 	bool bossWon;
+	bool skipHinted;
 
 	public string SlotBlurb( int index )
 	{
@@ -236,7 +256,7 @@ public sealed class GameLoop : Component
 		if ( Runner.IsValid() )
 		{
 			Runner.GameObject.Enabled = true;
-			Runner.ResetToStart( MathF.PI * 0.5f );
+			Runner.ResetToStart( ArenaBuilder.StartAngle );
 		}
 
 		City?.SetVisible( false );
@@ -263,6 +283,17 @@ public sealed class GameLoop : Component
 	{
 		Autosave();
 		Game.Close();
+	}
+
+	static bool PressedEscape()
+	{
+		if ( Input.EscapePressed )
+		{
+			Input.EscapePressed = false;
+			return true;
+		}
+
+		return Input.Pressed( "Menu" );
 	}
 
 	void TickMenu()
@@ -293,7 +324,7 @@ public sealed class GameLoop : Component
 			return;
 		}
 
-		if ( Input.Pressed( "Menu" ) )
+		if ( PressedEscape() )
 			QuitGame();
 	}
 
@@ -320,9 +351,11 @@ public sealed class GameLoop : Component
 			return;
 		}
 
-		if ( Input.Pressed( "Menu" ) )
+		if ( PressedEscape() )
 			CloseSaves();
 	}
+
+	public void NoteUiClick() => uiClickUntil = Time.Now + 0.15f;
 
 	public void TogglePause()
 	{
@@ -364,7 +397,7 @@ public sealed class GameLoop : Component
 	{
 		Mouse.CursorType = "pointer";
 
-		if ( Input.Pressed( "Menu" ) || Input.Pressed( "Jump" ) || Input.Pressed( "Slot1" ) )
+		if ( PressedEscape() || Input.Pressed( "Jump" ) || Input.Pressed( "Slot1" ) )
 		{
 			Resume();
 			return;
@@ -423,7 +456,7 @@ public sealed class GameLoop : Component
 		if ( Runner.IsValid() )
 		{
 			Runner.GameObject.Enabled = true;
-			Runner.ResetToStart( MathF.PI * 0.5f );
+			Runner.ResetToStart( ArenaBuilder.StartAngle );
 			Runner.ApplyPace( 1 );
 		}
 
@@ -456,6 +489,7 @@ public sealed class GameLoop : Component
 		pendingBoss = false;
 		InBossFight = false;
 		bossWon = false;
+		skipHinted = false;
 		ClearPause();
 		if ( Arena.IsValid() )
 		{
@@ -544,7 +578,7 @@ public sealed class GameLoop : Component
 			return;
 		}
 
-		if ( Input.Pressed( "Menu" ) )
+		if ( PressedEscape() )
 		{
 			if ( Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait )
 				Pause();
@@ -631,7 +665,7 @@ public sealed class GameLoop : Component
 		if ( Input.Pressed( "Jump" ) && Runner.TryDash() )
 			Sound.Play( "sounds/footsteps/footstep-concrete-jump.sound", Runner.WorldPosition );
 
-		if ( Input.Pressed( "Attack1" ) )
+		if ( Input.Pressed( "Attack1" ) && !BlocksShot )
 			Fire();
 
 		CheckPickup();
@@ -828,9 +862,28 @@ public sealed class GameLoop : Component
 		if ( InBossFight )
 			return;
 
-		if ( !Runner.IsValid() || Runner.Lap <= Lap )
+		if ( CanSkipLap && !skipHinted )
+		{
+			skipHinted = true;
+			Announce( "ARENA CLEAR  ·  E SKIP LAP" );
+		}
+
+		if ( Runner.IsValid() && Runner.Lap > Lap )
+		{
+			OpenLapClear();
+			return;
+		}
+
+		if ( !CanSkipLap || !Input.Pressed( "Use" ) )
 			return;
 
+		Runner.FinishCurrentLap();
+		OpenLapClear();
+	}
+
+	void OpenLapClear()
+	{
+		skipHinted = false;
 		Phase = RunPhase.DecideLap;
 		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
 		Announce( $"LAP {Lap} CLEAR" );
