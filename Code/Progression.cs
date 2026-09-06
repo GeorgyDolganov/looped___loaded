@@ -61,6 +61,20 @@ public static class Progression
 	public static float TraitMul( int level )
 		=> level <= 0 ? 1f : MathF.Pow( TraitRatio, level - 1 );
 
+	public static float Tier( int level, float a, float b, float c )
+	{
+		if ( level <= 0 )
+			return 0f;
+
+		if ( level == 1 )
+			return a;
+
+		if ( level == 2 )
+			return b;
+
+		return c;
+	}
+
 	public static int Whole( float value )
 		=> Math.Max( 1, (int)MathF.Round( value ) );
 }

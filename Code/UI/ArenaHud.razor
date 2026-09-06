@@ -463,7 +463,11 @@
 					parts.Add( $"{RoundTraits.Code( trait )}{level}" );
 			}
 
-			return parts.Count == 0 ? $"PLAIN  ×{Loop.Threat:0.00}" : string.Join( "  ", parts ) + $"  ×{Loop.Threat:0.00}";
+			var body = parts.Count == 0 ? "PLAIN" : string.Join( "  ", parts );
+			if ( Loop.BloodShields > 0 )
+				body += $"  SH{Loop.BloodShields}";
+
+			return $"{body}  ×{Loop.Threat:0.00}";
 		}
 	}
 

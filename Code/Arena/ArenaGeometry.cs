@@ -27,6 +27,7 @@ public sealed class ArenaGeometry
 
 	readonly List<int> boundaryWalls = new();
 	readonly List<int> coreWalls = new();
+	readonly Dictionary<int, int> panelKicks = new();
 
 	public static Vector2 FromAngle( float radians ) => new Vector2( MathF.Cos( radians ), MathF.Sin( radians ) );
 
@@ -69,6 +70,8 @@ public sealed class ArenaGeometry
 			if ( Walls[i].Kind == WallKind.Panel )
 				Walls.RemoveAt( i );
 		}
+
+		panelKicks.Clear();
 
 		var rng = new Random( unchecked( seed * 48611 + Math.Max( 1, lap ) * 7919 ) );
 		var count = Math.Clamp( 1 + Math.Max( 1, lap ), 2, 6 );
@@ -550,34 +553,37 @@ public sealed class ArenaGeometry
 		return corrected;
 	}
 
-	public List<Vector2> PredictPath( Vector2 origin, Vector2 direction, float radius, float firstLegLimit, float bounceLegLength )
+	public List<Vector2> PredictPath( Vector2 origin, Vector2 direction, float radius, float firstLegLimit, float bounceLegLength, int extraBounces = 1 )
 	{
 		var path = new List<Vector2> { origin };
+		var dir = direction.Length > 0.01f ? direction.Normal : Vector2.Right;
+		var pos = origin;
+		var first = true;
+		var bounces = Math.Max( 0, extraBounces );
 
-		if ( !TraceRay( origin, direction, firstLegLimit + radius, out var hit ) )
+		for ( var i = 0; i <= bounces; i++ )
 		{
-			path.Add( origin + direction * firstLegLimit );
-			return path;
+			var limit = first ? firstLegLimit : bounceLegLength;
+			if ( limit <= 1f )
+				break;
+
+			if ( !TraceRay( pos, dir, limit + radius, out var hit ) )
+			{
+				path.Add( pos + dir * limit );
+				return path;
+			}
+
+			var contact = hit.Position + hit.Normal * radius;
+			path.Add( contact );
+			pos = contact;
+			dir = Reflect( dir, hit.Normal ).Normal;
+			first = false;
 		}
-
-		var contact = hit.Position + hit.Normal * radius;
-		path.Add( contact );
-
-		if ( bounceLegLength <= 0f )
-			return path;
-
-		var bounced = Reflect( direction, hit.Normal ).Normal;
-		var length = bounceLegLength;
-
-		if ( TraceRay( contact, bounced, bounceLegLength + radius, out var second ) )
-			length = MathF.Max( 0f, second.Distance - radius );
-
-		path.Add( contact + bounced * length );
 
 		return path;
 	}
 
-	public void KickPanel( int index, Vector2 hitPos, Vector2 hitNormal )
+	public void KickPanel( int index, Vector2 hitPos, Vector2 hitNormal, float extraDegrees = 0f, bool allowSecond = false )
 	{
 		if ( index < 0 || index >= Walls.Count )
 			return;
@@ -586,11 +592,19 @@ public sealed class ArenaGeometry
 		if ( wall.Kind != WallKind.Panel )
 			return;
 
+		panelKicks.TryGetValue( index, out var kicks );
+		kicks++;
+		panelKicks[index] = kicks;
+
+		var extra = 0f;
+		if ( kicks == 1 || (allowSecond && kicks == 2) )
+			extra = extraDegrees;
+
 		var n = hitNormal.Length > 0.01f ? hitNormal.Normal : wall.Normal;
 		var look = -n;
 		var right = new Vector2( look.y, -look.x );
 		var side = Dot( hitPos - wall.Center, right );
-		var yaw = MathX.DegreeToRadian( side >= 0f ? 15f : -15f );
+		var yaw = MathX.DegreeToRadian( (15f + extra) * (side >= 0f ? 1f : -1f) );
 		var cos = MathF.Cos( yaw );
 		var sin = MathF.Sin( yaw );
 		var c = wall.Center;

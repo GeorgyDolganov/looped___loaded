@@ -61,6 +61,7 @@ public sealed class Enemy : Component
 		Alive = true;
 		freezeUntil = 0f;
 		freezeScale = 1f;
+		markUntil = 0f;
 		shotAt = Time.Now + Game.Random.Float( 0.12f, 0.45f );
 		telegraphUntil = 0f;
 		Radius = kind switch
@@ -84,16 +85,66 @@ public sealed class Enemy : Component
 			body.Enabled = true;
 	}
 
+	public bool Marked => Time.Now < markUntil;
+
+	float markUntil;
+
 	public bool BlocksFrom( Vector2 incoming, RoundProjectile source )
 	{
 		if ( Kind == EnemyKind.Core )
 			return source is null || source.Ricochets <= 0;
 
-		if ( Kind != EnemyKind.Shield || !Loop.IsValid() || !Loop.Runner.IsValid() )
+		if ( Kind != EnemyKind.Shield )
+			return false;
+
+		if ( source is not null && source.ConsumeShred() )
+			return false;
+
+		if ( !Loop.IsValid() || !Loop.Runner.IsValid() )
 			return false;
 
 		var facing = ShieldFacing;
 		return ArenaGeometry.Dot( incoming, facing ) < -0.22f;
+	}
+
+	public void Mark( float duration )
+	{
+		if ( Kind == EnemyKind.Core || duration <= 0f )
+			return;
+
+		markUntil = MathF.Max( markUntil, Time.Now + duration );
+	}
+
+	public void Shove( Vector2 delta )
+	{
+		if ( !Alive || Kind == EnemyKind.Core || delta.Length < 0.01f || !Arena.IsValid() )
+			return;
+
+		var pos = Flat;
+		Arena.Geometry.MoveBody( ref pos, delta, Radius, true );
+		var length = pos.Length;
+		var inner = Arena.Geometry.CoreRadius + 160f;
+		var track = Arena.Geometry.TrackRadius - 28f;
+		if ( length < 1f )
+			pos = Vector2.Right * inner;
+		else if ( length < inner )
+			pos = pos.Normal * inner;
+		else if ( length > track )
+			pos = pos.Normal * track;
+
+		Flat = pos;
+		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
+	}
+
+	public void Damage( int amount, float freezeDuration, float freezeScale )
+	{
+		if ( freezeDuration > 0f )
+		{
+			freezeUntil = MathF.Max( freezeUntil, Time.Now + freezeDuration );
+			this.freezeScale = MathF.Min( this.freezeScale, freezeScale <= 0.01f ? 1f : freezeScale );
+		}
+
+		Damage( amount, null );
 	}
 
 	public void Damage( int amount, RoundProjectile source )

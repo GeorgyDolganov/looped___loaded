@@ -283,9 +283,9 @@ public sealed class ArenaBuilder : Component
 		}
 	}
 
-	public void KickPanel( int index, Vector2 hitPos, Vector2 hitNormal )
+	public void KickPanel( int index, Vector2 hitPos, Vector2 hitNormal, float extraDegrees = 0f, bool allowSecond = false )
 	{
-		Geometry.KickPanel( index, hitPos, hitNormal );
+		Geometry.KickPanel( index, hitPos, hitNormal, extraDegrees, allowSecond );
 		SyncPanel( index );
 	}
 

@@ -19,7 +19,12 @@ public sealed class RoundInventory : Component
 		? Runner.Flat + Aim.Direction * CatchOffset
 		: Vector2.Zero;
 
+	public Vector2 BackCatchPoint => Runner.IsValid() && Aim.IsValid()
+		? Runner.Flat - Aim.Direction * CatchOffset
+		: Vector2.Zero;
+
 	PolyLine catchRing;
+	PolyLine backRing;
 	GameObject chamberedMarker;
 
 	public void ResetLoadout()
@@ -86,7 +91,17 @@ public sealed class RoundInventory : Component
 	}
 
 	public bool InCatchZone( Vector2 flat, float radius, float catchBonus )
-		=> (flat - CatchPoint).Length <= CatchRadius + catchBonus + radius;
+	{
+		var reach = CatchRadius + catchBonus + radius;
+		if ( (flat - CatchPoint).Length <= reach )
+			return true;
+
+		var back = Loadout.BackstopScale;
+		if ( back <= 0.01f )
+			return false;
+
+		return (flat - BackCatchPoint).Length <= CatchRadius * back + catchBonus * back + radius;
+	}
 
 	public float ArcTo( Vector2 flat )
 	{
@@ -114,6 +129,14 @@ public sealed class RoundInventory : Component
 		catchRing.TailWidth = 4f;
 		catchRing.Apply();
 
+		var backObject = Scene.CreateObject();
+		backObject.Name = "Back Catch Ring";
+		backObject.Parent = GameObject;
+		backRing = backObject.AddComponent<PolyLine>();
+		backRing.HeadWidth = 3f;
+		backRing.TailWidth = 3f;
+		backRing.Apply();
+
 		chamberedMarker = Blocks.SpawnSphere( GameObject, "Chambered", Vector3.Zero, 20f, ShotColors.Player );
 	}
 
@@ -123,6 +146,8 @@ public sealed class RoundInventory : Component
 		{
 			if ( catchRing.IsValid() )
 				catchRing.Clear();
+			if ( backRing.IsValid() )
+				backRing.Clear();
 			if ( chamberedMarker.IsValid() )
 				chamberedMarker.Enabled = false;
 			return;
@@ -135,12 +160,29 @@ public sealed class RoundInventory : Component
 		var ready = slot is not null && slot.Status == RoundStatus.Chambered;
 		var tint = slot is not null && ready ? slot.Tint : new Color( 0.35f, 0.45f, 0.55f );
 
+		var bonus = Loadout.CatchBonus;
 		if ( catchRing.IsValid() )
 		{
 			catchRing.HeadTint = tint;
 			catchRing.TailTint = tint;
 			catchRing.Apply();
-			catchRing.SetPoints( BuildRing( slot ) );
+			catchRing.SetPoints( BuildRing( CatchPoint, CatchRadius + bonus ) );
+		}
+
+		if ( backRing.IsValid() )
+		{
+			var back = Loadout.BackstopScale;
+			if ( back <= 0.01f )
+			{
+				backRing.Clear();
+			}
+			else
+			{
+				backRing.HeadTint = tint * 0.7f;
+				backRing.TailTint = tint * 0.7f;
+				backRing.Apply();
+				backRing.SetPoints( BuildRing( BackCatchPoint, (CatchRadius + bonus) * back ) );
+			}
 		}
 
 		if ( chamberedMarker.IsValid() )
@@ -154,18 +196,16 @@ public sealed class RoundInventory : Component
 		}
 	}
 
-	List<Vector3> BuildRing( RoundSlot slot )
+	List<Vector3> BuildRing( Vector2 center, float span )
 	{
 		const int segments = 24;
-		var bonus = Loadout.CatchBonus;
-		var radius = CatchRadius + bonus;
-		var center = CatchPoint;
+		span = MathF.Max( 8f, span );
 		var points = new List<Vector3>( segments + 1 );
 
 		for ( var i = 0; i <= segments; i++ )
 		{
 			var angle = MathF.Tau * i / segments;
-			var offset = ArenaGeometry.FromAngle( angle ) * radius;
+			var offset = ArenaGeometry.FromAngle( angle ) * span;
 			points.Add( Arena.Geometry.ToWorld( center + offset, 12f ) );
 		}
 

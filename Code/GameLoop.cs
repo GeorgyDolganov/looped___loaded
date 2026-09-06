@@ -45,6 +45,9 @@ public sealed class GameLoop : Component
 	public int ShotsFired { get; private set; }
 	public int Catches { get; private set; }
 	public int Losses { get; private set; }
+	public int BloodShields { get; private set; }
+	public float SnapUntil { get; private set; }
+	public float SnapBoost => Time.Now < SnapUntil && Inventory.IsValid() ? Inventory.Loadout.SnapSpeed : 1f;
 	public int ExtractedRounds { get; private set; }
 	public int BurnedRounds { get; private set; }
 	public int BestExtract { get; private set; }
@@ -480,6 +483,8 @@ public sealed class GameLoop : Component
 		ShotsFired = 0;
 		Catches = 0;
 		Losses = 0;
+		BloodShields = 0;
+		SnapUntil = 0f;
 		Lap = 1;
 		layoutSeed = Game.Random.Int( 1, int.MaxValue - 1 );
 		ExtractedRounds = 0;
@@ -517,6 +522,16 @@ public sealed class GameLoop : Component
 
 		var world = Geometry.ToPlayWorld( projectile.Flat );
 		var chained = projectile.TargetsHit;
+		var threshold = Inventory.Loadout.BloodThreshold;
+		var shielded = false;
+		if ( threshold > 0 && projectile.Kills >= threshold )
+		{
+			BloodShields++;
+			shielded = true;
+		}
+
+		if ( Inventory.Loadout.SnapPreview > 0 )
+			SnapUntil = Time.Now + 0.45f;
 
 		slot.ResetCombat();
 		slot.Status = RoundStatus.Chambered;
@@ -526,7 +541,24 @@ public sealed class GameLoop : Component
 		Sound.Play( "sounds/impacts/melee/impact-melee-metal.sound", world );
 		ImpactFlash.Spawn( Scene, world, slot.Tint, 1.4f );
 
-		Announce( chained > 0 ? $"ROUND {slot.Index + 1} CHAMBERED  +{chained}" : $"ROUND {slot.Index + 1} CHAMBERED" );
+		if ( shielded )
+			Announce( $"ROUND {slot.Index + 1} CHAMBERED  ·  SHIELD" );
+		else
+			Announce( chained > 0 ? $"ROUND {slot.Index + 1} CHAMBERED  +{chained}" : $"ROUND {slot.Index + 1} CHAMBERED" );
+	}
+
+	public void RecoverDropped( RoundSlot slot, string reason )
+	{
+		if ( slot is null || slot.Status != RoundStatus.Dropped || !slot.Lost.IsValid() )
+			return;
+
+		var world = Geometry.ToPlayWorld( slot.Lost.Flat );
+		slot.ResetCombat();
+		slot.Status = RoundStatus.Chambered;
+		Inventory.TrySelect( slot.Index );
+		Sound.Play( "sounds/impacts/melee/impact-melee-metal.sound", world );
+		ImpactFlash.Spawn( Scene, world, slot.Tint, 1.1f );
+		Announce( $"ROUND {slot.Index + 1} {reason}" );
 	}
 
 	public void LoseRound( RoundProjectile projectile )
@@ -543,7 +575,7 @@ public sealed class GameLoop : Component
 
 		var dropped = go.AddComponent<DroppedRound>();
 		dropped.Tint = slot.Tint;
-		dropped.Place( Geometry, resting, slot.Index );
+		dropped.Place( this, resting, slot.Index );
 
 		slot.Flying = null;
 		slot.Lost = dropped;
@@ -669,6 +701,7 @@ public sealed class GameLoop : Component
 			Fire();
 
 		CheckPickup();
+		CheckSwipe();
 		CheckHits();
 		CheckLap();
 	}
@@ -732,6 +765,27 @@ public sealed class GameLoop : Component
 		return "ROUNDS LOST ON THE RING";
 	}
 
+	void CheckSwipe()
+	{
+		if ( !Runner.IsValid() || !Runner.Dashing || !Inventory.IsValid() )
+			return;
+
+		var reach = Inventory.Loadout.SwipeRadius;
+		if ( reach <= 1f )
+			return;
+
+		foreach ( var slot in Inventory.Slots )
+		{
+			if ( slot.Status != RoundStatus.InFlight || !slot.Flying.IsValid() || !slot.Flying.Armed )
+				continue;
+
+			if ( (slot.Flying.Flat - Runner.Flat).Length > reach + slot.Flying.Radius )
+				continue;
+
+			CatchRound( slot.Flying );
+		}
+	}
+
 	void CheckPickup()
 	{
 		foreach ( var slot in Inventory.Slots )
@@ -788,6 +842,18 @@ public sealed class GameLoop : Component
 
 	void Hurt()
 	{
+		if ( BloodShields > 0 )
+		{
+			BloodShields--;
+			lastHurtAt = Time.Now;
+			invulnUntil = Time.Now + 1.05f;
+			var blocked = Geometry.ToPlayWorld( Runner.Flat );
+			Sound.Play( "sounds/impacts/melee/impact-melee-metal.sound", Runner.WorldPosition );
+			ImpactFlash.Spawn( Scene, blocked, new Color( 1f, 0.85f, 0.35f ), 2.4f );
+			Announce( BloodShields > 0 ? $"SHIELD  ·  {BloodShields} LEFT" : "SHIELD BROKE" );
+			return;
+		}
+
 		Health--;
 		lastHurtAt = Time.Now;
 		invulnUntil = Time.Now + 1.05f;
@@ -1010,23 +1076,72 @@ public sealed class GameLoop : Component
 
 	void BeginTraitPick()
 	{
-		var pool = RoundTraits.All.ToList();
+		var loadout = Inventory.Loadout;
+		var fresh = new List<RoundTrait>();
+		var owned = new List<RoundTrait>();
+		foreach ( var trait in RoundTraits.All )
+		{
+			var level = loadout.TraitLevel( trait );
+			if ( level >= 3 )
+				continue;
+
+			if ( level > 0 )
+				owned.Add( trait );
+			else
+				fresh.Add( trait );
+		}
+
 		var count = City.IsValid() ? City.Stats().OfferCount : 2;
 		count = Math.Clamp( count, 2, 3 );
 
-		OfferA = TakeTrait( pool );
-		OfferB = TakeTrait( pool );
+		OfferA = TakeTrait( fresh, owned );
+		OfferB = TakeTrait( fresh, owned, OfferA );
 		HasThirdOffer = count >= 3;
 		if ( HasThirdOffer )
-			OfferC = TakeTrait( pool );
+			OfferC = TakeTrait( fresh, owned, OfferA, OfferB );
 
 		Phase = RunPhase.PickTrait;
 	}
 
-	static RoundTrait TakeTrait( List<RoundTrait> pool )
+	static RoundTrait TakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, params RoundTrait[] taken )
 	{
+		bool Used( RoundTrait trait )
+		{
+			foreach ( var skip in taken )
+			{
+				if ( skip == trait )
+					return true;
+			}
+
+			return false;
+		}
+
+		var pool = new List<RoundTrait>();
+		foreach ( var trait in fresh )
+		{
+			if ( !Used( trait ) )
+				pool.Add( trait );
+		}
+
+		var hadFresh = pool.Count > 0;
+		if ( pool.Count == 0 )
+		{
+			foreach ( var trait in owned )
+			{
+				if ( !Used( trait ) )
+					pool.Add( trait );
+			}
+		}
+
+		if ( pool.Count == 0 )
+			return RoundTrait.Pierce;
+
 		var pick = pool[Game.Random.Int( 0, pool.Count - 1 )];
-		pool.Remove( pick );
+		if ( hadFresh )
+			fresh.Remove( pick );
+		else
+			owned.Remove( pick );
+
 		return pick;
 	}
 
@@ -1213,10 +1328,14 @@ public sealed class GameLoop : Component
 	{
 		var radius = Geometry.TrackRadius;
 		var angle = flat.Length < 1f ? Runner.Angle : ArenaGeometry.ToAngle( flat );
-		var ahead = Wrap( Runner.Angle - angle ) * radius;
+		var minArc = LostRoundMinArc;
+		var rim = Inventory.IsValid() ? Inventory.Loadout.RimMinAngle : 0f;
+		if ( rim > 0.01f )
+			minArc = MathX.DegreeToRadian( rim ) * radius;
 
-		if ( ahead < LostRoundMinArc )
-			angle = Runner.Angle - LostRoundMinArc / radius;
+		var ahead = Wrap( Runner.Angle - angle ) * radius;
+		if ( ahead < minArc )
+			angle = Runner.Angle - minArc / radius;
 
 		return ArenaGeometry.FromAngle( angle ) * radius;
 	}

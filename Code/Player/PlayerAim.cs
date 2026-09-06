@@ -115,7 +115,15 @@ public sealed class PlayerAim : Component
 			return;
 		}
 
-		var flat = Arena.Geometry.PredictPath( Muzzle, Direction, RoundRadius, PreviewLength, PreviewBounceLength );
+		var bounces = 1;
+		if ( Inventory.IsValid() )
+		{
+			bounces = Math.Max( bounces, Inventory.Loadout.CueBounces );
+			if ( Loop.IsValid() && Time.Now < Loop.SnapUntil )
+				bounces = Math.Max( bounces, Inventory.Loadout.SnapPreview );
+		}
+
+		var flat = Arena.Geometry.PredictPath( Muzzle, Direction, RoundRadius, PreviewLength, PreviewBounceLength, bounces );
 		var world = new List<Vector3>( flat.Count );
 
 		foreach ( var point in flat )
