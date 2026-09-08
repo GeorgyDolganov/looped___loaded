@@ -33,7 +33,27 @@
 					}
 				</div>
 				<label class="clock">@TimeText</label>
-				<label class="mods">@GlobalMods</label>
+				<div class="mods">
+					@if ( EquippedTraits.Count == 0 )
+					{
+						<label>PLAIN</label>
+					}
+					else
+					{
+						@foreach ( var trait in EquippedTraits )
+						{
+							<div class="mod-chip">
+								<img src="@RoundTraits.Icon( trait )" />
+								<label>@TraitLevel( trait )</label>
+							</div>
+						}
+					}
+					@if ( Loop.BloodShields > 0 )
+					{
+						<label class="mod-extra">SH @Loop.BloodShields</label>
+					}
+					<label class="mod-extra">×@ThreatText</label>
+				</div>
 			</div>
 
 			<div class="top-right">
@@ -324,11 +344,13 @@
 				<div class="cards">
 					<div class="card upgrade" style="border-color: @TraitBorder(Loop.OfferA)" onclick="@PickOfferA">
 						<label class="key">1</label>
+						<img class="art" src="@RoundTraits.Icon(Loop.OfferA)" />
 						<label class="title">@RoundTraits.Title(Loop.OfferA)</label>
 						<label class="blurb">@OfferBlurb(Loop.OfferA)</label>
 					</div>
 					<div class="card upgrade" style="border-color: @TraitBorder(Loop.OfferB)" onclick="@PickOfferB">
 						<label class="key">2</label>
+						<img class="art" src="@RoundTraits.Icon(Loop.OfferB)" />
 						<label class="title">@RoundTraits.Title(Loop.OfferB)</label>
 						<label class="blurb">@OfferBlurb(Loop.OfferB)</label>
 					</div>
@@ -336,6 +358,7 @@
 					{
 						<div class="card upgrade" style="border-color: @TraitBorder(Loop.OfferC)" onclick="@PickOfferC">
 							<label class="key">3</label>
+							<img class="art" src="@RoundTraits.Icon(Loop.OfferC)" />
 							<label class="title">@RoundTraits.Title(Loop.OfferC)</label>
 							<label class="blurb">@OfferBlurb(Loop.OfferC)</label>
 						</div>
@@ -470,6 +493,27 @@
 			return $"{body}  ×{Loop.Threat:0.00}";
 		}
 	}
+
+	List<RoundTrait> EquippedTraits
+	{
+		get
+		{
+			var list = new List<RoundTrait>();
+			if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
+				return list;
+
+			foreach ( var trait in RoundTraits.All )
+			{
+				if ( Loop.Inventory.Loadout.TraitLevel( trait ) > 0 )
+					list.Add( trait );
+			}
+
+			return list;
+		}
+	}
+
+	int TraitLevel( RoundTrait trait ) => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Loadout.TraitLevel( trait ) : 0;
+	string ThreatText => Loop.IsValid() ? Loop.Threat.ToString( "0.00" ) : "1.00";
 
 	string HelpText
 	{
@@ -842,10 +886,59 @@
 	}
 
 	.mods {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		max-width: 360px;
+		margin-top: 8px;
 		font-size: 13px;
 		color: #8aa4b8;
-		margin-top: 8px;
 		letter-spacing: 1px;
+	}
+
+	.mods > label {
+		font-size: 13px;
+		color: #8aa4b8;
+		letter-spacing: 1px;
+	}
+
+	.mod-chip {
+		flex-direction: row;
+		align-items: center;
+		margin-right: 8px;
+		margin-bottom: 4px;
+	}
+
+	.mod-chip img {
+		width: 36px;
+		height: 36px;
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: center;
+	}
+
+	.mod-chip label {
+		font-size: 13px;
+		color: #ffd27a;
+		margin-left: 4px;
+	}
+
+	.mod-extra {
+		font-size: 13px;
+		color: #8aa4b8;
+		letter-spacing: 1px;
+		margin-right: 8px;
+	}
+
+	.card .art {
+		width: 232px;
+		height: 232px;
+		margin-top: 12px;
+		margin-bottom: 4px;
+		border-radius: 10px;
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: center;
 	}
 
 	.meter {

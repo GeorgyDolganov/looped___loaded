@@ -222,4 +222,6 @@ public static class RoundTraits
 		TraitPack.Return => new Color( 0.45f, 0.85f, 1f ),
 		_ => new Color( 1f, 0.35f, 0.42f )
 	};
+
+	public static string Icon( RoundTrait trait ) => $"ui/traits/{trait.ToString().ToLowerInvariant()}.png";
 }
