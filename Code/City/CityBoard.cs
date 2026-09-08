@@ -6,7 +6,6 @@ public sealed class CityBoard : Component
 	[Property] public int Size { get; set; } = 5;
 	[Property] public float CellSize { get; set; } = 180f;
 	[Property] public float PlayHeight { get; set; } = 40f;
-	[Property] public Vector3 Anchor { get; set; } = new Vector3( 5000f, 0f, 0f );
 
 	public int Warehouse { get; private set; }
 	public BuildingKind Selected { get; private set; } = BuildingKind.Infirmary;
@@ -15,19 +14,22 @@ public sealed class CityBoard : Component
 	public bool Building => Mode == CityMode.Build;
 	public CityPlot Hovered { get; private set; }
 	public Vector2 Cursor { get; private set; }
+	public Vector3 Anchor => GameObject.WorldPosition;
 	public Vector3 Center => Anchor;
 	public float Span => Size * CellSize;
-	public Vector3 ShooterStand => Anchor + new Vector3( 0f, -Span * 0.5f - 260f, 0f );
+	public Vector3 ShooterStand => shooter.IsValid()
+		? shooter.WorldPosition
+		: Anchor + new Vector3( 0f, -Span * 0.5f - 260f, 0f );
 
 	readonly List<CityPlot> plots = new();
 	readonly List<GameObject> tiles = new();
-	GameObject root;
+	GameObject stage;
 	GameObject hover;
 	GameObject shooter;
 	GameObject cursor;
 	PolyLine aim;
 	PolyLine ghost;
-	bool built;
+	bool bound;
 
 	public void Deposit( int rounds )
 	{
@@ -79,7 +81,10 @@ public sealed class CityBoard : Component
 			if ( row.Kind < 0 || row.Kind >= Buildings.All.Length )
 				continue;
 
-			var plot = plots[row.Y * Size + row.X];
+			var plot = FindPlot( row.X, row.Y );
+			if ( plot is null )
+				continue;
+
 			plot.Occupied = true;
 			plot.Kind = (BuildingKind)row.Kind;
 			plot.Level = Math.Clamp( row.Level, 0, Buildings.MaxLevel( plot.Kind ) );
@@ -147,75 +152,72 @@ public sealed class CityBoard : Component
 		};
 	}
 
-	public void EnsureBuilt()
+	protected override void OnAwake() => BindScene();
+
+	public void EnsureBuilt() => BindScene();
+
+	public void BindScene()
 	{
-		if ( built )
+		if ( bound )
 			return;
 
-		root = Scene.CreateObject();
-		root.Name = "City";
-		root.Parent = GameObject;
+		stage = FindChild( GameObject, "Stage" ) ?? GameObject;
+		CollectCells();
+		if ( plots.Count == 0 )
+			FillDefaultCity();
 
-		Blocks.SpawnBox( root, "Ground", Anchor + new Vector3( 0f, -180f, -18f ), Rotation.Identity,
+		shooter = FindByName( stage, "City Shooter" );
+		EnsureOverlays();
+		bound = true;
+		SetVisible( false );
+	}
+
+	[Button( "Fill Default City" )]
+	public void FillDefaultCity()
+	{
+		stage = FindChild( GameObject, "Stage" ) ?? ReplaceChild( GameObject, "Stage" );
+		foreach ( var child in stage.Children.ToArray() )
+		{
+			if ( child.Name == "Runtime" )
+				continue;
+
+			child.Destroy();
+		}
+
+		plots.Clear();
+		tiles.Clear();
+
+		Blocks.SpawnBox( stage, "Ground", Anchor + new Vector3( 0f, -180f, -18f ), Rotation.Identity,
 			new Vector3( Span * 1.45f, Span * 1.9f, 20f ), new Color( 0.07f, 0.09f, 0.12f ), false );
 
 		for ( var y = 0; y < Size; y++ )
 		{
 			for ( var x = 0; x < Size; x++ )
 			{
-				var plot = new CityPlot { X = x, Y = y };
-				plots.Add( plot );
-
-				var pos = CellWorld( x, y );
+				var pos = GridWorld( x, y );
 				var shade = (x + y) % 2 == 0 ? 1f : 0.78f;
-				var tile = Blocks.SpawnBox( root, $"Tile {x},{y}", pos + Vector3.Up * 2f, Rotation.Identity,
+				var tile = Blocks.SpawnBox( stage, $"Tile {x},{y}", pos + Vector3.Up * 2f, Rotation.Identity,
 					new Vector3( CellSize * 0.92f, CellSize * 0.92f, 6f ),
 					new Color( 0.12f, 0.15f, 0.2f ) * shade, false );
-				tiles.Add( tile );
-
-				plot.Root = Scene.CreateObject();
-				plot.Root.Name = $"Plot {x},{y}";
-				plot.Root.Parent = root;
-				plot.Root.WorldPosition = pos;
+				var cell = tile.AddComponent<CityCell>();
+				cell.X = x;
+				cell.Y = y;
 			}
 		}
 
-		Blocks.SpawnBox( root, "Pad", ShooterStand + Vector3.Up * -8f, Rotation.Identity,
+		var stand = Anchor + new Vector3( 0f, -Span * 0.5f - 260f, 0f );
+		Blocks.SpawnBox( stage, "Pad", stand + Vector3.Up * -8f, Rotation.Identity,
 			new Vector3( 220f, 140f, 12f ), new Color( 0.18f, 0.22f, 0.28f ), false );
 
 		shooter = Scene.CreateObject();
 		shooter.Name = "City Shooter";
-		shooter.Parent = root;
-		shooter.WorldPosition = ShooterStand;
+		shooter.Parent = stage;
+		shooter.WorldPosition = stand;
 
-		Blocks.SpawnBox( shooter, "Torso", ShooterStand + Vector3.Up * 40f, Rotation.Identity, new Vector3( 46f, 46f, 80f ), new Color( 0.82f, 0.94f, 1f ) );
-		Blocks.SpawnBox( shooter, "Barrel", ShooterStand + new Vector3( 54f, 0f, 46f ), Rotation.Identity, new Vector3( 76f, 16f, 16f ), new Color( 0.22f, 0.3f, 0.4f ) );
+		Blocks.SpawnBox( shooter, "Torso", stand + Vector3.Up * 40f, Rotation.Identity, new Vector3( 46f, 46f, 80f ), new Color( 0.82f, 0.94f, 1f ) );
+		Blocks.SpawnBox( shooter, "Barrel", stand + new Vector3( 54f, 0f, 46f ), Rotation.Identity, new Vector3( 76f, 16f, 16f ), new Color( 0.22f, 0.3f, 0.4f ) );
 
-		hover = Blocks.SpawnBox( root, "Hover", CellWorld( 0, 0 ) + Vector3.Up * 8f, Rotation.Identity,
-			new Vector3( CellSize * 0.96f, CellSize * 0.96f, 8f ), new Color( 1f, 0.85f, 0.35f ), false );
-
-		cursor = Blocks.SpawnSphere( root, "Cursor", ShooterStand + Vector3.Up * PlayHeight, 26f, ShotColors.Player, false );
-
-		var aimObject = Scene.CreateObject();
-		aimObject.Name = "City Aim";
-		aimObject.Parent = root;
-		aim = aimObject.AddComponent<PolyLine>();
-		aim.HeadTint = new Color( 1f, 0.9f, 0.4f );
-		aim.TailTint = new Color( 1f, 0.55f, 0.18f );
-		aim.HeadWidth = 3f;
-		aim.TailWidth = 8f;
-		aim.Apply();
-
-		var ghostObject = Scene.CreateObject();
-		ghostObject.Name = "Ghost";
-		ghostObject.Parent = root;
-		ghost = ghostObject.AddComponent<PolyLine>();
-		ghost.HeadWidth = 6f;
-		ghost.TailWidth = 6f;
-		ghost.Apply();
-
-		built = true;
-		SetVisible( false );
+		CollectCells();
 	}
 
 	public void SetVisible( bool visible )
@@ -223,8 +225,8 @@ public sealed class CityBoard : Component
 		EnsureBuilt();
 		if ( !visible )
 			ClearShots();
-		if ( root.IsValid() )
-			root.Enabled = visible;
+		if ( stage.IsValid() )
+			stage.Enabled = visible;
 	}
 
 	public void ClearShots()
@@ -428,8 +430,144 @@ public sealed class CityBoard : Component
 
 	Vector3 CellWorld( int x, int y )
 	{
+		foreach ( var plot in plots )
+		{
+			if ( plot.X == x && plot.Y == y && plot.Root.IsValid() )
+			{
+				var at = plot.Root.WorldPosition;
+				return new Vector3( at.x, at.y, 0f );
+			}
+		}
+
+		return GridWorld( x, y );
+	}
+
+	Vector3 GridWorld( int x, int y )
+	{
 		var origin = Anchor - new Vector3( Span * 0.5f, Span * 0.5f, 0f );
 		return origin + new Vector3( (x + 0.5f) * CellSize, (y + 0.5f) * CellSize, 0f );
+	}
+
+	CityPlot FindPlot( int x, int y )
+	{
+		foreach ( var plot in plots )
+		{
+			if ( plot.X == x && plot.Y == y )
+				return plot;
+		}
+
+		return null;
+	}
+
+	void CollectCells()
+	{
+		plots.Clear();
+		tiles.Clear();
+
+		var cells = GameObject.GetComponentsInChildren<CityCell>( true )
+			.Where( cell => cell.IsValid() )
+			.OrderBy( cell => cell.Y * Size + cell.X )
+			.ToList();
+
+		foreach ( var cell in cells )
+		{
+			plots.Add( new CityPlot
+			{
+				X = cell.X,
+				Y = cell.Y,
+				Root = cell.GameObject
+			} );
+			tiles.Add( cell.GameObject );
+		}
+	}
+
+	void EnsureOverlays()
+	{
+		var runtime = FindChild( stage, "Runtime" );
+		if ( !runtime.IsValid() )
+		{
+			runtime = Scene.CreateObject();
+			runtime.Name = "Runtime";
+			runtime.Parent = stage;
+		}
+
+		hover = FindByName( runtime, "Hover" );
+		if ( !hover.IsValid() )
+			hover = Blocks.SpawnBox( runtime, "Hover", GridWorld( 0, 0 ) + Vector3.Up * 8f, Rotation.Identity,
+				new Vector3( CellSize * 0.96f, CellSize * 0.96f, 8f ), new Color( 1f, 0.85f, 0.35f ), false );
+
+		cursor = FindByName( runtime, "Cursor" );
+		if ( !cursor.IsValid() )
+			cursor = Blocks.SpawnSphere( runtime, "Cursor", ShooterStand + Vector3.Up * PlayHeight, 26f, ShotColors.Player, false );
+
+		var aimObject = FindByName( runtime, "City Aim" );
+		if ( !aimObject.IsValid() )
+		{
+			aimObject = Scene.CreateObject();
+			aimObject.Name = "City Aim";
+			aimObject.Parent = runtime;
+		}
+
+		aim = aimObject.GetComponent<PolyLine>() ?? aimObject.AddComponent<PolyLine>();
+		aim.HeadTint = new Color( 1f, 0.9f, 0.4f );
+		aim.TailTint = new Color( 1f, 0.55f, 0.18f );
+		aim.HeadWidth = 3f;
+		aim.TailWidth = 8f;
+		aim.Apply();
+
+		var ghostObject = FindByName( runtime, "Ghost" );
+		if ( !ghostObject.IsValid() )
+		{
+			ghostObject = Scene.CreateObject();
+			ghostObject.Name = "Ghost";
+			ghostObject.Parent = runtime;
+		}
+
+		ghost = ghostObject.GetComponent<PolyLine>() ?? ghostObject.AddComponent<PolyLine>();
+		ghost.HeadWidth = 6f;
+		ghost.TailWidth = 6f;
+		ghost.Apply();
+	}
+
+	static GameObject FindChild( GameObject parent, string name )
+	{
+		if ( !parent.IsValid() )
+			return null;
+
+		foreach ( var child in parent.Children )
+		{
+			if ( child.Name == name )
+				return child;
+		}
+
+		return null;
+	}
+
+	static GameObject FindByName( GameObject parent, string name )
+	{
+		if ( !parent.IsValid() )
+			return null;
+
+		if ( parent.Name == name )
+			return parent;
+
+		foreach ( var child in parent.Children )
+		{
+			var found = FindByName( child, name );
+			if ( found.IsValid() )
+				return found;
+		}
+
+		return null;
+	}
+
+	GameObject ReplaceChild( GameObject parent, string name )
+	{
+		FindChild( parent, name )?.Destroy();
+		var go = Scene.CreateObject();
+		go.Name = name;
+		go.Parent = parent;
+		return go;
 	}
 
 	void UpdateCursor()
@@ -458,16 +596,27 @@ public sealed class CityBoard : Component
 	bool TryPlot( Vector2 flat, out CityPlot plot )
 	{
 		plot = null;
-		var origin = Anchor - new Vector3( Span * 0.5f, Span * 0.5f, 0f );
-		var local = flat - new Vector2( origin.x, origin.y );
-		var x = (int)MathF.Floor( local.x / CellSize );
-		var y = (int)MathF.Floor( local.y / CellSize );
+		var best = float.MaxValue;
 
-		if ( x < 0 || y < 0 || x >= Size || y >= Size )
-			return false;
+		foreach ( var candidate in plots )
+		{
+			if ( !candidate.Root.IsValid() )
+				continue;
 
-		plot = plots[y * Size + x];
-		return true;
+			var center = new Vector2( candidate.Root.WorldPosition.x, candidate.Root.WorldPosition.y );
+			var delta = flat - center;
+			if ( MathF.Abs( delta.x ) > CellSize * 0.5f || MathF.Abs( delta.y ) > CellSize * 0.5f )
+				continue;
+
+			var dist = delta.LengthSquared;
+			if ( dist >= best )
+				continue;
+
+			best = dist;
+			plot = candidate;
+		}
+
+		return plot is not null;
 	}
 
 	void TryPlace()
@@ -536,8 +685,8 @@ public sealed class CityBoard : Component
 
 		var go = Scene.CreateObject();
 		go.Name = "City Round";
-		if ( root.IsValid() )
-			go.Parent = root;
+		if ( stage.IsValid() )
+			go.Parent = stage;
 
 		var shot = go.AddComponent<CityShot>();
 		shot.Board = this;

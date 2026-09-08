@@ -6,11 +6,10 @@ public sealed class GameLoop : Component
 	[Property] public RingRunner Runner { get; set; }
 	[Property] public PlayerAim Aim { get; set; }
 	[Property] public RoundInventory Inventory { get; set; }
+	[Property] public CityBoard City { get; set; }
 	[Property] public float LostRoundMinArc { get; set; } = 460f;
 	[Property] public float NoticeDuration { get; set; } = 1.6f;
 	[Property] public int MaxHealth { get; set; } = 3;
-
-	public CityBoard City { get; set; }
 	public RunPhase Phase { get; private set; } = RunPhase.Menu;
 	public bool InCity => Phase == RunPhase.City;
 	public bool InMenu => Phase == RunPhase.Menu;
@@ -259,7 +258,7 @@ public sealed class GameLoop : Component
 		if ( Runner.IsValid() )
 		{
 			Runner.GameObject.Enabled = true;
-			Runner.ResetToStart( ArenaBuilder.StartAngle );
+			Runner.ResetToStart( Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f );
 		}
 
 		City?.SetVisible( false );
@@ -459,7 +458,7 @@ public sealed class GameLoop : Component
 		if ( Runner.IsValid() )
 		{
 			Runner.GameObject.Enabled = true;
-			Runner.ResetToStart( ArenaBuilder.StartAngle );
+			Runner.ResetToStart( Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f );
 			Runner.ApplyPace( 1 );
 		}
 

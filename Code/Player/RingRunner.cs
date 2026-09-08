@@ -85,7 +85,7 @@ public sealed class RingRunner : Component
 			into += lapLength;
 
 		TravelledArc += into < 0.001f ? lapLength : lapLength - into;
-		Angle = ArenaBuilder.StartAngle;
+		Angle = Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f;
 		dashElapsed = 999f;
 		dashSpent = 0f;
 		Slowing = false;

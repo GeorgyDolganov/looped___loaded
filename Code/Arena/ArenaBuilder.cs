@@ -2,12 +2,12 @@ namespace LoopedLoaded;
 
 public sealed class ArenaBuilder : Component
 {
+	[Property] public string Code { get; set; } = "YARD";
 	[Property] public float TrackRadius { get; set; } = 1000f;
 	[Property] public float TrackWidth { get; set; } = 190f;
 	[Property] public float BoundaryRadius { get; set; } = 1170f;
 	[Property] public float CoreRadius { get; set; } = 230f;
-
-	public const float StartAngle = MathF.PI * 0.5f;
+	[Property] public float StartAngle { get; set; } = MathF.PI * 0.5f;
 
 	public static readonly Color FloorTint = new Color( 0.035f, 0.042f, 0.055f );
 	public static readonly Color TrackTint = new Color( 0.13f, 0.15f, 0.19f );
@@ -23,67 +23,158 @@ public sealed class ArenaBuilder : Component
 		get
 		{
 			if ( geometry is null )
-			{
-				geometry = new ArenaGeometry
-				{
-					TrackRadius = TrackRadius,
-					TrackWidth = TrackWidth,
-					BoundaryRadius = BoundaryRadius,
-					CoreRadius = CoreRadius
-				};
-
-				geometry.Rebuild();
-			}
+				BindScene();
 
 			return geometry;
 		}
 	}
 
 	ArenaGeometry geometry;
-	GameObject visuals;
 	GameObject panelRoot;
 	GameObject finishRoot;
 	PointLight finishLight;
 	PolyLine finishBeam;
+	GameObject beamInner;
+	GameObject beamOuter;
 	GameLoop loop;
 	readonly Dictionary<int, GameObject> panelVisuals = new();
+	readonly Dictionary<int, GameObject> authoredVisuals = new();
 	readonly List<(ModelRenderer Renderer, Color Tint, float Pulse)> finishMarks = new();
 
-	protected override void OnStart() => EnsureVisuals();
+	protected override void OnAwake() => BindScene();
+
+	public void BindScene()
+	{
+		geometry ??= new ArenaGeometry();
+		geometry.TrackRadius = TrackRadius;
+		geometry.TrackWidth = TrackWidth;
+		geometry.BoundaryRadius = BoundaryRadius;
+		geometry.CoreRadius = CoreRadius;
+
+		authoredVisuals.Clear();
+		var walls = new List<WallSegment>();
+		foreach ( var marker in GameObject.GetComponentsInChildren<ArenaWall>( true ) )
+		{
+			if ( !marker.IsValid() || IsUnder( marker.GameObject, "Panels" ) )
+				continue;
+
+			walls.Add( marker.ToSegment() );
+			if ( marker.Kind == WallKind.Panel )
+				authoredVisuals[walls.Count - 1] = marker.GameObject;
+		}
+
+		geometry.ApplyAuthored( walls );
+
+		finishRoot = FindChild( GameObject, "Finish" );
+		panelRoot = FindChild( GameObject, "Panels" );
+		if ( !panelRoot.IsValid() )
+		{
+			panelRoot = Scene.CreateObject();
+			panelRoot.Name = "Panels";
+			panelRoot.Parent = GameObject;
+		}
+
+		CollectFinish();
+	}
 
 	public void RollLayout( int lap, int seed )
 	{
-		EnsureVisuals();
+		if ( geometry is null )
+			BindScene();
+
 		Geometry.ClearBossWalls();
 		Geometry.GeneratePanels( lap, seed );
 		RebuildPanels();
 	}
 
-	public void EnsureVisuals()
+	[Button( "Fill Default Layout" )]
+	public void FillDefaultLayout()
 	{
-		if ( visuals.IsValid() )
-			return;
-
-		visuals = Scene.CreateObject();
-		visuals.Name = "Arena Visuals";
-		visuals.Parent = GameObject;
+		ReplaceGroup( "Floor" );
+		ReplaceGroup( "Track" );
+		ReplaceGroup( "Edges" );
+		ReplaceGroup( "Walls" );
+		ReplaceGroup( "Finish" );
+		if ( !FindChild( GameObject, "Panels" ).IsValid() )
+			ReplaceGroup( "Panels" );
 
 		BuildFloor();
 		BuildTrack();
 		BuildFinish();
+
+		geometry ??= new ArenaGeometry
+		{
+			TrackRadius = TrackRadius,
+			TrackWidth = TrackWidth,
+			BoundaryRadius = BoundaryRadius,
+			CoreRadius = CoreRadius
+		};
+		geometry.ApplyAuthored( null );
 		BuildRingWalls();
+		BindScene();
 	}
 
 	protected override void OnUpdate() => PulseFinish();
 
+	void CollectFinish()
+	{
+		finishMarks.Clear();
+		finishLight = null;
+		finishBeam = null;
+		beamInner = null;
+		beamOuter = null;
+
+		if ( !finishRoot.IsValid() )
+			return;
+
+		foreach ( var mark in finishRoot.GetComponentsInChildren<FinishPulse>( true ) )
+		{
+			var renderer = mark.GetComponent<ModelRenderer>();
+			if ( renderer.IsValid() )
+				finishMarks.Add( (renderer, renderer.Tint, mark.Pulse) );
+		}
+
+		finishLight = finishRoot.GetComponentsInChildren<PointLight>( true ).FirstOrDefault();
+		finishBeam = finishRoot.GetComponentsInChildren<PolyLine>( true ).FirstOrDefault();
+		beamInner = FindChild( finishRoot, "Beam Inner" );
+		beamOuter = FindChild( finishRoot, "Beam Outer" );
+		ApplyFinishBeam();
+	}
+
+	void ApplyFinishBeam()
+	{
+		if ( !finishBeam.IsValid() )
+			return;
+
+		Vector3 a;
+		Vector3 b;
+		if ( beamInner.IsValid() && beamOuter.IsValid() )
+		{
+			a = beamInner.WorldPosition;
+			b = beamOuter.WorldPosition;
+		}
+		else
+		{
+			var outward = ArenaGeometry.FromAngle( StartAngle );
+			var inner = Geometry.TrackInner - 8f;
+			var outer = Geometry.TrackOuter + 8f;
+			a = new Vector3( outward.x * inner, outward.y * inner, 28f );
+			b = new Vector3( outward.x * outer, outward.y * outer, 28f );
+		}
+
+		finishBeam.SetPoints( new List<Vector3> { a, b } );
+	}
+
 	void BuildFloor()
 	{
+		var root = FindChild( GameObject, "Floor" ) ?? ReplaceGroup( "Floor" );
 		var span = BoundaryRadius * 2.8f;
-		Blocks.SpawnBox( visuals, "Floor", new Vector3( 0, 0, -30f ), Rotation.Identity, new Vector3( span, span, 60f ), FloorTint );
+		Blocks.SpawnBox( root, "Slab", new Vector3( 0, 0, -30f ), Rotation.Identity, new Vector3( span, span, 60f ), FloorTint );
 	}
 
 	void BuildTrack()
 	{
+		var root = FindChild( GameObject, "Track" ) ?? ReplaceGroup( "Track" );
 		const int segments = 64;
 		var step = MathF.Tau / segments;
 		var arc = MathF.Tau * TrackRadius / segments;
@@ -95,7 +186,7 @@ public sealed class ArenaBuilder : Component
 			var tangent = new Vector2( -outward.y, outward.x );
 			var shade = i % 2 == 0 ? 1f : 0.82f;
 
-			Blocks.SpawnBox( visuals, $"Track {i}",
+			Blocks.SpawnBox( root, $"Track {i}",
 				new Vector3( outward.x * TrackRadius, outward.y * TrackRadius, 3f ),
 				Blocks.FlatFacing( tangent ),
 				new Vector3( arc * 1.02f, TrackWidth, 6f ),
@@ -108,9 +199,7 @@ public sealed class ArenaBuilder : Component
 
 	void BuildFinish()
 	{
-		finishRoot = Scene.CreateObject();
-		finishRoot.Name = "Finish";
-		finishRoot.Parent = visuals;
+		finishRoot = FindChild( GameObject, "Finish" ) ?? ReplaceGroup( "Finish" );
 
 		var angle = StartAngle;
 		var outward = ArenaGeometry.FromAngle( angle );
@@ -166,6 +255,18 @@ public sealed class ArenaBuilder : Component
 				new Vector3( 14f, width, 8f ), FinishGold, 0.55f + i * 0.12f );
 		}
 
+		var inner = Geometry.TrackInner - 8f;
+		var outer = Geometry.TrackOuter + 8f;
+		beamInner = Scene.CreateObject();
+		beamInner.Name = "Beam Inner";
+		beamInner.Parent = finishRoot;
+		beamInner.WorldPosition = new Vector3( outward.x * inner, outward.y * inner, 28f );
+
+		beamOuter = Scene.CreateObject();
+		beamOuter.Name = "Beam Outer";
+		beamOuter.Parent = finishRoot;
+		beamOuter.WorldPosition = new Vector3( outward.x * outer, outward.y * outer, 28f );
+
 		var beamObject = Scene.CreateObject();
 		beamObject.Name = "Finish Beam";
 		beamObject.Parent = finishRoot;
@@ -175,13 +276,7 @@ public sealed class ArenaBuilder : Component
 		finishBeam.HeadTint = FinishGold;
 		finishBeam.TailTint = FinishGold;
 		finishBeam.Apply();
-		var inner = Geometry.TrackInner - 8f;
-		var outer = Geometry.TrackOuter + 8f;
-		finishBeam.SetPoints( new List<Vector3>
-		{
-			new Vector3( outward.x * inner, outward.y * inner, 28f ),
-			new Vector3( outward.x * outer, outward.y * outer, 28f )
-		} );
+		ApplyFinishBeam();
 
 		var lamp = Scene.CreateObject();
 		lamp.Name = "Finish Light";
@@ -195,9 +290,8 @@ public sealed class ArenaBuilder : Component
 	void PlaceFinish( string name, Vector3 position, Rotation rotation, Vector3 size, Color tint, float pulse )
 	{
 		var go = Blocks.SpawnBox( finishRoot, name, position, rotation, size, tint, false );
-		var renderer = go.GetComponent<ModelRenderer>();
-		if ( renderer.IsValid() )
-			finishMarks.Add( (renderer, tint, pulse) );
+		var mark = go.AddComponent<FinishPulse>();
+		mark.Pulse = pulse;
 	}
 
 	void PulseFinish()
@@ -235,6 +329,7 @@ public sealed class ArenaBuilder : Component
 
 	void BuildTrackEdge( float radius, string label )
 	{
+		var root = FindChild( GameObject, "Edges" ) ?? ReplaceGroup( "Edges" );
 		const int segments = 72;
 		var step = MathF.Tau / segments;
 		var arc = MathF.Tau * radius / segments;
@@ -245,7 +340,7 @@ public sealed class ArenaBuilder : Component
 			var outward = ArenaGeometry.FromAngle( angle );
 			var tangent = new Vector2( -outward.y, outward.x );
 
-			Blocks.SpawnBox( visuals, $"Edge {label} {i}",
+			Blocks.SpawnBox( root, $"Edge {label} {i}",
 				new Vector3( outward.x * radius, outward.y * radius, 8f ),
 				Blocks.FlatFacing( tangent ),
 				new Vector3( arc * 1.02f, 9f, 10f ),
@@ -255,31 +350,38 @@ public sealed class ArenaBuilder : Component
 
 	void BuildRingWalls()
 	{
+		var root = FindChild( GameObject, "Walls" ) ?? ReplaceGroup( "Walls" );
 		for ( var i = 0; i < Geometry.Walls.Count; i++ )
 		{
 			var wall = Geometry.Walls[i];
 			if ( wall.Kind != WallKind.Boundary && wall.Kind != WallKind.Core )
 				continue;
 
-			SpawnWall( visuals, wall, i );
+			SpawnWall( root, wall, i, true );
 		}
 	}
 
 	void RebuildPanels()
 	{
-		panelRoot?.Destroy();
-		panelVisuals.Clear();
-		panelRoot = Scene.CreateObject();
-		panelRoot.Name = "Panels";
-		panelRoot.Parent = visuals;
+		if ( !panelRoot.IsValid() )
+		{
+			panelRoot = Scene.CreateObject();
+			panelRoot.Name = "Panels";
+			panelRoot.Parent = GameObject;
+		}
 
-		for ( var i = 0; i < Geometry.Walls.Count; i++ )
+		foreach ( var child in panelRoot.Children.ToArray() )
+			child.Destroy();
+
+		panelVisuals.Clear();
+
+		for ( var i = Geometry.AuthoredCount; i < Geometry.Walls.Count; i++ )
 		{
 			var wall = Geometry.Walls[i];
 			if ( wall.Kind != WallKind.Panel )
 				continue;
 
-			panelVisuals[i] = SpawnWall( panelRoot, wall, i );
+			panelVisuals[i] = SpawnWall( panelRoot, wall, i, false );
 		}
 	}
 
@@ -291,10 +393,10 @@ public sealed class ArenaBuilder : Component
 
 	void SyncPanel( int index )
 	{
-		if ( !panelVisuals.TryGetValue( index, out var go ) || !go.IsValid() )
-			return;
+		if ( !panelVisuals.TryGetValue( index, out var go ) )
+			authoredVisuals.TryGetValue( index, out go );
 
-		if ( index < 0 || index >= Geometry.Walls.Count )
+		if ( !go.IsValid() || index < 0 || index >= Geometry.Walls.Count )
 			return;
 
 		var wall = Geometry.Walls[index];
@@ -319,14 +421,61 @@ public sealed class ArenaBuilder : Component
 		_ => (26f, 115f, PanelTint)
 	};
 
-	GameObject SpawnWall( GameObject parent, WallSegment wall, int index )
+	GameObject SpawnWall( GameObject parent, WallSegment wall, int index, bool authored )
 	{
 		var (thickness, height, tint) = WallSize( wall.Kind );
 		var center = wall.Center;
-		return Blocks.SpawnBox( parent, $"Wall {wall.Kind} {index}",
+		var go = Blocks.SpawnBox( parent, $"Wall {wall.Kind} {index}",
 			new Vector3( center.x, center.y, height * 0.5f ),
 			Blocks.FlatFacing( wall.Direction ),
 			new Vector3( wall.Length + thickness, thickness, height ),
 			tint );
+
+		if ( authored )
+		{
+			var marker = go.AddComponent<ArenaWall>();
+			marker.Kind = wall.Kind;
+		}
+
+		return go;
+	}
+
+	GameObject ReplaceGroup( string name )
+	{
+		var existing = FindChild( GameObject, name );
+		existing?.Destroy();
+
+		var go = Scene.CreateObject();
+		go.Name = name;
+		go.Parent = GameObject;
+		return go;
+	}
+
+	static GameObject FindChild( GameObject parent, string name )
+	{
+		if ( !parent.IsValid() )
+			return null;
+
+		foreach ( var child in parent.Children )
+		{
+			if ( child.Name == name )
+				return child;
+		}
+
+		return null;
+	}
+
+	static bool IsUnder( GameObject go, string name )
+	{
+		var current = go;
+		while ( current.IsValid() )
+		{
+			if ( current.Name == name )
+				return true;
+
+			current = current.Parent;
+		}
+
+		return false;
 	}
 }

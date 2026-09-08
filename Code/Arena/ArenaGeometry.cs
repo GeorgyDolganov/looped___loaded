@@ -19,6 +19,7 @@ public sealed class ArenaGeometry
 
 	public List<WallSegment> Walls { get; } = new();
 	public bool CoreSolid { get; set; } = true;
+	public int AuthoredCount { get; private set; }
 
 	public float TrackInner => TrackRadius - TrackWidth * 0.5f;
 	public float TrackOuter => TrackRadius + TrackWidth * 0.5f;
@@ -45,14 +46,25 @@ public sealed class ArenaGeometry
 
 	public Vector2 TrackPoint( float radians ) => FromAngle( radians ) * TrackRadius;
 
-	public void Rebuild()
+	public void Rebuild() => ApplyAuthored( null );
+
+	public void ApplyAuthored( IReadOnlyList<WallSegment> walls )
 	{
 		Walls.Clear();
 		boundaryWalls.Clear();
 		coreWalls.Clear();
+		panelKicks.Clear();
 
-		AddRing( BoundaryRadius, 24, MathF.PI / 24f, WallKind.Boundary );
-		AddRing( CoreRadius, 8, 0f, WallKind.Core );
+		if ( walls is null || walls.Count == 0 )
+		{
+			AddRing( BoundaryRadius, 24, MathF.PI / 24f, WallKind.Boundary );
+			AddRing( CoreRadius, 8, 0f, WallKind.Core );
+		}
+		else
+		{
+			foreach ( var wall in walls )
+				Walls.Add( wall );
+		}
 
 		for ( var i = 0; i < Walls.Count; i++ )
 		{
@@ -61,11 +73,13 @@ public sealed class ArenaGeometry
 			else if ( Walls[i].Kind == WallKind.Core )
 				coreWalls.Add( i );
 		}
+
+		AuthoredCount = Walls.Count;
 	}
 
 	public void GeneratePanels( int lap, int seed )
 	{
-		for ( var i = Walls.Count - 1; i >= 0; i-- )
+		for ( var i = Walls.Count - 1; i >= AuthoredCount; i-- )
 		{
 			if ( Walls[i].Kind == WallKind.Panel )
 				Walls.RemoveAt( i );
