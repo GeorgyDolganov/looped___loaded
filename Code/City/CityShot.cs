@@ -59,18 +59,22 @@ public sealed class CityShot : Component
 
 	bool Advance( float step )
 	{
-		if ( Board.Trace( flat, Direction, step + Radius, out var hit ) )
+		if ( Board.Trace( flat, Direction, step + Radius, Radius, out var hit ) )
 		{
-			flat = hit.Position + hit.Normal * Radius;
+			flat = hit.Position;
+			Board.Separate( ref flat, Radius );
 			var world = new Vector3( flat.x, flat.y, height );
 
 			if ( hit.Plot is not null && hit.Plot.Working )
 			{
-				Board.RegisterHit( hit.Plot );
-				Direction = ArenaGeometry.Reflect( Direction, hit.Normal ).Normal;
-				BouncesLeft--;
-				ArenaSounds.Ricochet( world );
-				ImpactFlash.Spawn( Scene, world, Buildings.Color( hit.Plot.Kind ), 0.85f );
+				if ( ArenaGeometry.Dot( Direction, hit.Normal ) < 0f )
+				{
+					Board.RegisterHit( hit.Plot );
+					Direction = ArenaGeometry.Reflect( Direction, hit.Normal ).Normal;
+					BouncesLeft--;
+					ArenaSounds.Ricochet( world );
+					ImpactFlash.Spawn( Scene, world, Buildings.Color( hit.Plot.Kind ), 0.85f );
+				}
 
 				if ( BouncesLeft < 0 || Energy <= 0f )
 				{

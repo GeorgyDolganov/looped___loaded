@@ -345,10 +345,15 @@ public sealed class CityBoard : Component
 		return flat.x < min.x || flat.y < min.y || flat.x > max.x || flat.y > max.y;
 	}
 
-	public bool Trace( Vector2 origin, Vector2 direction, float maxDistance, out CityHit hit )
+	public bool Trace( Vector2 origin, Vector2 direction, float maxDistance, float radius, out CityHit hit )
 	{
 		hit = default;
+		if ( direction.Length < 0.001f || maxDistance <= 0f )
+			return false;
+
+		direction = direction.Normal;
 		var closest = maxDistance;
+		var bestPen = float.MaxValue;
 		var found = false;
 
 		foreach ( var plot in plots )
@@ -357,35 +362,35 @@ public sealed class CityBoard : Component
 				continue;
 
 			var poly = WorldPolygon( plot.Kind, plot.Facing, plot.X, plot.Y );
+			var thick = PlotThickness( plot );
 			for ( var i = 0; i < poly.Length; i++ )
 			{
-				var a = poly[i];
-				var b = poly[(i + 1) % poly.Length];
-				var span = b - a;
-				var denominator = ArenaGeometry.Cross( direction, span );
-				if ( MathF.Abs( denominator ) < 0.0000001f )
+				if ( !TryWall( poly, i, thick, radius, out var wall ) )
 					continue;
 
-				var offset = a - origin;
-				var travel = ArenaGeometry.Cross( offset, span ) / denominator;
-				var along = ArenaGeometry.Cross( offset, direction ) / denominator;
-
-				if ( travel <= 0.02f || travel >= closest )
+				if ( !ArenaGeometry.SweepBox( origin, direction, closest, wall.Center, wall.AxisX, wall.AxisY, wall.Hx, wall.Hy, out var travel, out var normal ) )
 					continue;
 
-				if ( along < 0f || along > 1f )
-					continue;
+				var pen = 0f;
+				if ( travel <= 0.001f )
+				{
+					pen = WallPenetration( origin, wall );
+					if ( found && hit.Distance <= 0.001f && pen >= bestPen )
+						continue;
 
-				var normal = new Vector2( -span.y, span.x ).Normal;
-				if ( ArenaGeometry.Dot( normal, direction ) > 0f )
-					normal = -normal;
+					bestPen = pen;
+				}
+				else if ( travel >= closest )
+					continue;
 
 				closest = travel;
 				found = true;
 				hit = new CityHit
 				{
 					Distance = travel,
-					Position = origin + direction * travel,
+					Position = travel <= 0.001f
+						? origin + normal * (pen + 2f)
+						: origin + direction * travel + normal * 2f,
 					Normal = normal,
 					Plot = plot
 				};
@@ -393,6 +398,46 @@ public sealed class CityBoard : Component
 		}
 
 		return found;
+	}
+
+	public void Separate( ref Vector2 flat, float radius )
+	{
+		for ( var pass = 0; pass < 8; pass++ )
+		{
+			var pushed = false;
+
+			foreach ( var plot in plots )
+			{
+				if ( !plot.Occupied )
+					continue;
+
+				var poly = WorldPolygon( plot.Kind, plot.Facing, plot.X, plot.Y );
+				var thick = PlotThickness( plot );
+				for ( var i = 0; i < poly.Length; i++ )
+				{
+					if ( !TryWall( poly, i, thick, radius, out var wall ) )
+						continue;
+
+					var pen = WallPenetration( flat, wall );
+					if ( pen <= 0f )
+						continue;
+
+					var to = flat - wall.Center;
+					var lx = ArenaGeometry.Dot( to, wall.AxisX );
+					var ly = ArenaGeometry.Dot( to, wall.AxisY );
+					var px = wall.Hx - MathF.Abs( lx );
+					var py = wall.Hy - MathF.Abs( ly );
+					var normal = px < py
+						? wall.AxisX * (lx >= 0f ? 1f : -1f)
+						: wall.AxisY * (ly >= 0f ? 1f : -1f);
+					flat += normal * (pen + 2f);
+					pushed = true;
+				}
+			}
+
+			if ( !pushed )
+				return;
+		}
 	}
 
 	public string HoverText()
@@ -810,7 +855,7 @@ public sealed class CityBoard : Component
 			tint *= 0.45f;
 
 		var height = plot.Working ? 78f + plot.Level * 26f : 34f;
-		var thick = plot.Working ? 22f : 14f;
+		var thick = PlotThickness( plot );
 		var poly = WorldPolygon( plot.Kind, plot.Facing, plot.X, plot.Y );
 		var center = CellWorld( plot.X, plot.Y );
 
@@ -898,7 +943,6 @@ public sealed class CityBoard : Component
 		var rotation = Rotation.FromYaw( facing * 90f ) * Rotation.FromPitch( -90f );
 
 		go.WorldRotation = rotation;
-		go.WorldScale = scale;
 		go.WorldPosition = center + Vector3.Up * (8f - RotatedMinZ( bounds, rotation ) * scale);
 
 		if ( renderer.IsValid() )
@@ -906,6 +950,13 @@ public sealed class CityBoard : Component
 			renderer.Model = model;
 			renderer.Tint = tint;
 		}
+
+		var pulse = go.GetComponent<HeartPulse>() ?? go.AddComponent<HeartPulse>();
+		pulse.RestScale = scale;
+		pulse.Strength = working ? 0.12f : 0.07f;
+		pulse.Rate = working ? 1.2f : 0.9f;
+		pulse.Seed = x * 97 + y * 13 + 1;
+		pulse.Apply();
 	}
 
 	static float RotatedMinZ( BBox bounds, Rotation rotation )
@@ -955,6 +1006,38 @@ public sealed class CityBoard : Component
 				Blocks.SpawnSphere( plot.Body, "Gem", top, plot.Working ? 32f : 20f, tint * 1.4f );
 				break;
 		}
+	}
+
+	static float PlotThickness( CityPlot plot ) => plot.Working ? 22f : 14f;
+
+	static float WallPenetration( Vector2 point, CityWall wall )
+	{
+		var to = point - wall.Center;
+		var px = wall.Hx - MathF.Abs( ArenaGeometry.Dot( to, wall.AxisX ) );
+		var py = wall.Hy - MathF.Abs( ArenaGeometry.Dot( to, wall.AxisY ) );
+		return px > 0f && py > 0f ? MathF.Min( px, py ) : 0f;
+	}
+
+	static bool TryWall( Vector2[] poly, int index, float thick, float radius, out CityWall wall )
+	{
+		wall = default;
+		var a = poly[index];
+		var b = poly[(index + 1) % poly.Length];
+		var span = b - a;
+		var length = span.Length;
+		if ( length < 1f )
+			return false;
+
+		var axisX = span / length;
+		wall = new CityWall
+		{
+			Center = (a + b) * 0.5f,
+			AxisX = axisX,
+			AxisY = new Vector2( -axisX.y, axisX.x ),
+			Hx = length * 0.5f + thick * 0.5f + radius,
+			Hy = thick * 0.5f + radius
+		};
+		return true;
 	}
 
 	Vector2[] WorldPolygon( BuildingKind kind, int facing, int x, int y )

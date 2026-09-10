@@ -434,6 +434,9 @@ public sealed class ArenaGeometry
 		return true;
 	}
 
+	public static bool SweepBox( Vector2 origin, Vector2 direction, float maxDistance, Vector2 center, Vector2 axisX, Vector2 axisY, float hx, float hy, out float travel, out Vector2 normal )
+		=> RayObb( origin, direction, maxDistance, center, axisX, axisY, hx, hy, out travel, out normal );
+
 	static bool RayObb( Vector2 origin, Vector2 dir, float maxDistance, Vector2 center, Vector2 axisX, Vector2 axisY, float hx, float hy, out float travel, out Vector2 normal )
 	{
 		travel = 0f;

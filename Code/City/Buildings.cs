@@ -195,3 +195,12 @@ public struct CityHit
 	public Vector2 Normal;
 	public CityPlot Plot;
 }
+
+public struct CityWall
+{
+	public Vector2 Center;
+	public Vector2 AxisX;
+	public Vector2 AxisY;
+	public float Hx;
+	public float Hy;
+}
