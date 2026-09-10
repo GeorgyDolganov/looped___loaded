@@ -43,6 +43,8 @@ public sealed class ArenaBuilder : Component
 
 	protected override void OnAwake() => BindScene();
 
+	protected override void OnStart() => BindScene();
+
 	public void BindScene()
 	{
 		geometry ??= new ArenaGeometry();
@@ -53,11 +55,8 @@ public sealed class ArenaBuilder : Component
 
 		authoredVisuals.Clear();
 		var walls = new List<WallSegment>();
-		foreach ( var marker in GameObject.GetComponentsInChildren<ArenaWall>( true ) )
+		foreach ( var marker in Descendants<ArenaWall>() )
 		{
-			if ( !marker.IsValid() || IsUnder( marker.GameObject, "Panels" ) )
-				continue;
-
 			walls.Add( marker.ToSegment() );
 			if ( marker.Kind == WallKind.Panel )
 				authoredVisuals[walls.Count - 1] = marker.GameObject;
@@ -67,14 +66,17 @@ public sealed class ArenaBuilder : Component
 
 		finishRoot = FindChild( GameObject, "Finish" );
 		panelRoot = FindChild( GameObject, "Panels" );
-		if ( !panelRoot.IsValid() )
-		{
-			panelRoot = Scene.CreateObject();
-			panelRoot.Name = "Panels";
-			panelRoot.Parent = GameObject;
-		}
-
 		CollectFinish();
+	}
+
+	public void ClearGeneratedLayout()
+	{
+		if ( geometry is null )
+			BindScene();
+
+		Geometry.ClearBossWalls();
+		Geometry.ClearGeneratedPanels();
+		ClearRuntimePanels();
 	}
 
 	public void RollLayout( int lap, int seed )
@@ -361,19 +363,42 @@ public sealed class ArenaBuilder : Component
 		}
 	}
 
+	void ClearRuntimePanels()
+	{
+		foreach ( var go in panelVisuals.Values )
+		{
+			if ( go.IsValid() )
+				go.Destroy();
+		}
+
+		panelVisuals.Clear();
+
+		if ( !panelRoot.IsValid() )
+			return;
+
+		foreach ( var child in panelRoot.Children.ToArray() )
+		{
+			if ( child.GetComponent<ArenaWall>().IsValid() )
+				continue;
+
+			child.Destroy();
+		}
+	}
+
 	void RebuildPanels()
 	{
 		if ( !panelRoot.IsValid() )
 		{
-			panelRoot = Scene.CreateObject();
-			panelRoot.Name = "Panels";
-			panelRoot.Parent = GameObject;
+			panelRoot = FindChild( GameObject, "Panels" );
+			if ( !panelRoot.IsValid() )
+			{
+				panelRoot = Scene.CreateObject();
+				panelRoot.Name = "Panels";
+				panelRoot.Parent = GameObject;
+			}
 		}
 
-		foreach ( var child in panelRoot.Children.ToArray() )
-			child.Destroy();
-
-		panelVisuals.Clear();
+		ClearRuntimePanels();
 
 		for ( var i = Geometry.AuthoredCount; i < Geometry.Walls.Count; i++ )
 		{
@@ -465,17 +490,24 @@ public sealed class ArenaBuilder : Component
 		return null;
 	}
 
-	static bool IsUnder( GameObject go, string name )
+	IEnumerable<T> Descendants<T>() where T : Component
 	{
-		var current = go;
-		while ( current.IsValid() )
+		foreach ( var component in Scene.GetAllComponents<T>() )
 		{
-			if ( current.Name == name )
-				return true;
+			if ( !component.IsValid() )
+				continue;
 
-			current = current.Parent;
+			var current = component.GameObject;
+			while ( current.IsValid() )
+			{
+				if ( current == GameObject )
+				{
+					yield return component;
+					break;
+				}
+
+				current = current.Parent;
+			}
 		}
-
-		return false;
 	}
 }

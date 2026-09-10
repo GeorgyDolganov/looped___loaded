@@ -77,7 +77,7 @@ public sealed class ArenaGeometry
 		AuthoredCount = Walls.Count;
 	}
 
-	public void GeneratePanels( int lap, int seed )
+	public void ClearGeneratedPanels()
 	{
 		for ( var i = Walls.Count - 1; i >= AuthoredCount; i-- )
 		{
@@ -86,6 +86,11 @@ public sealed class ArenaGeometry
 		}
 
 		panelKicks.Clear();
+	}
+
+	public void GeneratePanels( int lap, int seed )
+	{
+		ClearGeneratedPanels();
 
 		var rng = new Random( unchecked( seed * 48611 + Math.Max( 1, lap ) * 7919 ) );
 		var count = Math.Clamp( 1 + Math.Max( 1, lap ), 2, 6 );

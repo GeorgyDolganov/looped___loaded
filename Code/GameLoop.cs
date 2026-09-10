@@ -272,7 +272,7 @@ public sealed class GameLoop : Component
 		MenuView = MenuPage.Title;
 		Autosave();
 		if ( Arena.IsValid() )
-			Arena.RollLayout( 1, Game.Random.Int( 1, int.MaxValue - 1 ) );
+			Arena.ClearGeneratedLayout();
 		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
 	}
 

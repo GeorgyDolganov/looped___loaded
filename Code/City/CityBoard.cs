@@ -29,6 +29,7 @@ public sealed class CityBoard : Component
 	GameObject cursor;
 	PolyLine aim;
 	PolyLine ghost;
+	GameObject ghostHeart;
 	bool bound;
 
 	public void Deposit( int rounds )
@@ -163,8 +164,6 @@ public sealed class CityBoard : Component
 
 		stage = FindChild( GameObject, "Stage" ) ?? GameObject;
 		CollectCells();
-		if ( plots.Count == 0 )
-			FillDefaultCity();
 
 		shooter = FindByName( stage, "City Shooter" );
 		EnsureOverlays();
@@ -527,6 +526,8 @@ public sealed class CityBoard : Component
 		ghost.HeadWidth = 6f;
 		ghost.TailWidth = 6f;
 		ghost.Apply();
+
+		EnsureGhostHeart( runtime );
 	}
 
 	static GameObject FindChild( GameObject parent, string name )
@@ -761,18 +762,38 @@ public sealed class CityBoard : Component
 
 	void PaintGhost()
 	{
-		if ( !ghost.IsValid() )
-			return;
-
 		if ( !Building || Hovered is null || Hovered.Occupied )
 		{
-			ghost.Clear();
+			ghost?.Clear();
+			if ( ghostHeart.IsValid() )
+				ghostHeart.Enabled = false;
 			return;
 		}
 
-		var tint = Buildings.Color( Selected );
-		ghost.HeadTint = tint;
-		ghost.TailTint = tint;
+		if ( Selected == BuildingKind.Infirmary )
+		{
+			ghost?.Clear();
+			var runtime = ghost.IsValid() ? ghost.GameObject.Parent : FindChild( stage, "Runtime" );
+			EnsureGhostHeart( runtime );
+			if ( !ghostHeart.IsValid() )
+				return;
+
+			ghostHeart.Enabled = true;
+			var tint = Buildings.Color( Selected );
+			tint.a = 0.55f;
+			PlaceHeart( ghostHeart, ghostHeart.GetComponent<ModelRenderer>(), Hovered.X, Hovered.Y, PlacementFacing, 34f, false, tint );
+			return;
+		}
+
+		if ( ghostHeart.IsValid() )
+			ghostHeart.Enabled = false;
+
+		if ( !ghost.IsValid() )
+			return;
+
+		var outline = Buildings.Color( Selected );
+		ghost.HeadTint = outline;
+		ghost.TailTint = outline;
 		ghost.Apply();
 		ghost.SetPoints( OutlinePoints( Selected, PlacementFacing, Hovered.X, Hovered.Y, PlayHeight + 10f ) );
 	}
@@ -798,21 +819,28 @@ public sealed class CityBoard : Component
 		plot.Body.Parent = plot.Root;
 		plot.Body.WorldPosition = center;
 
-		for ( var i = 0; i < poly.Length; i++ )
+		if ( plot.Kind == BuildingKind.Infirmary )
 		{
-			var a = poly[i];
-			var b = poly[(i + 1) % poly.Length];
-			var mid = (a + b) * 0.5f;
-			var span = b - a;
-			var length = MathF.Max( 12f, span.Length );
-			Blocks.SpawnBox( plot.Body, $"Edge {i}",
-				new Vector3( mid.x, mid.y, height * 0.5f + 8f ),
-				Blocks.FlatFacing( span ),
-				new Vector3( length, thick, height ),
-				tint );
+			SpawnHeart( plot, tint, height );
 		}
+		else
+		{
+			for ( var i = 0; i < poly.Length; i++ )
+			{
+				var a = poly[i];
+				var b = poly[(i + 1) % poly.Length];
+				var mid = (a + b) * 0.5f;
+				var span = b - a;
+				var length = MathF.Max( 12f, span.Length );
+				Blocks.SpawnBox( plot.Body, $"Edge {i}",
+					new Vector3( mid.x, mid.y, height * 0.5f + 8f ),
+					Blocks.FlatFacing( span ),
+					new Vector3( length, thick, height ),
+					tint );
+			}
 
-		SpawnAccent( plot, tint, height );
+			SpawnAccent( plot, tint, height );
+		}
 
 		if ( plot.NextCost > 0 )
 		{
@@ -826,6 +854,77 @@ public sealed class CityBoard : Component
 		}
 	}
 
+	void EnsureGhostHeart( GameObject parent )
+	{
+		if ( ghostHeart.IsValid() )
+			return;
+
+		if ( !parent.IsValid() )
+			return;
+
+		ghostHeart = FindByName( parent, "Ghost Heart" );
+		if ( !ghostHeart.IsValid() )
+		{
+			ghostHeart = Scene.CreateObject();
+			ghostHeart.Name = "Ghost Heart";
+			ghostHeart.Parent = parent;
+		}
+
+		var renderer = ghostHeart.GetComponent<ModelRenderer>() ?? ghostHeart.AddComponent<ModelRenderer>();
+		renderer.Model = Model.Load( "models/heart.vmdl" );
+		renderer.RenderType = ModelRenderer.ShadowRenderType.Off;
+		ghostHeart.Enabled = false;
+	}
+
+	void SpawnHeart( CityPlot plot, Color tint, float height )
+	{
+		var go = Scene.CreateObject();
+		go.Name = "Heart";
+		go.Parent = plot.Body;
+
+		var renderer = go.AddComponent<ModelRenderer>();
+		PlaceHeart( go, renderer, plot.X, plot.Y, plot.Facing, height, plot.Working, plot.Working ? Color.White : tint );
+	}
+
+	void PlaceHeart( GameObject go, ModelRenderer renderer, int x, int y, int facing, float height, bool working, Color tint )
+	{
+		var model = Model.Load( "models/heart.vmdl" );
+		var bounds = model.Bounds;
+		var size = bounds.Size;
+		var longest = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
+		var target = MathF.Max( height, CellSize * (working ? 0.62f : 0.42f) );
+		var scale = (longest > 0.001f ? target / longest : 1f) * 0.85f;
+		var center = CellWorld( x, y );
+		var rotation = Rotation.FromYaw( facing * 90f ) * Rotation.FromPitch( -90f );
+
+		go.WorldRotation = rotation;
+		go.WorldScale = scale;
+		go.WorldPosition = center + Vector3.Up * (8f - RotatedMinZ( bounds, rotation ) * scale);
+
+		if ( renderer.IsValid() )
+		{
+			renderer.Model = model;
+			renderer.Tint = tint;
+		}
+	}
+
+	static float RotatedMinZ( BBox bounds, Rotation rotation )
+	{
+		var minZ = float.MaxValue;
+		for ( var ix = 0; ix < 2; ix++ )
+		for ( var iy = 0; iy < 2; iy++ )
+		for ( var iz = 0; iz < 2; iz++ )
+		{
+			var corner = new Vector3(
+				ix == 0 ? bounds.Mins.x : bounds.Maxs.x,
+				iy == 0 ? bounds.Mins.y : bounds.Maxs.y,
+				iz == 0 ? bounds.Mins.z : bounds.Maxs.z );
+			minZ = MathF.Min( minZ, (rotation * corner).z );
+		}
+
+		return minZ;
+	}
+
 	void SpawnAccent( CityPlot plot, Color tint, float height )
 	{
 		var center = CellWorld( plot.X, plot.Y );
@@ -834,9 +933,6 @@ public sealed class CityBoard : Component
 
 		switch ( plot.Kind )
 		{
-			case BuildingKind.Infirmary:
-				Blocks.SpawnSphere( plot.Body, "Lamp", top, plot.Working ? 36f : 22f, tint * 1.3f );
-				break;
 			case BuildingKind.Anvil:
 				Blocks.SpawnBox( plot.Body, "Horn",
 					center + new Vector3( facing.x, facing.y, 0f ) * 28f + Vector3.Up * (height * 0.7f),
