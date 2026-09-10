@@ -32,6 +32,8 @@ public sealed class RingRunner : Component
 	float dashSpent;
 	bool slowOverheat;
 	SkinnedModelRenderer warlord;
+	Vector3 warlordVelocity;
+	Vector3 warlordLook;
 	readonly List<(ModelRenderer Renderer, Color Tint)> meshes = new();
 
 	public void ResetToStart( float startAngle )
@@ -130,6 +132,12 @@ public sealed class RingRunner : Component
 		PaintHurt();
 	}
 
+	protected override void OnPreRender()
+	{
+		if ( warlord.IsValid() )
+			WarlordLook.Face( warlord, warlordVelocity, warlordLook );
+	}
+
 	void EnsureWarlord()
 	{
 		foreach ( var child in GameObject.Children.ToArray() )
@@ -173,6 +181,8 @@ public sealed class RingRunner : Component
 		if ( aim.IsValid() )
 			look = new Vector3( aim.Direction.x, aim.Direction.y, 0f );
 
+		warlordVelocity = vel;
+		warlordLook = look;
 		WarlordLook.Drive( warlord, vel, look, 0 );
 	}
 
