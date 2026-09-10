@@ -5,7 +5,7 @@
   "Ident": "looped___loaded",
   "Schema": 1,
   "IncludeSourceFiles": false,
-  "Resources": "ui/traits/*.png",
+    "Resources": "ui/traits/*.png\nsounds/music/*.ogg",
   "PackageReferences": [],
   "EditorReferences": null,
   "Mounts": null,

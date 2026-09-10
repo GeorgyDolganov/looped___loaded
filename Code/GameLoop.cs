@@ -591,10 +591,18 @@ public sealed class GameLoop : Component
 		runStartedAt = Time.Now;
 		Mouse.Visibility = MouseVisibility.Visible;
 		Mouse.CursorType = "crosshair";
+		ArenaMusic.Tick( this );
+	}
+
+	protected override void OnDestroy()
+	{
+		ArenaMusic.Stop();
 	}
 
 	protected override void OnUpdate()
 	{
+		ArenaMusic.Tick( this );
+
 		if ( !Arena.IsValid() || !Runner.IsValid() || !Inventory.IsValid() )
 			return;
 
