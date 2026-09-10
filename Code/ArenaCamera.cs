@@ -19,7 +19,7 @@ public sealed class ArenaCamera : Component
 
 	CameraComponent camera;
 	Vector3 focus;
-	float pull;
+	float pull = -1f;
 	bool framingCity;
 
 	protected override void OnAwake()
@@ -28,6 +28,14 @@ public sealed class ArenaCamera : Component
 		camera.IsMainCamera = true;
 		camera.ZNear = 10f;
 		camera.ZFar = 20000f;
+		if ( camera.FieldOfView < 1f )
+			camera.FieldOfView = 60f;
+	}
+
+	protected override void OnStart()
+	{
+		pull = -1f;
+		framingCity = false;
 	}
 
 	protected override void OnUpdate()
@@ -61,10 +69,11 @@ public sealed class ArenaCamera : Component
 	void Frame( Vector3 target, float distance, bool city )
 	{
 		var blend = MathF.Min( 1f, Time.Delta * FollowSmoothing );
+		var dist = MathF.Max( 80f, distance );
 		focus = framingCity == city
 			? focus.LerpTo( target, blend )
 			: target;
-		pull = pull <= 1f ? distance : pull.LerpTo( distance, blend );
+		pull = pull < 0f ? dist : pull.LerpTo( dist, blend );
 		framingCity = city;
 
 		var rotation = Rotation.From( Pitch, Yaw, 0f );

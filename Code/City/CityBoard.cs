@@ -30,6 +30,11 @@ public sealed class CityBoard : Component
 	PolyLine aim;
 	PolyLine ghost;
 	GameObject ghostHeart;
+	GameObject ghostMuscle;
+	GameObject ghostAdrenal;
+	GameObject ghostLungLeft;
+	GameObject ghostLungRight;
+	GameObject ghostLiver;
 	bool bound;
 
 	public void Deposit( int rounds )
@@ -572,7 +577,9 @@ public sealed class CityBoard : Component
 		ghost.TailWidth = 6f;
 		ghost.Apply();
 
-		EnsureGhostHeart( runtime );
+		EnsureGhostMuscle( runtime );
+		EnsureGhostAdrenal( runtime );
+		EnsureGhostLung( runtime );
 	}
 
 	static GameObject FindChild( GameObject parent, string name )
@@ -810,14 +817,15 @@ public sealed class CityBoard : Component
 		if ( !Building || Hovered is null || Hovered.Occupied )
 		{
 			ghost?.Clear();
-			if ( ghostHeart.IsValid() )
-				ghostHeart.Enabled = false;
+			HideGhostModels();
 			return;
 		}
 
 		if ( Selected == BuildingKind.Infirmary )
 		{
 			ghost?.Clear();
+			HideGhostModels();
+
 			var runtime = ghost.IsValid() ? ghost.GameObject.Parent : FindChild( stage, "Runtime" );
 			EnsureGhostHeart( runtime );
 			if ( !ghostHeart.IsValid() )
@@ -830,8 +838,78 @@ public sealed class CityBoard : Component
 			return;
 		}
 
-		if ( ghostHeart.IsValid() )
-			ghostHeart.Enabled = false;
+		if ( Selected == BuildingKind.Anvil )
+		{
+			ghost?.Clear();
+			HideGhostModels();
+
+			var runtime = ghost.IsValid() ? ghost.GameObject.Parent : FindChild( stage, "Runtime" );
+			EnsureGhostMuscle( runtime );
+			if ( !ghostMuscle.IsValid() )
+				return;
+
+			ghostMuscle.Enabled = true;
+			var tint = Buildings.Color( Selected );
+			tint.a = 0.55f;
+			PlaceMuscle( ghostMuscle, ghostMuscle.GetComponent<ModelRenderer>(), Hovered.X, Hovered.Y, PlacementFacing, 34f, false, tint );
+			return;
+		}
+
+		if ( Selected == BuildingKind.Booster )
+		{
+			ghost?.Clear();
+			HideGhostModels();
+
+			var runtime = ghost.IsValid() ? ghost.GameObject.Parent : FindChild( stage, "Runtime" );
+			EnsureGhostAdrenal( runtime );
+			if ( !ghostAdrenal.IsValid() )
+				return;
+
+			ghostAdrenal.Enabled = true;
+			var tint = Buildings.Color( Selected );
+			tint.a = 0.55f;
+			PlaceAdrenal( ghostAdrenal, ghostAdrenal.GetComponent<ModelRenderer>(), Hovered.X, Hovered.Y, PlacementFacing, 34f, false, tint );
+			return;
+		}
+
+		if ( Selected == BuildingKind.Brake )
+		{
+			ghost?.Clear();
+			HideGhostModels();
+
+			var runtime = ghost.IsValid() ? ghost.GameObject.Parent : FindChild( stage, "Runtime" );
+			EnsureGhostLung( runtime );
+			if ( !ghostLungLeft.IsValid() || !ghostLungRight.IsValid() )
+				return;
+
+			ghostLungLeft.Enabled = true;
+			ghostLungRight.Enabled = true;
+			var tint = Buildings.Color( Selected );
+			tint.a = 0.55f;
+			var color = tint;
+			PlaceLung( ghostLungLeft, ghostLungLeft.GetComponent<ModelRenderer>(), Hovered.X, Hovered.Y, PlacementFacing, 34f, false, color, -1 );
+			PlaceLung( ghostLungRight, ghostLungRight.GetComponent<ModelRenderer>(), Hovered.X, Hovered.Y, PlacementFacing, 34f, false, color, 1 );
+			return;
+		}
+
+		if ( Selected == BuildingKind.Showcase )
+		{
+			ghost?.Clear();
+			HideGhostModels();
+
+			var runtime = ghost.IsValid() ? ghost.GameObject.Parent : FindChild( stage, "Runtime" );
+			EnsureGhostLiver( runtime );
+			if ( !ghostLiver.IsValid() )
+				return;
+
+			ghostLiver.Enabled = true;
+			var tint = Buildings.Color( Selected );
+			tint.a = 0.55f;
+			PlaceLiver( ghostLiver, ghostLiver.GetComponent<ModelRenderer>(), Hovered.X, Hovered.Y, PlacementFacing, 34f, false, tint );
+			return;
+		}
+
+		HideGhostModels();
 
 		if ( !ghost.IsValid() )
 			return;
@@ -868,6 +946,22 @@ public sealed class CityBoard : Component
 		{
 			SpawnHeart( plot, tint, height );
 		}
+		else if ( plot.Kind == BuildingKind.Anvil )
+		{
+			SpawnMuscle( plot, tint, height );
+		}
+		else if ( plot.Kind == BuildingKind.Booster )
+		{
+			SpawnAdrenal( plot, tint, height );
+		}
+		else if ( plot.Kind == BuildingKind.Brake )
+		{
+			SpawnLung( plot, tint, height );
+		}
+		else if ( plot.Kind == BuildingKind.Showcase )
+		{
+			SpawnLiver( plot, tint, height );
+		}
 		else
 		{
 			for ( var i = 0; i < poly.Length; i++ )
@@ -899,6 +993,22 @@ public sealed class CityBoard : Component
 		}
 	}
 
+	void HideGhostModels()
+	{
+		if ( ghostHeart.IsValid() )
+			ghostHeart.Enabled = false;
+		if ( ghostMuscle.IsValid() )
+			ghostMuscle.Enabled = false;
+		if ( ghostAdrenal.IsValid() )
+			ghostAdrenal.Enabled = false;
+		if ( ghostLungLeft.IsValid() )
+			ghostLungLeft.Enabled = false;
+		if ( ghostLungRight.IsValid() )
+			ghostLungRight.Enabled = false;
+		if ( ghostLiver.IsValid() )
+			ghostLiver.Enabled = false;
+	}
+
 	void EnsureGhostHeart( GameObject parent )
 	{
 		if ( ghostHeart.IsValid() )
@@ -921,6 +1031,103 @@ public sealed class CityBoard : Component
 		ghostHeart.Enabled = false;
 	}
 
+	void EnsureGhostMuscle( GameObject parent )
+	{
+		if ( ghostMuscle.IsValid() )
+			return;
+
+		if ( !parent.IsValid() )
+			return;
+
+		ghostMuscle = FindByName( parent, "Ghost Muscle" );
+		if ( !ghostMuscle.IsValid() )
+		{
+			ghostMuscle = Scene.CreateObject();
+			ghostMuscle.Name = "Ghost Muscle";
+			ghostMuscle.Parent = parent;
+		}
+
+		var renderer = ghostMuscle.GetComponent<ModelRenderer>() ?? ghostMuscle.AddComponent<ModelRenderer>();
+		renderer.Model = Model.Load( "models/muscle.vmdl" );
+		renderer.RenderType = ModelRenderer.ShadowRenderType.Off;
+		ghostMuscle.Enabled = false;
+	}
+
+	void EnsureGhostAdrenal( GameObject parent )
+	{
+		if ( ghostAdrenal.IsValid() )
+			return;
+
+		if ( !parent.IsValid() )
+			return;
+
+		ghostAdrenal = FindByName( parent, "Ghost Adrenal" );
+		if ( !ghostAdrenal.IsValid() )
+		{
+			ghostAdrenal = Scene.CreateObject();
+			ghostAdrenal.Name = "Ghost Adrenal";
+			ghostAdrenal.Parent = parent;
+		}
+
+		var renderer = ghostAdrenal.GetComponent<ModelRenderer>() ?? ghostAdrenal.AddComponent<ModelRenderer>();
+		renderer.Model = Model.Load( "models/adrenal.vmdl" );
+		renderer.RenderType = ModelRenderer.ShadowRenderType.Off;
+		ghostAdrenal.Enabled = false;
+	}
+
+	void EnsureGhostLung( GameObject parent )
+	{
+		if ( !parent.IsValid() )
+			return;
+
+		FindByName( parent, "Ghost Lung" )?.Destroy();
+		ghostLungLeft = EnsureGhostLungObject( parent, ghostLungLeft, "Ghost Lung L" );
+		ghostLungRight = EnsureGhostLungObject( parent, ghostLungRight, "Ghost Lung R" );
+	}
+
+	GameObject EnsureGhostLungObject( GameObject parent, GameObject ghost, string name )
+	{
+		if ( ghost.IsValid() )
+			return ghost;
+
+		ghost = FindByName( parent, name );
+		if ( !ghost.IsValid() )
+		{
+			ghost = parent.Scene.CreateObject();
+			ghost.Name = name;
+			ghost.Parent = parent;
+		}
+
+		FindChild( ghost, "Mesh" )?.Destroy();
+		var renderer = ghost.GetComponent<ModelRenderer>() ?? ghost.AddComponent<ModelRenderer>();
+		renderer.Model = Model.Load( "models/lung.vmdl" );
+		renderer.RenderType = ModelRenderer.ShadowRenderType.Off;
+		ghost.Enabled = false;
+		return ghost;
+	}
+
+	void EnsureGhostLiver( GameObject parent )
+	{
+		if ( ghostLiver.IsValid() )
+			return;
+
+		if ( !parent.IsValid() )
+			return;
+
+		ghostLiver = FindByName( parent, "Ghost Liver" );
+		if ( !ghostLiver.IsValid() )
+		{
+			ghostLiver = Scene.CreateObject();
+			ghostLiver.Name = "Ghost Liver";
+			ghostLiver.Parent = parent;
+		}
+
+		var renderer = ghostLiver.GetComponent<ModelRenderer>() ?? ghostLiver.AddComponent<ModelRenderer>();
+		renderer.Model = Model.Load( "models/liver.vmdl" );
+		renderer.RenderType = ModelRenderer.ShadowRenderType.Off;
+		ghostLiver.Enabled = false;
+	}
+
 	void SpawnHeart( CityPlot plot, Color tint, float height )
 	{
 		var go = Scene.CreateObject();
@@ -938,7 +1145,7 @@ public sealed class CityBoard : Component
 		var size = bounds.Size;
 		var longest = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
 		var target = MathF.Max( height, CellSize * (working ? 0.62f : 0.42f) );
-		var scale = (longest > 0.001f ? target / longest : 1f) * 0.85f;
+		var scale = (longest > 0.001f ? target / longest : 1f) * (0.85f / 1.5f);
 		var center = CellWorld( x, y );
 		var rotation = Rotation.FromYaw( facing * 90f ) * Rotation.FromPitch( -90f );
 
@@ -957,6 +1164,185 @@ public sealed class CityBoard : Component
 		pulse.Rate = working ? 1.2f : 0.9f;
 		pulse.Seed = x * 97 + y * 13 + 1;
 		pulse.Apply();
+	}
+
+	void SpawnMuscle( CityPlot plot, Color tint, float height )
+	{
+		var go = Scene.CreateObject();
+		go.Name = "Muscle";
+		go.Parent = plot.Body;
+
+		var renderer = go.AddComponent<ModelRenderer>();
+		PlaceMuscle( go, renderer, plot.X, plot.Y, plot.Facing, height, plot.Working, plot.Working ? Color.White : tint );
+	}
+
+	void PlaceMuscle( GameObject go, ModelRenderer renderer, int x, int y, int facing, float height, bool working, Color tint )
+	{
+		var model = Model.Load( "models/muscle.vmdl" );
+		var bounds = model.Bounds;
+		var size = bounds.Size;
+		var longest = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
+		var target = MathF.Max( height, CellSize * (working ? 0.62f : 0.42f) );
+		var scale = (longest > 0.001f ? target / longest : 1f) * (0.85f / 1.5f);
+		var center = CellWorld( x, y );
+		var rotation = Rotation.FromYaw( facing * 90f ) * Rotation.FromPitch( -90f );
+
+		go.WorldRotation = rotation;
+		go.WorldScale = scale;
+		go.WorldPosition = center + Vector3.Up * (8f - RotatedMinZ( bounds, rotation ) * scale);
+
+		if ( renderer.IsValid() )
+		{
+			renderer.Model = model;
+			renderer.Tint = tint;
+		}
+	}
+
+	void SpawnAdrenal( CityPlot plot, Color tint, float height )
+	{
+		var go = Scene.CreateObject();
+		go.Name = "Adrenal";
+		go.Parent = plot.Body;
+
+		var renderer = go.AddComponent<ModelRenderer>();
+		PlaceAdrenal( go, renderer, plot.X, plot.Y, plot.Facing, height, plot.Working, plot.Working ? Color.White : tint );
+	}
+
+	void PlaceAdrenal( GameObject go, ModelRenderer renderer, int x, int y, int facing, float height, bool working, Color tint )
+	{
+		var model = Model.Load( "models/adrenal.vmdl" );
+		var bounds = model.Bounds;
+		var size = bounds.Size;
+		var longest = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
+		var target = MathF.Max( height, CellSize * (working ? 0.62f : 0.42f) );
+		var scale = (longest > 0.001f ? target / longest : 1f) * (0.85f / 1.5f);
+		var center = CellWorld( x, y );
+		var rotation = Rotation.FromYaw( facing * 90f ) * Rotation.FromPitch( -90f );
+
+		go.WorldRotation = rotation;
+		go.WorldScale = scale;
+		go.WorldPosition = center + Vector3.Up * (8f - RotatedMinZ( bounds, rotation ) * scale);
+
+		if ( renderer.IsValid() )
+		{
+			renderer.Model = model;
+			renderer.Tint = tint;
+			renderer.Attributes.Set( "StripeSpeed", working ? 0.72f : 0.38f );
+			renderer.Attributes.Set( "StripeWidth", working ? 0.04f : 0.055f );
+			renderer.Attributes.Set( "StripeStrength", working ? 1.15f : 0.55f );
+			renderer.Attributes.Set( "StripePhase", ( x * 0.37f + y * 0.19f ) % 1f );
+		}
+	}
+
+	void SpawnLung( CityPlot plot, Color tint, float height )
+	{
+		var color = plot.Working ? Color.White : tint;
+		SpawnOneLung( plot, "Lung L", color, height, -1 );
+		SpawnOneLung( plot, "Lung R", color, height, 1 );
+	}
+
+	void SpawnOneLung( CityPlot plot, string name, Color tint, float height, int side )
+	{
+		var go = plot.Body.Scene.CreateObject();
+		go.Name = name;
+		go.Parent = plot.Body;
+
+		var renderer = go.AddComponent<ModelRenderer>();
+		PlaceLung( go, renderer, plot.X, plot.Y, plot.Facing, height, plot.Working, tint, side );
+	}
+
+	void PlaceLung( GameObject go, ModelRenderer renderer, int x, int y, int facing, float height, bool working, Color tint, int side )
+	{
+		var model = Model.Load( "models/lung.vmdl" );
+		var bounds = model.Bounds;
+		var size = bounds.Size;
+		var longest = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
+		var target = MathF.Max( height, CellSize * (working ? 0.62f : 0.42f) );
+		var scale = (longest > 0.001f ? target / longest : 1f) * (0.85f / 1.5f);
+		var center = CellWorld( x, y );
+		var rotation = Rotation.From( -90f, 0f, facing * 90f + 90f );
+		var along = Buildings.Rotate( Vector2.Right, facing );
+		var sit = 8f - RotatedMinZ( bounds, rotation ) * scale;
+		var offset = new Vector3( along.x, along.y, 0f ) * ( side * CellSize * 0.22f );
+
+		go.WorldRotation = rotation;
+		go.WorldPosition = center + offset + Vector3.Up * sit;
+
+		if ( renderer.IsValid() )
+		{
+			renderer.Model = model;
+			renderer.Tint = tint;
+			renderer.MaterialOverride = null;
+		}
+
+		var breath = go.GetComponent<LungBreath>() ?? go.AddComponent<LungBreath>();
+		breath.RestScale = scale;
+		breath.Mirror = side < 0 ? LungMirror( rotation, along ) : Vector3.Zero;
+		breath.Strength = working ? 0.1f : 0.055f;
+		breath.Rate = working ? 0.3f : 0.22f;
+		breath.Seed = x * 53 + y * 29 + 7 + side;
+		breath.Apply();
+	}
+
+	static Vector3 LungMirror( Rotation rotation, Vector2 along )
+	{
+		var across = new Vector3( along.x, along.y, 0f );
+		if ( across.Length < 0.01f )
+			return new Vector3( 1f, 0f, 0f );
+
+		across = across.Normal;
+		var best = -1f;
+		var mirror = new Vector3( 1f, 0f, 0f );
+		TryAxis( rotation.Right, new Vector3( 1f, 0f, 0f ) );
+		TryAxis( rotation.Up, new Vector3( 0f, 1f, 0f ) );
+		TryAxis( rotation.Forward, new Vector3( 0f, 0f, 1f ) );
+		return mirror;
+
+		void TryAxis( Vector3 worldAxis, Vector3 candidate )
+		{
+			var xy = new Vector3( worldAxis.x, worldAxis.y, 0f );
+			if ( xy.Length < 0.2f )
+				return;
+
+			var align = MathF.Abs( Vector3.Dot( xy.Normal, across ) );
+			if ( align <= best )
+				return;
+
+			best = align;
+			mirror = candidate;
+		}
+	}
+
+	void SpawnLiver( CityPlot plot, Color tint, float height )
+	{
+		var go = Scene.CreateObject();
+		go.Name = "Liver";
+		go.Parent = plot.Body;
+
+		var renderer = go.AddComponent<ModelRenderer>();
+		PlaceLiver( go, renderer, plot.X, plot.Y, plot.Facing, height, plot.Working, plot.Working ? Color.White : tint );
+	}
+
+	void PlaceLiver( GameObject go, ModelRenderer renderer, int x, int y, int facing, float height, bool working, Color tint )
+	{
+		var model = Model.Load( "models/liver.vmdl" );
+		var bounds = model.Bounds;
+		var size = bounds.Size;
+		var longest = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
+		var target = MathF.Max( height, CellSize * (working ? 0.62f : 0.42f) );
+		var scale = (longest > 0.001f ? target / longest : 1f) * (0.85f / 1.5f);
+		var center = CellWorld( x, y );
+		var rotation = Rotation.FromYaw( facing * 90f ) * Rotation.FromPitch( -90f );
+
+		go.WorldRotation = rotation;
+		go.WorldScale = scale;
+		go.WorldPosition = center + Vector3.Up * (8f - RotatedMinZ( bounds, rotation ) * scale);
+
+		if ( renderer.IsValid() )
+		{
+			renderer.Model = model;
+			renderer.Tint = tint;
+		}
 	}
 
 	static float RotatedMinZ( BBox bounds, Rotation rotation )
@@ -989,18 +1375,6 @@ public sealed class CityBoard : Component
 					center + new Vector3( facing.x, facing.y, 0f ) * 28f + Vector3.Up * (height * 0.7f),
 					Blocks.FlatFacing( facing ),
 					new Vector3( 50f, 28f, 22f ), tint * 0.8f );
-				break;
-			case BuildingKind.Booster:
-				Blocks.SpawnBox( plot.Body, "Nose",
-					center + new Vector3( facing.x, facing.y, 0f ) * 40f + Vector3.Up * (height * 0.55f),
-					Blocks.FlatFacing( facing ),
-					new Vector3( 36f, 36f, 36f ), tint * 1.2f );
-				break;
-			case BuildingKind.Brake:
-				Blocks.SpawnBox( plot.Body, "Gate",
-					center - new Vector3( facing.x, facing.y, 0f ) * 18f + Vector3.Up * (height * 0.5f),
-					Blocks.FlatFacing( facing ),
-					new Vector3( 70f, 18f, height * 0.7f ), tint * 0.75f );
 				break;
 			default:
 				Blocks.SpawnSphere( plot.Body, "Gem", top, plot.Working ? 32f : 20f, tint * 1.4f );

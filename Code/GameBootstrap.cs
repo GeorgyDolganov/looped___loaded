@@ -157,17 +157,17 @@ public sealed class GameBootstrap : Component
 		var go = camera.GameObject;
 
 		var bloom = go.GetComponent<Bloom>() ?? go.AddComponent<Bloom>();
-		bloom.Strength = 1.22f;
-		bloom.Threshold = 0.78f;
-		bloom.Tint = new Color( 1f, 0.88f, 0.72f );
+		bloom.Strength = 0.55f;
+		bloom.Threshold = 1.05f;
+		bloom.Tint = new Color( 1f, 0.96f, 0.9f );
 
 		var tone = go.GetComponent<Tonemapping>() ?? go.AddComponent<Tonemapping>();
-		tone.Mode = Tonemapping.TonemappingMode.ACES;
+		tone.Mode = Tonemapping.TonemappingMode.AgX;
 		tone.AutoExposureEnabled = true;
-		tone.ExposureCompensation = 0.22f;
-		tone.MinimumExposure = 0.9f;
-		tone.MaximumExposure = 1.7f;
-		tone.Rate = 1.4f;
+		tone.ExposureCompensation = 0.06f;
+		tone.MinimumExposure = 1f;
+		tone.MaximumExposure = 1.35f;
+		tone.Rate = 1.2f;
 
 		var look = go.GetComponent<QuakeArenaLook>() ?? go.AddComponent<QuakeArenaLook>();
 		if ( !look.Loop.IsValid() )

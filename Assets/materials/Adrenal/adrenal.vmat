@@ -1,0 +1,12 @@
+// THIS FILE IS AUTO-GENERATED
+
+Layer0
+{
+	shader "shaders/adrenal_stripe.shader"
+
+	//---- Color ----
+	TextureColor "textures/adrenal.jpg"
+
+	//---- Fog ----
+	g_bFogEnabled "1"
+}

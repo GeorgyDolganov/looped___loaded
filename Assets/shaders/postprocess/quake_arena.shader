@@ -52,19 +52,19 @@ PS
 	Texture2D g_tColorBuffer < Attribute( "ColorBuffer" ); SrgbRead( true ); >;
 
 	float g_flIntensity < Attribute( "intensity" ); Default( 1.0f ); >;
-	float g_flContrast < Attribute( "contrast" ); Default( 1.2f ); >;
-	float g_flSaturation < Attribute( "saturate" ); Default( 1.32f ); >;
-	float g_flOverbright < Attribute( "overbright" ); Default( 0.34f ); >;
-	float g_flSplit < Attribute( "split" ); Default( 0.26f ); >;
-	float3 g_vShadowTint < Attribute( "shadowTint" ); Default3( 0.38f, 0.72f, 1.0f ); >;
-	float3 g_vHighlightTint < Attribute( "highlightTint" ); Default3( 1.0f, 0.56f, 0.2f ); >;
-	float g_flDither < Attribute( "dither" ); Default( 0.04f ); >;
-	float g_flQuantize < Attribute( "quantize" ); Default( 48.0f ); >;
-	float g_flScanlines < Attribute( "scanlines" ); Default( 0.08f ); >;
-	float g_flChromatic < Attribute( "chromatic" ); Default( 0.62f ); >;
-	float g_flVignette < Attribute( "vignette" ); Default( 0.4f ); >;
-	float g_flSharpen < Attribute( "sharpen" ); Default( 0.24f ); >;
-	float g_flBarrel < Attribute( "barrel" ); Default( 0.03f ); >;
+	float g_flContrast < Attribute( "contrast" ); Default( 1.06f ); >;
+	float g_flSaturation < Attribute( "saturate" ); Default( 1.12f ); >;
+	float g_flOverbright < Attribute( "overbright" ); Default( 0.12f ); >;
+	float g_flSplit < Attribute( "split" ); Default( 0.1f ); >;
+	float3 g_vShadowTint < Attribute( "shadowTint" ); Default3( 0.78f, 0.9f, 1.0f ); >;
+	float3 g_vHighlightTint < Attribute( "highlightTint" ); Default3( 1.0f, 0.9f, 0.78f ); >;
+	float g_flDither < Attribute( "dither" ); Default( 0.0f ); >;
+	float g_flQuantize < Attribute( "quantize" ); Default( 0.0f ); >;
+	float g_flScanlines < Attribute( "scanlines" ); Default( 0.0f ); >;
+	float g_flChromatic < Attribute( "chromatic" ); Default( 0.18f ); >;
+	float g_flVignette < Attribute( "vignette" ); Default( 0.16f ); >;
+	float g_flSharpen < Attribute( "sharpen" ); Default( 0.12f ); >;
+	float g_flBarrel < Attribute( "barrel" ); Default( 0.0f ); >;
 	float g_flHurt < Attribute( "hurt" ); Default( 0.0f ); >;
 
 	static const float Bayer4[16] =
@@ -112,19 +112,15 @@ PS
 
 	float3 Grade( float3 color )
 	{
-		float3 graded = ( color - 0.5f ) * g_flContrast + 0.52f;
-		float3 s = saturate( graded );
-		s = s * s * ( 3.0f - 2.0f * s );
-		graded = lerp( saturate( graded ), s, 0.28f );
-
+		float3 graded = saturate( ( color - 0.5f ) * g_flContrast + 0.5f + 0.015f );
 		float lum = GetLuminance( graded );
 		graded = lerp( lum.xxx, graded, g_flSaturation );
-		graded *= 1.0f + g_flOverbright * graded;
+		graded *= 1.0f + g_flOverbright * 0.45f;
 
-		float shadowMask = saturate( 1.0f - smoothstep( 0.08f, 0.42f, lum ) );
-		float highlightMask = saturate( smoothstep( 0.38f, 0.88f, lum ) );
-		graded = lerp( graded, graded * g_vShadowTint, shadowMask * g_flSplit );
-		graded = lerp( graded, graded * g_vHighlightTint * 1.12f, highlightMask * g_flSplit );
+		float shadowMask = saturate( 1.0f - smoothstep( 0.14f, 0.5f, lum ) );
+		float highlightMask = saturate( smoothstep( 0.5f, 0.94f, lum ) );
+		graded = lerp( graded, graded * lerp( 1.0f, g_vShadowTint, 0.4f ), shadowMask * g_flSplit );
+		graded = lerp( graded, graded * lerp( 1.0f, g_vHighlightTint, 0.28f ), highlightMask * g_flSplit );
 		return graded;
 	}
 
@@ -140,9 +136,9 @@ PS
 		graded *= 1.0f - g_flScanlines * ( 1.0f - scan ) * 0.85f;
 
 		float2 vignetteOffset = ( uv - 0.5f ) * float2( g_vRenderTargetSize.x / g_vRenderTargetSize.y, 1.0f );
-		float vignette = saturate( length( vignetteOffset ) * ( 0.72f + g_flVignette ) );
-		vignette = pow( vignette, 1.65f );
-		graded *= 1.0f - vignette * g_flVignette * 0.85f;
+		float vignette = saturate( length( vignetteOffset ) * ( 0.55f + g_flVignette * 0.5f ) );
+		vignette = pow( vignette, 2.1f );
+		graded *= 1.0f - vignette * g_flVignette * 0.55f;
 
 		if ( g_flQuantize > 1.5f )
 		{

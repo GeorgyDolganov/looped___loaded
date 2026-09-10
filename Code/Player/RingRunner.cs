@@ -31,7 +31,7 @@ public sealed class RingRunner : Component
 	float lastDash = -999f;
 	float dashSpent;
 	bool slowOverheat;
-	SkinnedModelRenderer terry;
+	SkinnedModelRenderer warlord;
 	readonly List<(ModelRenderer Renderer, Color Tint)> meshes = new();
 
 	public void ResetToStart( float startAngle )
@@ -102,7 +102,8 @@ public sealed class RingRunner : Component
 		if ( Loop.IsValid() && Loop.IsFrozen )
 		{
 			ApplyTransform();
-			DriveTerry( 0f );
+			EnsureWarlord();
+			DriveWarlord();
 			PaintHurt();
 			return;
 		}
@@ -124,18 +125,55 @@ public sealed class RingRunner : Component
 
 		Advance( arc );
 		ApplyTransform();
-		DriveTerry( arc );
+		EnsureWarlord();
+		DriveWarlord();
 		PaintHurt();
 	}
 
-	void DriveTerry( float arc )
+	void EnsureWarlord()
 	{
-		if ( !terry.IsValid() )
-			terry = TerryLook.Attach( GameObject, true, TerryLook.BodyScale );
+		foreach ( var child in GameObject.Children.ToArray() )
+		{
+			if ( child.Name == "Terry" || child.Name == "Terry Enemy" )
+				child.Destroy();
+		}
 
-		var speed = Time.Delta > 0.0001f ? arc / Time.Delta : 0f;
+		if ( warlord.IsValid() )
+		{
+			var size = warlord.Model?.Bounds.Size ?? Vector3.Zero;
+			if ( size.Length > 0.01f )
+				return;
+
+			warlord.GameObject.Destroy();
+			warlord = null;
+		}
+
+		warlord = WarlordLook.Attach( GameObject );
+	}
+
+	void DriveWarlord()
+	{
+		if ( !warlord.IsValid() )
+			return;
+
+		var frozen = Loop.IsValid() && Loop.IsFrozen;
+		var speed = 0f;
+		if ( !frozen )
+		{
+			speed = Speed;
+			if ( Slowing )
+				speed *= SlowSpeedScale;
+			if ( Dashing )
+				speed += DashDistance / MathF.Max( 0.05f, DashDuration );
+		}
+
 		var vel = new Vector3( Tangent.x, Tangent.y, 0f ) * speed;
-		TerryLook.Drive( terry, vel, WorldRotation.Forward, 1 );
+		var look = vel;
+		var aim = GetComponent<PlayerAim>();
+		if ( aim.IsValid() )
+			look = new Vector3( aim.Direction.x, aim.Direction.y, 0f );
+
+		WarlordLook.Drive( warlord, vel, look, 0 );
 	}
 
 	void PaintHurt()

@@ -1,0 +1,6 @@
+Layer0
+{
+	shader "shaders/lung_breath.shader"
+
+	TextureColor "textures/lung.jpg"
+}
