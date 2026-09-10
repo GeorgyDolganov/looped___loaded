@@ -18,6 +18,7 @@ public sealed class GameBootstrap : Component
 		Wire( loop );
 		EnsureHud( loop );
 		EnsureCamera( loop );
+		ArenaSounds.Warm();
 		loop.RestoreSaves();
 		loop.ShowMenu();
 	}
@@ -125,11 +126,10 @@ public sealed class GameBootstrap : Component
 			go.Name = "Arena Camera";
 			main = go.AddComponent<CameraComponent>();
 			main.ClearFlags = ClearFlags.All;
-			go.AddComponent<Bloom>();
-			go.AddComponent<Tonemapping>();
 		}
 
 		main.IsMainCamera = true;
+		main.EnablePostProcessing = true;
 		foreach ( var extra in cameras )
 		{
 			if ( extra == main )
@@ -138,6 +138,8 @@ public sealed class GameBootstrap : Component
 			extra.IsMainCamera = false;
 			extra.Enabled = false;
 		}
+
+		EnsurePostProcess( main, loop );
 
 		var rig = main.GetComponent<ArenaCamera>() ?? main.AddComponent<ArenaCamera>();
 		if ( !rig.Loop.IsValid() )
@@ -148,6 +150,28 @@ public sealed class GameBootstrap : Component
 			rig.Runner = loop.Runner;
 		if ( !rig.City.IsValid() )
 			rig.City = loop.City;
+	}
+
+	void EnsurePostProcess( CameraComponent camera, GameLoop loop )
+	{
+		var go = camera.GameObject;
+
+		var bloom = go.GetComponent<Bloom>() ?? go.AddComponent<Bloom>();
+		bloom.Strength = 1.22f;
+		bloom.Threshold = 0.78f;
+		bloom.Tint = new Color( 1f, 0.88f, 0.72f );
+
+		var tone = go.GetComponent<Tonemapping>() ?? go.AddComponent<Tonemapping>();
+		tone.Mode = Tonemapping.TonemappingMode.ACES;
+		tone.AutoExposureEnabled = true;
+		tone.ExposureCompensation = 0.22f;
+		tone.MinimumExposure = 0.9f;
+		tone.MaximumExposure = 1.7f;
+		tone.Rate = 1.4f;
+
+		var look = go.GetComponent<QuakeArenaLook>() ?? go.AddComponent<QuakeArenaLook>();
+		if ( !look.Loop.IsValid() )
+			look.Loop = loop;
 	}
 
 	void EnsureLighting()

@@ -1,0 +1,20 @@
+{
+  "UI": true,
+  "Volume": "0.58",
+  "Pitch": "0.98,1.02",
+  "Decibels": 76,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/arena/menu_back_0.vsnd"
+  ],
+  "OcclusionEnabled": false,
+  "Occlusion": false,
+  "ReverbEnabled": false,
+  "Reflections": false,
+  "AirAbsorption": false,
+  "Transmission": false,
+  "DistanceAttenuation": false,
+  "Distance": 20000,
+  "__references": [],
+  "__version": 1
+}

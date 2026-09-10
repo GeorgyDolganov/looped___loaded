@@ -138,7 +138,7 @@ public sealed class GameLoop : Component
 	public void HighlightSave( int index )
 	{
 		SaveCursor = Math.Clamp( index, 0, SaveStore.Slots - 1 );
-		Sound.Play( "sounds/kenney/ui/ui.navigate.forward.sound" );
+		ArenaSounds.MenuMove();
 	}
 
 	public void RestoreSaves()
@@ -172,13 +172,13 @@ public sealed class GameLoop : Component
 		RefreshSaves();
 		SaveCursor = ActiveSlot;
 		MenuView = MenuPage.Saves;
-		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
+		ArenaSounds.MenuOk();
 	}
 
 	public void CloseSaves()
 	{
 		MenuView = MenuPage.Title;
-		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
+		ArenaSounds.MenuOk();
 	}
 
 	public void UseSave( int index )
@@ -190,7 +190,7 @@ public sealed class GameLoop : Component
 		ApplySave( SaveStore.Read( ActiveSlot ) );
 		RefreshSaves();
 		MenuView = MenuPage.Title;
-		Sound.Play( "sounds/kenney/ui/ui.navigate.forward.sound" );
+		ArenaSounds.MenuOk();
 		Announce( $"SLOT {ActiveSlot + 1}" );
 	}
 
@@ -199,13 +199,13 @@ public sealed class GameLoop : Component
 		index = Math.Clamp( index, 0, SaveStore.Slots - 1 );
 		if ( !SaveStore.Exists( index ) )
 		{
-			Sound.Play( "sounds/kenney/ui/ui.button.deny.sound" );
+			ArenaSounds.Deny();
 			return;
 		}
 
 		if ( !SaveStore.Delete( index ) )
 		{
-			Sound.Play( "sounds/kenney/ui/ui.button.deny.sound" );
+			ArenaSounds.Deny();
 			return;
 		}
 		if ( index == ActiveSlot )
@@ -215,7 +215,7 @@ public sealed class GameLoop : Component
 		}
 
 		RefreshSaves();
-		Sound.Play( "sounds/kenney/ui/ui.navigate.deny.sound" );
+		ArenaSounds.MenuBack();
 		Announce( $"SLOT {index + 1} DELETED" );
 	}
 
@@ -273,7 +273,7 @@ public sealed class GameLoop : Component
 		Autosave();
 		if ( Arena.IsValid() )
 			Arena.ClearGeneratedLayout();
-		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
+		ArenaSounds.MenuOpen();
 	}
 
 	public void OpenCityFromMenu()
@@ -338,7 +338,7 @@ public sealed class GameLoop : Component
 				continue;
 
 			SaveCursor = i;
-			Sound.Play( "sounds/kenney/ui/ui.navigate.forward.sound" );
+			ArenaSounds.MenuMove();
 		}
 
 		if ( Input.Pressed( "Jump" ) )
@@ -375,7 +375,7 @@ public sealed class GameLoop : Component
 		Paused = true;
 		pauseStartedAt = Time.Now;
 		Mouse.CursorType = "pointer";
-		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
+		ArenaSounds.MenuOpen();
 	}
 
 	public void Resume()
@@ -386,7 +386,7 @@ public sealed class GameLoop : Component
 		ShiftClocks( Time.Now - pauseStartedAt );
 		ClearPause();
 		Mouse.CursorType = "crosshair";
-		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
+		ArenaSounds.MenuOk();
 	}
 
 	void ClearPause()
@@ -504,6 +504,7 @@ public sealed class GameLoop : Component
 
 		SpawnWave( 1 );
 		Mouse.CursorType = "crosshair";
+		ArenaSounds.Fight();
 		Announce( "ONE LAP. ONE ROUND. CASH OUT OR GO AGAIN." );
 	}
 
@@ -537,7 +538,7 @@ public sealed class GameLoop : Component
 		Inventory.TrySelect( slot.Index );
 		Catches++;
 
-		Sound.Play( "sounds/impacts/melee/impact-melee-metal.sound", world );
+		ArenaSounds.Pickup( world );
 		ImpactFlash.Spawn( Scene, world, slot.Tint, 1.4f );
 
 		if ( shielded )
@@ -555,7 +556,7 @@ public sealed class GameLoop : Component
 		slot.ResetCombat();
 		slot.Status = RoundStatus.Chambered;
 		Inventory.TrySelect( slot.Index );
-		Sound.Play( "sounds/impacts/melee/impact-melee-metal.sound", world );
+		ArenaSounds.Pickup( world );
 		ImpactFlash.Spawn( Scene, world, slot.Tint, 1.1f );
 		Announce( $"ROUND {slot.Index + 1} {reason}" );
 	}
@@ -581,7 +582,7 @@ public sealed class GameLoop : Component
 		slot.Status = RoundStatus.Dropped;
 		Losses++;
 
-		Sound.Play( "sounds/kenney/ui/ui.navigate.deny.sound" );
+		ArenaSounds.Lose();
 		Announce( $"ROUND {slot.Index + 1} LOST" );
 	}
 
@@ -694,7 +695,7 @@ public sealed class GameLoop : Component
 		HandleSelect();
 
 		if ( Input.Pressed( "Jump" ) && Runner.TryDash() )
-			Sound.Play( "sounds/footsteps/footstep-concrete-jump.sound", Runner.WorldPosition );
+			ArenaSounds.Jump( Runner.WorldPosition );
 
 		if ( Input.Pressed( "Attack1" ) && !BlocksShot )
 			Fire();
@@ -707,6 +708,8 @@ public sealed class GameLoop : Component
 
 	void HandleSelect()
 	{
+		var prev = Inventory.SelectedIndex;
+
 		for ( var i = 0; i < 9; i++ )
 		{
 			if ( Input.Pressed( $"Slot{i + 1}" ) )
@@ -724,6 +727,9 @@ public sealed class GameLoop : Component
 			Inventory.SelectNextChambered( -1 );
 		else if ( wheel.y < -0.1f )
 			Inventory.SelectNextChambered( 1 );
+
+		if ( Inventory.SelectedIndex != prev )
+			ArenaSounds.Change();
 	}
 
 	void Fire()
@@ -732,7 +738,7 @@ public sealed class GameLoop : Component
 
 		if ( slot is null || slot.Status != RoundStatus.Chambered )
 		{
-			Sound.Play( "sounds/kenney/ui/ui.button.deny.sound" );
+			ArenaSounds.Deny();
 			Announce( ChamberDeny() );
 			return;
 		}
@@ -749,7 +755,7 @@ public sealed class GameLoop : Component
 		Inventory.AfterFired( slot );
 		ShotsFired++;
 
-		Sound.Play( "sounds/effects/explosion/explosion_small.sound", Aim.MuzzleWorld );
+		ArenaSounds.Fire( Aim.MuzzleWorld );
 		ImpactFlash.Spawn( Scene, Aim.MuzzleWorld, slot.Tint, 0.8f );
 	}
 
@@ -800,7 +806,7 @@ public sealed class GameLoop : Component
 			slot.Status = RoundStatus.Chambered;
 			Inventory.TrySelect( slot.Index );
 
-			Sound.Play( "sounds/kenney/ui/ui.favourite.sound", world );
+			ArenaSounds.Pickup( world );
 			ImpactFlash.Spawn( Scene, world, slot.Tint, 1.2f );
 			Announce( $"ROUND {slot.Index + 1} RECOVERED" );
 		}
@@ -847,7 +853,7 @@ public sealed class GameLoop : Component
 			lastHurtAt = Time.Now;
 			invulnUntil = Time.Now + 1.05f;
 			var blocked = Geometry.ToPlayWorld( Runner.Flat );
-			Sound.Play( "sounds/impacts/melee/impact-melee-metal.sound", Runner.WorldPosition );
+			ArenaSounds.Armor( Runner.WorldPosition );
 			ImpactFlash.Spawn( Scene, blocked, new Color( 1f, 0.85f, 0.35f ), 2.4f );
 			Announce( BloodShields > 0 ? $"SHIELD  ·  {BloodShields} LEFT" : "SHIELD BROKE" );
 			return;
@@ -858,17 +864,17 @@ public sealed class GameLoop : Component
 		invulnUntil = Time.Now + 1.05f;
 
 		var world = Geometry.ToPlayWorld( Runner.Flat );
-		Sound.Play( "sounds/impacts/melee/impact-melee-flesh.sound", Runner.WorldPosition );
-		Sound.Play( "sounds/kenney/ui/ui.navigate.deny.sound" );
 		ImpactFlash.Spawn( Scene, world, new Color( 1f, 0.12f, 0.08f ), 3.4f );
 		ImpactFlash.Spawn( Scene, world + Vector3.Up * 40f, Color.White, 1.8f );
 
 		if ( Health > 0 )
 		{
+			ArenaSounds.Pain( Runner.WorldPosition );
 			Announce( $"-1  ·  {Health} LEFT" );
 			return;
 		}
 
+		ArenaSounds.Death( Runner.WorldPosition );
 		InBossFight = false;
 		Phase = RunPhase.Dead;
 		BurnedRounds = Stash;
@@ -899,7 +905,7 @@ public sealed class GameLoop : Component
 
 		bossWon = true;
 		InBossFight = false;
-		Sound.Play( "sounds/kenney/ui/ui.upvote.sound" );
+		ArenaSounds.Pickup();
 		Announce( "NO MORE ROUNDS  ·  ×2" );
 	}
 
@@ -950,7 +956,7 @@ public sealed class GameLoop : Component
 	{
 		skipHinted = false;
 		Phase = RunPhase.DecideLap;
-		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
+		ArenaSounds.Tele();
 		Announce( $"LAP {Lap} CLEAR" );
 	}
 
@@ -1022,7 +1028,7 @@ public sealed class GameLoop : Component
 
 		if ( Runner.IsValid() )
 			Runner.GameObject.Enabled = false;
-		Sound.Play( "sounds/kenney/ui/ui.upvote.sound" );
+		ArenaSounds.Tele();
 		Mouse.CursorType = "crosshair";
 		Announce( deposit ? $"CITY  ·  +{ExtractedRounds} WAREHOUSE" : "CITY" );
 		Autosave();
@@ -1035,7 +1041,7 @@ public sealed class GameLoop : Component
 		Runner.ApplyPace( Lap );
 		var added = GrantContinueRounds();
 		BeginTraitPick();
-		Sound.Play( "sounds/kenney/ui/ui.favourite.sound" );
+		ArenaSounds.Pickup();
 		Announce( added > 0
 			? $"+{added} ROUND  ·  STASH {Stash}  ·  ×{Threat:0.00}"
 			: $"STASH MAX  ·  ×{Threat:0.00}" );
@@ -1048,7 +1054,7 @@ public sealed class GameLoop : Component
 		Runner.ApplyPace( Lap );
 		var added = GrantContinueRounds();
 		BeginTraitPick();
-		Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
+		ArenaSounds.Warn();
 		Announce( $"CORE FIGHT  ·  +{added}  ·  STASH {Stash}" );
 	}
 
@@ -1158,7 +1164,10 @@ public sealed class GameLoop : Component
 
 		Phase = RunPhase.Playing;
 
-		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
+		if ( fight )
+			ArenaSounds.Fight();
+		else
+			ArenaSounds.Change();
 		Announce( fight
 			? "THE CORE  ·  RICOCHET TO BREAK IT"
 			: $"{RoundTraits.Title( trait )} LV{Inventory.Loadout.TraitLevel( trait )}  ·  ALL ROUNDS" );

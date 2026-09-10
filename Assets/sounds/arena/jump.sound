@@ -1,0 +1,21 @@
+{
+  "UI": false,
+  "Volume": "0.86",
+  "Pitch": "0.9299999999999999,1.07",
+  "Decibels": 70,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/arena/jump_0.vsnd",
+    "sounds/arena/jump_1.vsnd"
+  ],
+  "OcclusionEnabled": false,
+  "Occlusion": false,
+  "ReverbEnabled": false,
+  "Reflections": false,
+  "AirAbsorption": false,
+  "Transmission": false,
+  "DistanceAttenuation": false,
+  "Distance": 20000,
+  "__references": [],
+  "__version": 1
+}

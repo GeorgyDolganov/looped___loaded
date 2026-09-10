@@ -38,7 +38,7 @@ public sealed class EnemyShot : Component
 
 		loop.Shots.Add( shot );
 
-		Sound.Play( "sounds/impacts/bullets/impact-bullet-generic.sound", shot.WorldPosition );
+		ArenaSounds.Plasma( shot.WorldPosition );
 	}
 
 	public void ShiftTime( float dt )

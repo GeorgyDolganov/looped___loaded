@@ -1,0 +1,20 @@
+{
+  "UI": false,
+  "Volume": "0.88",
+  "Pitch": "0.95,1.05",
+  "Decibels": 70,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/arena/armor_0.vsnd"
+  ],
+  "OcclusionEnabled": false,
+  "Occlusion": false,
+  "ReverbEnabled": false,
+  "Reflections": false,
+  "AirAbsorption": false,
+  "Transmission": false,
+  "DistanceAttenuation": false,
+  "Distance": 20000,
+  "__references": [],
+  "__version": 1
+}

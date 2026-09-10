@@ -1,0 +1,21 @@
+{
+  "UI": true,
+  "Volume": "0.64",
+  "Pitch": "0.94,1.06",
+  "Decibels": 76,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/arena/hit_0.vsnd",
+    "sounds/arena/hit_1.vsnd"
+  ],
+  "OcclusionEnabled": false,
+  "Occlusion": false,
+  "ReverbEnabled": false,
+  "Reflections": false,
+  "AirAbsorption": false,
+  "Transmission": false,
+  "DistanceAttenuation": false,
+  "Distance": 20000,
+  "__references": [],
+  "__version": 1
+}

@@ -1,0 +1,20 @@
+{
+  "UI": false,
+  "Volume": "1.0",
+  "Pitch": "0.96,1.04",
+  "Decibels": 70,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/arena/death_0.vsnd"
+  ],
+  "OcclusionEnabled": false,
+  "Occlusion": false,
+  "ReverbEnabled": false,
+  "Reflections": false,
+  "AirAbsorption": false,
+  "Transmission": false,
+  "DistanceAttenuation": false,
+  "Distance": 20000,
+  "__references": [],
+  "__version": 1
+}

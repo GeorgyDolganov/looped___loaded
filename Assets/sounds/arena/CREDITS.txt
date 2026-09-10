@@ -1,0 +1,4 @@
+Processed CC0 samples, not Quake III audio.
+OpenGameArt: BMacZero metal impacts; Spring Spring mechanical explosion;
+rubberduck 100 CC0 SFX and 100 CC0 wood/metal SFX.
+Pipeline: 44.1 kHz layer -> HP/presence/squash -> drop-sample 22050 -> IMA ADPCM.

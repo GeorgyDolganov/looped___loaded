@@ -162,7 +162,8 @@ public sealed class Enemy : Component
 		}
 
 		var world = Arena.Geometry.ToPlayWorld( Flat );
-		Sound.Play( "sounds/impacts/bullets/impact-bullet-flesh.sound", world );
+		ArenaSounds.Hit();
+		ArenaSounds.Flesh( world );
 		ImpactFlash.Spawn( Scene, world, HurtTint, 1.1f );
 
 		if ( Health > 0 )
@@ -184,7 +185,7 @@ public sealed class Enemy : Component
 		shieldPlate?.Destroy();
 
 		var world = Arena.Geometry.ToPlayWorld( Flat );
-		Sound.Play( "sounds/effects/explosion/explosion_small.sound", world );
+		ArenaSounds.Explode( world );
 		ImpactFlash.Spawn( Scene, world, LiveTint, Kind == EnemyKind.Core ? 4.5f : 2.2f );
 
 		if ( !Loop.IsValid() )

@@ -1,0 +1,22 @@
+{
+  "UI": true,
+  "Volume": "1.0",
+  "Pitch": "0.95,1.05",
+  "Decibels": 76,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/arena/fire_0.vsnd",
+    "sounds/arena/fire_1.vsnd",
+    "sounds/arena/fire_2.vsnd"
+  ],
+  "OcclusionEnabled": false,
+  "Occlusion": false,
+  "ReverbEnabled": false,
+  "Reflections": false,
+  "AirAbsorption": false,
+  "Transmission": false,
+  "DistanceAttenuation": false,
+  "Distance": 20000,
+  "__references": [],
+  "__version": 1
+}

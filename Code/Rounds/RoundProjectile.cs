@@ -285,7 +285,7 @@ public sealed class RoundProjectile : Component
 			homingUntil = Time.Now + Flight.HomingLead;
 
 		var world = geometry.ToPlayWorld( Flat );
-		Sound.Play( "sounds/impacts/bullets/impact-bullet-metal.sound", world );
+		ArenaSounds.Ricochet( world );
 		ImpactFlash.Spawn( Scene, world, ShotColors.Player, 0.65f );
 
 		if ( BouncesLeft < 0 )
@@ -341,7 +341,7 @@ public sealed class RoundProjectile : Component
 				BouncesLeft--;
 
 				var world = geometry.ToPlayWorld( Flat );
-				Sound.Play( "sounds/impacts/bullets/impact-bullet-metal.sound", world );
+				ArenaSounds.Ricochet( world );
 				ImpactFlash.Spawn( Scene, world, ShotColors.Player, 0.9f );
 
 				if ( target.Kind == EnemyKind.Core )

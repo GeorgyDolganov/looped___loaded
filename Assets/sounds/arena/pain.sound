@@ -1,0 +1,21 @@
+{
+  "UI": false,
+  "Volume": "0.92",
+  "Pitch": "0.94,1.06",
+  "Decibels": 70,
+  "SelectionMode": "Random",
+  "Sounds": [
+    "sounds/arena/pain_0.vsnd",
+    "sounds/arena/pain_1.vsnd"
+  ],
+  "OcclusionEnabled": false,
+  "Occlusion": false,
+  "ReverbEnabled": false,
+  "Reflections": false,
+  "AirAbsorption": false,
+  "Transmission": false,
+  "DistanceAttenuation": false,
+  "Distance": 20000,
+  "__references": [],
+  "__version": 1
+}

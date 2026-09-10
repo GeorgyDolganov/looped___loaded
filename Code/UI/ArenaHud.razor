@@ -707,7 +707,7 @@
 		}
 
 		if ( card.IsValid() && card != hotCard && (hotCard is null || hotCard.IsValid()) )
-			Sound.Play( "sounds/kenney/ui/ui.navigate.forward.sound" );
+			ArenaSounds.MenuMove();
 
 		hotCard = card.IsValid() ? card : null;
 	}

@@ -69,7 +69,7 @@ public sealed class CityShot : Component
 				Board.RegisterHit( hit.Plot );
 				Direction = ArenaGeometry.Reflect( Direction, hit.Normal ).Normal;
 				BouncesLeft--;
-				Sound.Play( "sounds/impacts/bullets/impact-bullet-metal.sound", world );
+				ArenaSounds.Ricochet( world );
 				ImpactFlash.Spawn( Scene, world, Buildings.Color( hit.Plot.Kind ), 0.85f );
 
 				if ( BouncesLeft < 0 || Energy <= 0f )

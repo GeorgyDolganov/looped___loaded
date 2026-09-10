@@ -8,7 +8,7 @@ public static class RoundCombat
 			return;
 
 		var world = loop.Geometry.ToPlayWorld( origin );
-		Sound.Play( "sounds/effects/explosion/explosion_small.sound", world );
+		ArenaSounds.Explode( world );
 		ImpactFlash.Spawn( loop.Scene, world, tint, MathF.Max( 1.4f, radius / 70f ) );
 
 		foreach ( var enemy in loop.Enemies )
@@ -54,7 +54,9 @@ public static class RoundCombat
 
 			taken.Add( best );
 			best.Damage( damage, source );
-			ImpactFlash.Spawn( loop.Scene, loop.Geometry.ToPlayWorld( best.Flat ), new Color( 0.55f, 0.9f, 1f ), 0.85f );
+			var world = loop.Geometry.ToPlayWorld( best.Flat );
+			ArenaSounds.Crack( world );
+			ImpactFlash.Spawn( loop.Scene, world, new Color( 0.55f, 0.9f, 1f ), 0.85f );
 			from = best.Flat;
 		}
 	}

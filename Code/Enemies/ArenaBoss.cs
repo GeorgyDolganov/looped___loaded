@@ -78,7 +78,7 @@ public sealed class ArenaBoss : Component
 		{
 			lastPhase = phase;
 			loop.Announce( phase == 3 ? "CORE PHASE 3" : "CORE PHASE 2" );
-			Sound.Play( "sounds/kenney/ui/ui.popup.message.open.sound" );
+			ArenaSounds.Warn();
 			ImpactFlash.Spawn( Scene, Vector3.Up * 80f, CoreTint, 3.2f );
 		}
 

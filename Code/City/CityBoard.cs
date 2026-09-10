@@ -277,7 +277,7 @@ public sealed class CityBoard : Component
 			return;
 
 		Mode = mode;
-		Sound.Play( "sounds/kenney/ui/ui.button.press.sound" );
+		ArenaSounds.Change();
 		Loop?.Announce( Building ? "BUILD" : "SHOOT" );
 	}
 
@@ -299,13 +299,13 @@ public sealed class CityBoard : Component
 	void Turn( int delta )
 	{
 		PlacementFacing = (PlacementFacing + delta) & 3;
-		Sound.Play( "sounds/kenney/ui/ui.navigate.forward.sound" );
+		ArenaSounds.MenuMove();
 	}
 
 	public void Miss( Vector2 at )
 	{
 		ImpactFlash.Spawn( Scene, new Vector3( at.x, at.y, PlayHeight ), new Color( 0.4f, 0.45f, 0.5f ), 0.6f );
-		Sound.Play( "sounds/impacts/bullets/impact-bullet-dirt.sound", new Vector3( at.x, at.y, PlayHeight ) );
+		ArenaSounds.Miss( new Vector3( at.x, at.y, PlayHeight ) );
 	}
 
 	public void RegisterHit( CityPlot plot )
@@ -321,14 +321,14 @@ public sealed class CityBoard : Component
 
 		plot.Hits++;
 		var world = CellWorld( plot.X, plot.Y ) + Vector3.Up * 70f;
-		Sound.Play( "sounds/impacts/melee/impact-melee-metal.sound", world );
+		ArenaSounds.Metal( world );
 		ImpactFlash.Spawn( Scene, world, Buildings.Color( plot.Kind ), 1.1f );
 
 		if ( plot.Hits >= plot.NextCost )
 		{
 			plot.Hits = 0;
 			plot.Level++;
-			Sound.Play( "sounds/kenney/ui/ui.favourite.sound", world );
+			ArenaSounds.Pickup( world );
 			Loop?.Announce( plot.Working
 				? $"{Buildings.Title( plot.Kind )} LV{plot.Level}  ·  REFLECTS"
 				: $"{Buildings.Title( plot.Kind )} LV{plot.Level}" );
@@ -624,7 +624,7 @@ public sealed class CityBoard : Component
 	{
 		if ( Hovered is null )
 		{
-			Sound.Play( "sounds/kenney/ui/ui.button.deny.sound" );
+			ArenaSounds.Deny();
 			return;
 		}
 
@@ -640,7 +640,7 @@ public sealed class CityBoard : Component
 		Hovered.Level = 0;
 		Hovered.Hits = 0;
 		RefreshPlot( Hovered );
-		Sound.Play( "sounds/kenney/ui/ui.navigate.forward.sound" );
+		ArenaSounds.MenuOk();
 		Loop?.Announce( $"{Buildings.Title( Selected )} FRAME" );
 		Loop?.Autosave();
 	}
@@ -649,7 +649,7 @@ public sealed class CityBoard : Component
 	{
 		if ( Hovered is null || !Hovered.Occupied || Hovered.Working )
 		{
-			Sound.Play( "sounds/kenney/ui/ui.button.deny.sound" );
+			ArenaSounds.Deny();
 			return;
 		}
 
@@ -659,7 +659,7 @@ public sealed class CityBoard : Component
 		Hovered.Hits = 0;
 		Hovered.Facing = 0;
 		RefreshPlot( Hovered );
-		Sound.Play( "sounds/kenney/ui/ui.navigate.deny.sound" );
+		ArenaSounds.MenuBack();
 		Loop?.Announce( $"{title} REMOVED" );
 		Loop?.Autosave();
 	}
@@ -668,7 +668,7 @@ public sealed class CityBoard : Component
 	{
 		if ( Warehouse <= 0 )
 		{
-			Sound.Play( "sounds/kenney/ui/ui.button.deny.sound" );
+			ArenaSounds.Deny();
 			Loop?.Announce( "WAREHOUSE EMPTY" );
 			return;
 		}
@@ -680,7 +680,7 @@ public sealed class CityBoard : Component
 		if ( to.Length < 8f )
 		{
 			Warehouse++;
-			Sound.Play( "sounds/kenney/ui/ui.button.deny.sound" );
+			ArenaSounds.Deny();
 			return;
 		}
 
@@ -694,7 +694,7 @@ public sealed class CityBoard : Component
 		shot.Tint = ShotColors.Player;
 		shot.Launch( origin, to );
 
-		Sound.Play( "sounds/effects/explosion/explosion_small.sound", ShooterStand );
+		ArenaSounds.Fire( ShooterStand );
 		Loop?.Autosave();
 	}
 
