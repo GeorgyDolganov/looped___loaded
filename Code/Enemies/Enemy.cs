@@ -194,7 +194,7 @@ public sealed class Enemy : Component
 		if ( Kind == EnemyKind.Core )
 			Loop.BeatBoss();
 		else
-			Loop.RegisterKill();
+			Loop.RegisterKill( Kind );
 	}
 
 	Vector2 LookFlat

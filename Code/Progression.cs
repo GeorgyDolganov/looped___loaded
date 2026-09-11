@@ -39,6 +39,36 @@ public static class Progression
 	public static int Cost( int first, int level )
 		=> Math.Max( 1, Whole( first * MathF.Pow( CostRatio, Math.Max( 0, level ) ) ) );
 
+	public static int PackPrice( TraitPack pack ) => pack switch
+	{
+		TraitPack.Starter => 4,
+		TraitPack.Geometry => 8,
+		TraitPack.Return => 10,
+		TraitPack.Chaos => 12,
+		TraitPack.Body => 14,
+		TraitPack.Homing => 16,
+		_ => 18
+	};
+
+	public static int TraitPrice( RoundTrait trait, int ownedLevel )
+		=> Cost( PackPrice( RoundTraits.Pack( trait ) ), Math.Max( 0, ownedLevel ) );
+
+	public static int KillScrap( EnemyKind kind, int lap )
+	{
+		var seed = kind switch
+		{
+			EnemyKind.Chaser => 4,
+			EnemyKind.Shield => 7,
+			EnemyKind.Shooter => 7,
+			_ => 0
+		};
+
+		if ( seed <= 0 )
+			return 0;
+
+		return Whole( seed * Threat( lap ) );
+	}
+
 	public static float DashScale( int boost )
 		=> MathF.Max( 0.42f, 1f / MathF.Pow( DashRatio, Math.Max( 0, boost ) ) );
 

@@ -13,8 +13,27 @@ public sealed class PlayerAim : Component
 
 	public Vector2 Direction { get; private set; } = new Vector2( -1f, 0f );
 	public Vector2 Cursor { get; private set; }
-	public Vector2 Muzzle => Runner.IsValid() ? Runner.Flat + Direction * MuzzleOffset : Direction * MuzzleOffset;
-	public Vector3 MuzzleWorld => Arena.IsValid() ? Arena.Geometry.ToPlayWorld( Muzzle ) : Vector3.Zero;
+	public Vector2 Muzzle
+	{
+		get
+		{
+			if ( Runner.IsValid() && Runner.TryWeaponMuzzle( out var world ) )
+				return new Vector2( world.x, world.y );
+
+			return Runner.IsValid() ? Runner.Flat + Direction * MuzzleOffset : Direction * MuzzleOffset;
+		}
+	}
+
+	public Vector3 MuzzleWorld
+	{
+		get
+		{
+			if ( Runner.IsValid() && Runner.TryWeaponMuzzle( out var world ) )
+				return world;
+
+			return Arena.IsValid() ? Arena.Geometry.ToPlayWorld( Muzzle ) : Vector3.Zero;
+		}
+	}
 
 	PolyLine preview;
 	GameObject reticle;

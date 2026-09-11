@@ -41,6 +41,7 @@ public sealed class GameLoop : Component
 	public float HurtAmount => Math.Clamp( 1f - (Time.Now - lastHurtAt) / 0.55f, 0f, 1f );
 	public bool Invulnerable => Time.Now < invulnUntil;
 	public int Kills { get; private set; }
+	public int Scrap { get; private set; }
 	public int ShotsFired { get; private set; }
 	public int Catches { get; private set; }
 	public int Losses { get; private set; }
@@ -56,6 +57,12 @@ public sealed class GameLoop : Component
 	public RoundTrait OfferB { get; private set; }
 	public RoundTrait OfferC { get; private set; }
 	public bool HasThirdOffer { get; private set; }
+	public bool OfferABought { get; private set; }
+	public bool OfferBBought { get; private set; }
+	public bool OfferCBought { get; private set; }
+	public int ShopBuyAllCost => Phase == RunPhase.PickTrait ? RemainingOfferCost() : 0;
+	public bool ShopHasBundle => Phase == RunPhase.PickTrait && OpenOfferCount() >= 2;
+	public bool ShopCanBuyAll => ShopHasBundle && Scrap >= ShopBuyAllCost && ShopBuyAllCost > 0;
 
 	public float Threat => Progression.Threat( Lap );
 	public bool InBossFight { get; private set; }
@@ -479,6 +486,7 @@ public sealed class GameLoop : Component
 			City.SetVisible( false );
 		}
 		Kills = 0;
+		Scrap = 0;
 		ShotsFired = 0;
 		Catches = 0;
 		Losses = 0;
@@ -508,10 +516,14 @@ public sealed class GameLoop : Component
 		Announce( "ONE LAP. ONE ROUND. CASH OUT OR GO AGAIN." );
 	}
 
-	public void RegisterKill()
+	public void RegisterKill( EnemyKind kind )
 	{
 		Kills++;
-		Announce( "TARGET DOWN" );
+		var gain = Progression.KillScrap( kind, Lap );
+		if ( gain > 0 )
+			Scrap += gain;
+
+		Announce( gain > 0 ? $"+{gain} SCRAP  ·  {Scrap}" : "TARGET DOWN" );
 	}
 
 	public void CatchRound( RoundProjectile projectile )
@@ -679,18 +691,30 @@ public sealed class GameLoop : Component
 			Mouse.CursorType = "pointer";
 			if ( Input.Pressed( "Slot1" ) )
 			{
-				InstallOffer( OfferA );
+				TryBuyOffer( OfferA );
 				return;
 			}
 
 			if ( Input.Pressed( "Slot2" ) )
 			{
-				InstallOffer( OfferB );
+				TryBuyOffer( OfferB );
 				return;
 			}
 
 			if ( HasThirdOffer && Input.Pressed( "Slot3" ) )
-				InstallOffer( OfferC );
+			{
+				TryBuyOffer( OfferC );
+				return;
+			}
+
+			if ( Input.Pressed( "Use" ) )
+			{
+				TryBuyAll();
+				return;
+			}
+
+			if ( Input.Pressed( "Jump" ) )
+				LeaveShop();
 			return;
 		}
 
@@ -997,7 +1021,31 @@ public sealed class GameLoop : Component
 		if ( Paused || Phase != RunPhase.PickTrait )
 			return;
 
-		InstallOffer( trait );
+		TryBuyOffer( trait );
+	}
+
+	public void ChooseBuyAll()
+	{
+		if ( Paused || Phase != RunPhase.PickTrait )
+			return;
+
+		TryBuyAll();
+	}
+
+	public void ChooseShopGo()
+	{
+		if ( Paused || Phase != RunPhase.PickTrait )
+			return;
+
+		LeaveShop();
+	}
+
+	public int PriceOf( RoundTrait trait )
+	{
+		if ( !Inventory.IsValid() )
+			return Progression.TraitPrice( trait, 0 );
+
+		return Progression.TraitPrice( trait, Inventory.Loadout.TraitLevel( trait ) );
 	}
 
 	public void ChooseCity()
@@ -1107,16 +1155,19 @@ public sealed class GameLoop : Component
 		var count = City.IsValid() ? City.Stats().OfferCount : 2;
 		count = Math.Clamp( count, 2, 3 );
 
-		OfferA = TakeTrait( fresh, owned );
-		OfferB = TakeTrait( fresh, owned, OfferA );
+		OfferA = TakeTrait( fresh, owned, loadout, Scrap );
+		OfferB = TakeTrait( fresh, owned, loadout, 0, OfferA );
 		HasThirdOffer = count >= 3;
 		if ( HasThirdOffer )
-			OfferC = TakeTrait( fresh, owned, OfferA, OfferB );
+			OfferC = TakeTrait( fresh, owned, loadout, 0, OfferA, OfferB );
 
+		OfferABought = false;
+		OfferBBought = false;
+		OfferCBought = false;
 		Phase = RunPhase.PickTrait;
 	}
 
-	static RoundTrait TakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, params RoundTrait[] taken )
+	static RoundTrait TakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, RunLoadout loadout, int budget, params RoundTrait[] taken )
 	{
 		bool Used( RoundTrait trait )
 		{
@@ -1149,7 +1200,21 @@ public sealed class GameLoop : Component
 		if ( pool.Count == 0 )
 			return RoundTrait.Pierce;
 
-		var pick = pool[Game.Random.Int( 0, pool.Count - 1 )];
+		if ( budget > 0 )
+		{
+			var cheap = new List<RoundTrait>();
+			foreach ( var trait in pool )
+			{
+				var level = loadout is null ? 0 : loadout.TraitLevel( trait );
+				if ( Progression.TraitPrice( trait, level ) <= budget )
+					cheap.Add( trait );
+			}
+
+			if ( cheap.Count > 0 )
+				pool = cheap;
+		}
+
+		var pick = WeightedTrait( pool );
 		if ( hadFresh )
 			fresh.Remove( pick );
 		else
@@ -1158,9 +1223,81 @@ public sealed class GameLoop : Component
 		return pick;
 	}
 
-	void InstallOffer( RoundTrait trait )
+	static RoundTrait WeightedTrait( List<RoundTrait> pool )
 	{
+		var total = 0;
+		foreach ( var trait in pool )
+			total += RoundTraits.Weight( trait );
+
+		if ( total <= 0 )
+			return pool[0];
+
+		var roll = Game.Random.Int( 0, total - 1 );
+		var acc = 0;
+		foreach ( var trait in pool )
+		{
+			acc += RoundTraits.Weight( trait );
+			if ( roll < acc )
+				return trait;
+		}
+
+		return pool[0];
+	}
+
+	void TryBuyOffer( RoundTrait trait )
+	{
+		if ( !MatchesOpenOffer( trait ) )
+		{
+			ArenaSounds.Deny();
+			return;
+		}
+
+		var price = PriceOf( trait );
+		if ( Scrap < price )
+		{
+			ArenaSounds.Deny();
+			Announce( $"NEED {price - Scrap} SCRAP" );
+			return;
+		}
+
+		Scrap -= price;
 		Inventory.Loadout.Install( trait );
+		MarkBought( trait );
+		ArenaSounds.Pickup();
+		Announce( $"{RoundTraits.Title( trait )} LV{Inventory.Loadout.TraitLevel( trait )}  ·  {Scrap} SCRAP" );
+
+		if ( OpenOfferCount() == 0 )
+			LeaveShop();
+	}
+
+	void TryBuyAll()
+	{
+		if ( !ShopCanBuyAll )
+		{
+			ArenaSounds.Deny();
+			if ( OpenOfferCount() >= 2 )
+				Announce( $"NEED {ShopBuyAllCost - Scrap} SCRAP" );
+			return;
+		}
+
+		if ( !OfferABought )
+			TryBuyOffer( OfferA );
+		if ( Phase != RunPhase.PickTrait )
+			return;
+
+		if ( !OfferBBought )
+			TryBuyOffer( OfferB );
+		if ( Phase != RunPhase.PickTrait )
+			return;
+
+		if ( HasThirdOffer && !OfferCBought )
+			TryBuyOffer( OfferC );
+	}
+
+	void LeaveShop()
+	{
+		if ( Phase != RunPhase.PickTrait )
+			return;
 
 		var fight = pendingBoss;
 		pendingBoss = false;
@@ -1176,9 +1313,50 @@ public sealed class GameLoop : Component
 			ArenaSounds.Fight();
 		else
 			ArenaSounds.Change();
+
 		Announce( fight
 			? "THE CORE  ·  RICOCHET TO BREAK IT"
-			: $"{RoundTraits.Title( trait )} LV{Inventory.Loadout.TraitLevel( trait )}  ·  ALL ROUNDS" );
+			: $"ARMED  ·  {Scrap} SCRAP" );
+	}
+
+	bool MatchesOpenOffer( RoundTrait trait )
+	{
+		if ( !OfferABought && trait == OfferA )
+			return true;
+		if ( !OfferBBought && trait == OfferB )
+			return true;
+		if ( HasThirdOffer && !OfferCBought && trait == OfferC )
+			return true;
+
+		return false;
+	}
+
+	void MarkBought( RoundTrait trait )
+	{
+		if ( !OfferABought && trait == OfferA )
+			OfferABought = true;
+		else if ( !OfferBBought && trait == OfferB )
+			OfferBBought = true;
+		else if ( HasThirdOffer && !OfferCBought && trait == OfferC )
+			OfferCBought = true;
+	}
+
+	int OpenOfferCount()
+	{
+		var n = 0;
+		if ( !OfferABought ) n++;
+		if ( !OfferBBought ) n++;
+		if ( HasThirdOffer && !OfferCBought ) n++;
+		return n;
+	}
+
+	int RemainingOfferCost()
+	{
+		var sum = 0;
+		if ( !OfferABought ) sum += PriceOf( OfferA );
+		if ( !OfferBBought ) sum += PriceOf( OfferB );
+		if ( HasThirdOffer && !OfferCBought ) sum += PriceOf( OfferC );
+		return sum;
 	}
 
 	void SpawnBoss()

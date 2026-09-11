@@ -223,5 +223,23 @@ public static class RoundTraits
 		_ => new Color( 1f, 0.35f, 0.42f )
 	};
 
+	public static string Rarity( RoundTrait trait ) => Pack( trait ) switch
+	{
+		TraitPack.Starter => "COMMON",
+		TraitPack.Geometry or TraitPack.Return => "UNCOMMON",
+		TraitPack.Chaos or TraitPack.Body => "RARE",
+		_ => "EPIC"
+	};
+
+	public static int Weight( RoundTrait trait ) => Pack( trait ) switch
+	{
+		TraitPack.Starter => 6,
+		TraitPack.Geometry => 4,
+		TraitPack.Return => 3,
+		TraitPack.Chaos => 2,
+		TraitPack.Body => 2,
+		_ => 1
+	};
+
 	public static string Icon( RoundTrait trait ) => $"ui/traits/{trait.ToString().ToLowerInvariant()}.png";
 }

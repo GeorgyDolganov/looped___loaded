@@ -11,7 +11,7 @@
 				[
 					{
 						_class = "RenderMeshFile"
-						filename = "models/Warlord.fbx"
+						filename = "models/warlord.fbx"
 						import_translation = [ 0.0, 0.0, 0.0 ]
 						import_rotation = [ 0.0, 0.0, 0.0 ]
 						import_scale = 1.0
@@ -22,9 +22,7 @@
 						import_filter = 
 						{
 							exclude_by_default = false
-							exception_list = 
-							[
-							]
+							exception_list = [  ]
 						}
 					},
 				]
@@ -75,7 +73,7 @@
 						start_frame = -1
 						end_frame = -1
 						framerate = -1.0
-						take = 0
+						take = 1
 						reverse = false
 					},
 					{
@@ -98,7 +96,7 @@
 						start_frame = -1
 						end_frame = -1
 						framerate = -1.0
-						take = 1
+						take = 2
 						reverse = false
 					},
 					{
@@ -121,7 +119,7 @@
 						start_frame = -1
 						end_frame = -1
 						framerate = -1.0
-						take = 2
+						take = 3
 						reverse = false
 					},
 					{
@@ -144,7 +142,7 @@
 						start_frame = -1
 						end_frame = -1
 						framerate = -1.0
-						take = 3
+						take = 4
 						reverse = false
 					},
 					{
@@ -167,10 +165,11 @@
 						start_frame = -1
 						end_frame = -1
 						framerate = -1.0
-						take = 4
+						take = 5
 						reverse = false
 					},
 				]
+				default_root_bone_name = ""
 			},
 		]
 		model_archetype = ""

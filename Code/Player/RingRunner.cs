@@ -32,6 +32,7 @@ public sealed class RingRunner : Component
 	float dashSpent;
 	bool slowOverheat;
 	SkinnedModelRenderer warlord;
+	GameObject bfg;
 	Vector3 warlordVelocity;
 	Vector3 warlordLook;
 	readonly List<(ModelRenderer Renderer, Color Tint)> meshes = new();
@@ -134,9 +135,14 @@ public sealed class RingRunner : Component
 
 	protected override void OnPreRender()
 	{
-		if ( warlord.IsValid() )
-			WarlordLook.Face( warlord, warlordVelocity, warlordLook );
+		if ( !warlord.IsValid() )
+			return;
+
+		WarlordLook.Face( warlord, warlordVelocity, warlordLook );
+		WarlordLook.Hold( bfg, warlord, warlordLook );
 	}
+
+	public bool TryWeaponMuzzle( out Vector3 world ) => WarlordLook.TryMuzzle( bfg, out world );
 
 	void EnsureWarlord()
 	{
@@ -150,13 +156,19 @@ public sealed class RingRunner : Component
 		{
 			var size = warlord.Model?.Bounds.Size ?? Vector3.Zero;
 			if ( size.Length > 0.01f )
+			{
+				if ( !bfg.IsValid() )
+					bfg = WarlordLook.AttachWeapon( warlord );
 				return;
+			}
 
 			warlord.GameObject.Destroy();
 			warlord = null;
+			bfg = null;
 		}
 
 		warlord = WarlordLook.Attach( GameObject );
+		bfg = WarlordLook.AttachWeapon( warlord );
 	}
 
 	void DriveWarlord()
@@ -184,6 +196,7 @@ public sealed class RingRunner : Component
 		warlordVelocity = vel;
 		warlordLook = look;
 		WarlordLook.Drive( warlord, vel, look, 0 );
+		WarlordLook.Hold( bfg, warlord, look );
 	}
 
 	void PaintHurt()

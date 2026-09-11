@@ -57,6 +57,7 @@
 			</div>
 
 			<div class="top-right">
+				<div class="stat scrap"><label class="key">SCRAP</label><label class="value">@Loop.Scrap</label></div>
 				<div class="stat"><label class="key">STASH</label><label class="value">@Loop.Stash</label></div>
 				<div class="stat"><label class="key">BEST</label><label class="value">@Loop.BestExtract</label></div>
 				<div class="stat"><label class="key">KILLS</label><label class="value">@Loop.Kills</label></div>
@@ -313,7 +314,7 @@
 		{
 			<div class="overlay choose">
 				<label class="overlay-title">LAP @Loop.Lap CLEAR</label>
-				<label class="blurb">STASH @Loop.Stash  ·  TAKE IT HOME OR RISK ANOTHER</label>
+				<label class="blurb">STASH @Loop.Stash  ·  SCRAP @Loop.Scrap  ·  TAKE IT HOME OR RISK ANOTHER</label>
 				<div class="cards">
 					<div class="card" onclick="@ChooseExtract">
 						<label class="key">1</label>
@@ -340,29 +341,52 @@
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.PickTrait )
 		{
 			<div class="overlay choose">
-				<label class="overlay-title">UPGRADE ALL ROUNDS</label>
+				<label class="overlay-title">ARMORY</label>
+				<label class="blurb">SCRAP @Loop.Scrap  ·  ALL ROUNDS  ·  BUY ANY, THEN GO</label>
 				<div class="cards">
-					<div class="card upgrade" style="border-color: @TraitBorder(Loop.OfferA)" onclick="@PickOfferA">
+					<div class="card @OfferClass(Loop.OfferA, Loop.OfferABought)" style="border-color: @TraitBorder(Loop.OfferA)" onclick="@PickOfferA">
 						<label class="key">1</label>
 						<img class="art" src="@RoundTraits.Icon(Loop.OfferA)" />
 						<label class="title">@RoundTraits.Title(Loop.OfferA)</label>
-						<label class="blurb">@OfferBlurb(Loop.OfferA)</label>
+						<label class="rarity">@RoundTraits.Rarity(Loop.OfferA)</label>
+						<label class="blurb">@OfferBlurb(Loop.OfferA, Loop.OfferABought)</label>
+						<label class="cost">@OfferCost(Loop.OfferA, Loop.OfferABought)</label>
 					</div>
-					<div class="card upgrade" style="border-color: @TraitBorder(Loop.OfferB)" onclick="@PickOfferB">
+					<div class="card @OfferClass(Loop.OfferB, Loop.OfferBBought)" style="border-color: @TraitBorder(Loop.OfferB)" onclick="@PickOfferB">
 						<label class="key">2</label>
 						<img class="art" src="@RoundTraits.Icon(Loop.OfferB)" />
 						<label class="title">@RoundTraits.Title(Loop.OfferB)</label>
-						<label class="blurb">@OfferBlurb(Loop.OfferB)</label>
+						<label class="rarity">@RoundTraits.Rarity(Loop.OfferB)</label>
+						<label class="blurb">@OfferBlurb(Loop.OfferB, Loop.OfferBBought)</label>
+						<label class="cost">@OfferCost(Loop.OfferB, Loop.OfferBBought)</label>
 					</div>
 					@if ( Loop.HasThirdOffer )
 					{
-						<div class="card upgrade" style="border-color: @TraitBorder(Loop.OfferC)" onclick="@PickOfferC">
+						<div class="card @OfferClass(Loop.OfferC, Loop.OfferCBought)" style="border-color: @TraitBorder(Loop.OfferC)" onclick="@PickOfferC">
 							<label class="key">3</label>
 							<img class="art" src="@RoundTraits.Icon(Loop.OfferC)" />
 							<label class="title">@RoundTraits.Title(Loop.OfferC)</label>
-							<label class="blurb">@OfferBlurb(Loop.OfferC)</label>
+							<label class="rarity">@RoundTraits.Rarity(Loop.OfferC)</label>
+							<label class="blurb">@OfferBlurb(Loop.OfferC, Loop.OfferCBought)</label>
+							<label class="cost">@OfferCost(Loop.OfferC, Loop.OfferCBought)</label>
 						</div>
 					}
+				</div>
+				<div class="cards">
+					@if ( Loop.ShopHasBundle )
+					{
+						<div class="card @(Loop.ShopCanBuyAll ? "" : "poor")" onclick="@BuyAllOffers">
+							<label class="key">E</label>
+							<label class="title">BUY ALL</label>
+							<label class="blurb">Take every leftover card for @Loop.ShopBuyAllCost scrap.</label>
+							<label class="cost">@Loop.ShopBuyAllCost SCRAP</label>
+						</div>
+					}
+					<div class="card" onclick="@FinishShop">
+						<label class="key">SPACE</label>
+						<label class="title">GO</label>
+						<label class="blurb">Next lap. Keep leftover scrap.</label>
+					</div>
 				</div>
 			</div>
 		}
@@ -450,6 +474,8 @@
 	void PickOfferA() => Loop?.ChooseUpgrade( Loop.OfferA );
 	void PickOfferB() => Loop?.ChooseUpgrade( Loop.OfferB );
 	void PickOfferC() => Loop?.ChooseUpgrade( Loop.OfferC );
+	void BuyAllOffers() => Loop?.ChooseBuyAll();
+	void FinishShop() => Loop?.ChooseShopGo();
 	void GoCity() => Loop?.ChooseCity();
 
 	int LapPercent => Loop.IsValid() ? (int)(Loop.LapFraction * 100f) : 0;
@@ -535,7 +561,9 @@
 					? "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E SHOOT  ·  SPACE/R RUN  ·  ESC PAUSE"
 					: "LMB FIRE  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE",
 				RunPhase.DecideLap => Loop.HasBossOffer ? "CLICK  ·  1 CITY  ·  2 STAY  ·  3 FIGHT THE CORE  ·  ESC PAUSE" : "CLICK  ·  1 CITY  ·  2 STAY  ·  ESC PAUSE",
-				RunPhase.PickTrait => Loop.HasThirdOffer ? "CLICK A CARD  ·  1 / 2 / 3  ·  ESC PAUSE" : "CLICK A CARD  ·  1 / 2  ·  ESC PAUSE",
+				RunPhase.PickTrait => Loop.HasThirdOffer
+					? "CLICK A CARD  ·  1 / 2 / 3 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE"
+					: "CLICK A CARD  ·  1 / 2 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE",
 				RunPhase.Dead or RunPhase.Extracted => "CLICK CITY  ·  R CITY  ·  ESC MENU",
 				_ => Loop.InBossFight
 					? "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
@@ -568,11 +596,40 @@
 
 	string StatusClass( RoundSlot slot ) => slot.Status.ToString().ToLower();
 
-	string OfferBlurb( RoundTrait trait )
+	string OfferBlurb( RoundTrait trait, bool bought )
 	{
-		var next = Loop.Inventory.Loadout.TraitLevel( trait ) + 1;
+		if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
+			return RoundTraits.Blurb( trait );
+
+		var level = Loop.Inventory.Loadout.TraitLevel( trait );
+		if ( bought )
+			return $"{RoundTraits.Blurb( trait )}  LV{Math.Max( 1, level )}";
+
+		var next = level + 1;
 		if ( next > 3 ) next = 3;
 		return $"{RoundTraits.Blurb( trait )}  LV{next}";
+	}
+
+	string OfferCost( RoundTrait trait, bool bought )
+	{
+		if ( bought )
+			return "BOUGHT";
+
+		if ( !Loop.IsValid() )
+			return "";
+
+		return $"{Loop.PriceOf( trait )} SCRAP";
+	}
+
+	string OfferClass( RoundTrait trait, bool bought )
+	{
+		if ( bought )
+			return "upgrade bought";
+
+		if ( Loop.IsValid() && Loop.Scrap < Loop.PriceOf( trait ) )
+			return "upgrade poor";
+
+		return "upgrade";
 	}
 
 	string PipColor( RoundSlot slot )
@@ -780,7 +837,17 @@
 			Loop.IsValid() && Loop.CanSkipLap,
 			Loop.IsValid() && Loop.CanPause );
 
-		return System.HashCode.Combine( a, b, c, d, e );
+		var f = System.HashCode.Combine(
+			Loop.IsValid() ? Loop.Scrap : 0,
+			Loop.IsValid() && Loop.OfferABought,
+			Loop.IsValid() && Loop.OfferBBought,
+			Loop.IsValid() && Loop.OfferCBought,
+			Loop.IsValid() && Loop.ShopHasBundle,
+			Loop.IsValid() && Loop.ShopCanBuyAll,
+			Loop.IsValid() ? Loop.ShopBuyAllCost : 0,
+			Loop.IsValid() ? (int)Loop.OfferA : 0 );
+
+		return System.HashCode.Combine( a, b, c, d, e, f );
 	}
 }
 
@@ -1000,6 +1067,15 @@
 		font-size: 14px;
 		color: #4f6c80;
 		margin-right: 10px;
+	}
+
+	.stat.scrap .key,
+	.stat.scrap .value {
+		color: #ffd27a;
+	}
+
+	.stat.scrap .value {
+		width: 56px;
 	}
 
 	.stat .value {
@@ -1636,6 +1712,52 @@
 		transform: scale( 1.1 ) translateY( -14px );
 		border-color: #ffe7a8;
 		background-color: rgba(255, 210, 122, 0.24);
+	}
+
+	.card.poor {
+		opacity: 0.62;
+	}
+
+	.card.poor .cost {
+		color: #f05a46;
+	}
+
+	.card.upgrade.poor {
+		opacity: 0.62;
+	}
+
+	.card.upgrade.bought {
+		opacity: 0.48;
+		border-color: #4fd2e8;
+	}
+
+	.card.upgrade.bought:hover,
+	.card.upgrade.bought.hot {
+		transform: none;
+		background-color: rgba(10, 18, 26, 0.92);
+	}
+
+	.card .rarity {
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #5f7f96;
+		margin-top: 4px;
+	}
+
+	.card .cost {
+		font-size: 15px;
+		font-weight: 700;
+		color: #ffd27a;
+		margin-top: 10px;
+	}
+
+	.card.upgrade.poor .cost {
+		color: #f05a46;
+	}
+
+	.card.upgrade.bought .cost {
+		color: #4fd2e8;
 	}
 
 	.card.hot .key,

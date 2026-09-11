@@ -3,6 +3,15 @@ namespace LoopedLoaded;
 public static class WarlordLook
 {
 	public const string ModelPath = "models/warlord.vmdl";
+	public const string WeaponPath = "models/bfg.vmdl";
+
+	const float WeaponWorld = 125f;
+	const float WeaponGrip = 0f;
+	const float WeaponSide = 40f;
+	const float WeaponLift = 20f;
+	const float WeaponYaw = 180f;
+	const float WeaponPitch = 125f;
+	const float WeaponRoll = -20f;
 
 	public static SkinnedModelRenderer Attach( GameObject parent )
 	{
@@ -23,9 +32,72 @@ public static class WarlordLook
 		var renderer = go.AddComponent<SkinnedModelRenderer>();
 		renderer.Model = model;
 		renderer.UseAnimGraph = false;
+		renderer.CreateBoneObjects = true;
 		renderer.Sequence.Name = "idle";
 		renderer.Sequence.Looping = true;
 		return renderer;
+	}
+
+	public static GameObject AttachWeapon( SkinnedModelRenderer skin )
+	{
+		var go = skin.Scene.CreateObject();
+		go.Name = "BFG";
+		go.Parent = skin.GameObject.Parent ?? skin.GameObject;
+
+		var renderer = go.AddComponent<ModelRenderer>();
+		renderer.Model = Model.Load( WeaponPath );
+		return go;
+	}
+
+	public static void Hold( GameObject weapon, SkinnedModelRenderer skin, Vector3 look )
+	{
+		if ( !weapon.IsValid() || !skin.IsValid() )
+			return;
+
+		if ( !HandWorld( skin, out var right ) )
+		{
+			Place( weapon, skin.WorldPosition + skin.WorldRotation.Forward * 80f + Vector3.Up * 140f, skin.WorldRotation );
+			return;
+		}
+
+		var rot = right.Rotation * Rotation.From( WeaponPitch, WeaponYaw, WeaponRoll );
+		Place( weapon, right.Position + rot.Forward * WeaponGrip + rot.Right * WeaponSide + rot.Up * WeaponLift, rot );
+	}
+
+	static bool HandWorld( SkinnedModelRenderer skin, out Transform tx )
+	{
+		tx = default;
+		var bone = skin.Model?.Bones.GetBone( "hand_R" );
+		if ( bone is not null && skin.TryGetBoneTransformAnimation( bone, out tx ) )
+			return true;
+
+		return skin.TryGetBoneTransform( "hand_R", out tx );
+	}
+
+	static void Place( GameObject weapon, Vector3 position, Rotation rotation )
+	{
+		var renderer = weapon.GetComponent<ModelRenderer>();
+		var size = renderer.IsValid() ? renderer.Model?.Bounds.Size ?? Vector3.Zero : Vector3.Zero;
+		var length = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
+		if ( length < 0.01f )
+			length = 1f;
+
+		weapon.WorldRotation = rotation;
+		weapon.WorldPosition = position;
+		weapon.WorldScale = Vector3.One * (WeaponWorld / length);
+	}
+
+	public static bool TryMuzzle( GameObject weapon, out Vector3 world )
+	{
+		world = default;
+		if ( !weapon.IsValid() )
+			return false;
+
+		var renderer = weapon.GetComponent<ModelRenderer>();
+		var size = renderer.IsValid() ? renderer.Model?.Bounds.Size ?? Vector3.Zero : Vector3.Zero;
+		var length = MathF.Max( 0.2f, size.x * 0.5f ) * weapon.WorldScale.x;
+		world = weapon.WorldPosition + weapon.WorldRotation.Forward * length;
+		return true;
 	}
 
 	const float SideEnter = 60f;
