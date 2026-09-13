@@ -34,7 +34,7 @@ public static class RoundCombat
 		for ( var i = 0; i < jumps; i++ )
 		{
 			Enemy best = null;
-			var bestDist = 220f;
+			var bestDist = GameSettings.Traits.ElectricRange;
 
 			foreach ( var enemy in loop.Enemies )
 			{

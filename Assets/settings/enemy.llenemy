@@ -1,0 +1,80 @@
+{
+  "InnerPad": 160,
+  "TrackPad": 28,
+  "ShieldBlockDot": -0.22,
+  "ShieldTrackExtra": 8,
+  "MeleeReachPad": 36,
+  "GlimmerReveal": 160,
+  "ShoveInnerPad": 160,
+  "Chaser": {
+    "Radius": 64,
+    "Scrap": 4,
+    "SeekSpeed": 185,
+    "Lead": 160,
+    "LeadPressure": 50
+  },
+  "Splinter": {
+    "Radius": 60,
+    "Scrap": 6,
+    "SeekSpeed": 185,
+    "Lead": 160,
+    "LeadPressure": 50
+  },
+  "Glimmer": {
+    "Radius": 56,
+    "Scrap": 7,
+    "SeekSpeed": 155,
+    "Lead": 120,
+    "LeadPressure": 40
+  },
+  "Shield": {
+    "Radius": 72,
+    "Scrap": 7,
+    "SeekSpeed": 170,
+    "Lead": 0,
+    "LeadPressure": 0
+  },
+  "Shardguard": {
+    "Radius": 72,
+    "Scrap": 8,
+    "SeekSpeed": 170,
+    "Lead": 0,
+    "LeadPressure": 0
+  },
+  "ShooterBody": {
+    "Radius": 64,
+    "Scrap": 7,
+    "SeekSpeed": 185,
+    "Lead": 0,
+    "LeadPressure": 0
+  },
+  "Shooter": {
+    "Speed": 175,
+    "SpeedPressureFloor": 0.8,
+    "BandInnerPad": 30,
+    "BandOuterPad": 140,
+    "BandMix": 0.42,
+    "FlankInnerPad": 90,
+    "FlankOuterPad": 30,
+    "Orbit": 0.55,
+    "OrbitOuterPad": 40,
+    "FlankHold": 0.9,
+    "Interval": 1.65,
+    "IntervalFloor": 0.8,
+    "Telegraph": 0.28,
+    "TelegraphFloor": 0.14,
+    "ShotSpeed": 560,
+    "LeadMinDistance": 80
+  },
+  "Wave": {
+    "InnerPad": 190,
+    "HuntOuterPad": 110,
+    "HuntMix": 0.32,
+    "MidOuterPad": 140,
+    "MidMix": 0.45,
+    "OuterPad": 90,
+    "ExtraAngle": 0.85
+  },
+  "__references": [],
+  "__version": 0
+}

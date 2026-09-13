@@ -1,0 +1,469 @@
+{
+  "Hud": {
+    "Plain": "NO TRINKETS",
+    "Shield": "SHIELD {0}",
+    "Scrap": "BONES",
+    "Stash": "STASHED BIOMASS",
+    "Best": "BEST",
+    "Kills": "KILLS",
+    "Caught": "CAUGHT",
+    "Dash": "DASH",
+    "Slow": "SLOW",
+    "HurtStamp": "-1"
+  },
+  "Pause": {
+    "Button": "PAUSE",
+    "Kicker": "PAUSED",
+    "Title": "Looped & Loaded",
+    "Blurb": "The EKKE awaits.",
+    "Resume": "RESUME",
+    "ResumeBlurb": "The EKKE will be pleased.",
+    "Menu": "MENU",
+    "MenuBlurb": "Run, but you can't hide.",
+    "Quit": "QUIT",
+    "QuitBlurb": "Close the game.",
+    "Key1": "1",
+    "Key2": "2",
+    "Key3": "3"
+  },
+  "Menu": {
+    "Kicker": "THE GREATEST ROUNDS OF ALL TIME",
+    "Title": "Looped & Loaded",
+    "Blurb": "Bring the brains to the EKKE. The rest you can keep to yourself",
+    "SlotLine": "SLOT {0}  ·  {1}",
+    "SlotNew": "NEW",
+    "Continue": "CONTINUE",
+    "Play": "PLAY",
+    "ContinueBlurb": "Not enough... I should keep pushing...",
+    "PlayBlurb": "IT want's to feed on the dwellers, FEED IT.",
+    "City": "UPGRADE",
+    "CityBlurb": "Use the salvaged biomass to enchance yourself",
+    "Saves": "SAVES",
+    "SavesBlurb": "Autosave slots. Load or delete your biomass.",
+    "Key1": "1",
+    "Key2": "2",
+    "Key3": "3"
+  },
+  "Saves": {
+    "Kicker": "AUTOSAVE",
+    "Title": "SAVES",
+    "Blurb": "Organs are swappable. Pick a slot, then load or delete.",
+    "Slot": "SLOT {0}",
+    "Empty": "EMPTY",
+    "WithLine": "BIOMASS {0}  ·  BEST {1}  ·  {2}",
+    "WithBuildings": "BIOMASS {0}  ·  BEST {1}  ·  {2} ORGANS",
+    "Load": "LOAD SLOT {0}",
+    "LoadHas": "Use this body.",
+    "LoadEmpty": "Empty slot. Fresh body.",
+    "Delete": "DELETE SLOT {0}",
+    "DeleteBlurb": "Wipe this body. Cannot undo.",
+    "Key1": "1",
+    "Key2": "2",
+    "Key3": "3",
+    "KeySpace": "SPACE",
+    "KeyR": "R"
+  },
+  "Decide": {
+    "LapClear": "LAP {0} CLEAR",
+    "LapBlurb": "STASHED BIOMASS {0}  ·  BONES {1}  ·  TAKE IT HOME OR RISK ANOTHER",
+    "Extract": "EXTRACT",
+    "ExtractBankOne": "Bank {0} round. Build your body.",
+    "ExtractBankMany": "Bank {0} rounds. Build your body.",
+    "OneMore": "ONE MORE LAP",
+    "OneMoreBlurb": "Stay on the arena. It gets harder.",
+    "Fight": "FIGHT THE {0}",
+    "RingClear": "ARENA CLEAR",
+    "RingBlurb": "STASHED BIOMASS {0}  ·  NEXT {1}  ·  {2}",
+    "NextRing": "NEXT RING",
+    "NextRingBlurb": "{0}  ·  {1}  ·  keep stash and trinkets.",
+    "Dead": "RUN OVER",
+    "DeadBurnedOne": "{0} ROUND BURNED",
+    "DeadBurnedMany": "{0} ROUNDS BURNED",
+    "DeadCityBlurb": "Leave the ARENA. Build with what you already banked.",
+    "Extracted": "EXTRACTED",
+    "ExtractedOne": "{0} ROUND BANKED  ·  BEST {1}",
+    "ExtractedMany": "{0} ROUNDS BANKED  ·  BEST {1}",
+    "ExtractedCityBlurb": "Return to the surgeon.",
+    "City": "Altar",
+    "Key1": "1",
+    "Key2": "2",
+    "Key3": "3",
+    "KeyR": "R"
+  },
+  "Shop": {
+    "Title": "Chapel",
+    "Blurb": "Bones {0}  ·  ALL ROUNDS  ·  BUY ANY, THEN GO",
+    "BuyAll": "BUY ALL",
+    "BuyAllBlurb": "Take every leftover card for {0} bones.",
+    "Cost": "{0} BONES",
+    "Go": "GO",
+    "GoBlurb": "Next round. Keep leftover bones.",
+    "Bought": "BOUGHT",
+    "OfferBlurb": "{0}  LV{1}",
+    "Key1": "1",
+    "Key2": "2",
+    "Key3": "3",
+    "KeyE": "E",
+    "KeySpace": "SPACE"
+  },
+  "Help": {
+    "Paused": "1 RESUME  ·  2 MENU  ·  3 QUIT",
+    "Saves": "1-3 SELECT  ·  SPACE LOAD  ·  R DELETE  ·  ESC BACK",
+    "Menu": "1 PLAY  ·  2 ALTAR  ·  3 SAVES  ·  ESC QUIT",
+    "CityBuild": "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E SHOOT  ·  SPACE/R RUN  ·  ESC PAUSE",
+    "CityShoot": "LMB FIRE  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE",
+    "DecideLapBoss": "CLICK  ·  1 CITY  ·  2 STAY  ·  3 FIGHT THE {0}  ·  ESC PAUSE",
+    "DecideLap": "CLICK  ·  1 CITY  ·  2 STAY  ·  ESC PAUSE",
+    "DecideRingNext": "CLICK  ·  1 ALTAR  ·  2 NEXT RING  ·  ESC PAUSE",
+    "DecideRing": "CLICK  ·  1 ALTAR  ·  ESC PAUSE",
+    "ShopThree": "CLICK A CARD  ·  1 / 2 / 3 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE",
+    "ShopTwo": "CLICK A CARD  ·  1 / 2 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE",
+    "Dead": "CLICK CITY  ·  R ALTAR  ·  ESC MENU",
+    "BossGlass": "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE",
+    "BossYard": "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE",
+    "PlayGlassSkip": "PANELS SHATTER  ·  E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE",
+    "PlayGlass": "PANELS SHATTER  ·  LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE",
+    "PlaySkip": "E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE",
+    "Play": "MOUSE AIM · LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE"
+  },
+  "Announce": {
+    "AimFire": "AIM. FIRE. CATCH IT BACK.",
+    "SlotPicked": "SLOT {0}",
+    "SlotDeleted": "SLOT {0} DELETED",
+    "StartRun": "ONE LAP. ONE ROUND. TAKE BIOMASS OUT OR GO AGAIN.",
+    "TargetDown": "TARGET DOWN",
+    "ScrapGain": "+{0} BONES  ·  {1}",
+    "RoundChamberedShield": "PROJECTILE {0} CHAMBERED  ·  SHIELD",
+    "RoundChamberedHits": "PROJECTILE {0} CHAMBERED  +{1}",
+    "RoundChambered": "PROJECTILE {0} CHAMBERED",
+    "RoundStatus": "PROJECTILE {0} {1}",
+    "RoundLost": "PROJECTILE {0} LOST",
+    "SelectChambered": "SELECT A CHAMBERED PROJECTILE",
+    "StillInFlight": "PROJECTILES STILL IN FLIGHT",
+    "LostOnRing": "PROJECTILE LOST ON THE RING",
+    "Recovered": "RECOVERED",
+    "Linked": "LINKED",
+    "ShieldLeft": "SHIELD  ·  {0} LEFT",
+    "ShieldBroke": "SHIELD BROKE",
+    "HealthLeft": "-1  ·  {0} LEFT",
+    "RunOver": "RUN OVER",
+    "RingClear": "ARENA CLEAR",
+    "FinalClear": "NO MORE PROJECTILES  ·  ×2",
+    "RingClearNext": "ARENA CLEAR  ·  {0}  ·  {1}",
+    "FinalBank": "NO MORE PROJECTILES  ·  ×2  ·  +{0}",
+    "ArenaSkip": "ARENA CLEAR  ·  E SKIP LAP",
+    "LapClear": "LAP {0} CLEAR",
+    "CityDeposit": "ALTAR  ·  +{0} BIOMASS",
+    "City": "ALTAR",
+    "ContinueRounds": "+{0} ROUND  ·  BIOMASS {1}  ·  ×{2:0.00}",
+    "StashMax": "BIOMASS MAX  ·  ×{0:0.00}",
+    "BossContinue": "{0}  ·  +{1}  ·  BIOMASS {2}",
+    "NeedScrap": "NEED {0} BONES",
+    "TraitBought": "{0} LV{1}  ·  {2} BONES",
+    "Armed": "ARMED  ·  {0} BONES",
+    "PlaceRule": "{0}  ·  {1}",
+    "CorePhase": "CORE PHASE {0}",
+    "LensPhase": "LENS PHASE {0}  ·  NEW GLASS",
+    "LensOpen": "LENS OPEN  ·  HIT THE SIDE"
+  },
+  "City": {
+    "ModeBuild": "GROW",
+    "ModeShoot": "INJECT",
+    "WarehouseHud": "BIOMASS {0}",
+    "ShootFire": "INJECT  ·  LMB FIRE",
+    "UpgradeReflects": "UPGRADE · REFLECTS",
+    "Frame": "FRAME",
+    "LevelReflects": "{0} LV{1}  ·  REFLECTS",
+    "Level": "{0} LV{1}",
+    "TitleStageHits": "{0}  ·  {1}  ·  {2} HITS",
+    "WheelRotate": "{0}  ·  WHEEL ROTATE",
+    "PlaceRotate": "{0}  ·  LMB PLACE  ·  WHEEL ROTATE",
+    "FrameRemove": "{0} FRAME  ·  LMB REMOVE",
+    "LevelMaxReflects": "{0} LV{1}  ·  MAX  ·  REFLECTS",
+    "LevelStageHits": "{0} LV{1}  ·  {2}  ·  {3} HITS",
+    "PlacedFrame": "{0} FRAME",
+    "Removed": "{0} REMOVED",
+    "WarehouseEmpty": "WAREHOUSE EMPTY",
+    "FrameHits": "FRAME  ·  {0} HITS TO WORK",
+    "HpTag": "+1 HP",
+    "DmgTag": "+1 DMG",
+    "Now": "NOW",
+    "Then": "THEN",
+    "Unlocks": "UNLOCKS",
+    "CardTag": "+1 CARD",
+    "NoBonuses": "NO BONUSES YET",
+    "BonusHp": "HP+{0}",
+    "BonusDmg": "DMG+{0}",
+    "BonusDash": "DASH",
+    "BonusSlow": "SLOW",
+    "BonusCards": "3 CARDS"
+  },
+  "Traits": {
+    "Rarity": {
+      "Common": "COMMON",
+      "Uncommon": "UNCOMMON",
+      "Rare": "RARE",
+      "Epic": "EPIC"
+    },
+    "Pierce": {
+      "Code": "PRC",
+      "Title": "PIERCE",
+      "Blurb": "Pass through enemies instead of bouncing off them."
+    },
+    "Bounce": {
+      "Code": "RCH",
+      "Title": "RICOCHET",
+      "Blurb": "More wall bounces and a longer flight."
+    },
+    "Magnetic": {
+      "Code": "MAG",
+      "Title": "MAGNET",
+      "Blurb": "Steer home near you. Wider catch zone."
+    },
+    "Freeze": {
+      "Code": "FRZ",
+      "Title": "FREEZE",
+      "Blurb": "Slow whatever you hit."
+    },
+    "Explosive": {
+      "Code": "XPL",
+      "Title": "EXPLOSIVE",
+      "Blurb": "Blast on a kill or the last bounce."
+    },
+    "Heavy": {
+      "Code": "HVY",
+      "Title": "HEAVY",
+      "Blurb": "Harder hits and shove. Slower flight."
+    },
+    "Accel": {
+      "Code": "ACL",
+      "Title": "ACCEL",
+      "Blurb": "Speed up after a bounce or a kill."
+    },
+    "Electric": {
+      "Code": "ELC",
+      "Title": "ELECTRIC",
+      "Blurb": "Jump lightning to nearby enemies. Course stays."
+    },
+    "Blood": {
+      "Code": "BLD",
+      "Title": "BLOOD",
+      "Blurb": "A kill streak on one shot grants a shield."
+    },
+    "Homing": {
+      "Code": "HOM",
+      "Title": "HOMING",
+      "Blurb": "After a kill or last bounce, turn home earlier."
+    },
+    "Skim": {
+      "Code": "SKM",
+      "Title": "SKIM",
+      "Blurb": "Glancing panel hits keep the bounce charge."
+    },
+    "Kick": {
+      "Code": "KCK",
+      "Title": "KICK",
+      "Blurb": "Player shots twist inner panels harder."
+    },
+    "Stick": {
+      "Code": "STK",
+      "Title": "STICK",
+      "Blurb": "Cling to a panel, then launch along it."
+    },
+    "Cushion": {
+      "Code": "CSH",
+      "Title": "CUSHION",
+      "Blurb": "The first bounce hugs the wall."
+    },
+    "Cue": {
+      "Code": "CUE",
+      "Title": "CUE",
+      "Blurb": "True-face banks. Preview matches the shot."
+    },
+    "Corner": {
+      "Code": "CNR",
+      "Title": "CORNER",
+      "Blurb": "Pull toward panel ends for bank shots."
+    },
+    "Incurve": {
+      "Code": "INC",
+      "Title": "INCURVE",
+      "Blurb": "Curve toward the core."
+    },
+    "Clockwise": {
+      "Code": "CLK",
+      "Title": "CLOCKWISE",
+      "Blurb": "Curve with your run around the ring."
+    },
+    "Stutter": {
+      "Code": "STT",
+      "Title": "STUTTER",
+      "Blurb": "Pause on each wall bounce."
+    },
+    "Breach": {
+      "Code": "BRH",
+      "Title": "BREACH",
+      "Blurb": "Punch through inner panels."
+    },
+    "Boomerang": {
+      "Code": "BMG",
+      "Title": "BOOMERANG",
+      "Blurb": "When spent, retrace your path home."
+    },
+    "Reel": {
+      "Code": "REL",
+      "Title": "REEL",
+      "Blurb": "Lost rounds crawl the ring toward you."
+    },
+    "Swipe": {
+      "Code": "SWP",
+      "Title": "SWIPE",
+      "Blurb": "Dash through your round to chamber it."
+    },
+    "Backstop": {
+      "Code": "BCK",
+      "Title": "BACKSTOP",
+      "Blurb": "Catch zone behind you too."
+    },
+    "Link": {
+      "Code": "LNK",
+      "Title": "LINK",
+      "Blurb": "A flying round picks up a dropped one."
+    },
+    "Fuse": {
+      "Code": "FUS",
+      "Title": "FUSE",
+      "Blurb": "Missed catch explodes where it drops."
+    },
+    "Snap": {
+      "Code": "SNP",
+      "Title": "SNAP",
+      "Blurb": "A catch primes a faster, longer-preview shot."
+    },
+    "LateMag": {
+      "Code": "LTM",
+      "Title": "LATE MAG",
+      "Blurb": "Magnet waits until the last bounce or a kill."
+    },
+    "Rim": {
+      "Code": "RIM",
+      "Title": "RIM",
+      "Blurb": "Drops always land ahead on the outer ring."
+    },
+    "SecondWind": {
+      "Code": "2ND",
+      "Title": "SECOND WIND",
+      "Blurb": "First stall kicks toward the ring instead."
+    },
+    "Shred": {
+      "Code": "SHD",
+      "Title": "SHRED",
+      "Blurb": "First shield hit counts as a rear shot."
+    },
+    "Hook": {
+      "Code": "HOK",
+      "Title": "HOOK",
+      "Blurb": "Hits drag the enemy along the shot."
+    },
+    "Mark": {
+      "Code": "MRK",
+      "Title": "MARK",
+      "Blurb": "Tagged foes pull the next round in."
+    },
+    "Pinball": {
+      "Code": "PNB",
+      "Title": "PINBALL",
+      "Blurb": "Bounce off bodies harder. Crowd becomes banks."
+    },
+    "Ribbon": {
+      "Code": "RBN",
+      "Title": "RIBBON",
+      "Blurb": "Your trail cuts and slows enemies."
+    },
+    "Graze": {
+      "Code": "GRZ",
+      "Title": "GRAZE",
+      "Blurb": "Near-misses still chip a hit."
+    },
+    "Rehit": {
+      "Code": "RHT",
+      "Title": "REHIT",
+      "Blurb": "A wall bounce lets you hit the same foe again."
+    },
+    "Step": {
+      "Code": "STP",
+      "Title": "STEP",
+      "Blurb": "A kill jumps the round forward."
+    },
+    "Echo": {
+      "Code": "ECO",
+      "Title": "ECHO",
+      "Blurb": "A ghost retraces the line and hits again."
+    },
+    "Redirect": {
+      "Code": "RDR",
+      "Title": "REDIRECT",
+      "Blurb": "A kill turns you toward the next body in cone."
+    }
+  },
+  "Buildings": {
+    "Infirmary": {
+      "Title": "HEART",
+      "Payoff": "+HP",
+      "Promise": "+{0} HP AT RANK 1",
+      "Blurb": "Raises max hearts. Same neighbor adds a rank."
+    },
+    "Anvil": {
+      "Title": "MUSCLE",
+      "Payoff": "+DMG",
+      "Promise": "+{0} DAMAGE AT RANK 1",
+      "Blurb": "Rounds hit harder. Same neighbor adds a rank."
+    },
+    "Booster": {
+      "Title": "ADRENAL",
+      "Payoff": "DASH",
+      "Promise": "SHORTER DASH COOLDOWN",
+      "Blurb": "Dash returns faster each working rank."
+    },
+    "Brake": {
+      "Title": "LUNGS",
+      "Payoff": "SLOW",
+      "Promise": "UNLOCKS THE SLOW METER",
+      "Blurb": "Unlocks slow. Higher rank drains slower."
+    },
+    "Showcase": {
+      "Title": null,
+      "Payoff": null,
+      "Promise": null,
+      "Blurb": null
+    }
+  },
+  "Places": {
+    "LineCleared": "{0} CLEARED",
+    "LineOpen": "{0} CLEARED  ·  {1} OPEN",
+    "Yard": {
+      "Code": "YARD",
+      "Title": "The Yard",
+      "Rule": "PANELS KICK",
+      "Boss": "CORE",
+      "FightCall": "CORE FIGHT",
+      "FightHint": "THE CORE  ·  RICOCHET TO BREAK IT",
+      "Armor": "ARMOR  ·  RICOCHET FIRST",
+      "BossKeep": "Ricochet the nucleus. Keep the stash. Extract or ride the next ring.",
+      "BossLast": "Ricochet the nucleus. Win: stash ×2, then city."
+    },
+    "Glass": {
+      "Code": "GLASS",
+      "Title": "Glassworks",
+      "Rule": "PANELS SHATTER",
+      "Boss": "LENS",
+      "FightCall": "LENS FIGHT",
+      "FightHint": "THE LENS  ·  BREAK GLASS THEN HIT THE SIDE",
+      "Armor": "ARMOR  ·  BREAK GLASS OR HIT THE SIDE",
+      "BossKeep": "Shatter the glass, then hit the side. Keep the stash.",
+      "BossLast": "Shatter the glass, then hit the side. Win: stash ×2, then city."
+    }
+  },
+  "__references": [],
+  "__version": 0
+}

@@ -20,41 +20,10 @@ public static class Buildings
 		BuildingKind.Showcase
 	};
 
-	public static string Title( BuildingKind kind ) => kind switch
-	{
-		BuildingKind.Infirmary => "INFIRMARY",
-		BuildingKind.Anvil => "ANVIL",
-		BuildingKind.Booster => "BOOSTER",
-		BuildingKind.Brake => "BRAKE",
-		_ => "SHOWCASE"
-	};
-
-	public static string Payoff( BuildingKind kind ) => kind switch
-	{
-		BuildingKind.Infirmary => "+HP",
-		BuildingKind.Anvil => "+DMG",
-		BuildingKind.Booster => "DASH",
-		BuildingKind.Brake => "SLOW",
-		_ => "+CARD"
-	};
-
-	public static string Promise( BuildingKind kind ) => kind switch
-	{
-		BuildingKind.Infirmary => $"+{Progression.RankValue( 1 )} HP AT RANK 1",
-		BuildingKind.Anvil => $"+{Progression.RankValue( 1 )} DAMAGE AT RANK 1",
-		BuildingKind.Booster => "SHORTER DASH COOLDOWN",
-		BuildingKind.Brake => "UNLOCKS THE SLOW METER",
-		_ => "+1 UPGRADE CARD AFTER EACH LAP"
-	};
-
-	public static string Blurb( BuildingKind kind ) => kind switch
-	{
-		BuildingKind.Infirmary => "Raises max hearts. Same neighbor adds a rank.",
-		BuildingKind.Anvil => "Rounds hit harder. Same neighbor adds a rank.",
-		BuildingKind.Booster => "Dash returns faster each working rank.",
-		BuildingKind.Brake => "Unlocks slow. Higher rank drains slower.",
-		_ => "One extra upgrade card after every lap."
-	};
+	public static string Title( BuildingKind kind ) => GameSettings.Text.BuildingTitle( kind );
+	public static string Payoff( BuildingKind kind ) => GameSettings.Text.BuildingPayoff( kind );
+	public static string Promise( BuildingKind kind ) => GameSettings.Text.BuildingPromise( kind );
+	public static string Blurb( BuildingKind kind ) => GameSettings.Text.BuildingBlurb( kind );
 
 	public static Color Color( BuildingKind kind ) => kind switch
 	{
@@ -75,21 +44,9 @@ public static class Buildings
 		return costs;
 	}
 
-	public static int FirstCost( BuildingKind kind ) => kind switch
-	{
-		BuildingKind.Infirmary => 3,
-		BuildingKind.Anvil => 4,
-		BuildingKind.Booster => 3,
-		BuildingKind.Brake => 5,
-		_ => 6
-	};
+	public static int FirstCost( BuildingKind kind ) => GameSettings.City.Of( kind ).FirstCost;
 
-	public static int MaxLevel( BuildingKind kind ) => kind switch
-	{
-		BuildingKind.Infirmary => 3,
-		BuildingKind.Anvil => 3,
-		_ => 2
-	};
+	public static int MaxLevel( BuildingKind kind ) => GameSettings.City.Of( kind ).MaxLevel;
 
 	public static Vector2 Rotate( Vector2 point, int facing )
 	{

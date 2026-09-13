@@ -19,16 +19,22 @@ public static class HoboLook
 	public static SkinnedModelRenderer Attach( GameObject parent, float height )
 	{
 		var model = Model.Load( ModelPath );
-		var bounds = model.Bounds;
-		var size = bounds.Size;
-		var longest = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
-		var scale = longest > 0.001f ? height * Size / longest : 1f;
-		var lift = -bounds.Mins.z * scale;
+		var scale = ScaleOf( height );
+		var lift = -model.Bounds.Mins.z * scale;
 
 		var body = MakeSkin( parent, "Hobo", model, scale, lift, false );
 		MakeSkin( parent, OverlayName, model, scale, lift, true );
 		return body;
 	}
+
+	public static float ScaleOf( float height )
+	{
+		var size = Model.Load( ModelPath ).Bounds.Size;
+		var longest = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
+		return longest > 0.001f ? height * Size / longest : 1f;
+	}
+
+	public static float TopOf( float height ) => Model.Load( ModelPath ).Bounds.Size.z * ScaleOf( height );
 
 	static SkinnedModelRenderer MakeSkin( GameObject parent, string name, Model model, float scale, float lift, bool hide )
 	{

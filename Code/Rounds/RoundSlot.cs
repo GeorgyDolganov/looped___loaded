@@ -36,29 +36,27 @@ public sealed class RunLoadout
 		get
 		{
 			var magnet = TraitLevel( RoundTrait.Magnetic );
-			return magnet <= 0 ? 0f : 24f * Progression.TraitMul( magnet );
+			var traits = GameSettings.Traits;
+			return magnet <= 0 ? 0f : traits.Magnetic.CatchBonus * Progression.TraitMul( magnet );
 		}
 	}
 
-	public float BackstopScale => Progression.Tier( TraitLevel( RoundTrait.Backstop ), 0.5f, 0.7f, 1f );
-	public float SwipeRadius => Progression.Tier( TraitLevel( RoundTrait.Swipe ), 28f, 40f, 56f );
-	public float LinkRadius => Progression.Tier( TraitLevel( RoundTrait.Link ), 24f, 34f, 47f );
-	public float ReelSpeed => Progression.Tier( TraitLevel( RoundTrait.Reel ), 90f, 126f, 176f );
-	public float RimMinAngle => Progression.Tier( TraitLevel( RoundTrait.Rim ), 25f, 18f, 10f );
+	public float BackstopScale => GameSettings.Traits.Backstop.At( TraitLevel( RoundTrait.Backstop ) );
+	public float SwipeRadius => GameSettings.Traits.Swipe.At( TraitLevel( RoundTrait.Swipe ) );
+	public float LinkRadius => GameSettings.Traits.Link.At( TraitLevel( RoundTrait.Link ) );
+	public float ReelSpeed => GameSettings.Traits.Reel.At( TraitLevel( RoundTrait.Reel ) );
+	public float RimMinAngle => GameSettings.Traits.Rim.At( TraitLevel( RoundTrait.Rim ) );
 	public int SnapPreview => TraitLevel( RoundTrait.Snap ) <= 0 ? 0 : TraitLevel( RoundTrait.Snap );
-	public float SnapSpeed => TraitLevel( RoundTrait.Snap ) <= 0 ? 1f : Progression.Tier( TraitLevel( RoundTrait.Snap ), 1.08f, 1.12f, 1.16f );
-	public int CueBounces => TraitLevel( RoundTrait.Cue ) >= 3 ? 2 : 1;
-	public int BloodThreshold
+	public float SnapSpeed => TraitLevel( RoundTrait.Snap ) <= 0 ? 1f : GameSettings.Traits.Snap.Speed.At( TraitLevel( RoundTrait.Snap ) );
+	public int CueBounces
 	{
 		get
 		{
-			var level = TraitLevel( RoundTrait.Blood );
-			if ( level <= 0 )
-				return 0;
-
-			return level >= 3 ? 1 : 2;
+			var cue = GameSettings.Traits.Cue;
+			return TraitLevel( RoundTrait.Cue ) >= GameSettings.Traits.MaxLevel ? cue.BouncesAtMax : cue.Bounces;
 		}
 	}
+	public int BloodThreshold => GameSettings.Traits.BloodThreshold( TraitLevel( RoundTrait.Blood ) );
 
 	public void Clear()
 	{
@@ -74,11 +72,12 @@ public sealed class RunLoadout
 		if ( index < 0 || index >= Levels.Length )
 			return;
 
-		Levels[index] = Math.Min( 3, Levels[index] + 1 );
+		Levels[index] = Math.Min( GameSettings.Traits.MaxLevel, Levels[index] + 1 );
 	}
 
 	public RoundFlight BuildFlight( RoundSlot slot )
 	{
+		var t = GameSettings.Traits;
 		var pierce = TraitLevel( RoundTrait.Pierce );
 		var bounce = TraitLevel( RoundTrait.Bounce );
 		var magnet = TraitLevel( RoundTrait.Magnetic );
@@ -93,13 +92,14 @@ public sealed class RunLoadout
 		var pinball = TraitLevel( RoundTrait.Pinball );
 		var ribbon = TraitLevel( RoundTrait.Ribbon );
 		var echo = TraitLevel( RoundTrait.Echo );
+		var max = t.MaxLevel;
 
-		var stickTime = Progression.Tier( stick, 0.10f, 0.14f, 0.20f );
+		var stickTime = t.Stick.Time.At( stick );
 		if ( stick > 0 && stutter > 0 )
-			stickTime *= 0.7f;
+			stickTime *= t.StickStutterScale;
 
-		var curveIn = Progression.Tier( incur, 4f, 6f, 8f );
-		var curveClock = Progression.Tier( clock, 4f, 6f, 8f );
+		var curveIn = t.Curve.At( incur );
+		var curveClock = t.Curve.At( clock );
 		if ( incur > 0 && clock > 0 )
 		{
 			if ( clock > incur )
@@ -108,69 +108,69 @@ public sealed class RunLoadout
 				curveClock = 0f;
 		}
 
-		var magRadius = magnet <= 0 ? 0f : 200f * Progression.TraitMul( magnet );
-		var magPull = magnet <= 0 ? 0f : 1.4f * Progression.TraitMul( magnet );
+		var magRadius = magnet <= 0 ? 0f : t.Magnetic.Radius * Progression.TraitMul( magnet );
+		var magPull = magnet <= 0 ? 0f : t.Magnetic.Pull * Progression.TraitMul( magnet );
 		if ( late > 0 && magnet <= 0 )
 		{
-			magRadius = Progression.Tier( late, 140f, 196f, 274f );
-			magPull = 1.4f;
+			magRadius = t.LateMag.Radius.At( late );
+			magPull = t.LateMag.Pull;
 		}
 
 		return new RoundFlight
 		{
 			SlotIndex = slot.Index,
 			Tint = ShotColors.Player,
-			Damage = 1 + BonusDamage + (heavy <= 0 ? 0 : heavy >= 3 ? 2 : 1),
-			PierceCharges = pierce <= 0 ? 0 : 1 << (pierce - 1),
-			MaxBounces = 4 + Progression.TraitStack( bounce, 2f ),
-			Energy = 5500f * (bounce <= 0 ? 1f : Progression.TraitMul( bounce )),
+			Damage = t.BaseDamage + BonusDamage + (heavy <= 0 ? 0 : (int)t.Heavy.Damage.At( heavy )),
+			PierceCharges = pierce <= 0 ? 0 : (int)t.PierceCharges.At( pierce ),
+			MaxBounces = t.MaxBouncesBase + Progression.TraitStack( bounce, t.BounceStackSeed ),
+			Energy = t.EnergyBase * (bounce <= 0 ? 1f : Progression.TraitMul( bounce )),
 			MagnetRadius = magRadius,
 			MagnetPull = magPull * (late <= 0 ? 1f : Progression.TraitMul( late )),
-			CatchBonus = magnet <= 0 ? 0f : 24f * Progression.TraitMul( magnet ),
-			FreezeDuration = freeze <= 0 ? 0f : 1.1f * Progression.TraitMul( freeze ),
-			FreezeScale = freeze <= 0 ? 1f : MathF.Max( 0.18f, 0.55f / Progression.TraitMul( freeze ) ),
-			SpeedScale = heavy <= 0 ? 1f : Progression.Tier( heavy, 0.82f, 0.72f, 0.63f ),
-			AccelMul = TraitLevel( RoundTrait.Accel ) <= 0 ? 1f : Progression.Tier( TraitLevel( RoundTrait.Accel ), 1.12f, 1.17f, 1.24f ),
-			AccelCap = 1.8f,
-			ExplosiveRadius = Progression.Tier( TraitLevel( RoundTrait.Explosive ), 90f, 126f, 176f ),
+			CatchBonus = magnet <= 0 ? 0f : t.Magnetic.CatchBonus * Progression.TraitMul( magnet ),
+			FreezeDuration = freeze <= 0 ? 0f : t.Freeze.Duration * Progression.TraitMul( freeze ),
+			FreezeScale = freeze <= 0 ? 1f : MathF.Max( t.Freeze.ScaleFloor, t.Freeze.Scale / Progression.TraitMul( freeze ) ),
+			SpeedScale = heavy <= 0 ? 1f : t.Heavy.Speed.At( heavy ),
+			AccelMul = TraitLevel( RoundTrait.Accel ) <= 0 ? 1f : t.Accel.At( TraitLevel( RoundTrait.Accel ) ),
+			AccelCap = t.AccelCap,
+			ExplosiveRadius = t.Explosive.At( TraitLevel( RoundTrait.Explosive ) ),
 			ElectricJumps = TraitLevel( RoundTrait.Electric ),
 			BloodThreshold = BloodThreshold,
-			HomingLead = Progression.Tier( TraitLevel( RoundTrait.Homing ), 0.20f, 0.28f, 0.40f ),
-			SkimDegrees = Progression.Tier( skim, 18f, 25f, 35f ),
-			SkimBoost = skim <= 0 ? 1f : Progression.Tier( skim, 1.08f, 1.12f, 1.16f ),
-			KickExtra = Progression.Tier( TraitLevel( RoundTrait.Kick ), 8f, 11f, 16f ),
-			KickSecond = TraitLevel( RoundTrait.Kick ) >= 3,
+			HomingLead = t.Homing.At( TraitLevel( RoundTrait.Homing ) ),
+			SkimDegrees = t.Skim.Degrees.At( skim ),
+			SkimBoost = skim <= 0 ? 1f : t.Skim.Boost.At( skim ),
+			KickExtra = t.Kick.Extra.At( TraitLevel( RoundTrait.Kick ) ),
+			KickSecond = TraitLevel( RoundTrait.Kick ) >= max,
 			StickTime = stickTime,
-			StickSpeed = stick <= 0 ? 1f : Progression.Tier( stick, 1.00f, 1.10f, 1.24f ),
-			CushionDegrees = Progression.Tier( TraitLevel( RoundTrait.Cushion ), 22f, 31f, 43f ),
-			CueDegrees = TraitLevel( RoundTrait.Cue ) <= 0 ? 0f : Progression.Tier( TraitLevel( RoundTrait.Cue ), 12f, 8f, 4f ),
-			CornerRadius = Progression.Tier( TraitLevel( RoundTrait.Corner ), 70f, 98f, 137f ),
-			CornerPull = Progression.Tier( TraitLevel( RoundTrait.Corner ), 0.7f, 1.0f, 1.4f ),
+			StickSpeed = stick <= 0 ? 1f : t.Stick.Speed.At( stick ),
+			CushionDegrees = t.Cushion.At( TraitLevel( RoundTrait.Cushion ) ),
+			CueDegrees = TraitLevel( RoundTrait.Cue ) <= 0 ? 0f : t.Cue.Degrees.At( TraitLevel( RoundTrait.Cue ) ),
+			CornerRadius = t.Corner.Radius.At( TraitLevel( RoundTrait.Corner ) ),
+			CornerPull = t.Corner.Pull.At( TraitLevel( RoundTrait.Corner ) ),
 			IncurveRate = MathX.DegreeToRadian( curveIn ),
 			ClockwiseRate = MathX.DegreeToRadian( curveClock ),
-			StutterTime = Progression.Tier( stutter, 0.08f, 0.11f, 0.16f ),
+			StutterTime = t.Stutter.At( stutter ),
 			BreachCharges = TraitLevel( RoundTrait.Breach ),
-			BoomerangKeep = Progression.Tier( TraitLevel( RoundTrait.Boomerang ), 0.50f, 0.70f, 1.00f ),
-			FuseRadius = Progression.Tier( TraitLevel( RoundTrait.Fuse ), 70f, 98f, 137f ),
+			BoomerangKeep = t.Boomerang.At( TraitLevel( RoundTrait.Boomerang ) ),
+			FuseRadius = t.Fuse.At( TraitLevel( RoundTrait.Fuse ) ),
 			LateMag = late > 0,
-			SecondWindKeep = Progression.Tier( TraitLevel( RoundTrait.SecondWind ), 0.40f, 0.56f, 0.78f ),
+			SecondWindKeep = t.SecondWind.At( TraitLevel( RoundTrait.SecondWind ) ),
 			ShredCharges = TraitLevel( RoundTrait.Shred ),
-			HookPush = Progression.Tier( TraitLevel( RoundTrait.Hook ), 36f, 50f, 70f ),
-			MarkTurn = MathX.DegreeToRadian( Progression.Tier( TraitLevel( RoundTrait.Mark ), 8f, 11f, 16f ) ),
-			MarkBonus = TraitLevel( RoundTrait.Mark ) >= 3 ? 1 : 0,
-			PinballKeep = pinball <= 0 ? 0.94f : Progression.Tier( pinball, 0.70f, 0.80f, 0.90f ),
-			PinballFree = pinball >= 3,
+			HookPush = t.Hook.At( TraitLevel( RoundTrait.Hook ) ),
+			MarkTurn = MathX.DegreeToRadian( t.Mark.Degrees.At( TraitLevel( RoundTrait.Mark ) ) ),
+			MarkBonus = TraitLevel( RoundTrait.Mark ) >= max ? t.Mark.BonusAtMax : 0,
+			PinballKeep = pinball <= 0 ? t.PinballNaturalKeep : t.Pinball.Keep.At( pinball ),
+			PinballFree = pinball >= max,
 			HasPinball = pinball > 0,
-			RibbonWidth = Progression.Tier( ribbon, 18f, 25f, 35f ),
-			RibbonSlow = ribbon <= 0 ? 0f : Progression.Tier( ribbon, 0.20f, 0.28f, 0.40f ),
-			GrazePad = Progression.Tier( TraitLevel( RoundTrait.Graze ), 10f, 14f, 20f ),
+			RibbonWidth = t.Ribbon.Width.At( ribbon ),
+			RibbonSlow = ribbon <= 0 ? 0f : t.Ribbon.Slow.At( ribbon ),
+			GrazePad = t.Graze.At( TraitLevel( RoundTrait.Graze ) ),
 			RehitCharges = TraitLevel( RoundTrait.Rehit ),
-			StepDistance = Progression.Tier( TraitLevel( RoundTrait.Step ), 80f, 112f, 157f ),
-			EchoKeep = Progression.Tier( echo, 0.40f, 0.56f, 0.78f ),
-			EchoFreeze = echo >= 3,
-			RedirectCone = MathX.DegreeToRadian( Progression.Tier( TraitLevel( RoundTrait.Redirect ), 40f, 56f, 78f ) ),
-			RedirectRange = Progression.Tier( TraitLevel( RoundTrait.Redirect ), 260f, 364f, 510f ),
-			HeavyPush = heavy <= 0 ? 0f : 42f * Progression.TraitMul( heavy )
+			StepDistance = t.Step.At( TraitLevel( RoundTrait.Step ) ),
+			EchoKeep = t.Echo.Keep.At( echo ),
+			EchoFreeze = echo >= max,
+			RedirectCone = MathX.DegreeToRadian( t.Redirect.Cone.At( TraitLevel( RoundTrait.Redirect ) ) ),
+			RedirectRange = t.Redirect.Range.At( TraitLevel( RoundTrait.Redirect ) ),
+			HeavyPush = heavy <= 0 ? 0f : t.Heavy.Push * Progression.TraitMul( heavy )
 		};
 	}
 }

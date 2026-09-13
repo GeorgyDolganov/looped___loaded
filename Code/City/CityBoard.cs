@@ -11,6 +11,7 @@ public sealed class CityBoard : Component
 	public BuildingKind Selected { get; private set; } = BuildingKind.Infirmary;
 	public int PlacementFacing { get; private set; }
 	public CityMode Mode { get; private set; } = CityMode.Build;
+	public string ModeLabel => GameSettings.Text.CityModeLabel( Mode );
 	public bool Building => Mode == CityMode.Build;
 	public CityPlot Hovered { get; private set; }
 	public Vector2 Cursor { get; private set; }
@@ -155,7 +156,7 @@ public sealed class CityBoard : Component
 			DashCharges = 1,
 			SlowUnlocked = brake > 0,
 			SlowDrain = Progression.SlowDrain( brake ),
-			OfferCount = Math.Clamp( 2 + show, 2, 3 )
+			OfferCount = Math.Clamp( GameSettings.City.MinOffers + show, GameSettings.City.MinOffers, GameSettings.City.MaxOffers )
 		};
 	}
 
@@ -284,7 +285,7 @@ public sealed class CityBoard : Component
 
 		Mode = mode;
 		ArenaSounds.Change();
-		Loop?.Announce( Building ? "BUILD" : "SHOOT" );
+		Loop?.Announce( Building ? GameSettings.Text.City.ModeBuild : GameSettings.Text.City.ModeShoot );
 	}
 
 	void TickRotate()
@@ -336,8 +337,8 @@ public sealed class CityBoard : Component
 			plot.Level++;
 			ArenaSounds.Pickup( world );
 			Loop?.Announce( plot.Working
-				? $"{Buildings.Title( plot.Kind )} LV{plot.Level}  ·  REFLECTS"
-				: $"{Buildings.Title( plot.Kind )} LV{plot.Level}" );
+				? GameSettings.Text.F( GameSettings.Text.City.LevelReflects, Buildings.Title( plot.Kind ), plot.Level )
+				: GameSettings.Text.F( GameSettings.Text.City.Level, Buildings.Title( plot.Kind ), plot.Level ) );
 		}
 
 		RefreshPlot( plot );
@@ -448,34 +449,37 @@ public sealed class CityBoard : Component
 
 	public string HoverText()
 	{
+		var t = GameSettings.Text;
+		var city = t.City;
+
 		if ( !Building )
 		{
 			if ( Hovered is null || !Hovered.Occupied )
-				return "SHOOT  ·  LMB FIRE";
+				return city.ShootFire;
 
 			if ( Hovered.Maxed )
-				return $"{Buildings.Title( Hovered.Kind )} LV{Hovered.Level}  ·  REFLECTS";
+				return t.F( city.LevelReflects, Buildings.Title( Hovered.Kind ), Hovered.Level );
 
 			var hitsLeft = Hovered.NextCost - Hovered.Hits;
-			var hitStage = Hovered.Working ? "UPGRADE · REFLECTS" : "FRAME";
-			return $"{Buildings.Title( Hovered.Kind )}  ·  {hitStage}  ·  {hitsLeft} HITS";
+			var hitStage = Hovered.Working ? city.UpgradeReflects : city.Frame;
+			return t.F( city.TitleStageHits, Buildings.Title( Hovered.Kind ), hitStage, hitsLeft );
 		}
 
 		if ( Hovered is null )
-			return $"{Buildings.Title( Selected )}  ·  WHEEL ROTATE";
+			return t.F( city.WheelRotate, Buildings.Title( Selected ) );
 
 		if ( !Hovered.Occupied )
-			return $"{Buildings.Title( Selected )}  ·  LMB PLACE  ·  WHEEL ROTATE";
+			return t.F( city.PlaceRotate, Buildings.Title( Selected ) );
 
 		if ( !Hovered.Working )
-			return $"{Buildings.Title( Hovered.Kind )} FRAME  ·  LMB REMOVE";
+			return t.F( city.FrameRemove, Buildings.Title( Hovered.Kind ) );
 
 		if ( Hovered.Maxed )
-			return $"{Buildings.Title( Hovered.Kind )} LV{Hovered.Level}  ·  MAX  ·  REFLECTS";
+			return t.F( city.LevelMaxReflects, Buildings.Title( Hovered.Kind ), Hovered.Level );
 
 		var left = Hovered.NextCost - Hovered.Hits;
-		var stage = Hovered.Working ? "UPGRADE · REFLECTS" : "FRAME";
-		return $"{Buildings.Title( Hovered.Kind )} LV{Hovered.Level}  ·  {stage}  ·  {left} HITS";
+		var stage = Hovered.Working ? city.UpgradeReflects : city.Frame;
+		return t.F( city.LevelStageHits, Buildings.Title( Hovered.Kind ), Hovered.Level, stage, left );
 	}
 
 	Vector3 CellWorld( int x, int y )
@@ -694,7 +698,7 @@ public sealed class CityBoard : Component
 		Hovered.Hits = 0;
 		RefreshPlot( Hovered );
 		ArenaSounds.MenuOk();
-		Loop?.Announce( $"{Buildings.Title( Selected )} FRAME" );
+		Loop?.Announce( GameSettings.Text.F( GameSettings.Text.City.PlacedFrame, Buildings.Title( Selected ) ) );
 		Loop?.Autosave();
 	}
 
@@ -713,7 +717,7 @@ public sealed class CityBoard : Component
 		Hovered.Facing = 0;
 		RefreshPlot( Hovered );
 		ArenaSounds.MenuBack();
-		Loop?.Announce( $"{title} REMOVED" );
+		Loop?.Announce( GameSettings.Text.F( GameSettings.Text.City.Removed, title ) );
 		Loop?.Autosave();
 	}
 
@@ -722,7 +726,7 @@ public sealed class CityBoard : Component
 		if ( Warehouse <= 0 )
 		{
 			ArenaSounds.Deny();
-			Loop?.Announce( "WAREHOUSE EMPTY" );
+			Loop?.Announce( GameSettings.Text.City.WarehouseEmpty );
 			return;
 		}
 

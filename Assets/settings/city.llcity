@@ -1,0 +1,26 @@
+{
+  "MinOffers": 2,
+  "MaxOffers": 3,
+  "Infirmary": {
+    "FirstCost": 3,
+    "MaxLevel": 3
+  },
+  "Anvil": {
+    "FirstCost": 4,
+    "MaxLevel": 3
+  },
+  "Booster": {
+    "FirstCost": 3,
+    "MaxLevel": 2
+  },
+  "Brake": {
+    "FirstCost": 5,
+    "MaxLevel": 2
+  },
+  "Showcase": {
+    "FirstCost": 6,
+    "MaxLevel": 2
+  },
+  "__references": [],
+  "__version": 0
+}

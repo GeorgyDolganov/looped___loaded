@@ -6,6 +6,8 @@ public sealed class PolyLine : Component
 	[Property] public Color TailTint { get; set; } = Color.White;
 	[Property] public float HeadWidth { get; set; } = 9f;
 	[Property] public float TailWidth { get; set; } = 1f;
+	[Property] public bool HardCaps { get; set; }
+	[Property] public bool Solid { get; set; }
 
 	readonly List<GameObject> nodes = new();
 	LineRenderer line;
@@ -14,6 +16,11 @@ public sealed class PolyLine : Component
 	{
 		if ( !line.IsValid() )
 			return;
+
+		var cap = HardCaps ? SceneLineObject.CapStyle.None : SceneLineObject.CapStyle.Rounded;
+		line.StartCap = cap;
+		line.EndCap = cap;
+		line.Opaque = Solid;
 
 		line.Color = new Gradient(
 			new Gradient.ColorFrame( 0f, TailTint ),

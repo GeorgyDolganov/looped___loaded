@@ -637,7 +637,7 @@ public sealed class RoundProjectile : Component
 			if ( (slot.Lost.Flat - Flat).Length > reach + Radius )
 				continue;
 
-			Loop.RecoverDropped( slot, "LINKED" );
+			Loop.RecoverDropped( slot, GameSettings.Text.Announce.Linked );
 		}
 	}
 

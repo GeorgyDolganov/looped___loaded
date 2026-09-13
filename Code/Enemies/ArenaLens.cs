@@ -19,16 +19,11 @@ public sealed class ArenaLens : Component
 			if ( body is null || body.MaxHealth <= 0 )
 				return 1;
 
-			var part = body.Health / (float)body.MaxHealth;
-			if ( part > 0.66f )
-				return 1;
-			if ( part > 0.33f )
-				return 2;
-			return 3;
+			return GameSettings.Boss.PhaseOf( body.Health / (float)body.MaxHealth );
 		}
 	}
 
-	public int BrokenNeed => Phase == 1 ? 2 : 3;
+	public int BrokenNeed => Phase == 1 ? GameSettings.Boss.LensBreakPhase1 : GameSettings.Boss.LensBreakLater;
 
 	public bool Open => loop.IsValid() && loop.Arena.IsValid() && loop.Arena.GlassBroken >= BrokenNeed;
 
@@ -36,7 +31,7 @@ public sealed class ArenaLens : Component
 	{
 		body = enemy;
 		loop = enemy.Loop;
-		shotAt = Time.Now + 0.85f;
+		shotAt = Time.Now + GameSettings.Boss.Lens.FirstShot;
 		lastPhase = 1;
 		announcedOpen = false;
 
@@ -76,7 +71,7 @@ public sealed class ArenaLens : Component
 			lastPhase = phase;
 			announcedOpen = false;
 			loop.RerollBoard();
-			loop.Announce( phase == 3 ? "LENS PHASE 3  ·  NEW GLASS" : "LENS PHASE 2  ·  NEW GLASS" );
+			loop.Announce( GameSettings.Text.F( GameSettings.Text.Announce.LensPhase, phase ) );
 			ArenaSounds.Warn();
 			ImpactFlash.Spawn( Scene, Vector3.Up * 80f, LensTint, 3.2f );
 		}
@@ -84,7 +79,7 @@ public sealed class ArenaLens : Component
 		if ( Open && !announcedOpen )
 		{
 			announcedOpen = true;
-			loop.Announce( "LENS OPEN  ·  HIT THE SIDE" );
+			loop.Announce( GameSettings.Text.Announce.LensOpen );
 			ArenaSounds.Tele();
 		}
 
@@ -99,23 +94,24 @@ public sealed class ArenaLens : Component
 
 	void ThinkShoot( int phase, float scale )
 	{
-		if ( Time.Now < shotAt || scale < 0.2f )
+		if ( Time.Now < shotAt || scale < GameSettings.Boss.Lens.FreezeShotLock )
 			return;
 
 		var threat = loop.Threat;
-		var interval = MathF.Max( 0.6f, (phase == 1 ? 2.0f : phase == 2 ? 1.45f : 1.1f) / MathF.Sqrt( threat ) );
+		var lens = GameSettings.Boss.Lens;
+		var interval = MathF.Max( lens.ShotFloor, (phase == 1 ? lens.ShotPhase1 : phase == 2 ? lens.ShotPhase2 : lens.ShotPhase3) / MathF.Sqrt( threat ) );
 		shotAt = Time.Now + interval;
 
-		EnemyShot.Fire( loop, ArenaGeometry.FromAngle( Time.Now * 0.4f ) * 36f, Lead(), 500f * threat );
+		EnemyShot.Fire( loop, ArenaGeometry.FromAngle( Time.Now * lens.AimedSpin ) * lens.AimedOrigin, Lead(), lens.AimedSpeed * threat );
 
 		if ( phase < 2 )
 			return;
 
-		var burst = phase >= 3 ? 6 : 4;
+		var burst = phase >= 3 ? lens.BurstPhase3 : lens.BurstPhase2;
 		for ( var i = 0; i < burst; i++ )
 		{
-			var angle = Time.Now * 0.35f + MathF.Tau * i / burst;
-			EnemyShot.Fire( loop, ArenaGeometry.FromAngle( angle ) * 44f, ArenaGeometry.FromAngle( angle ), 460f * threat );
+			var angle = Time.Now * lens.BurstSpin + MathF.Tau * i / burst;
+			EnemyShot.Fire( loop, ArenaGeometry.FromAngle( angle ) * lens.BurstOrigin, ArenaGeometry.FromAngle( angle ), lens.BurstSpeed * threat );
 		}
 	}
 
@@ -151,8 +147,8 @@ public sealed class ArenaLens : Component
 	{
 		var runner = loop.Runner;
 		var to = runner.Flat;
-		var speed = 500f * loop.Threat;
-		var travel = to.Length / MathF.Max( 80f, speed );
+		var speed = GameSettings.Boss.Lens.AimedSpeed * loop.Threat;
+		var travel = to.Length / MathF.Max( GameSettings.Boss.Lens.LeadMinSpeed, speed );
 		var pace = runner.Speed;
 		if ( runner.Slowing )
 			pace *= runner.SlowSpeedScale;

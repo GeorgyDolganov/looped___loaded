@@ -33,64 +33,25 @@ public static class Locations
 		return index >= Route.Length ? location : Route[index];
 	}
 
-	public static string Code( RunLocation location ) => location switch
-	{
-		RunLocation.Glass => "GLASS",
-		_ => "YARD"
-	};
-
-	public static string Title( RunLocation location ) => location switch
-	{
-		RunLocation.Glass => "Glassworks",
-		_ => "The Yard"
-	};
-
-	public static string Rule( RunLocation location ) => location switch
-	{
-		RunLocation.Glass => "PANELS SHATTER",
-		_ => "PANELS KICK"
-	};
-
-	public static string Boss( RunLocation location ) => location switch
-	{
-		RunLocation.Glass => "LENS",
-		_ => "CORE"
-	};
-
-	public static string FightCall( RunLocation location ) => location switch
-	{
-		RunLocation.Glass => "LENS FIGHT",
-		_ => "CORE FIGHT"
-	};
-
-	public static string FightHint( RunLocation location ) => location switch
-	{
-		RunLocation.Glass => "THE LENS  ·  BREAK GLASS THEN HIT THE SIDE",
-		_ => "THE CORE  ·  RICOCHET TO BREAK IT"
-	};
-
-	public static string BossBlurb( RunLocation location, bool last )
-	{
-		if ( location == RunLocation.Glass )
-			return last
-				? "Shatter the glass, then hit the side. Win: stash ×2, then city."
-				: "Shatter the glass, then hit the side. Keep the stash.";
-
-		return last
-			? "Ricochet the nucleus. Win: stash ×2, then city."
-			: "Ricochet the nucleus. Keep the stash. Extract or ride the next ring.";
-	}
+	public static string Code( RunLocation location ) => GameSettings.Text.PlaceCode( location );
+	public static string Title( RunLocation location ) => GameSettings.Text.PlaceTitle( location );
+	public static string Rule( RunLocation location ) => GameSettings.Text.PlaceRule( location );
+	public static string Boss( RunLocation location ) => GameSettings.Text.PlaceBoss( location );
+	public static string FightCall( RunLocation location ) => GameSettings.Text.PlaceFightCall( location );
+	public static string FightHint( RunLocation location ) => GameSettings.Text.PlaceFightHint( location );
+	public static string BossBlurb( RunLocation location, bool last ) => GameSettings.Text.PlaceBossBlurb( location, last );
 
 	public static string LineBlurb( int bestLine )
 	{
 		if ( bestLine < 0 )
 			return "";
 
+		var t = GameSettings.Text;
 		var cleared = bestLine >= Route.Length ? Route[^1] : Route[bestLine];
 		if ( IsLast( cleared ) )
-			return $"{Code( cleared )} CLEARED";
+			return t.F( t.Places.LineCleared, Code( cleared ) );
 
-		return $"{Code( cleared )} CLEARED  ·  {Code( Next( cleared ) )} OPEN";
+		return t.F( t.Places.LineOpen, Code( cleared ), Code( Next( cleared ) ) );
 	}
 
 	public static bool IsBoss( EnemyKind kind ) => kind is EnemyKind.Core or EnemyKind.Lens;

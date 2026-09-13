@@ -1,0 +1,272 @@
+{
+  "MaxLevel": 3,
+  "BaseDamage": 1,
+  "MaxBouncesBase": 4,
+  "BounceStackSeed": 2,
+  "EnergyBase": 5500,
+  "AccelCap": 1.8,
+  "PinballNaturalKeep": 0.94,
+  "StickStutterScale": 0.7,
+  "Starter": {
+    "Price": 4,
+    "Weight": 6
+  },
+  "Geometry": {
+    "Price": 8,
+    "Weight": 4
+  },
+  "Return": {
+    "Price": 10,
+    "Weight": 3
+  },
+  "Chaos": {
+    "Price": 12,
+    "Weight": 2
+  },
+  "Body": {
+    "Price": 14,
+    "Weight": 2
+  },
+  "HomingPack": {
+    "Price": 16,
+    "Weight": 1
+  },
+  "Strike": {
+    "Price": 18,
+    "Weight": 1
+  },
+  "PierceCharges": {
+    "Level1": 1,
+    "Level2": 2,
+    "Level3": 4
+  },
+  "Magnetic": {
+    "Radius": 200,
+    "Pull": 1.4,
+    "CatchBonus": 24
+  },
+  "Freeze": {
+    "Duration": 1.1,
+    "Scale": 0.55,
+    "ScaleFloor": 0.18
+  },
+  "Heavy": {
+    "Speed": {
+      "Level1": 0.82,
+      "Level2": 0.72,
+      "Level3": 0.63
+    },
+    "Damage": {
+      "Level1": 1,
+      "Level2": 1,
+      "Level3": 2
+    },
+    "Push": 42
+  },
+  "Accel": {
+    "Level1": 1.12,
+    "Level2": 1.17,
+    "Level3": 1.24
+  },
+  "Explosive": {
+    "Level1": 90,
+    "Level2": 126,
+    "Level3": 176
+  },
+  "ElectricRange": 220,
+  "Blood": {
+    "Kills": 2,
+    "KillsAtMax": 1
+  },
+  "Homing": {
+    "Level1": 0.2,
+    "Level2": 0.28,
+    "Level3": 0.4
+  },
+  "Skim": {
+    "Degrees": {
+      "Level1": 18,
+      "Level2": 25,
+      "Level3": 35
+    },
+    "Boost": {
+      "Level1": 1.08,
+      "Level2": 1.12,
+      "Level3": 1.16
+    }
+  },
+  "Kick": {
+    "Extra": {
+      "Level1": 8,
+      "Level2": 11,
+      "Level3": 16
+    }
+  },
+  "Stick": {
+    "Time": {
+      "Level1": 0.1,
+      "Level2": 0.14,
+      "Level3": 0.2
+    },
+    "Speed": {
+      "Level1": 1,
+      "Level2": 1.1,
+      "Level3": 1.24
+    }
+  },
+  "Cushion": {
+    "Level1": 22,
+    "Level2": 31,
+    "Level3": 43
+  },
+  "Cue": {
+    "Degrees": {
+      "Level1": 12,
+      "Level2": 8,
+      "Level3": 4
+    },
+    "Bounces": 1,
+    "BouncesAtMax": 2
+  },
+  "Corner": {
+    "Radius": {
+      "Level1": 70,
+      "Level2": 98,
+      "Level3": 137
+    },
+    "Pull": {
+      "Level1": 0.7,
+      "Level2": 1,
+      "Level3": 1.4
+    }
+  },
+  "Curve": {
+    "Level1": 4,
+    "Level2": 6,
+    "Level3": 8
+  },
+  "Stutter": {
+    "Level1": 0.08,
+    "Level2": 0.11,
+    "Level3": 0.16
+  },
+  "Boomerang": {
+    "Level1": 0.5,
+    "Level2": 0.7,
+    "Level3": 1
+  },
+  "Reel": {
+    "Level1": 90,
+    "Level2": 126,
+    "Level3": 176
+  },
+  "Swipe": {
+    "Level1": 28,
+    "Level2": 40,
+    "Level3": 56
+  },
+  "Backstop": {
+    "Level1": 0.5,
+    "Level2": 0.7,
+    "Level3": 1
+  },
+  "Link": {
+    "Level1": 24,
+    "Level2": 34,
+    "Level3": 47
+  },
+  "Fuse": {
+    "Level1": 70,
+    "Level2": 98,
+    "Level3": 137
+  },
+  "Snap": {
+    "Speed": {
+      "Level1": 1.08,
+      "Level2": 1.12,
+      "Level3": 1.16
+    },
+    "Duration": 0.45
+  },
+  "LateMag": {
+    "Radius": {
+      "Level1": 140,
+      "Level2": 196,
+      "Level3": 274
+    },
+    "Pull": 1.4
+  },
+  "Rim": {
+    "Level1": 25,
+    "Level2": 18,
+    "Level3": 10
+  },
+  "SecondWind": {
+    "Level1": 0.4,
+    "Level2": 0.56,
+    "Level3": 0.78
+  },
+  "Hook": {
+    "Level1": 36,
+    "Level2": 50,
+    "Level3": 70
+  },
+  "Mark": {
+    "Degrees": {
+      "Level1": 8,
+      "Level2": 11,
+      "Level3": 16
+    },
+    "BonusAtMax": 1
+  },
+  "Pinball": {
+    "Keep": {
+      "Level1": 0.7,
+      "Level2": 0.8,
+      "Level3": 0.9
+    }
+  },
+  "Ribbon": {
+    "Width": {
+      "Level1": 18,
+      "Level2": 25,
+      "Level3": 35
+    },
+    "Slow": {
+      "Level1": 0.2,
+      "Level2": 0.28,
+      "Level3": 0.4
+    }
+  },
+  "Graze": {
+    "Level1": 10,
+    "Level2": 14,
+    "Level3": 20
+  },
+  "Step": {
+    "Level1": 80,
+    "Level2": 112,
+    "Level3": 157
+  },
+  "Echo": {
+    "Keep": {
+      "Level1": 0.4,
+      "Level2": 0.56,
+      "Level3": 0.78
+    }
+  },
+  "Redirect": {
+    "Cone": {
+      "Level1": 40,
+      "Level2": 56,
+      "Level3": 78
+    },
+    "Range": {
+      "Level1": 260,
+      "Level2": 364,
+      "Level3": 510
+    }
+  },
+  "__references": [],
+  "__version": 0
+}

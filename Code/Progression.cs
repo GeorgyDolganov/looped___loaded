@@ -2,22 +2,24 @@ namespace LoopedLoaded;
 
 public static class Progression
 {
-	public const float ThreatRatio = 1.22f;
-	public const float PowerRatio = 1.6f;
-	public const float CostRatio = 2f;
-	public const float TraitRatio = 1.4f;
-	public const float PaceRatio = 1.035f;
-	public const float DashRatio = 1.16f;
-	public const float RoundRatio = 1.25f;
-	public const int MaxSlots = 9;
-	public const int BossBaseHealth = 12;
+	static ProgressionConfig C => GameSettings.Progression;
+
+	public static float ThreatRatio => C.ThreatRatio;
+	public static float PowerRatio => C.PowerRatio;
+	public static float CostRatio => C.CostRatio;
+	public static float TraitRatio => C.TraitRatio;
+	public static float PaceRatio => C.PaceRatio;
+	public static float DashRatio => C.DashRatio;
+	public static float RoundRatio => C.RoundRatio;
+	public static int MaxSlots => C.MaxSlots;
+	public static int BossBaseHealth => C.BossBaseHealth;
 
 	public static float LocationMul( int location ) => MathF.Pow( ThreatRatio, Math.Max( 0, location ) );
 
 	public static float Threat( int lap, int location = 0 )
 		=> MathF.Pow( ThreatRatio, Math.Max( 0, lap - 1 ) ) * LocationMul( location );
 
-	public static float Pace( int lap ) => MathF.Min( 1.4f, MathF.Pow( PaceRatio, Math.Max( 0, lap - 1 ) ) );
+	public static float Pace( int lap ) => MathF.Min( C.PaceCap, MathF.Pow( PaceRatio, Math.Max( 0, lap - 1 ) ) );
 
 	public static int RankValue( int rank )
 	{
@@ -31,10 +33,10 @@ public static class Progression
 		=> Math.Max( 1, Whole( template * Threat( lap, location ) ) );
 
 	public static int ExtraBodies( int lap, int location = 0 )
-		=> Math.Clamp( Whole( Threat( lap, location ) ) - 2, 0, 4 );
+		=> Math.Clamp( Whole( Threat( lap, location ) ) - C.ExtraBodiesOffset, 0, C.ExtraBodiesMax );
 
 	public static int RoundsGranted( int arrivingLap )
-		=> Math.Clamp( Whole( MathF.Pow( RoundRatio, Math.Max( 0, arrivingLap - 2 ) ) ), 1, 4 );
+		=> Math.Clamp( Whole( MathF.Pow( RoundRatio, Math.Max( 0, arrivingLap - 2 ) ) ), C.RoundsGrantedMin, C.RoundsGrantedMax );
 
 	public static int BossHealth( int lap, int location = 0 )
 		=> Math.Max( BossBaseHealth, Whole( BossBaseHealth * Threat( lap, location ) ) );
@@ -42,33 +44,14 @@ public static class Progression
 	public static int Cost( int first, int level )
 		=> Math.Max( 1, Whole( first * MathF.Pow( CostRatio, Math.Max( 0, level ) ) ) );
 
-	public static int PackPrice( TraitPack pack ) => pack switch
-	{
-		TraitPack.Starter => 4,
-		TraitPack.Geometry => 8,
-		TraitPack.Return => 10,
-		TraitPack.Chaos => 12,
-		TraitPack.Body => 14,
-		TraitPack.Homing => 16,
-		_ => 18
-	};
+	public static int PackPrice( TraitPack pack ) => GameSettings.Traits.PackPrice( pack );
 
 	public static int TraitPrice( RoundTrait trait, int ownedLevel )
 		=> Cost( PackPrice( RoundTraits.Pack( trait ) ), Math.Max( 0, ownedLevel ) );
 
 	public static int KillScrap( EnemyKind kind, int lap, int location = 0 )
 	{
-		var seed = kind switch
-		{
-			EnemyKind.Chaser => 4,
-			EnemyKind.Shield => 7,
-			EnemyKind.Shooter => 7,
-			EnemyKind.Splinter => 6,
-			EnemyKind.Glimmer => 7,
-			EnemyKind.Shardguard => 8,
-			_ => 0
-		};
-
+		var seed = GameSettings.Enemies.ScrapOf( kind );
 		if ( seed <= 0 )
 			return 0;
 
@@ -76,14 +59,14 @@ public static class Progression
 	}
 
 	public static float DashScale( int boost )
-		=> MathF.Max( 0.42f, 1f / MathF.Pow( DashRatio, Math.Max( 0, boost ) ) );
+		=> MathF.Max( C.DashScaleFloor, 1f / MathF.Pow( DashRatio, Math.Max( 0, boost ) ) );
 
 	public static float SlowDrain( int brake )
 	{
 		if ( brake <= 0 )
-			return 0.55f;
+			return C.SlowDrainBase;
 
-		return MathF.Max( 0.22f, 0.55f / MathF.Pow( ThreatRatio, brake - 1 ) );
+		return MathF.Max( C.SlowDrainFloor, C.SlowDrainBase / MathF.Pow( ThreatRatio, brake - 1 ) );
 	}
 
 	public static int TraitStack( int level, float seed )

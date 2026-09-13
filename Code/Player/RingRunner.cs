@@ -37,8 +37,30 @@ public sealed class RingRunner : Component
 	Vector3 warlordLook;
 	readonly List<(ModelRenderer Renderer, Color Tint)> meshes = new();
 
+	float startSpeed;
+	float startDashCooldown;
+	float startSlowDrain;
+	bool started;
+
+	protected override void OnAwake()
+	{
+		CaptureStart();
+	}
+
+	void CaptureStart()
+	{
+		if ( started )
+			return;
+
+		started = true;
+		startSpeed = Speed;
+		startDashCooldown = DashCooldown;
+		startSlowDrain = SlowDrain;
+	}
+
 	public void ResetToStart( float startAngle )
 	{
+		CaptureStart();
 		Angle = startAngle;
 		TravelledArc = 0f;
 		dashElapsed = 999f;
@@ -48,9 +70,9 @@ public sealed class RingRunner : Component
 		SlowCharge = 1f;
 		Slowing = false;
 		slowOverheat = false;
-		DashCooldown = 1.1f;
-		SlowDrain = 0.55f;
-		Speed = 330f;
+		DashCooldown = startDashCooldown;
+		SlowDrain = startSlowDrain;
+		Speed = startSpeed;
 		ApplyTransform();
 	}
 
@@ -66,14 +88,16 @@ public sealed class RingRunner : Component
 
 	public void ApplyCity( CityStats stats )
 	{
-		DashCooldown = 1.1f * stats.DashCooldownScale;
+		CaptureStart();
+		DashCooldown = startDashCooldown * stats.DashCooldownScale;
 		SlowUnlocked = stats.SlowUnlocked;
 		SlowDrain = stats.SlowDrain;
 	}
 
 	public void ApplyPace( int lap )
 	{
-		Speed = 330f * Progression.Pace( lap );
+		CaptureStart();
+		Speed = startSpeed * Progression.Pace( lap );
 	}
 
 	public bool TryDash()

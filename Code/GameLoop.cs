@@ -27,6 +27,8 @@ public sealed class GameLoop : Component
 	public ArenaGeometry Geometry => Arena.Geometry;
 	public List<Enemy> Enemies { get; } = new();
 	public List<EnemyShot> Shots { get; } = new();
+	public List<BonePickup> Bones { get; } = new();
+	public List<GibChunk> Gibs { get; } = new();
 
 	public MenuPage MenuView { get; private set; } = MenuPage.Title;
 	public int ActiveSlot { get; private set; }
@@ -36,7 +38,8 @@ public sealed class GameLoop : Component
 	public bool Paused { get; private set; }
 	public bool IsFrozen => Paused || Phase != RunPhase.Playing;
 
-	public string Notice { get; private set; } = "AIM. FIRE. CATCH IT BACK.";
+	TextConfig T => GameSettings.Text;
+	public string Notice { get; private set; } = GameSettings.Text.Announce.AimFire;
 	public float NoticeAge => Time.Now - noticeAt;
 	public bool NoticeVisible => NoticeAge < NoticeDuration;
 
@@ -46,7 +49,7 @@ public sealed class GameLoop : Component
 	public int Stash => Inventory.IsValid() ? Inventory.Slots.Count : 0;
 	public int HeartMax => MaxHealth + (City.IsValid() ? City.Stats().BonusHealth : 0);
 	public int Health { get; private set; }
-	public float HurtAmount => Math.Clamp( 1f - (Time.Now - lastHurtAt) / 0.55f, 0f, 1f );
+	public float HurtAmount => Math.Clamp( 1f - (Time.Now - lastHurtAt) / GameSettings.Run.HurtFlash, 0f, 1f );
 	public bool Invulnerable => Time.Now < invulnUntil;
 	public int Kills { get; private set; }
 	public int Scrap { get; private set; }
@@ -74,7 +77,7 @@ public sealed class GameLoop : Component
 
 	public float Threat => Progression.Threat( Lap, LocationIndex );
 	public bool InBossFight { get; private set; }
-	public bool HasBossOffer => !InBossFight && Lap >= 5;
+	public bool HasBossOffer => !InBossFight && Lap >= GameSettings.Run.BossOfferLap;
 	public bool CanSkipLap
 	{
 		get
@@ -123,6 +126,8 @@ public sealed class GameLoop : Component
 	float invulnUntil;
 	float lastHurtAt = -99f;
 	float armorNoticeAt = -99f;
+	float boneSoundAt = -99f;
+	float scrapNoticeAt = -99f;
 	float pauseStartedAt;
 	float uiClickUntil;
 	bool pendingBoss;
@@ -134,12 +139,12 @@ public sealed class GameLoop : Component
 	{
 		var save = SlotInfo( index );
 		if ( save is null || !save.HasProgress )
-			return "EMPTY";
+			return T.Saves.Empty;
 
 		var line = Locations.LineBlurb( save.BestLine );
 		return line.Length > 0
-			? $"WH {save.Warehouse}  ·  BEST {save.BestExtract}  ·  {line}"
-			: $"WH {save.Warehouse}  ·  BEST {save.BestExtract}  ·  {save.BuildingCount} BUILDINGS";
+			? T.F( T.Saves.WithLine, save.Warehouse, save.BestExtract, line )
+			: T.F( T.Saves.WithBuildings, save.Warehouse, save.BestExtract, save.BuildingCount );
 	}
 
 	public bool HasActiveSave => SlotInfo( ActiveSlot ) is not null && SlotInfo( ActiveSlot ).HasProgress;
@@ -210,7 +215,7 @@ public sealed class GameLoop : Component
 		RefreshSaves();
 		MenuView = MenuPage.Title;
 		ArenaSounds.MenuOk();
-		Announce( $"SLOT {ActiveSlot + 1}" );
+		Announce( T.F( T.Announce.SlotPicked, ActiveSlot + 1 ) );
 	}
 
 	public void DeleteSave( int index )
@@ -236,7 +241,7 @@ public sealed class GameLoop : Component
 
 		RefreshSaves();
 		ArenaSounds.MenuBack();
-		Announce( $"SLOT {index + 1} DELETED" );
+		Announce( T.F( T.Announce.SlotDeleted, index + 1 ) );
 	}
 
 	void ApplySave( GameSave save )
@@ -469,6 +474,12 @@ public sealed class GameLoop : Component
 			if ( shot.IsValid() )
 				shot.ShiftTime( dt );
 		}
+
+		foreach ( var bone in Bones )
+		{
+			if ( bone.IsValid() )
+				bone.ShiftTime( dt );
+		}
 	}
 
 	public void Restart()
@@ -535,17 +546,37 @@ public sealed class GameLoop : Component
 		SpawnWave( 1 );
 		Mouse.CursorType = "crosshair";
 		ArenaSounds.Fight();
-		Announce( "ONE LAP. ONE ROUND. CASH OUT OR GO AGAIN." );
+		Announce( T.Announce.StartRun );
 	}
 
-	public void RegisterKill( EnemyKind kind )
+	public void RegisterKill( EnemyKind kind, Vector2 origin )
 	{
 		Kills++;
 		var gain = Progression.KillScrap( kind, Lap, LocationIndex );
 		if ( gain > 0 )
-			Scrap += gain;
+			BonePickup.Spill( this, origin, gain );
 
-		Announce( gain > 0 ? $"+{gain} SCRAP  ·  {Scrap}" : "TARGET DOWN" );
+		Announce( T.Announce.TargetDown );
+	}
+
+	public void CollectBone( int value, Vector3 world )
+	{
+		if ( value <= 0 )
+			return;
+
+		Scrap += value;
+		if ( Time.Now >= boneSoundAt )
+		{
+			boneSoundAt = Time.Now + 0.05f;
+			ArenaSounds.Pickup( world );
+		}
+
+		ImpactFlash.Spawn( Scene, world, BonePickup.Tint, 0.42f );
+		if ( Time.Now >= scrapNoticeAt )
+		{
+			scrapNoticeAt = Time.Now + 0.4f;
+			Announce( T.F( T.Announce.ScrapGain, value, Scrap ) );
+		}
 	}
 
 	public void CatchRound( RoundProjectile projectile )
@@ -565,7 +596,7 @@ public sealed class GameLoop : Component
 		}
 
 		if ( Inventory.Loadout.SnapPreview > 0 )
-			SnapUntil = Time.Now + 0.45f;
+			SnapUntil = Time.Now + GameSettings.Traits.Snap.Duration;
 
 		slot.ResetCombat();
 		slot.Status = RoundStatus.Chambered;
@@ -576,9 +607,11 @@ public sealed class GameLoop : Component
 		ImpactFlash.Spawn( Scene, world, slot.Tint, 1.4f );
 
 		if ( shielded )
-			Announce( $"ROUND {slot.Index + 1} CHAMBERED  ·  SHIELD" );
+			Announce( T.F( T.Announce.RoundChamberedShield, slot.Index + 1 ) );
 		else
-			Announce( chained > 0 ? $"ROUND {slot.Index + 1} CHAMBERED  +{chained}" : $"ROUND {slot.Index + 1} CHAMBERED" );
+			Announce( chained > 0
+				? T.F( T.Announce.RoundChamberedHits, slot.Index + 1, chained )
+				: T.F( T.Announce.RoundChambered, slot.Index + 1 ) );
 	}
 
 	public void RecoverDropped( RoundSlot slot, string reason )
@@ -592,7 +625,7 @@ public sealed class GameLoop : Component
 		Inventory.TrySelect( slot.Index );
 		ArenaSounds.Pickup( world );
 		ImpactFlash.Spawn( Scene, world, slot.Tint, 1.1f );
-		Announce( $"ROUND {slot.Index + 1} {reason}" );
+		Announce( T.F( T.Announce.RoundStatus, slot.Index + 1, reason ) );
 	}
 
 	public void LoseRound( RoundProjectile projectile )
@@ -617,7 +650,7 @@ public sealed class GameLoop : Component
 		Losses++;
 
 		ArenaSounds.Lose();
-		Announce( $"ROUND {slot.Index + 1} LOST" );
+		Announce( T.F( T.Announce.RoundLost, slot.Index + 1 ) );
 	}
 
 	protected override void OnStart()
@@ -778,7 +811,7 @@ public sealed class GameLoop : Component
 	{
 		var prev = Inventory.SelectedIndex;
 
-		for ( var i = 0; i < 9; i++ )
+		for ( var i = 0; i < Progression.MaxSlots; i++ )
 		{
 			if ( Input.Pressed( $"Slot{i + 1}" ) )
 				Inventory.TrySelect( i );
@@ -830,12 +863,12 @@ public sealed class GameLoop : Component
 	string ChamberDeny()
 	{
 		if ( Inventory.Slots.Any( s => s.Status == RoundStatus.Chambered ) )
-			return "SELECT A CHAMBERED ROUND";
+			return T.Announce.SelectChambered;
 
 		if ( Inventory.Slots.Any( s => s.Status == RoundStatus.InFlight ) )
-			return "ROUNDS STILL IN FLIGHT";
+			return T.Announce.StillInFlight;
 
-		return "ROUNDS LOST ON THE RING";
+		return T.Announce.LostOnRing;
 	}
 
 	void CheckSwipe()
@@ -876,7 +909,7 @@ public sealed class GameLoop : Component
 
 			ArenaSounds.Pickup( world );
 			ImpactFlash.Spawn( Scene, world, slot.Tint, 1.2f );
-			Announce( $"ROUND {slot.Index + 1} RECOVERED" );
+			Announce( T.F( T.Announce.RoundStatus, slot.Index + 1, T.Announce.Recovered ) );
 		}
 	}
 
@@ -919,17 +952,17 @@ public sealed class GameLoop : Component
 		{
 			BloodShields--;
 			lastHurtAt = Time.Now;
-			invulnUntil = Time.Now + 1.05f;
+			invulnUntil = Time.Now + GameSettings.Run.IFrames;
 			var blocked = Geometry.ToPlayWorld( Runner.Flat );
 			ArenaSounds.Armor( Runner.WorldPosition );
 			ImpactFlash.Spawn( Scene, blocked, new Color( 1f, 0.85f, 0.35f ), 2.4f );
-			Announce( BloodShields > 0 ? $"SHIELD  ·  {BloodShields} LEFT" : "SHIELD BROKE" );
+			Announce( BloodShields > 0 ? T.F( T.Announce.ShieldLeft, BloodShields ) : T.Announce.ShieldBroke );
 			return;
 		}
 
 		Health--;
 		lastHurtAt = Time.Now;
-		invulnUntil = Time.Now + 1.05f;
+		invulnUntil = Time.Now + GameSettings.Run.IFrames;
 
 		var world = Geometry.ToPlayWorld( Runner.Flat );
 		ImpactFlash.Spawn( Scene, world, new Color( 1f, 0.12f, 0.08f ), 3.4f );
@@ -938,15 +971,16 @@ public sealed class GameLoop : Component
 		if ( Health > 0 )
 		{
 			ArenaSounds.Pain( Runner.WorldPosition );
-			Announce( $"-1  ·  {Health} LEFT" );
+			Announce( T.F( T.Announce.HealthLeft, Health ) );
 			return;
 		}
 
 		ArenaSounds.Death( Runner.WorldPosition );
+		VacuumBones();
 		InBossFight = false;
 		Phase = RunPhase.Dead;
 		BurnedRounds = Stash;
-		Announce( "RUN OVER" );
+		Announce( T.Announce.RunOver );
 	}
 
 	public void TryHurt()
@@ -963,7 +997,7 @@ public sealed class GameLoop : Component
 			return;
 
 		armorNoticeAt = Time.Now + 0.85f;
-		Announce( Location == RunLocation.Glass ? "ARMOR  ·  BREAK GLASS OR HIT THE SIDE" : "ARMOR  ·  RICOCHET FIRST" );
+		Announce( T.PlaceArmor( Location ) );
 	}
 
 	public void BeatBoss()
@@ -974,7 +1008,7 @@ public sealed class GameLoop : Component
 		bossWon = true;
 		InBossFight = false;
 		ArenaSounds.Pickup();
-		Announce( HasNextRing ? "RING CLEAR" : "NO MORE ROUNDS  ·  ×2" );
+		Announce( HasNextRing ? T.Announce.RingClear : T.Announce.FinalClear );
 	}
 
 	void FinishBossWin()
@@ -994,18 +1028,18 @@ public sealed class GameLoop : Component
 		{
 			Phase = RunPhase.DecideRing;
 			ArenaSounds.Tele();
-			Announce( $"RING CLEAR  ·  {NextRingCode}  ·  {NextRingRule}" );
+			Announce( T.F( T.Announce.RingClearNext, NextRingCode, NextRingRule ) );
 			Autosave();
 			return;
 		}
 
-		var doubled = Math.Max( 1, Stash ) * 2;
+		var doubled = Math.Max( 1, Stash ) * GameSettings.Run.FinalStashMul;
 		ExtractedRounds = doubled;
 		if ( ExtractedRounds > BestExtract )
 			BestExtract = ExtractedRounds;
 
 		EnterCity( true, doubled );
-		Announce( $"NO MORE ROUNDS  ·  ×2  ·  +{doubled}" );
+		Announce( T.F( T.Announce.FinalBank, doubled ) );
 	}
 
 	void CheckLap()
@@ -1016,7 +1050,7 @@ public sealed class GameLoop : Component
 		if ( CanSkipLap && !skipHinted )
 		{
 			skipHinted = true;
-			Announce( "ARENA CLEAR  ·  E SKIP LAP" );
+			Announce( T.Announce.ArenaSkip );
 		}
 
 		if ( Runner.IsValid() && Runner.Lap > Lap )
@@ -1034,10 +1068,11 @@ public sealed class GameLoop : Component
 
 	void OpenLapClear()
 	{
+		VacuumBones();
 		skipHinted = false;
 		Phase = RunPhase.DecideLap;
 		ArenaSounds.Tele();
-		Announce( $"LAP {Lap} CLEAR" );
+		Announce( T.F( T.Announce.LapClear, Lap ) );
 	}
 
 	public void ChooseExtract()
@@ -1142,7 +1177,7 @@ public sealed class GameLoop : Component
 			Runner.GameObject.Enabled = false;
 		ArenaSounds.Tele();
 		Mouse.CursorType = "crosshair";
-		Announce( deposit ? $"CITY  ·  +{ExtractedRounds} WAREHOUSE" : "CITY" );
+		Announce( deposit ? T.F( T.Announce.CityDeposit, ExtractedRounds ) : T.Announce.City );
 		Autosave();
 	}
 
@@ -1155,8 +1190,8 @@ public sealed class GameLoop : Component
 		BeginTraitPick();
 		ArenaSounds.Pickup();
 		Announce( added > 0
-			? $"+{added} ROUND  ·  STASH {Stash}  ·  ×{Threat:0.00}"
-			: $"STASH MAX  ·  ×{Threat:0.00}" );
+			? T.F( T.Announce.ContinueRounds, added, Stash, Threat )
+			: T.F( T.Announce.StashMax, Threat ) );
 	}
 
 	void ContinueBoss()
@@ -1167,7 +1202,7 @@ public sealed class GameLoop : Component
 		var added = GrantContinueRounds();
 		BeginTraitPick();
 		ArenaSounds.Warn();
-		Announce( $"{Locations.FightCall( Location )}  ·  +{added}  ·  STASH {Stash}" );
+		Announce( T.F( T.Announce.BossContinue, Locations.FightCall( Location ), added, Stash ) );
 	}
 
 	int GrantContinueRounds()
@@ -1199,7 +1234,7 @@ public sealed class GameLoop : Component
 		foreach ( var trait in RoundTraits.All )
 		{
 			var level = loadout.TraitLevel( trait );
-			if ( level >= 3 )
+			if ( level >= GameSettings.Traits.MaxLevel )
 				continue;
 
 			if ( level > 0 )
@@ -1208,12 +1243,12 @@ public sealed class GameLoop : Component
 				fresh.Add( trait );
 		}
 
-		var count = City.IsValid() ? City.Stats().OfferCount : 2;
-		count = Math.Clamp( count, 2, 3 );
+		var count = City.IsValid() ? City.Stats().OfferCount : GameSettings.City.MinOffers;
+		count = Math.Clamp( count, GameSettings.City.MinOffers, GameSettings.City.MaxOffers );
 
 		OfferA = TakeTrait( fresh, owned, loadout, Scrap );
 		OfferB = TakeTrait( fresh, owned, loadout, 0, OfferA );
-		HasThirdOffer = count >= 3;
+		HasThirdOffer = count >= GameSettings.City.MaxOffers;
 		if ( HasThirdOffer )
 			OfferC = TakeTrait( fresh, owned, loadout, 0, OfferA, OfferB );
 
@@ -1312,7 +1347,7 @@ public sealed class GameLoop : Component
 		if ( Scrap < price )
 		{
 			ArenaSounds.Deny();
-			Announce( $"NEED {price - Scrap} SCRAP" );
+			Announce( T.F( T.Announce.NeedScrap, price - Scrap ) );
 			return;
 		}
 
@@ -1320,7 +1355,7 @@ public sealed class GameLoop : Component
 		Inventory.Loadout.Install( trait );
 		MarkBought( trait );
 		ArenaSounds.Pickup();
-		Announce( $"{RoundTraits.Title( trait )} LV{Inventory.Loadout.TraitLevel( trait )}  ·  {Scrap} SCRAP" );
+		Announce( T.F( T.Announce.TraitBought, RoundTraits.Title( trait ), Inventory.Loadout.TraitLevel( trait ), Scrap ) );
 
 		if ( OpenOfferCount() == 0 )
 			LeaveShop();
@@ -1332,7 +1367,7 @@ public sealed class GameLoop : Component
 		{
 			ArenaSounds.Deny();
 			if ( OpenOfferCount() >= 2 )
-				Announce( $"NEED {ShopBuyAllCost - Scrap} SCRAP" );
+				Announce( T.F( T.Announce.NeedScrap, ShopBuyAllCost - Scrap ) );
 			return;
 		}
 
@@ -1372,7 +1407,7 @@ public sealed class GameLoop : Component
 
 		Announce( fight
 			? Locations.FightHint( Location )
-			: $"ARMED  ·  {Scrap} SCRAP" );
+			: T.F( T.Announce.Armed, Scrap ) );
 	}
 
 	bool MatchesOpenOffer( RoundTrait trait )
@@ -1463,10 +1498,11 @@ public sealed class GameLoop : Component
 
 		RollArena( lap );
 
-		var inner = Geometry.CoreRadius + 190f;
-		var hunt = MathX.Lerp( inner, Geometry.TrackInner - 110f, 0.32f );
-		var mid = MathX.Lerp( inner, Geometry.TrackInner - 140f, 0.45f );
-		var outer = Geometry.TrackInner - 90f;
+		var wave = GameSettings.Enemies.Wave;
+		var inner = Geometry.CoreRadius + wave.InnerPad;
+		var hunt = MathX.Lerp( inner, Geometry.TrackInner - wave.HuntOuterPad, wave.HuntMix );
+		var mid = MathX.Lerp( inner, Geometry.TrackInner - wave.MidOuterPad, wave.MidMix );
+		var outer = Geometry.TrackInner - wave.OuterPad;
 		var offset = Runner.Angle + MathF.PI;
 
 		void Add( EnemyKind kind, float angle, float radius, int hp )
@@ -1536,7 +1572,7 @@ public sealed class GameLoop : Component
 
 		var extra = Progression.ExtraBodies( lap, LocationIndex );
 		for ( var i = 0; i < extra; i++ )
-			Add( EnemyKind.Chaser, offset + 0.85f * ( i + 3 ), hunt, 1 );
+			Add( EnemyKind.Chaser, offset + GameSettings.Enemies.Wave.ExtraAngle * ( i + 3 ), hunt, 1 );
 	}
 
 	void SpawnGlassWave( int lap, float offset, float hunt, float mid, float inner, float outer, Action<EnemyKind, float, float, int> add )
@@ -1577,7 +1613,7 @@ public sealed class GameLoop : Component
 
 		var extra = Progression.ExtraBodies( lap, LocationIndex );
 		for ( var i = 0; i < extra; i++ )
-			add( EnemyKind.Splinter, offset + 0.85f * (i + 3), hunt, 1 );
+			add( EnemyKind.Splinter, offset + GameSettings.Enemies.Wave.ExtraAngle * (i + 3), hunt, 1 );
 	}
 
 	void EnterNextRing()
@@ -1587,7 +1623,7 @@ public sealed class GameLoop : Component
 
 		Inventory?.ChamberAll();
 		if ( Health < HeartMax )
-			Health++;
+			Health += GameSettings.Run.RingHeal;
 
 		Location = Locations.Next( Location );
 		Lap = 1;
@@ -1610,7 +1646,7 @@ public sealed class GameLoop : Component
 		Phase = RunPhase.Playing;
 		Mouse.CursorType = "crosshair";
 		ArenaSounds.Tele();
-		Announce( $"{LocationCode}  ·  {LocationRule}" );
+		Announce( T.F( T.Announce.PlaceRule, LocationCode, LocationRule ) );
 	}
 
 	public void RerollBoard()
@@ -1646,6 +1682,8 @@ public sealed class GameLoop : Component
 		}
 
 		ClearEnemies();
+		VacuumBones();
+		ClearGibs();
 
 		foreach ( var shot in Shots.ToArray() )
 		{
@@ -1654,6 +1692,31 @@ public sealed class GameLoop : Component
 		}
 
 		Shots.Clear();
+	}
+
+	void VacuumBones()
+	{
+		var gained = 0;
+		foreach ( var bone in Bones.ToArray() )
+		{
+			if ( bone.IsValid() )
+				gained += bone.Harvest();
+		}
+
+		Bones.Clear();
+		if ( gained > 0 )
+			Scrap += gained;
+	}
+
+	void ClearGibs()
+	{
+		foreach ( var gib in Gibs.ToArray() )
+		{
+			if ( gib.IsValid() )
+				gib.GameObject.Destroy();
+		}
+
+		Gibs.Clear();
 	}
 
 	void ClearEnemies()

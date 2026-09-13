@@ -1,0 +1,9 @@
+{
+  "BossOfferLap": 5,
+  "FinalStashMul": 2,
+  "RingHeal": 1,
+  "IFrames": 1.05,
+  "HurtFlash": 0.55,
+  "__references": [],
+  "__version": 0
+}

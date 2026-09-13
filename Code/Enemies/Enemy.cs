@@ -33,14 +33,24 @@ public sealed class Enemy : Component
 	static readonly Color LensTint = new Color( 0.55f, 0.85f, 0.95f );
 	static readonly Color GlassCrackPlate = new Color( 0.94f, 0.98f, 1f );
 	static readonly Color HurtTint = new Color( 1f, 0.9f, 0.6f );
+	static readonly Color BarBack = new Color( 0.07f, 0.055f, 0.042f );
+	static readonly Color BarHigh = new Color( 0.36f, 0.58f, 0.22f );
+	static readonly Color BarMid = new Color( 0.86f, 0.64f, 0.2f );
+	static readonly Color BarLow = new Color( 0.72f, 0.17f, 0.11f );
+
+	const float BarInset = 3f;
+	const int PipLimit = 10;
 
 	GameObject body;
 	GameObject shieldPlate;
 	PolyLine outline;
 	PolyLine hpBack;
 	PolyLine hpFill;
+	readonly List<PolyLine> hpPips = new();
 	SkinnedModelRenderer hobo;
 	EnemyKind builtKind;
+	float headTop;
+	float barWidth;
 	Vector2 moveVelocity;
 	float hitAt = -99f;
 	readonly List<(ModelRenderer Renderer, Color Tint)> dressed = new();
@@ -53,6 +63,7 @@ public sealed class Enemy : Component
 	int plateHits;
 	Vector2 shootFlank;
 	float flankUntil;
+	Vector2 lastImpulse = Vector2.Right;
 	readonly EnemyDrive drive = new();
 
 	bool Melee => Kind is EnemyKind.Chaser or EnemyKind.Splinter or EnemyKind.Glimmer
@@ -94,11 +105,8 @@ public sealed class Enemy : Component
 		Radius = kind switch
 		{
 			EnemyKind.Core => Arena.IsValid() ? Arena.Geometry.CoreRadius : 230f,
-			EnemyKind.Lens => 88f,
-			EnemyKind.Shield or EnemyKind.Shardguard => 72f,
-			EnemyKind.Glimmer => 56f,
-			EnemyKind.Splinter => 60f,
-			_ => 64f
+			EnemyKind.Lens => GameSettings.Boss.LensRadius,
+			_ => GameSettings.Enemies.RadiusOf( kind )
 		};
 
 		if ( Arena.IsValid() && Kind != EnemyKind.Core && Kind != EnemyKind.Lens )
@@ -111,6 +119,7 @@ public sealed class Enemy : Component
 		var toPlayer = Loop.IsValid() && Loop.Runner.IsValid() ? Loop.Runner.Flat - Flat : -Flat;
 		drive.Reset( toPlayer );
 		moveVelocity = Vector2.Zero;
+		lastImpulse = Vector2.Right;
 		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
 		RebuildVisuals();
 
@@ -140,7 +149,7 @@ public sealed class Enemy : Component
 			return false;
 
 		var facing = ShieldFacing;
-		if ( ArenaGeometry.Dot( incoming, facing ) >= -0.22f )
+		if ( ArenaGeometry.Dot( incoming, facing ) >= GameSettings.Enemies.ShieldBlockDot )
 			return false;
 
 		if ( Kind != EnemyKind.Shardguard )
@@ -164,7 +173,7 @@ public sealed class Enemy : Component
 
 		var fromCenter = source is not null && source.Flat.Length > 1f ? source.Flat : incoming;
 		var radial = fromCenter.Length > 1f ? fromCenter.Normal : Vector2.Right;
-		return MathF.Abs( ArenaGeometry.Dot( incoming.Normal, radial ) ) > 0.55f;
+		return MathF.Abs( ArenaGeometry.Dot( incoming.Normal, radial ) ) > GameSettings.Boss.LensBlock;
 	}
 
 	public void Mark( float duration )
@@ -183,8 +192,8 @@ public sealed class Enemy : Component
 		var pos = Flat;
 		Arena.Geometry.MoveBody( ref pos, delta, Radius, true );
 		var length = pos.Length;
-		var inner = Arena.Geometry.CoreRadius + 160f;
-		var track = Arena.Geometry.TrackRadius - 28f;
+		var inner = Arena.Geometry.CoreRadius + GameSettings.Enemies.ShoveInnerPad;
+		var track = Arena.Geometry.TrackRadius - GameSettings.Enemies.TrackPad;
 		if ( length < 1f )
 			pos = Vector2.Right * inner;
 		else if ( length < inner )
@@ -215,6 +224,19 @@ public sealed class Enemy : Component
 		Health -= amount;
 		hitAt = Time.Now;
 
+		if ( source is not null )
+		{
+			var away = Flat - source.Flat;
+			if ( away.Length > 1f )
+				lastImpulse = away.Normal;
+		}
+		else if ( Loop.IsValid() && Loop.Runner.IsValid() )
+		{
+			var away = Flat - Loop.Runner.Flat;
+			if ( away.Length > 1f )
+				lastImpulse = away.Normal;
+		}
+
 		if ( source is not null && source.Flight.FreezeDuration > 0f )
 		{
 			freezeUntil = MathF.Max( freezeUntil, Time.Now + source.Flight.FreezeDuration );
@@ -236,12 +258,13 @@ public sealed class Enemy : Component
 	{
 		Alive = false;
 
+		GibChunk.Burst( Loop, Scene, hobo, WorldPosition, lastImpulse, LiveTint, Radius, shieldPlate );
+
 		if ( body.IsValid() )
 			body.Enabled = false;
 
 		outline?.Clear();
-		hpBack?.Clear();
-		hpFill?.Clear();
+		ClearBar();
 		shieldPlate?.Destroy();
 
 		var world = Arena.Geometry.ToPlayWorld( Flat );
@@ -263,7 +286,7 @@ public sealed class Enemy : Component
 				Loop.Arena.DropShard( Flat, along );
 			}
 
-			Loop.RegisterKill( Kind );
+			Loop.RegisterKill( Kind, Flat );
 		}
 	}
 
@@ -386,8 +409,9 @@ public sealed class Enemy : Component
 
 		var frozen = Time.Now < freezeUntil;
 		var scale = frozen ? freezeScale : 1f;
-		var inner = Arena.Geometry.CoreRadius + 160f;
-		var track = Arena.Geometry.TrackRadius - 28f;
+		var cfg = GameSettings.Enemies;
+		var inner = Arena.Geometry.CoreRadius + cfg.InnerPad;
+		var track = Arena.Geometry.TrackRadius - cfg.TrackPad;
 
 		switch ( Kind )
 		{
@@ -397,20 +421,23 @@ public sealed class Enemy : Component
 			case EnemyKind.Chaser:
 			case EnemyKind.Splinter:
 			{
-				var lead = Loop.Runner.Tangent * (160f + 50f * Pressure);
-				Seek( Loop.Runner.Flat + lead, 185f * Pressure * scale, inner, track );
+				var stats = cfg.Of( Kind );
+				var lead = Loop.Runner.Tangent * (stats.Lead + stats.LeadPressure * Pressure);
+				Seek( Loop.Runner.Flat + lead, stats.SeekSpeed * Pressure * scale, inner, track );
 				break;
 			}
 			case EnemyKind.Glimmer:
 			{
-				var lead = Loop.Runner.Tangent * (120f + 40f * Pressure);
-				Seek( Loop.Runner.Flat + lead, 155f * Pressure * scale, inner, track );
+				var stats = cfg.Of( Kind );
+				var lead = Loop.Runner.Tangent * (stats.Lead + stats.LeadPressure * Pressure);
+				Seek( Loop.Runner.Flat + lead, stats.SeekSpeed * Pressure * scale, inner, track );
 				break;
 			}
 			case EnemyKind.Shield:
 			case EnemyKind.Shardguard:
 			{
-				Seek( Loop.Runner.Flat, 170f * Pressure * scale, inner, Arena.Geometry.TrackRadius + 8f );
+				var stats = cfg.Of( Kind );
+				Seek( Loop.Runner.Flat, stats.SeekSpeed * Pressure * scale, inner, Arena.Geometry.TrackRadius + cfg.ShieldTrackExtra );
 				break;
 			}
 			case EnemyKind.Shooter:
@@ -430,17 +457,18 @@ public sealed class Enemy : Component
 	void MoveShooter( float scale, float inner )
 	{
 		var geo = Arena.Geometry;
-		var speed = 175f * MathF.Max( 0.8f, Pressure ) * scale;
-		var band = MathX.Lerp( inner + 30f, geo.TrackInner - 140f, 0.42f );
+		var gun = GameSettings.Enemies.Shooter;
+		var speed = gun.Speed * MathF.Max( gun.SpeedPressureFloor, Pressure ) * scale;
+		var band = MathX.Lerp( inner + gun.BandInnerPad, geo.TrackInner - gun.BandOuterPad, gun.BandMix );
 
 		if ( TrackFlank( geo, Loop.Runner.Flat ) )
 		{
-			Seek( shootFlank, speed, geo.CoreRadius + 90f, geo.TrackInner - 30f );
+			Seek( shootFlank, speed, geo.CoreRadius + gun.FlankInnerPad, geo.TrackInner - gun.FlankOuterPad );
 			return;
 		}
 
-		var ahead = ArenaGeometry.ToAngle( Flat ) - 0.55f * Pressure * scale;
-		Seek( ArenaGeometry.FromAngle( ahead ) * band, speed, inner, geo.TrackInner - 40f );
+		var ahead = ArenaGeometry.ToAngle( Flat ) - gun.Orbit * Pressure * scale;
+		Seek( ArenaGeometry.FromAngle( ahead ) * band, speed, inner, geo.TrackInner - gun.OrbitOuterPad );
 	}
 
 	bool TrackFlank( ArenaGeometry geo, Vector2 player )
@@ -466,7 +494,7 @@ public sealed class Enemy : Component
 		else
 			shootFlank = OpenEnd( geo, player, a, b );
 
-		flankUntil = Time.Now + 0.9f;
+		flankUntil = Time.Now + GameSettings.Enemies.Shooter.FlankHold;
 		return true;
 	}
 
@@ -488,8 +516,9 @@ public sealed class Enemy : Component
 		if ( Kind != EnemyKind.Shooter || !Loop.IsValid() || !Loop.Runner.IsValid() )
 			return;
 
-		var interval = MathF.Max( 0.8f, 1.65f / Pressure );
-		var telegraph = MathF.Max( 0.14f, 0.28f / MathF.Sqrt( Pressure ) );
+		var gun = GameSettings.Enemies.Shooter;
+		var interval = MathF.Max( gun.IntervalFloor, gun.Interval / Pressure );
+		var telegraph = MathF.Max( gun.TelegraphFloor, gun.Telegraph / MathF.Sqrt( Pressure ) );
 		var clear = !Arena.Geometry.SightBlocked( Flat, LeadPoint(), out _ );
 
 		if ( Time.Now < telegraphUntil )
@@ -514,7 +543,7 @@ public sealed class Enemy : Component
 			}
 
 			shotAt = Time.Now + interval;
-			EnemyShot.Fire( Loop, Flat, LeadDirection(), 560f * Pressure );
+			EnemyShot.Fire( Loop, Flat, LeadDirection(), GameSettings.Enemies.Shooter.ShotSpeed * Pressure );
 		}
 	}
 
@@ -526,7 +555,7 @@ public sealed class Enemy : Component
 		if ( Time.Now < freezeUntil || Time.Now < attackUntil || Time.Now < attackReadyAt )
 			return;
 
-		var reach = Radius + Loop.Runner.PlayerRadius + 36f;
+		var reach = Radius + Loop.Runner.PlayerRadius + GameSettings.Enemies.MeleeReachPad;
 		if ( (Loop.Runner.Flat - Flat).Length > reach )
 			return;
 
@@ -538,8 +567,9 @@ public sealed class Enemy : Component
 	{
 		var runner = Loop.Runner;
 		var to = runner.Flat - Flat;
-		var dist = MathF.Max( 80f, to.Length );
-		var travel = dist / (560f * Pressure);
+		var gun = GameSettings.Enemies.Shooter;
+		var dist = MathF.Max( gun.LeadMinDistance, to.Length );
+		var travel = dist / (gun.ShotSpeed * Pressure);
 		var pace = runner.Speed;
 		if ( runner.Slowing )
 			pace *= runner.SlowSpeedScale;
@@ -575,8 +605,7 @@ public sealed class Enemy : Component
 		if ( cloaked )
 		{
 			outline?.Clear();
-			hpBack?.Clear();
-			hpFill?.Clear();
+			ClearBar();
 			if ( shieldPlate.IsValid() )
 				shieldPlate.Enabled = false;
 			return;
@@ -633,6 +662,10 @@ public sealed class Enemy : Component
 		outline?.GameObject?.Destroy();
 		hpBack?.GameObject?.Destroy();
 		hpFill?.GameObject?.Destroy();
+		foreach ( var pip in hpPips )
+			pip?.GameObject?.Destroy();
+
+		hpPips.Clear();
 		outline = null;
 		hpBack = null;
 		hpFill = null;
@@ -651,6 +684,7 @@ public sealed class Enemy : Component
 				? TerryLook.CitizenHeight * 4.6f
 				: TerryLook.Height( false );
 		hobo = HoboLook.Attach( body, height );
+		headTop = HoboLook.TopOf( height );
 
 		if ( Kind == EnemyKind.Shield || Kind == EnemyKind.Shardguard )
 		{
@@ -671,9 +705,9 @@ public sealed class Enemy : Component
 		outline.TailTint = tint;
 		outline.Apply();
 
-		var bar = Kind == EnemyKind.Core || Kind == EnemyKind.Lens ? 16f : 9f;
-		hpBack = MakeLine( "Hp Back", bar, new Color( 0.07f, 0.09f, 0.11f ) );
-		hpFill = MakeLine( "Hp Fill", bar - 2f, tint );
+		barWidth = Locations.IsBoss( Kind ) ? 26f : 16f;
+		hpBack = MakeLine( "Hp Back", barWidth, BarBack );
+		hpFill = MakeLine( "Hp Fill", barWidth - 6f, tint );
 	}
 
 	static Rotation Ease( Rotation from, Rotation to, float rate )
@@ -695,6 +729,8 @@ public sealed class Enemy : Component
 		line.TailWidth = width;
 		line.HeadTint = tint;
 		line.TailTint = tint;
+		line.HardCaps = true;
+		line.Solid = true;
 		line.Apply();
 		return line;
 	}
@@ -709,27 +745,74 @@ public sealed class Enemy : Component
 		var camera = Scene.Camera;
 		var rot = camera.IsValid() ? camera.WorldRotation : Rotation.Identity;
 		var boss = Locations.IsBoss( Kind );
-		var head = TerryLook.Height( boss ) * HoboLook.Size + 24f;
-		var half = boss ? 110f : 48f;
+		var head = headTop + 24f;
+		var half = boss ? 130f : 64f;
 		var center = WorldPosition + Vector3.Up * head - rot.Forward * 28f;
 		var left = center - rot.Right * half;
 		var right = center + rot.Right * half;
 
-		hpBack.HeadTint = new Color( 0.07f, 0.09f, 0.11f );
-		hpBack.TailTint = hpBack.HeadTint;
+		hpBack.HeadTint = BarBack;
+		hpBack.TailTint = BarBack;
 		hpBack.Apply();
 		hpBack.SetPoints( new List<Vector3> { left, right } );
 
 		if ( Health <= 0 || ratio <= 0f )
 		{
 			hpFill.Clear();
+			PaintPips( rot, left, right, 0 );
 			return;
 		}
 
+		var front = rot.Forward * -14f;
+		var edge = rot.Right * BarInset;
+		var span = (half - BarInset) * 2f;
 		hpFill.HeadTint = tint;
 		hpFill.TailTint = tint;
 		hpFill.Apply();
-		hpFill.SetPoints( new List<Vector3> { left, right - rot.Right * (half * 2f * (1f - ratio)) } );
+		hpFill.SetPoints( new List<Vector3> { left + front + edge, left + front + edge + rot.Right * (span * ratio) } );
+
+		PaintPips( rot, left + edge, right - edge, MaxHealth );
+	}
+
+	void PaintPips( Rotation rot, Vector3 left, Vector3 right, int steps )
+	{
+		var want = steps > 1 && steps <= PipLimit ? steps - 1 : 0;
+
+		while ( hpPips.Count < want )
+			hpPips.Add( MakeLine( "Hp Pip", MathF.Max( 2f, barWidth * 0.18f ), BarBack ) );
+
+		if ( hpPips.Count == 0 )
+			return;
+
+		var front = rot.Forward * -22f;
+		var up = rot.Up * ((barWidth - BarInset * 2f) * 0.5f);
+
+		for ( var i = 0; i < hpPips.Count; i++ )
+		{
+			var pip = hpPips[i];
+			if ( !pip.IsValid() )
+				continue;
+
+			if ( i >= want )
+			{
+				pip.Clear();
+				continue;
+			}
+
+			var at = Vector3.Lerp( left, right, (i + 1f) / steps ) + front;
+			pip.HeadTint = BarBack;
+			pip.TailTint = BarBack;
+			pip.Apply();
+			pip.SetPoints( new List<Vector3> { at + up, at - up } );
+		}
+	}
+
+	void ClearBar()
+	{
+		hpBack?.Clear();
+		hpFill?.Clear();
+		foreach ( var pip in hpPips )
+			pip?.Clear();
 	}
 
 	bool RoundNear()
@@ -742,7 +825,7 @@ public sealed class Enemy : Component
 			if ( slot.Status != RoundStatus.InFlight || !slot.Flying.IsValid() )
 				continue;
 
-			if ( (slot.Flying.Flat - Flat).Length <= 160f )
+			if ( (slot.Flying.Flat - Flat).Length <= GameSettings.Enemies.GlimmerReveal )
 				return true;
 		}
 
@@ -751,10 +834,10 @@ public sealed class Enemy : Component
 
 	static Color HealthTint( float ratio )
 	{
-		if ( ratio > 0.55f )
-			return Color.Lerp( new Color( 1f, 0.72f, 0.22f ), new Color( 0.35f, 0.9f, 0.45f ), (ratio - 0.55f) / 0.45f );
+		if ( ratio > GameSettings.Boss.Phase2Health )
+			return BarHigh;
 
-		return Color.Lerp( new Color( 0.95f, 0.28f, 0.22f ), new Color( 1f, 0.72f, 0.22f ), ratio / 0.55f );
+		return ratio > GameSettings.Boss.Phase3Health ? BarMid : BarLow;
 	}
 
 	List<Vector3> BuildCircle()

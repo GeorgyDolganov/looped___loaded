@@ -25,12 +25,7 @@ public sealed class ArenaBoss : Component
 			if ( body is null || body.MaxHealth <= 0 )
 				return 1;
 
-			var part = body.Health / (float)body.MaxHealth;
-			if ( part > 0.66f )
-				return 1;
-			if ( part > 0.33f )
-				return 2;
-			return 3;
+			return GameSettings.Boss.PhaseOf( body.Health / (float)body.MaxHealth );
 		}
 	}
 
@@ -38,8 +33,8 @@ public sealed class ArenaBoss : Component
 	{
 		body = enemy;
 		loop = enemy.Loop;
-		shotAt = Time.Now + 0.9f;
-		pulseAt = Time.Now + 2.4f;
+		shotAt = Time.Now + GameSettings.Boss.Core.FirstShot;
+		pulseAt = Time.Now + GameSettings.Boss.Core.FirstPulse;
 		pulseRadius = -1f;
 		spin = 0f;
 		summoned = false;
@@ -77,14 +72,14 @@ public sealed class ArenaBoss : Component
 		if ( phase != lastPhase )
 		{
 			lastPhase = phase;
-			loop.Announce( phase == 3 ? "CORE PHASE 3" : "CORE PHASE 2" );
+			loop.Announce( GameSettings.Text.F( GameSettings.Text.Announce.CorePhase, phase ) );
 			ArenaSounds.Warn();
 			ImpactFlash.Spawn( Scene, Vector3.Up * 80f, CoreTint, 3.2f );
 		}
 
 		var frozen = body.Frozen;
 		var scale = frozen ? body.SlowScale : 1f;
-		spin += (0.22f + phase * 0.12f) * scale * Time.Delta;
+		spin += (GameSettings.Boss.Core.Spin + phase * GameSettings.Boss.Core.SpinPerPhase) * scale * Time.Delta;
 
 		SyncSpokes( phase );
 		ThinkShoot( phase, scale );
@@ -109,7 +104,7 @@ public sealed class ArenaBoss : Component
 
 	void SyncSpokes( int phase )
 	{
-		var count = phase >= 3 ? 4 : phase >= 2 ? 2 : 0;
+		var count = phase >= 3 ? GameSettings.Boss.Core.SpokesPhase3 : phase >= 2 ? GameSettings.Boss.Core.SpokesPhase2 : GameSettings.Boss.Core.SpokesPhase1;
 		var geo = loop.Geometry;
 
 		while ( spokes.Count > count )
@@ -139,8 +134,8 @@ public sealed class ArenaBoss : Component
 			return;
 		}
 
-		var inner = geo.CoreRadius + 40f;
-		var outer = inner + 280f;
+		var inner = geo.CoreRadius + GameSettings.Boss.Core.SpokeInnerPad;
+		var outer = inner + GameSettings.Boss.Core.SpokeLength;
 
 		for ( var i = 0; i < count; i++ )
 		{
@@ -167,26 +162,27 @@ public sealed class ArenaBoss : Component
 
 	void ThinkShoot( int phase, float scale )
 	{
-		if ( Time.Now < shotAt || scale < 0.2f )
+		if ( Time.Now < shotAt || scale < GameSettings.Boss.Core.FreezeShotLock )
 			return;
 
 		var threat = loop.Threat;
-		var interval = MathF.Max( 0.55f, (phase == 1 ? 2.1f : phase == 2 ? 1.55f : 1.15f) / MathF.Sqrt( threat ) );
+		var core = GameSettings.Boss.Core;
+		var interval = MathF.Max( core.ShotFloor, (phase == 1 ? core.ShotPhase1 : phase == 2 ? core.ShotPhase2 : core.ShotPhase3) / MathF.Sqrt( threat ) );
 		shotAt = Time.Now + interval;
 
-		var origin = ArenaGeometry.FromAngle( spin ) * 40f;
+		var origin = ArenaGeometry.FromAngle( spin ) * core.AimedOrigin;
 		var aimed = Lead();
-		var aimedSpeed = 520f * threat;
+		var aimedSpeed = core.AimedSpeed * threat;
 		EnemyShot.Fire( loop, origin, aimed, aimedSpeed );
 
 		if ( phase < 2 )
 			return;
 
-		var burst = phase >= 3 ? 8 : 5;
+		var burst = phase >= 3 ? core.BurstPhase3 : core.BurstPhase2;
 		for ( var i = 0; i < burst; i++ )
 		{
 			var angle = spin + MathF.Tau * i / burst;
-			EnemyShot.Fire( loop, ArenaGeometry.FromAngle( angle ) * 50f, ArenaGeometry.FromAngle( angle ), 480f * threat );
+			EnemyShot.Fire( loop, ArenaGeometry.FromAngle( angle ) * core.BurstOrigin, ArenaGeometry.FromAngle( angle ), core.BurstSpeed * threat );
 		}
 
 		if ( phase >= 3 && !summoned )
@@ -211,16 +207,16 @@ public sealed class ArenaBoss : Component
 			return;
 		}
 
-		pulseRadius += 620f * scale * Time.Delta;
-		var reach = loop.Runner.PlayerRadius + 22f;
+		pulseRadius += GameSettings.Boss.Core.PulseSpeed * scale * Time.Delta;
+		var reach = loop.Runner.PlayerRadius + GameSettings.Boss.Core.PulseReachPad;
 
 		if ( MathF.Abs( pulseRadius - loop.Runner.Radius ) <= reach )
 			loop.TryHurt();
 
-		if ( pulseRadius >= loop.Geometry.TrackOuter + 40f )
+		if ( pulseRadius >= loop.Geometry.TrackOuter + GameSettings.Boss.Core.PulseEndPad )
 		{
 			pulseRadius = -1f;
-			pulseAt = Time.Now + (phase >= 3 ? 2.6f : 3.4f);
+			pulseAt = Time.Now + (phase >= 3 ? GameSettings.Boss.Core.PulsePhase3 : GameSettings.Boss.Core.PulsePhase2);
 		}
 	}
 
@@ -254,7 +250,7 @@ public sealed class ArenaBoss : Component
 		var runner = loop.Runner;
 		var origin = Vector2.Zero;
 		var to = runner.Flat - origin;
-		var speed = 520f * loop.Threat;
+		var speed = GameSettings.Boss.Core.AimedSpeed * loop.Threat;
 		var travel = to.Length / speed;
 		var pace = runner.Speed;
 		if ( runner.Slowing )
@@ -272,7 +268,7 @@ public sealed class ArenaBoss : Component
 		var enemy = go.AddComponent<Enemy>();
 		enemy.Arena = loop.Arena;
 		enemy.Loop = loop;
-		enemy.Setup( EnemyKind.Shield, ArenaGeometry.FromAngle( loop.Runner.Angle + MathF.PI ) * (loop.Geometry.CoreRadius + 220f), Progression.EnemyHealth( 2, loop.Lap, loop.LocationIndex ) );
+		enemy.Setup( EnemyKind.Shield, ArenaGeometry.FromAngle( loop.Runner.Angle + MathF.PI ) * (loop.Geometry.CoreRadius + GameSettings.Boss.Core.GuardPad), Progression.EnemyHealth( GameSettings.Boss.Core.GuardHealth, loop.Lap, loop.LocationIndex ) );
 		loop.Enemies.Add( enemy );
 	}
 }

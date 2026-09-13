@@ -1,0 +1,21 @@
+{
+  "ThreatRatio": 1.22,
+  "PowerRatio": 1.6,
+  "CostRatio": 2,
+  "TraitRatio": 1.4,
+  "PaceRatio": 1.035,
+  "PaceCap": 1.4,
+  "DashRatio": 1.16,
+  "DashScaleFloor": 0.42,
+  "RoundRatio": 1.25,
+  "MaxSlots": 9,
+  "BossBaseHealth": 12,
+  "ExtraBodiesOffset": 2,
+  "ExtraBodiesMax": 4,
+  "RoundsGrantedMin": 1,
+  "RoundsGrantedMax": 4,
+  "SlowDrainBase": 0.55,
+  "SlowDrainFloor": 0.22,
+  "__references": [],
+  "__version": 0
+}

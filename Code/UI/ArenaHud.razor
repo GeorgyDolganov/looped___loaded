@@ -12,7 +12,7 @@
 		{
 			<div class="hurt-veil" style="opacity: @HurtVeil"></div>
 			<div class="hurt-stamp">
-				<label>-1</label>
+				<label>@GameSettings.Text.Hud.HurtStamp</label>
 			</div>
 		}
 
@@ -36,7 +36,7 @@
 				<div class="mods">
 					@if ( EquippedTraits.Count == 0 )
 					{
-						<label>PLAIN</label>
+						<label>@GameSettings.Text.Hud.Plain</label>
 					}
 					else
 					{
@@ -50,18 +50,18 @@
 					}
 					@if ( Loop.BloodShields > 0 )
 					{
-						<label class="mod-extra">SH @Loop.BloodShields</label>
+						<label class="mod-extra">@GameSettings.Text.F(GameSettings.Text.Hud.Shield, Loop.BloodShields)</label>
 					}
 					<label class="mod-extra">×@ThreatText</label>
 				</div>
 			</div>
 
 			<div class="top-right">
-				<div class="stat scrap"><label class="key">SCRAP</label><label class="value">@Loop.Scrap</label></div>
-				<div class="stat"><label class="key">STASH</label><label class="value">@Loop.Stash</label></div>
-				<div class="stat"><label class="key">BEST</label><label class="value">@Loop.BestExtract</label></div>
-				<div class="stat"><label class="key">KILLS</label><label class="value">@Loop.Kills</label></div>
-				<div class="stat"><label class="key">CAUGHT</label><label class="value">@Loop.Catches</label></div>
+				<div class="stat scrap"><label class="key">@GameSettings.Text.Hud.Scrap</label><label class="value">@Loop.Scrap</label></div>
+				<div class="stat"><label class="key">@GameSettings.Text.Hud.Stash</label><label class="value">@Loop.Stash</label></div>
+				<div class="stat"><label class="key">@GameSettings.Text.Hud.Best</label><label class="value">@Loop.BestExtract</label></div>
+				<div class="stat"><label class="key">@GameSettings.Text.Hud.Kills</label><label class="value">@Loop.Kills</label></div>
+				<div class="stat"><label class="key">@GameSettings.Text.Hud.Caught</label><label class="value">@Loop.Catches</label></div>
 			</div>
 
 			<div class="bottom">
@@ -77,7 +77,7 @@
 
 				<div class="meters">
 					<div class="dash">
-						<label class="key">DASH</label>
+						<label class="key">@GameSettings.Text.Hud.Dash</label>
 						<div class="meter">
 							<div class="fill dash @(DashReady ? "ready" : "")" style="width: @(DashPercent)%"></div>
 						</div>
@@ -85,7 +85,7 @@
 					@if ( SlowUnlocked )
 					{
 						<div class="dash">
-							<label class="key">SLOW</label>
+							<label class="key">@GameSettings.Text.Hud.Slow</label>
 							<div class="meter">
 								<div class="fill slow @(Slowing ? "on" : "")" style="width: @(SlowPercent)%"></div>
 							</div>
@@ -100,8 +100,8 @@
 			<div class="city">
 				<div class="top-left">
 					<div class="lap-chip">
-						<label class="key">@Loop.City.Mode</label>
-						<label class="value">WH @Loop.City.Warehouse</label>
+						<label class="key">@Loop.City.ModeLabel</label>
+						<label class="value">@GameSettings.Text.F(GameSettings.Text.City.WarehouseHud, Loop.City.Warehouse)</label>
 					</div>
 					<label class="mods">@Loop.City.HoverText()</label>
 					<label class="clock">@CityBonuses</label>
@@ -119,7 +119,7 @@
 								<label class="title">@Buildings.Title(Loop.City.Selected)</label>
 								<label class="payoff">@Buildings.Promise(Loop.City.Selected)</label>
 								<label class="blurb">@Buildings.Blurb(Loop.City.Selected)</label>
-								<label class="cost">FRAME  ·  @Buildings.FirstCost(Loop.City.Selected) HITS TO WORK</label>
+								<label class="cost">@GameSettings.Text.F(GameSettings.Text.City.FrameHits, Buildings.FirstCost(Loop.City.Selected))</label>
 							</div>
 							<div class="promise">
 								@if ( Loop.City.Selected == BuildingKind.Infirmary )
@@ -130,7 +130,7 @@
 										<div class="heart live"></div>
 										<div class="heart add"></div>
 									</div>
-									<label class="tag">+1 HP</label>
+									<label class="tag">@GameSettings.Text.City.HpTag</label>
 								}
 								else
 								{
@@ -141,7 +141,7 @@
 											<div class="shot"></div>
 											<div class="shot big"></div>
 										</div>
-										<label class="tag">+1 DMG</label>
+										<label class="tag">@GameSettings.Text.City.DmgTag</label>
 									}
 									else
 									{
@@ -149,11 +149,11 @@
 										{
 											<div class="compare">
 												<div class="dash">
-													<label class="key">NOW</label>
+													<label class="key">@GameSettings.Text.City.Now</label>
 													<div class="meter"><div class="fill dash" style="width: 100%"></div></div>
 												</div>
 												<div class="dash">
-													<label class="key">THEN</label>
+													<label class="key">@GameSettings.Text.City.Then</label>
 													<div class="meter"><div class="fill dash ready" style="width: 86%"></div></div>
 												</div>
 											</div>
@@ -163,10 +163,10 @@
 											@if ( Loop.City.Selected == BuildingKind.Brake )
 											{
 												<div class="dash">
-													<label class="key">SLOW</label>
+													<label class="key">@GameSettings.Text.Hud.Slow</label>
 													<div class="meter"><div class="fill slow on" style="width: 100%"></div></div>
 												</div>
-												<label class="tag">UNLOCKS</label>
+												<label class="tag">@GameSettings.Text.City.Unlocks</label>
 											}
 											else
 											{
@@ -175,7 +175,7 @@
 													<div class="mini-card"></div>
 													<div class="mini-card add"></div>
 												</div>
-												<label class="tag">+1 CARD</label>
+												<label class="tag">@GameSettings.Text.City.CardTag</label>
 											}
 										}
 									}
@@ -212,31 +212,31 @@
 					<div class="pause-bar"></div>
 					<div class="pause-bar"></div>
 				</div>
-				<label>PAUSE</label>
+				<label>@GameSettings.Text.Pause.Button</label>
 			</div>
 		}
 
 		@if ( Loop.Paused )
 		{
 			<div class="overlay menu">
-				<label class="kicker">PAUSED</label>
-				<label class="overlay-title">ONE ROUND TRIP</label>
-				<label class="blurb">The ring holds. Trajectories wait.</label>
+				<label class="kicker">@GameSettings.Text.Pause.Kicker</label>
+				<label class="overlay-title">@GameSettings.Text.Pause.Title</label>
+				<label class="blurb">@GameSettings.Text.Pause.Blurb</label>
 				<div class="cards">
 					<div class="card" onclick="@Resume">
-						<label class="key">1</label>
-						<label class="title">RESUME</label>
-						<label class="blurb">Back to the lap. Nothing moved.</label>
+						<label class="key">@GameSettings.Text.Pause.Key1</label>
+						<label class="title">@GameSettings.Text.Pause.Resume</label>
+						<label class="blurb">@GameSettings.Text.Pause.ResumeBlurb</label>
 					</div>
 					<div class="card" onclick="@PauseToMenu">
-						<label class="key">2</label>
-						<label class="title">MENU</label>
-						<label class="blurb">Leave the run. City stays.</label>
+						<label class="key">@GameSettings.Text.Pause.Key2</label>
+						<label class="title">@GameSettings.Text.Pause.Menu</label>
+						<label class="blurb">@GameSettings.Text.Pause.MenuBlurb</label>
 					</div>
 					<div class="card" onclick="@QuitGame">
-						<label class="key">3</label>
-						<label class="title">QUIT</label>
-						<label class="blurb">Close the game.</label>
+						<label class="key">@GameSettings.Text.Pause.Key3</label>
+						<label class="title">@GameSettings.Text.Pause.Quit</label>
+						<label class="blurb">@GameSettings.Text.Pause.QuitBlurb</label>
 					</div>
 				</div>
 			</div>
@@ -245,25 +245,25 @@
 		@if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Title )
 		{
 			<div class="overlay menu">
-				<label class="kicker">ONE MORE LAP</label>
-				<label class="overlay-title">ONE ROUND TRIP</label>
-				<label class="blurb">Aim. Fire. Catch it back. Cash out to the city — or beat the core and ride the next ring.</label>
-				<label class="blurb">SLOT @(Loop.ActiveSlot + 1)@(Loop.HasActiveSave ? $"  ·  {Loop.SlotBlurb(Loop.ActiveSlot)}" : "  ·  NEW")</label>
+				<label class="kicker">@GameSettings.Text.Menu.Kicker</label>
+				<label class="overlay-title">@GameSettings.Text.Menu.Title</label>
+				<label class="blurb">@GameSettings.Text.Menu.Blurb</label>
+				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Menu.SlotLine, Loop.ActiveSlot + 1, Loop.HasActiveSave ? Loop.SlotBlurb(Loop.ActiveSlot) : GameSettings.Text.Menu.SlotNew)</label>
 				<div class="cards">
 					<div class="card" onclick="@StartRun">
-						<label class="key">1</label>
-						<label class="title">@(Loop.HasActiveSave ? "CONTINUE" : "PLAY")</label>
-						<label class="blurb">@(Loop.HasActiveSave ? "Run with this city's warehouse and buildings." : "Start a run with one round. Extract or go again.")</label>
+						<label class="key">@GameSettings.Text.Menu.Key1</label>
+						<label class="title">@(Loop.HasActiveSave ? GameSettings.Text.Menu.Continue : GameSettings.Text.Menu.Play)</label>
+						<label class="blurb">@(Loop.HasActiveSave ? GameSettings.Text.Menu.ContinueBlurb : GameSettings.Text.Menu.PlayBlurb)</label>
 					</div>
 					<div class="card" onclick="@OpenCity">
-						<label class="key">2</label>
-						<label class="title">CITY</label>
-						<label class="blurb">Build frames and spend warehouse ammo.</label>
+						<label class="key">@GameSettings.Text.Menu.Key2</label>
+						<label class="title">@GameSettings.Text.Menu.City</label>
+						<label class="blurb">@GameSettings.Text.Menu.CityBlurb</label>
 					</div>
 					<div class="card" onclick="@OpenSaves">
-						<label class="key">3</label>
-						<label class="title">SAVES</label>
-						<label class="blurb">Autosave slots. Load or delete a city.</label>
+						<label class="key">@GameSettings.Text.Menu.Key3</label>
+						<label class="title">@GameSettings.Text.Menu.Saves</label>
+						<label class="blurb">@GameSettings.Text.Menu.SavesBlurb</label>
 					</div>
 				</div>
 			</div>
@@ -272,38 +272,38 @@
 		@if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Saves )
 		{
 			<div class="overlay menu">
-				<label class="kicker">AUTOSAVE</label>
-				<label class="overlay-title">SAVES</label>
-				<label class="blurb">City writes itself. Pick a slot, then load or delete.</label>
+				<label class="kicker">@GameSettings.Text.Saves.Kicker</label>
+				<label class="overlay-title">@GameSettings.Text.Saves.Title</label>
+				<label class="blurb">@GameSettings.Text.Saves.Blurb</label>
 				<div class="cards">
 					<div class="card @(Loop.SaveCursor == 0 ? "selected" : "")" onclick="@HighlightSlot1">
-						<label class="key">1</label>
-						<label class="title">SLOT 1</label>
+						<label class="key">@GameSettings.Text.Saves.Key1</label>
+						<label class="title">@GameSettings.Text.F(GameSettings.Text.Saves.Slot, 1)</label>
 						<label class="blurb">@Loop.SlotBlurb(0)</label>
 					</div>
 					<div class="card @(Loop.SaveCursor == 1 ? "selected" : "")" onclick="@HighlightSlot2">
-						<label class="key">2</label>
-						<label class="title">SLOT 2</label>
+						<label class="key">@GameSettings.Text.Saves.Key2</label>
+						<label class="title">@GameSettings.Text.F(GameSettings.Text.Saves.Slot, 2)</label>
 						<label class="blurb">@Loop.SlotBlurb(1)</label>
 					</div>
 					<div class="card @(Loop.SaveCursor == 2 ? "selected" : "")" onclick="@HighlightSlot3">
-						<label class="key">3</label>
-						<label class="title">SLOT 3</label>
+						<label class="key">@GameSettings.Text.Saves.Key3</label>
+						<label class="title">@GameSettings.Text.F(GameSettings.Text.Saves.Slot, 3)</label>
 						<label class="blurb">@Loop.SlotBlurb(2)</label>
 					</div>
 				</div>
 				<div class="cards">
 					<div class="card" onclick="@LoadHighlighted">
-						<label class="key">SPACE</label>
-						<label class="title">LOAD SLOT @(Loop.SaveCursor + 1)</label>
-						<label class="blurb">@(Loop.SlotInfo(Loop.SaveCursor) is not null && Loop.SlotInfo(Loop.SaveCursor).HasProgress ? "Use this city." : "Empty slot. Fresh city.")</label>
+						<label class="key">@GameSettings.Text.Saves.KeySpace</label>
+						<label class="title">@GameSettings.Text.F(GameSettings.Text.Saves.Load, Loop.SaveCursor + 1)</label>
+						<label class="blurb">@(Loop.SlotInfo(Loop.SaveCursor) is not null && Loop.SlotInfo(Loop.SaveCursor).HasProgress ? GameSettings.Text.Saves.LoadHas : GameSettings.Text.Saves.LoadEmpty)</label>
 					</div>
 					@if ( Loop.SlotExists( Loop.SaveCursor ) )
 					{
 						<div class="card" onclick="@DeleteHighlighted">
-							<label class="key">R</label>
-							<label class="title">DELETE SLOT @(Loop.SaveCursor + 1)</label>
-							<label class="blurb">Wipe this city. Cannot undo.</label>
+							<label class="key">@GameSettings.Text.Saves.KeyR</label>
+							<label class="title">@GameSettings.Text.F(GameSettings.Text.Saves.Delete, Loop.SaveCursor + 1)</label>
+							<label class="blurb">@GameSettings.Text.Saves.DeleteBlurb</label>
 						</div>
 					}
 				</div>
@@ -313,24 +313,24 @@
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.DecideLap )
 		{
 			<div class="overlay choose">
-				<label class="overlay-title">LAP @Loop.Lap CLEAR</label>
-				<label class="blurb">STASH @Loop.Stash  ·  SCRAP @Loop.Scrap  ·  TAKE IT HOME OR RISK ANOTHER</label>
+				<label class="overlay-title">@GameSettings.Text.F(GameSettings.Text.Decide.LapClear, Loop.Lap)</label>
+				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.LapBlurb, Loop.Stash, Loop.Scrap)</label>
 				<div class="cards">
 					<div class="card" onclick="@ChooseExtract">
-						<label class="key">1</label>
-						<label class="title">EXTRACT</label>
-						<label class="blurb">Bank @Loop.Stash round@(Loop.Stash == 1 ? "" : "s"). Return to the city.</label>
+						<label class="key">@GameSettings.Text.Decide.Key1</label>
+						<label class="title">@GameSettings.Text.Decide.Extract</label>
+						<label class="blurb">@ExtractBank(Loop.Stash)</label>
 					</div>
 					<div class="card" onclick="@ChooseContinue">
-						<label class="key">2</label>
-						<label class="title">ONE MORE LAP</label>
-						<label class="blurb">Stay on the ring. It gets harder.</label>
+						<label class="key">@GameSettings.Text.Decide.Key2</label>
+						<label class="title">@GameSettings.Text.Decide.OneMore</label>
+						<label class="blurb">@GameSettings.Text.Decide.OneMoreBlurb</label>
 					</div>
 					@if ( Loop.HasBossOffer )
 					{
 						<div class="card" onclick="@ChooseBoss">
-							<label class="key">3</label>
-							<label class="title">FIGHT THE @Loop.BossName</label>
+							<label class="key">@GameSettings.Text.Decide.Key3</label>
+							<label class="title">@GameSettings.Text.F(GameSettings.Text.Decide.Fight, Loop.BossName)</label>
 							<label class="blurb">@Locations.BossBlurb( Loop.Location, !Loop.HasNextRing )</label>
 						</div>
 					}
@@ -341,20 +341,20 @@
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.DecideRing )
 		{
 			<div class="overlay choose">
-				<label class="overlay-title">RING CLEAR</label>
-				<label class="blurb">STASH @Loop.Stash  ·  NEXT @Loop.NextRingCode  ·  @Loop.NextRingRule</label>
+				<label class="overlay-title">@GameSettings.Text.Decide.RingClear</label>
+				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.RingBlurb, Loop.Stash, Loop.NextRingCode, Loop.NextRingRule)</label>
 				<div class="cards">
 					<div class="card" onclick="@ChooseExtract">
-						<label class="key">1</label>
-						<label class="title">EXTRACT</label>
-						<label class="blurb">Bank @Loop.Stash round@(Loop.Stash == 1 ? "" : "s"). Return to the city.</label>
+						<label class="key">@GameSettings.Text.Decide.Key1</label>
+						<label class="title">@GameSettings.Text.Decide.Extract</label>
+						<label class="blurb">@ExtractBank(Loop.Stash)</label>
 					</div>
 					@if ( Loop.HasNextRing )
 					{
 						<div class="card" onclick="@ChooseNextRing">
-							<label class="key">2</label>
-							<label class="title">NEXT RING</label>
-							<label class="blurb">@Loop.NextRingCode  ·  @Loop.NextRingRule  ·  keep stash and upgrades.</label>
+							<label class="key">@GameSettings.Text.Decide.Key2</label>
+							<label class="title">@GameSettings.Text.Decide.NextRing</label>
+							<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.NextRingBlurb, Loop.NextRingCode, Loop.NextRingRule)</label>
 						</div>
 					}
 				</div>
@@ -364,11 +364,11 @@
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.PickTrait )
 		{
 			<div class="overlay choose">
-				<label class="overlay-title">ARMORY</label>
-				<label class="blurb">SCRAP @Loop.Scrap  ·  ALL ROUNDS  ·  BUY ANY, THEN GO</label>
+				<label class="overlay-title">@GameSettings.Text.Shop.Title</label>
+				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Shop.Blurb, Loop.Scrap)</label>
 				<div class="cards">
 					<div class="card @OfferClass(Loop.OfferA, Loop.OfferABought)" style="border-color: @TraitBorder(Loop.OfferA)" onclick="@PickOfferA">
-						<label class="key">1</label>
+						<label class="key">@GameSettings.Text.Shop.Key1</label>
 						<img class="art" src="@RoundTraits.Icon(Loop.OfferA)" />
 						<label class="title">@RoundTraits.Title(Loop.OfferA)</label>
 						<label class="rarity">@RoundTraits.Rarity(Loop.OfferA)</label>
@@ -376,7 +376,7 @@
 						<label class="cost">@OfferCost(Loop.OfferA, Loop.OfferABought)</label>
 					</div>
 					<div class="card @OfferClass(Loop.OfferB, Loop.OfferBBought)" style="border-color: @TraitBorder(Loop.OfferB)" onclick="@PickOfferB">
-						<label class="key">2</label>
+						<label class="key">@GameSettings.Text.Shop.Key2</label>
 						<img class="art" src="@RoundTraits.Icon(Loop.OfferB)" />
 						<label class="title">@RoundTraits.Title(Loop.OfferB)</label>
 						<label class="rarity">@RoundTraits.Rarity(Loop.OfferB)</label>
@@ -386,7 +386,7 @@
 					@if ( Loop.HasThirdOffer )
 					{
 						<div class="card @OfferClass(Loop.OfferC, Loop.OfferCBought)" style="border-color: @TraitBorder(Loop.OfferC)" onclick="@PickOfferC">
-							<label class="key">3</label>
+							<label class="key">@GameSettings.Text.Shop.Key3</label>
 							<img class="art" src="@RoundTraits.Icon(Loop.OfferC)" />
 							<label class="title">@RoundTraits.Title(Loop.OfferC)</label>
 							<label class="rarity">@RoundTraits.Rarity(Loop.OfferC)</label>
@@ -399,16 +399,16 @@
 					@if ( Loop.ShopHasBundle )
 					{
 						<div class="card @(Loop.ShopCanBuyAll ? "" : "poor")" onclick="@BuyAllOffers">
-							<label class="key">E</label>
-							<label class="title">BUY ALL</label>
-							<label class="blurb">Take every leftover card for @Loop.ShopBuyAllCost scrap.</label>
-							<label class="cost">@Loop.ShopBuyAllCost SCRAP</label>
+							<label class="key">@GameSettings.Text.Shop.KeyE</label>
+							<label class="title">@GameSettings.Text.Shop.BuyAll</label>
+							<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Shop.BuyAllBlurb, Loop.ShopBuyAllCost)</label>
+							<label class="cost">@GameSettings.Text.F(GameSettings.Text.Shop.Cost, Loop.ShopBuyAllCost)</label>
 						</div>
 					}
 					<div class="card" onclick="@FinishShop">
-						<label class="key">SPACE</label>
-						<label class="title">GO</label>
-						<label class="blurb">Next lap. Keep leftover scrap.</label>
+						<label class="key">@GameSettings.Text.Shop.KeySpace</label>
+						<label class="title">@GameSettings.Text.Shop.Go</label>
+						<label class="blurb">@GameSettings.Text.Shop.GoBlurb</label>
 					</div>
 				</div>
 			</div>
@@ -417,13 +417,13 @@
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.Dead )
 		{
 			<div class="overlay choose">
-				<label class="overlay-title">RUN OVER</label>
-				<label class="blurb">@Loop.BurnedRounds ROUND@(Loop.BurnedRounds == 1 ? "" : "S") BURNED</label>
+				<label class="overlay-title">@GameSettings.Text.Decide.Dead</label>
+				<label class="blurb">@(Loop.BurnedRounds == 1 ? GameSettings.Text.F(GameSettings.Text.Decide.DeadBurnedOne, Loop.BurnedRounds) : GameSettings.Text.F(GameSettings.Text.Decide.DeadBurnedMany, Loop.BurnedRounds))</label>
 				<div class="cards">
 					<div class="card" onclick="@GoCity">
-						<label class="key">R</label>
-						<label class="title">CITY</label>
-						<label class="blurb">Leave the ring. Build with what you already banked.</label>
+						<label class="key">@GameSettings.Text.Decide.KeyR</label>
+						<label class="title">@GameSettings.Text.Decide.City</label>
+						<label class="blurb">@GameSettings.Text.Decide.DeadCityBlurb</label>
 					</div>
 				</div>
 			</div>
@@ -432,13 +432,13 @@
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.Extracted )
 		{
 			<div class="overlay choose">
-				<label class="overlay-title">EXTRACTED</label>
-				<label class="blurb">@Loop.ExtractedRounds ROUND@(Loop.ExtractedRounds == 1 ? "" : "S") BANKED  ·  BEST @Loop.BestExtract</label>
+				<label class="overlay-title">@GameSettings.Text.Decide.Extracted</label>
+				<label class="blurb">@(Loop.ExtractedRounds == 1 ? GameSettings.Text.F(GameSettings.Text.Decide.ExtractedOne, Loop.ExtractedRounds, Loop.BestExtract) : GameSettings.Text.F(GameSettings.Text.Decide.ExtractedMany, Loop.ExtractedRounds, Loop.BestExtract))</label>
 				<div class="cards">
 					<div class="card" onclick="@GoCity">
-						<label class="key">R</label>
-						<label class="title">CITY</label>
-						<label class="blurb">Return to construction.</label>
+						<label class="key">@GameSettings.Text.Decide.KeyR</label>
+						<label class="title">@GameSettings.Text.Decide.City</label>
+						<label class="blurb">@GameSettings.Text.Decide.ExtractedCityBlurb</label>
 					</div>
 				</div>
 			</div>
@@ -527,7 +527,7 @@
 	{
 		get
 		{
-			if ( !Loop.IsValid() || !Loop.Inventory.IsValid() ) return "PLAIN";
+			if ( !Loop.IsValid() || !Loop.Inventory.IsValid() ) return GameSettings.Text.Hud.Plain;
 			var parts = new List<string>();
 			foreach ( var trait in RoundTraits.All )
 			{
@@ -536,9 +536,9 @@
 					parts.Add( $"{RoundTraits.Code( trait )}{level}" );
 			}
 
-			var body = parts.Count == 0 ? "PLAIN" : string.Join( "  ", parts );
+			var body = parts.Count == 0 ? GameSettings.Text.Hud.Plain : string.Join( "  ", parts );
 			if ( Loop.BloodShields > 0 )
-				body += $"  SH{Loop.BloodShields}";
+				body += $"  {GameSettings.Text.F( GameSettings.Text.Hud.Shield, Loop.BloodShields )}";
 
 			return $"{body}  ×{Loop.Threat:0.00}";
 		}
@@ -573,34 +573,32 @@
 				return "";
 
 			if ( Loop.Paused )
-				return "1 RESUME  ·  2 MENU  ·  3 QUIT";
+				return GameSettings.Text.Help.Paused;
 
 			if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Saves )
-				return "1-3 SELECT  ·  SPACE LOAD  ·  R DELETE  ·  ESC BACK";
+				return GameSettings.Text.Help.Saves;
 
 			return Loop.Phase switch
 			{
-				RunPhase.Menu => "1 PLAY  ·  2 CITY  ·  3 SAVES  ·  ESC QUIT",
+				RunPhase.Menu => GameSettings.Text.Help.Menu,
 				RunPhase.City => Loop.City.IsValid() && Loop.City.Building
-					? "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E SHOOT  ·  SPACE/R RUN  ·  ESC PAUSE"
-					: "LMB FIRE  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE",
-				RunPhase.DecideLap => Loop.HasBossOffer ? $"CLICK  ·  1 CITY  ·  2 STAY  ·  3 FIGHT THE {Loop.BossName}  ·  ESC PAUSE" : "CLICK  ·  1 CITY  ·  2 STAY  ·  ESC PAUSE",
-				RunPhase.DecideRing => Loop.HasNextRing ? "CLICK  ·  1 CITY  ·  2 NEXT RING  ·  ESC PAUSE" : "CLICK  ·  1 CITY  ·  ESC PAUSE",
-				RunPhase.PickTrait => Loop.HasThirdOffer
-					? "CLICK A CARD  ·  1 / 2 / 3 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE"
-					: "CLICK A CARD  ·  1 / 2 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE",
-				RunPhase.Dead or RunPhase.Extracted => "CLICK CITY  ·  R CITY  ·  ESC MENU",
+					? GameSettings.Text.Help.CityBuild
+					: GameSettings.Text.Help.CityShoot,
+				RunPhase.DecideLap => Loop.HasBossOffer ? GameSettings.Text.F( GameSettings.Text.Help.DecideLapBoss, Loop.BossName ) : GameSettings.Text.Help.DecideLap,
+				RunPhase.DecideRing => Loop.HasNextRing ? GameSettings.Text.Help.DecideRingNext : GameSettings.Text.Help.DecideRing,
+				RunPhase.PickTrait => Loop.HasThirdOffer ? GameSettings.Text.Help.ShopThree : GameSettings.Text.Help.ShopTwo,
+				RunPhase.Dead or RunPhase.Extracted => GameSettings.Text.Help.Dead,
 				_ => Loop.InBossFight
 					? Loop.Location == RunLocation.Glass
-						? "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
-						: "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
+						? GameSettings.Text.Help.BossGlass
+						: GameSettings.Text.Help.BossYard
 					: Loop.Location == RunLocation.Glass
 						? Loop.CanSkipLap
-							? "PANELS SHATTER  ·  E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
-							: "PANELS SHATTER  ·  LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE"
+							? GameSettings.Text.Help.PlayGlassSkip
+							: GameSettings.Text.Help.PlayGlass
 						: Loop.CanSkipLap
-							? "E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
-							: "MOUSE AIM · LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE"
+							? GameSettings.Text.Help.PlaySkip
+							: GameSettings.Text.Help.Play
 			};
 		}
 	}
@@ -610,22 +608,26 @@
 		get
 		{
 			if ( !Loop.IsValid() || !Loop.City.IsValid() )
-				return "NO BONUSES YET";
+				return GameSettings.Text.City.NoBonuses;
 
 			var stats = Loop.City.Stats();
 			var parts = new List<string>();
-			if ( stats.BonusHealth > 0 ) parts.Add( $"HP+{stats.BonusHealth}" );
-			if ( stats.BonusDamage > 0 ) parts.Add( $"DMG+{stats.BonusDamage}" );
-			if ( stats.DashCooldownScale < 0.99f ) parts.Add( "DASH" );
-			if ( stats.SlowUnlocked ) parts.Add( "SLOW" );
-			if ( stats.OfferCount >= 3 ) parts.Add( "3 CARDS" );
-			return parts.Count == 0 ? "NO BONUSES YET" : string.Join( "  ", parts );
+			if ( stats.BonusHealth > 0 ) parts.Add( GameSettings.Text.F( GameSettings.Text.City.BonusHp, stats.BonusHealth ) );
+			if ( stats.BonusDamage > 0 ) parts.Add( GameSettings.Text.F( GameSettings.Text.City.BonusDmg, stats.BonusDamage ) );
+			if ( stats.DashCooldownScale < 0.99f ) parts.Add( GameSettings.Text.City.BonusDash );
+			if ( stats.SlowUnlocked ) parts.Add( GameSettings.Text.City.BonusSlow );
+			if ( stats.OfferCount >= 3 ) parts.Add( GameSettings.Text.City.BonusCards );
+			return parts.Count == 0 ? GameSettings.Text.City.NoBonuses : string.Join( "  ", parts );
 		}
 	}
 
 	string KindClass( BuildingKind kind ) => kind.ToString().ToLowerInvariant();
 
 	string StatusClass( RoundSlot slot ) => slot.Status.ToString().ToLower();
+
+	string ExtractBank( int stash ) => stash == 1
+		? GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankOne, stash )
+		: GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankMany, stash );
 
 	string OfferBlurb( RoundTrait trait, bool bought )
 	{
@@ -634,22 +636,22 @@
 
 		var level = Loop.Inventory.Loadout.TraitLevel( trait );
 		if ( bought )
-			return $"{RoundTraits.Blurb( trait )}  LV{Math.Max( 1, level )}";
+			return GameSettings.Text.F( GameSettings.Text.Shop.OfferBlurb, RoundTraits.Blurb( trait ), Math.Max( 1, level ) );
 
 		var next = level + 1;
 		if ( next > 3 ) next = 3;
-		return $"{RoundTraits.Blurb( trait )}  LV{next}";
+		return GameSettings.Text.F( GameSettings.Text.Shop.OfferBlurb, RoundTraits.Blurb( trait ), next );
 	}
 
 	string OfferCost( RoundTrait trait, bool bought )
 	{
 		if ( bought )
-			return "BOUGHT";
+			return GameSettings.Text.Shop.Bought;
 
 		if ( !Loop.IsValid() )
 			return "";
 
-		return $"{Loop.PriceOf( trait )} SCRAP";
+		return GameSettings.Text.F( GameSettings.Text.Shop.Cost, Loop.PriceOf( trait ) );
 	}
 
 	string OfferClass( RoundTrait trait, bool bought )
