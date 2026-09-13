@@ -4,7 +4,7 @@ public static class ArenaSounds
 {
 	const int Studio = 44100;
 	const int Rate = 22050;
-	const int Bank = 5;
+	const int Bank = 6;
 
 	static readonly Dictionary<string, SoundEvent> events = new();
 	static int built;
@@ -54,6 +54,7 @@ public static class ArenaSounds
 	public static void Miss( Vector3? at = null ) => Play( "miss", at );
 	public static void Lose() => Play( "lose", null );
 	public static void Crack( Vector3? at = null ) => Play( "crack", at );
+	public static void Shatter( Vector3? at = null ) => Play( "shatter", at );
 
 	static void Play( string key, Vector3? at, bool forceUi = false )
 	{
@@ -105,6 +106,7 @@ public static class ArenaSounds
 		Put( "miss", false, 0.62f, 0.08f, 1, _ => ClipMiss() );
 		Put( "lose", true, 0.78f, 0.03f, 1, _ => ClipLose() );
 		Put( "crack", false, 0.78f, 0.1f, 2, ClipCrack );
+		Put( "shatter", false, 0.88f, 0.08f, 2, ClipShatter );
 	}
 
 	static void Put( string key, bool ui, float volume, float jitter, int variants, Func<int, float[]> synth )
@@ -958,6 +960,26 @@ public static class ArenaSounds
 			var snap = rng.NextDouble() < 0.28f * MathF.Exp( -t * 14f ) ? noise : noise * 0.08f;
 			buf[i] = (snap - lp * 0.3f) * Env( t, 0.001f, 20f )
 				+ Square( (110f + v * 16f) * t ) * Env( t, 0.002f, 22f ) * 0.22f;
+		}
+
+		return buf;
+	}
+
+	static float[] ClipShatter( int v )
+	{
+		var rng = new Random( 940 + v );
+		var n = Len( 0.28f );
+		var buf = new float[n];
+		float lp = 0f;
+		for ( var i = 0; i < n; i++ )
+		{
+			var t = i / (float)Studio;
+			var noise = Noise( rng );
+			lp += (noise - lp) * 0.28f;
+			var ping = rng.NextDouble() < 0.22f * MathF.Exp( -t * 9f ) ? Sine( (620f + v * 40f + rng.Next( 0, 180 ) ) * t ) : 0f;
+			buf[i] = (noise - lp * 0.25f) * Env( t, 0.002f, 14f )
+				+ Square( (90f + v * 12f) * t ) * Env( t, 0.003f, 16f ) * 0.2f
+				+ ping * Env( t, 0.001f, 18f ) * 0.28f;
 		}
 
 		return buf;

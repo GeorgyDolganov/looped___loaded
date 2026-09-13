@@ -19,16 +19,21 @@ public sealed class ArenaGeometry
 
 	public List<WallSegment> Walls { get; } = new();
 	public bool CoreSolid { get; set; } = true;
+	public bool GlassRules { get; set; }
 	public int AuthoredCount { get; private set; }
+	public int GlassBroken { get; private set; }
 
 	public float TrackInner => TrackRadius - TrackWidth * 0.5f;
 	public float TrackOuter => TrackRadius + TrackWidth * 0.5f;
 
 	const float SurfaceTolerance = 0.05f;
+	const float SkinWidth = 0.75f;
 
 	readonly List<int> boundaryWalls = new();
 	readonly List<int> coreWalls = new();
 	readonly Dictionary<int, int> panelKicks = new();
+	readonly Dictionary<int, int> panelHits = new();
+	readonly Dictionary<int, float> shardUntil = new();
 
 	public static Vector2 FromAngle( float radians ) => new Vector2( MathF.Cos( radians ), MathF.Sin( radians ) );
 
@@ -54,6 +59,9 @@ public sealed class ArenaGeometry
 		boundaryWalls.Clear();
 		coreWalls.Clear();
 		panelKicks.Clear();
+		panelHits.Clear();
+		shardUntil.Clear();
+		GlassBroken = 0;
 
 		if ( walls is null || walls.Count == 0 )
 		{
@@ -81,11 +89,15 @@ public sealed class ArenaGeometry
 	{
 		for ( var i = Walls.Count - 1; i >= AuthoredCount; i-- )
 		{
-			if ( Walls[i].Kind == WallKind.Panel )
+			var kind = Walls[i].Kind;
+			if ( kind == WallKind.Panel || kind == WallKind.Shard )
 				Walls.RemoveAt( i );
 		}
 
 		panelKicks.Clear();
+		panelHits.Clear();
+		shardUntil.Clear();
+		GlassBroken = 0;
 	}
 
 	public void GeneratePanels( int lap, int seed )
@@ -151,6 +163,83 @@ public sealed class ArenaGeometry
 		PlacePanel( center - along * length * 0.5f, center + along * length * 0.5f );
 	}
 
+	public Vector2 ClampField( Vector2 point ) => ClampPlay( point );
+
+	public bool PanelCracked( int index )
+	{
+		if ( index < 0 || index >= Walls.Count || Walls[index].Kind != WallKind.Panel )
+			return false;
+
+		return panelHits.TryGetValue( index, out var hits ) && hits >= 1 && Walls[index].Length >= 1f;
+	}
+
+	public int AddShard( Vector2 a, Vector2 b, float diesAt )
+	{
+		a = ClampPlay( a );
+		b = ClampPlay( b );
+		if ( (b - a).Length < 40f )
+			return -1;
+
+		var span = b - a;
+		var facing = new Vector2( -span.y, span.x ).Normal;
+		Walls.Add( new WallSegment( a, b, facing, WallKind.Shard ) );
+		var index = Walls.Count - 1;
+		shardUntil[index] = diesAt;
+		return index;
+	}
+
+	public void CollectExpiredShards( float now, List<int> expired )
+	{
+		expired.Clear();
+		for ( var i = 0; i < Walls.Count; i++ )
+		{
+			if ( Walls[i].Kind != WallKind.Shard )
+				continue;
+
+			if ( !shardUntil.TryGetValue( i, out var until ) || until > now )
+				continue;
+
+			Walls[i] = new WallSegment( Vector2.Zero, Vector2.Zero, Vector2.Zero, WallKind.Shard );
+			shardUntil.Remove( i );
+			expired.Add( i );
+		}
+	}
+
+	public GlassHit StrikePanel( int index, Vector2 hitPos, Vector2 hitNormal, float extraDegrees, bool allowSecond )
+	{
+		if ( index < 0 || index >= Walls.Count )
+			return GlassHit.None;
+
+		var wall = Walls[index];
+		if ( wall.Kind == WallKind.Shard || wall.Length < 1f )
+			return GlassHit.None;
+
+		if ( wall.Kind != WallKind.Panel )
+			return GlassHit.None;
+
+		if ( !GlassRules )
+		{
+			KickPanel( index, hitPos, hitNormal, extraDegrees, allowSecond );
+			return GlassHit.Kick;
+		}
+
+		panelHits.TryGetValue( index, out var hits );
+		hits++;
+		panelHits[index] = hits;
+
+		if ( hits >= 2 )
+		{
+			Walls[index] = new WallSegment( Vector2.Zero, Vector2.Zero, Vector2.Zero, WallKind.Panel );
+			panelHits.Remove( index );
+			panelKicks.Remove( index );
+			GlassBroken++;
+			return GlassHit.Shatter;
+		}
+
+		KickPanel( index, hitPos, hitNormal, extraDegrees, allowSecond );
+		return GlassHit.Crack;
+	}
+
 	void PlacePanel( Vector2 a, Vector2 b )
 	{
 		a = ClampPlay( a );
@@ -209,10 +298,33 @@ public sealed class ArenaGeometry
 		}
 	}
 
+	public bool EjectSoft( ref Vector2 flat, float radius, bool includeBoss, Vector2 preferFrom, float maxStep )
+	{
+		var settled = flat;
+		Eject( ref settled, radius, includeBoss, preferFrom );
+
+		var shift = settled - flat;
+		var depth = shift.Length;
+		if ( depth < 0.01f )
+			return false;
+
+		if ( maxStep <= 0f || depth <= maxStep || depth > radius )
+		{
+			flat = settled;
+			return true;
+		}
+
+		flat += shift.Normal * maxStep;
+		return true;
+	}
+
 	public void MoveBody( ref Vector2 flat, Vector2 delta, float radius, bool includeBoss )
+		=> MoveBody( ref flat, delta, radius, includeBoss, 0f );
+
+	public void MoveBody( ref Vector2 flat, Vector2 delta, float radius, bool includeBoss, float maxCorrection )
 	{
 		var from = flat;
-		Eject( ref flat, radius, includeBoss, from );
+		Settle( ref flat, radius, includeBoss, from, maxCorrection );
 
 		var remain = delta.Length;
 		if ( remain < 0.001f )
@@ -244,7 +356,15 @@ public sealed class ArenaGeometry
 			dir = tangent;
 		}
 
-		Eject( ref flat, radius, includeBoss, from );
+		Settle( ref flat, radius, includeBoss, from, maxCorrection );
+	}
+
+	void Settle( ref Vector2 flat, float radius, bool includeBoss, Vector2 preferFrom, float maxStep )
+	{
+		if ( maxStep <= 0f )
+			Eject( ref flat, radius, includeBoss, preferFrom );
+		else
+			EjectSoft( ref flat, radius, includeBoss, preferFrom, maxStep );
 	}
 
 	public bool TraceRay( Vector2 origin, Vector2 direction, float maxDistance, out ArenaHit hit )
@@ -257,6 +377,9 @@ public sealed class ArenaGeometry
 		for ( var i = 0; i < Walls.Count; i++ )
 		{
 			var wall = Walls[i];
+			if ( wall.Length < 1f )
+				continue;
+
 			if ( wall.Kind == WallKind.Core && !CoreSolid )
 				continue;
 
@@ -296,52 +419,52 @@ public sealed class ArenaGeometry
 		return found;
 	}
 
-	public Vector2 SteerAround( Vector2 origin, Vector2 desired, Vector2 goal, float radius )
+	public bool SightBlocked( Vector2 from, Vector2 to, out ArenaHit hit )
 	{
-		if ( desired.Length < 0.01f )
-			return desired;
-
-		desired = desired.Normal;
-		var look = MathF.Max( 220f, radius * 3.2f );
-
-		if ( !BlockedAhead( origin, desired, look, radius, out var hit ) )
-			return desired;
-
-		var bestDir = Vector2.Zero;
-		var bestScore = float.NegativeInfinity;
-		var heading = ToAngle( desired );
-		var toGoal = goal - origin;
-		var goalDir = toGoal.Length > 1f ? toGoal.Normal : desired;
-
-		for ( var i = -7; i <= 7; i++ )
-		{
-			if ( i == 0 )
-				continue;
-
-			var dir = FromAngle( heading + i * 0.28f );
-			if ( BlockedAhead( origin, dir, look, radius, out _ ) )
-				continue;
-
-			var score = Dot( dir, desired ) * 1.15f + Dot( dir, goalDir ) - MathF.Abs( i ) * 0.03f;
-			if ( score <= bestScore )
-				continue;
-
-			bestScore = score;
-			bestDir = dir;
-		}
-
-		if ( bestDir.Length > 0.01f )
-			return bestDir;
-
-		return Detour( origin, goal, radius, hit );
-	}
-
-	bool BlockedAhead( Vector2 origin, Vector2 direction, float look, float radius, out ArenaHit hit )
-	{
-		if ( !TraceDisk( origin, direction, look, radius, true, out hit ) )
+		hit = default;
+		var delta = to - from;
+		var dist = delta.Length;
+		if ( dist < 1f )
 			return false;
 
-		return hit.Distance < MathF.Max( radius + 28f, look * 0.55f );
+		if ( !TraceRay( from, delta.Normal, dist, out hit ) )
+			return false;
+
+		return hit.Distance + 12f < dist;
+	}
+
+	public float Clearance( Vector2 origin, Vector2 direction, float radius, float look, bool includeBoss = true )
+	{
+		if ( direction.Length < 0.01f || look <= 0f )
+			return look;
+
+		return TraceDisk( origin, direction, look, radius, includeBoss, out var hit )
+			? MathF.Max( 0f, hit.Distance )
+			: look;
+	}
+
+	public void WallEnds( ArenaHit hit, float radius, out Vector2 a, out Vector2 b )
+	{
+		if ( hit.WallIndex < 0 || hit.WallIndex >= Walls.Count || Walls[hit.WallIndex].Length < 1f )
+		{
+			var across = new Vector2( -hit.Normal.y, hit.Normal.x ) * (radius * 2f + 60f);
+			a = BypassPoint( hit.Position + across, radius );
+			b = BypassPoint( hit.Position - across, radius );
+			return;
+		}
+
+		var wall = Walls[hit.WallIndex];
+		WallBox( wall, radius, out var center, out var axisX, out _, out var hx, out _ );
+		var lead = hx + radius * 0.4f + 20f;
+		a = BypassPoint( center - axisX * lead, radius );
+		b = BypassPoint( center + axisX * lead, radius );
+	}
+
+	Vector2 BypassPoint( Vector2 point, float radius )
+	{
+		var spot = ClampPlay( point );
+		Eject( ref spot, radius, true, spot );
+		return spot;
 	}
 
 	public bool TraceDisk( Vector2 origin, Vector2 direction, float maxDistance, float radius, out ArenaHit hit )
@@ -418,20 +541,42 @@ public sealed class ArenaGeometry
 		push = Vector2.Zero;
 		if ( wall.Length < 1f )
 			return false;
+
 		WallBox( wall, bodyRadius, out var center, out var axisX, out var axisY, out var hx, out var hy );
 		var to = point - center;
 		var lx = Dot( to, axisX );
 		var ly = Dot( to, axisY );
-		if ( hx - MathF.Abs( lx ) <= 0f || hy - MathF.Abs( ly ) <= 0f )
+		var depthX = hx - MathF.Abs( lx );
+		var depthY = hy - MathF.Abs( ly );
+		if ( depthX <= 0f || depthY <= 0f )
 			return false;
 
-		var prefer = Dot( preferFrom - center, axisY );
-		var side = prefer >= 0f ? 1f : -1f;
-		if ( MathF.Abs( prefer ) < 0.01f )
-			side = ly >= 0f ? 1f : -1f;
+		var from = preferFrom - center;
+		var fromX = Dot( from, axisX );
+		var fromY = Dot( from, axisY );
+		var cameAcross = MathF.Abs( fromY ) >= hy;
+		var camePastEnd = MathF.Abs( fromX ) >= hx;
+		var costX = depthX + (camePastEnd ? 0f : 30f);
+		var costY = depthY + (cameAcross ? 0f : 30f);
 
-		push = axisY * (side * hy - ly + side * 2.5f);
+		if ( costX < costY )
+		{
+			var side = ExitSide( lx, camePastEnd ? fromX : 0f );
+			push = axisX * (side * (depthX + SkinWidth));
+			return true;
+		}
+
+		var across = ExitSide( ly, cameAcross ? fromY : 0f );
+		push = axisY * (across * (depthY + SkinWidth));
 		return true;
+	}
+
+	static float ExitSide( float local, float prefer )
+	{
+		if ( MathF.Abs( prefer ) > 0.01f )
+			return prefer >= 0f ? 1f : -1f;
+
+		return local >= 0f ? 1f : -1f;
 	}
 
 	public static bool SweepBox( Vector2 origin, Vector2 direction, float maxDistance, Vector2 center, Vector2 axisX, Vector2 axisY, float hx, float hy, out float travel, out Vector2 normal )
@@ -507,21 +652,6 @@ public sealed class ArenaGeometry
 			tmax = t2;
 
 		return tmin <= tmax;
-	}
-
-	Vector2 Detour( Vector2 origin, Vector2 goal, float radius, ArenaHit hit )
-	{
-		if ( hit.WallIndex < 0 || hit.WallIndex >= Walls.Count )
-			return hit.Normal;
-
-		var wall = Walls[hit.WallIndex];
-		WallBox( wall, radius, out var center, out var axisX, out var axisY, out var hx, out var hy );
-		var side = Dot( origin - center, axisY ) >= 0f ? 1f : -1f;
-		var a = center - axisX * (hx + 24f) + axisY * side * (hy + 12f);
-		var b = center + axisX * (hx + 24f) + axisY * side * (hy + 12f);
-		var pick = (a - origin).Length + (goal - a).Length <= (b - origin).Length + (goal - b).Length ? a : b;
-		var to = pick - origin;
-		return to.Length > 1f ? to.Normal : hit.Normal;
 	}
 
 	public bool Contain( ref Vector2 flat, ref Vector2 direction, float radius )

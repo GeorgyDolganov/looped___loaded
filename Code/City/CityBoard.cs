@@ -42,13 +42,14 @@ public sealed class CityBoard : Component
 		Warehouse += Math.Max( 0, rounds );
 	}
 
-	public GameSave Capture( int bestExtract )
+	public GameSave Capture( int bestExtract, int bestLine = -1 )
 	{
 		EnsureBuilt();
 		var save = new GameSave
 		{
 			Warehouse = Warehouse,
-			BestExtract = bestExtract
+			BestExtract = bestExtract,
+			BestLine = bestLine
 		};
 
 		foreach ( var plot in plots )

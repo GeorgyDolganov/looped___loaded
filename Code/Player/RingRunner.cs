@@ -54,6 +54,16 @@ public sealed class RingRunner : Component
 		ApplyTransform();
 	}
 
+	public void ResetLap( float startAngle )
+	{
+		Angle = startAngle;
+		TravelledArc = 0f;
+		dashElapsed = 999f;
+		dashSpent = 0f;
+		Slowing = false;
+		ApplyTransform();
+	}
+
 	public void ApplyCity( CityStats stats )
 	{
 		DashCooldown = 1.1f * stats.DashCooldownScale;

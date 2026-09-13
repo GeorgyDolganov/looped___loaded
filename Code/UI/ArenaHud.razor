@@ -20,7 +20,7 @@
 		{
 			<div class="top-left">
 				<div class="lap-chip">
-					<label class="key">@(Loop.InBossFight ? "CORE" : "LAP")</label>
+					<label class="key">@(Loop.InBossFight ? Loop.BossName : Loop.LocationCode)</label>
 					<label class="value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
 				</div>
 				<div class="meter">
@@ -247,7 +247,7 @@
 			<div class="overlay menu">
 				<label class="kicker">ONE MORE LAP</label>
 				<label class="overlay-title">ONE ROUND TRIP</label>
-				<label class="blurb">Aim. Fire. Catch it back. Cash out to the city — or greed another lap.</label>
+				<label class="blurb">Aim. Fire. Catch it back. Cash out to the city — or beat the core and ride the next ring.</label>
 				<label class="blurb">SLOT @(Loop.ActiveSlot + 1)@(Loop.HasActiveSave ? $"  ·  {Loop.SlotBlurb(Loop.ActiveSlot)}" : "  ·  NEW")</label>
 				<div class="cards">
 					<div class="card" onclick="@StartRun">
@@ -330,8 +330,31 @@
 					{
 						<div class="card" onclick="@ChooseBoss">
 							<label class="key">3</label>
-							<label class="title">FIGHT THE CORE</label>
-							<label class="blurb">Ricochet the nucleus. Win: stash ×2, then city.</label>
+							<label class="title">FIGHT THE @Loop.BossName</label>
+							<label class="blurb">@Locations.BossBlurb( Loop.Location, !Loop.HasNextRing )</label>
+						</div>
+					}
+				</div>
+			</div>
+		}
+
+		@if ( !Loop.Paused && Loop.Phase == RunPhase.DecideRing )
+		{
+			<div class="overlay choose">
+				<label class="overlay-title">RING CLEAR</label>
+				<label class="blurb">STASH @Loop.Stash  ·  NEXT @Loop.NextRingCode  ·  @Loop.NextRingRule</label>
+				<div class="cards">
+					<div class="card" onclick="@ChooseExtract">
+						<label class="key">1</label>
+						<label class="title">EXTRACT</label>
+						<label class="blurb">Bank @Loop.Stash round@(Loop.Stash == 1 ? "" : "s"). Return to the city.</label>
+					</div>
+					@if ( Loop.HasNextRing )
+					{
+						<div class="card" onclick="@ChooseNextRing">
+							<label class="key">2</label>
+							<label class="title">NEXT RING</label>
+							<label class="blurb">@Loop.NextRingCode  ·  @Loop.NextRingRule  ·  keep stash and upgrades.</label>
 						</div>
 					}
 				</div>
@@ -471,6 +494,7 @@
 	void ChooseExtract() => Loop?.ChooseExtract();
 	void ChooseContinue() => Loop?.ChooseContinue();
 	void ChooseBoss() => Loop?.ChooseBoss();
+	void ChooseNextRing() => Loop?.ChooseNextRing();
 	void PickOfferA() => Loop?.ChooseUpgrade( Loop.OfferA );
 	void PickOfferB() => Loop?.ChooseUpgrade( Loop.OfferB );
 	void PickOfferC() => Loop?.ChooseUpgrade( Loop.OfferC );
@@ -560,16 +584,23 @@
 				RunPhase.City => Loop.City.IsValid() && Loop.City.Building
 					? "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E SHOOT  ·  SPACE/R RUN  ·  ESC PAUSE"
 					: "LMB FIRE  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE",
-				RunPhase.DecideLap => Loop.HasBossOffer ? "CLICK  ·  1 CITY  ·  2 STAY  ·  3 FIGHT THE CORE  ·  ESC PAUSE" : "CLICK  ·  1 CITY  ·  2 STAY  ·  ESC PAUSE",
+				RunPhase.DecideLap => Loop.HasBossOffer ? $"CLICK  ·  1 CITY  ·  2 STAY  ·  3 FIGHT THE {Loop.BossName}  ·  ESC PAUSE" : "CLICK  ·  1 CITY  ·  2 STAY  ·  ESC PAUSE",
+				RunPhase.DecideRing => Loop.HasNextRing ? "CLICK  ·  1 CITY  ·  2 NEXT RING  ·  ESC PAUSE" : "CLICK  ·  1 CITY  ·  ESC PAUSE",
 				RunPhase.PickTrait => Loop.HasThirdOffer
 					? "CLICK A CARD  ·  1 / 2 / 3 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE"
 					: "CLICK A CARD  ·  1 / 2 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE",
 				RunPhase.Dead or RunPhase.Extracted => "CLICK CITY  ·  R CITY  ·  ESC MENU",
 				_ => Loop.InBossFight
-					? "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
-					: Loop.CanSkipLap
-						? "E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
-						: "MOUSE AIM · LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE"
+					? Loop.Location == RunLocation.Glass
+						? "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
+						: "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
+					: Loop.Location == RunLocation.Glass
+						? Loop.CanSkipLap
+							? "PANELS SHATTER  ·  E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
+							: "PANELS SHATTER  ·  LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE"
+						: Loop.CanSkipLap
+							? "E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE"
+							: "MOUSE AIM · LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE"
 			};
 		}
 	}
@@ -847,7 +878,12 @@
 			Loop.IsValid() ? Loop.ShopBuyAllCost : 0,
 			Loop.IsValid() ? (int)Loop.OfferA : 0 );
 
-		return System.HashCode.Combine( a, b, c, d, e, f );
+		var g = System.HashCode.Combine(
+			Loop.IsValid() ? (int)Loop.Location : 0,
+			Loop.IsValid() ? Loop.BestLine : -1,
+			Loop.IsValid() && Loop.HasNextRing );
+
+		return System.HashCode.Combine( a, b, c, d, e, f, g );
 	}
 }
 

@@ -29,5 +29,14 @@ public enum WallKind
 	Boundary,
 	Core,
 	Panel,
-	Boss
+	Boss,
+	Shard
+}
+
+public enum GlassHit
+{
+	None,
+	Kick,
+	Crack,
+	Shatter
 }

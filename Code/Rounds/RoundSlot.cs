@@ -237,6 +237,7 @@ public enum RunPhase
 	Menu,
 	Playing,
 	DecideLap,
+	DecideRing,
 	PickTrait,
 	Dead,
 	Extracted,

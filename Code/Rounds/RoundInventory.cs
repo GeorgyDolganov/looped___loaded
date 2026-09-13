@@ -38,6 +38,15 @@ public sealed class RoundInventory : Component
 		SelectedIndex = 0;
 	}
 
+	public void ChamberAll()
+	{
+		foreach ( var slot in Slots )
+			slot.ResetCombat();
+
+		if ( Slots.Count > 0 )
+			TrySelect( SelectedIndex );
+	}
+
 	public RoundSlot GrantSlot()
 	{
 		if ( Slots.Count >= Progression.MaxSlots )

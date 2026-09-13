@@ -4,7 +4,7 @@ Layer0
 {
 	shader "materials/shaders/nearest.shader"
 
-	Texture_ps_0 "textures/altartexture.png"
+	Texture_ps_0 "textures/hobo.jpg"
 
 	//---- Fog ----
 	g_bFogEnabled "1"

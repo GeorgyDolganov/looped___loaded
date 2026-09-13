@@ -272,7 +272,7 @@ public sealed class ArenaBoss : Component
 		var enemy = go.AddComponent<Enemy>();
 		enemy.Arena = loop.Arena;
 		enemy.Loop = loop;
-		enemy.Setup( EnemyKind.Shield, ArenaGeometry.FromAngle( loop.Runner.Angle + MathF.PI ) * (loop.Geometry.CoreRadius + 220f), Progression.EnemyHealth( 2, loop.Lap ) );
+		enemy.Setup( EnemyKind.Shield, ArenaGeometry.FromAngle( loop.Runner.Angle + MathF.PI ) * (loop.Geometry.CoreRadius + 220f), Progression.EnemyHealth( 2, loop.Lap, loop.LocationIndex ) );
 		loop.Enemies.Add( enemy );
 	}
 }

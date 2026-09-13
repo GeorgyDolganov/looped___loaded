@@ -37,6 +37,7 @@ public sealed class RoundProjectile : Component
 	bool usedWind;
 	bool boomeranging;
 	bool echoSpawned;
+	bool lensInside;
 	float launchedAt;
 	float stutterUntil;
 	float stickUntil;
@@ -183,6 +184,8 @@ public sealed class RoundProjectile : Component
 			{
 				breachLeft--;
 				EnergyLeft -= MathF.Max( 0f, hit.Distance );
+				if ( Loop.Arena.IsValid() )
+					Loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, Flight.KickExtra, Flight.KickSecond );
 				Flat = hit.Position + Direction * (Radius + 6f);
 			}
 			else if ( !BounceWall( hit ) )
@@ -194,6 +197,7 @@ public sealed class RoundProjectile : Component
 			Flat += Direction * step;
 		}
 
+		BendLens();
 		Contain();
 		if ( HitTarget() )
 			return false;
@@ -268,7 +272,7 @@ public sealed class RoundProjectile : Component
 
 		if ( hit.Kind == WallKind.Panel && Loop.Arena.IsValid() && breachLeft >= 0 )
 		{
-			Loop.Arena.KickPanel( hit.WallIndex, hit.Position, hit.Normal, Flight.KickExtra, Flight.KickSecond );
+			Loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, Flight.KickExtra, Flight.KickSecond );
 			NudgeOut();
 		}
 
@@ -308,6 +312,27 @@ public sealed class RoundProjectile : Component
 		Direction = direction;
 	}
 
+	void BendLens()
+	{
+		if ( !Loop.InBossFight || Loop.Location != RunLocation.Glass )
+		{
+			lensInside = false;
+			return;
+		}
+
+		var inside = Flat.Length < geometry.CoreRadius;
+		if ( inside && !lensInside )
+		{
+			var ang = MathX.DegreeToRadian( 15f );
+			var c = MathF.Cos( -ang );
+			var s = MathF.Sin( -ang );
+			Direction = new Vector2( Direction.x * c - Direction.y * s, Direction.x * s + Direction.y * c ).Normal;
+			ArenaSounds.Crack( geometry.ToPlayWorld( Flat ) );
+		}
+
+		lensInside = inside;
+	}
+
 	bool HitTarget()
 	{
 		foreach ( var target in Loop.Enemies )
@@ -344,7 +369,7 @@ public sealed class RoundProjectile : Component
 				ArenaSounds.Ricochet( world );
 				ImpactFlash.Spawn( Scene, world, ShotColors.Player, 0.9f );
 
-				if ( target.Kind == EnemyKind.Core )
+				if ( Locations.IsBoss( target.Kind ) )
 					Loop.NoteArmor();
 
 				if ( BouncesLeft < 0 )
@@ -420,6 +445,8 @@ public sealed class RoundProjectile : Component
 			Direction = ArenaGeometry.Reflect( Direction, hit.Normal ).Normal;
 			BouncesLeft--;
 			Ricochets++;
+			if ( hit.Kind == WallKind.Panel && Loop.Arena.IsValid() )
+				Loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, Flight.KickExtra, Flight.KickSecond );
 			return;
 		}
 
@@ -494,7 +521,7 @@ public sealed class RoundProjectile : Component
 
 		foreach ( var wall in geometry.Walls )
 		{
-			if ( wall.Kind != WallKind.Panel || wall.Length < 1f )
+			if ( (wall.Kind != WallKind.Panel && wall.Kind != WallKind.Shard) || wall.Length < 1f )
 				continue;
 
 			var along = Math.Clamp( ArenaGeometry.Dot( Flat - wall.A, wall.Direction ), 0f, wall.Length );

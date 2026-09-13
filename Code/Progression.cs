@@ -12,7 +12,10 @@ public static class Progression
 	public const int MaxSlots = 9;
 	public const int BossBaseHealth = 12;
 
-	public static float Threat( int lap ) => MathF.Pow( ThreatRatio, Math.Max( 0, lap - 1 ) );
+	public static float LocationMul( int location ) => MathF.Pow( ThreatRatio, Math.Max( 0, location ) );
+
+	public static float Threat( int lap, int location = 0 )
+		=> MathF.Pow( ThreatRatio, Math.Max( 0, lap - 1 ) ) * LocationMul( location );
 
 	public static float Pace( int lap ) => MathF.Min( 1.4f, MathF.Pow( PaceRatio, Math.Max( 0, lap - 1 ) ) );
 
@@ -24,17 +27,17 @@ public static class Progression
 		return Whole( MathF.Pow( PowerRatio, rank - 1 ) );
 	}
 
-	public static int EnemyHealth( int template, int lap )
-		=> Math.Max( 1, Whole( template * Threat( lap ) ) );
+	public static int EnemyHealth( int template, int lap, int location = 0 )
+		=> Math.Max( 1, Whole( template * Threat( lap, location ) ) );
 
-	public static int ExtraBodies( int lap )
-		=> Math.Clamp( Whole( Threat( lap ) ) - 2, 0, 4 );
+	public static int ExtraBodies( int lap, int location = 0 )
+		=> Math.Clamp( Whole( Threat( lap, location ) ) - 2, 0, 4 );
 
 	public static int RoundsGranted( int arrivingLap )
 		=> Math.Clamp( Whole( MathF.Pow( RoundRatio, Math.Max( 0, arrivingLap - 2 ) ) ), 1, 4 );
 
-	public static int BossHealth( int lap )
-		=> Math.Max( BossBaseHealth, Whole( BossBaseHealth * Threat( lap ) ) );
+	public static int BossHealth( int lap, int location = 0 )
+		=> Math.Max( BossBaseHealth, Whole( BossBaseHealth * Threat( lap, location ) ) );
 
 	public static int Cost( int first, int level )
 		=> Math.Max( 1, Whole( first * MathF.Pow( CostRatio, Math.Max( 0, level ) ) ) );
@@ -53,20 +56,23 @@ public static class Progression
 	public static int TraitPrice( RoundTrait trait, int ownedLevel )
 		=> Cost( PackPrice( RoundTraits.Pack( trait ) ), Math.Max( 0, ownedLevel ) );
 
-	public static int KillScrap( EnemyKind kind, int lap )
+	public static int KillScrap( EnemyKind kind, int lap, int location = 0 )
 	{
 		var seed = kind switch
 		{
 			EnemyKind.Chaser => 4,
 			EnemyKind.Shield => 7,
 			EnemyKind.Shooter => 7,
+			EnemyKind.Splinter => 6,
+			EnemyKind.Glimmer => 7,
+			EnemyKind.Shardguard => 8,
 			_ => 0
 		};
 
 		if ( seed <= 0 )
 			return 0;
 
-		return Whole( seed * Threat( lap ) );
+		return Whole( seed * Threat( lap, location ) );
 	}
 
 	public static float DashScale( int boost )

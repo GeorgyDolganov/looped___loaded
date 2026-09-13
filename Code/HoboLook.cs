@@ -1,0 +1,130 @@
+namespace LoopedLoaded;
+
+public static class HoboLook
+{
+	public const string ModelPath = "models/hobo.vmdl";
+	public const float Size = 1.7f;
+
+	const string OverlayName = "Hobo Overlay";
+
+	static readonly string[] UpperBones =
+	{
+		"spine", "spine_1", "spine_2", "neck", "head",
+		"shoulder_L", "shoulder_R",
+		"hand_ik_L", "hand_ik_R",
+		"fist_L", "fist_R",
+		"elbow_pole_L", "elbow_pole_R"
+	};
+
+	public static SkinnedModelRenderer Attach( GameObject parent, float height )
+	{
+		var model = Model.Load( ModelPath );
+		var bounds = model.Bounds;
+		var size = bounds.Size;
+		var longest = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
+		var scale = longest > 0.001f ? height * Size / longest : 1f;
+		var lift = -bounds.Mins.z * scale;
+
+		var body = MakeSkin( parent, "Hobo", model, scale, lift, false );
+		MakeSkin( parent, OverlayName, model, scale, lift, true );
+		return body;
+	}
+
+	static SkinnedModelRenderer MakeSkin( GameObject parent, string name, Model model, float scale, float lift, bool hide )
+	{
+		var go = parent.Scene.CreateObject();
+		go.Name = name;
+		go.Parent = parent;
+		go.LocalRotation = Rotation.Identity;
+		go.LocalScale = Vector3.One * scale;
+		go.LocalPosition = Vector3.Up * lift;
+
+		var renderer = go.AddComponent<SkinnedModelRenderer>();
+		renderer.Model = model;
+		renderer.UseAnimGraph = false;
+		renderer.CreateBoneObjects = true;
+		renderer.Sequence.Name = "idle";
+		renderer.Sequence.Looping = true;
+		if ( hide )
+			Hide( renderer );
+		return renderer;
+	}
+
+	static void Hide( SkinnedModelRenderer skin )
+	{
+		if ( !skin.IsValid() || !skin.SceneObject.IsValid() )
+			return;
+
+		skin.SceneObject.RenderingEnabled = false;
+	}
+
+	static SkinnedModelRenderer OverlayOf( SkinnedModelRenderer skin )
+	{
+		if ( !skin.IsValid() || !skin.GameObject.IsValid() || !skin.GameObject.Parent.IsValid() )
+			return null;
+
+		foreach ( var child in skin.GameObject.Parent.Children )
+		{
+			if ( child.Name != OverlayName )
+				continue;
+
+			return child.GetComponent<SkinnedModelRenderer>();
+		}
+
+		return null;
+	}
+
+	public static float PlayAttack( SkinnedModelRenderer skin )
+	{
+		var overlay = OverlayOf( skin );
+		if ( !overlay.IsValid() )
+			return 0f;
+
+		overlay.UseAnimGraph = false;
+		overlay.Sequence.Name = "attack";
+		overlay.Sequence.Looping = false;
+		Hide( overlay );
+		var duration = overlay.Sequence.Duration;
+		return duration > 0.05f ? duration : 16f / 24f;
+	}
+
+	public static void Drive( SkinnedModelRenderer skin, Vector3 velocity, Vector3 look, bool attacking )
+	{
+		if ( !skin.IsValid() )
+			return;
+
+		skin.UseAnimGraph = false;
+		var name = velocity.Length <= 40f ? "idle" : "run";
+		if ( skin.Sequence.Name != name )
+		{
+			skin.Sequence.Name = name;
+			skin.Sequence.Looping = true;
+		}
+
+		if ( attacking )
+			CopyUpper( skin, OverlayOf( skin ) );
+
+		WarlordLook.Face( skin, velocity, look );
+	}
+
+	static void CopyUpper( SkinnedModelRenderer body, SkinnedModelRenderer overlay )
+	{
+		if ( !body.IsValid() || !overlay.IsValid() )
+			return;
+
+		Hide( overlay );
+		overlay.WorldTransform = body.WorldTransform;
+
+		foreach ( var name in UpperBones )
+		{
+			var bone = overlay.Model?.Bones.GetBone( name );
+			if ( bone is null )
+				continue;
+
+			if ( !overlay.TryGetBoneTransformAnimation( bone, out var world ) )
+				continue;
+
+			body.SetBoneTransform( bone, body.WorldTransform.ToLocal( world ) );
+		}
+	}
+}

@@ -17,6 +17,18 @@ public sealed class ArenaBuilder : Component
 	public static readonly Color PanelTint = new Color( 0.30f, 0.78f, 0.86f );
 	public static readonly Color FinishGold = new Color( 1f, 0.84f, 0.38f );
 	public static readonly Color FinishInk = new Color( 0.05f, 0.06f, 0.08f );
+	public static readonly Color GlassFloorTint = new Color( 0.042f, 0.052f, 0.07f );
+	public static readonly Color GlassTrackTint = new Color( 0.16f, 0.20f, 0.26f );
+	public static readonly Color GlassEdgeTint = new Color( 0.72f, 0.88f, 0.96f );
+	public static readonly Color GlassBoundaryTint = new Color( 0.70f, 0.82f, 0.92f );
+	public static readonly Color GlassCoreTint = new Color( 0.38f, 0.52f, 0.64f );
+	public static readonly Color GlassPanelTint = new Color( 0.78f, 0.92f, 0.98f );
+	public static readonly Color GlassCrackTint = new Color( 0.94f, 0.98f, 1f );
+	public static readonly Color GlassShardTint = new Color( 0.88f, 0.96f, 1f );
+
+	public RunLocation Location { get; private set; } = RunLocation.Yard;
+	public int GlassBroken => Geometry.GlassBroken;
+	public bool GlassBoard => Location == RunLocation.Glass;
 
 	public ArenaGeometry Geometry
 	{
@@ -39,7 +51,9 @@ public sealed class ArenaBuilder : Component
 	GameLoop loop;
 	readonly Dictionary<int, GameObject> panelVisuals = new();
 	readonly Dictionary<int, GameObject> authoredVisuals = new();
+	readonly Dictionary<int, GameObject> shardVisuals = new();
 	readonly List<(ModelRenderer Renderer, Color Tint, float Pulse)> finishMarks = new();
+	readonly List<int> expiredShards = new();
 
 	protected override void OnAwake() => BindScene();
 
@@ -52,6 +66,7 @@ public sealed class ArenaBuilder : Component
 		geometry.TrackWidth = TrackWidth;
 		geometry.BoundaryRadius = BoundaryRadius;
 		geometry.CoreRadius = CoreRadius;
+		geometry.GlassRules = Location == RunLocation.Glass;
 
 		authoredVisuals.Clear();
 		var walls = new List<WallSegment>();
@@ -77,6 +92,7 @@ public sealed class ArenaBuilder : Component
 		Geometry.ClearBossWalls();
 		Geometry.ClearGeneratedPanels();
 		ClearRuntimePanels();
+		ClearShards();
 	}
 
 	public void RollLayout( int lap, int seed )
@@ -84,9 +100,22 @@ public sealed class ArenaBuilder : Component
 		if ( geometry is null )
 			BindScene();
 
+		Geometry.GlassRules = Location == RunLocation.Glass;
 		Geometry.ClearBossWalls();
 		Geometry.GeneratePanels( lap, seed );
 		RebuildPanels();
+		ClearShards();
+	}
+
+	public void ApplyLocation( RunLocation location )
+	{
+		Location = location;
+		Code = Locations.Code( location );
+		if ( geometry is null )
+			BindScene();
+
+		Geometry.GlassRules = location == RunLocation.Glass;
+		DressLocation();
 	}
 
 	[Button( "Fill Default Layout" )]
@@ -116,7 +145,11 @@ public sealed class ArenaBuilder : Component
 		BindScene();
 	}
 
-	protected override void OnUpdate() => PulseFinish();
+	protected override void OnUpdate()
+	{
+		PulseFinish();
+		TickShards();
+	}
 
 	void CollectFinish()
 	{
@@ -363,6 +396,139 @@ public sealed class ArenaBuilder : Component
 		}
 	}
 
+	void DressLocation()
+	{
+		var glass = GlassBoard;
+		RecolorGroup( "Floor", glass ? GlassFloorTint : FloorTint );
+		RecolorGroup( "Track", glass ? GlassTrackTint : TrackTint );
+		RecolorGroup( "Edges", glass ? GlassEdgeTint : TrackEdgeTint );
+		RecolorNamed( "Walls", "Core", glass ? GlassCoreTint : CoreTint );
+		RecolorNamed( "Walls", "Boundary", glass ? GlassBoundaryTint : BoundaryTint );
+	}
+
+	void RecolorGroup( string name, Color tint )
+	{
+		var root = FindChild( GameObject, name );
+		if ( !root.IsValid() )
+			return;
+
+		foreach ( var renderer in root.GetComponentsInChildren<ModelRenderer>( true ) )
+		{
+			if ( renderer.IsValid() )
+				renderer.Tint = tint;
+		}
+	}
+
+	void RecolorNamed( string group, string token, Color tint )
+	{
+		var root = FindChild( GameObject, group );
+		if ( !root.IsValid() )
+			return;
+
+		foreach ( var child in root.Children )
+		{
+			if ( !child.Name.Contains( token ) )
+				continue;
+
+			foreach ( var renderer in child.GetComponentsInChildren<ModelRenderer>( true ) )
+			{
+				if ( renderer.IsValid() )
+					renderer.Tint = tint;
+			}
+		}
+	}
+
+	void TickShards()
+	{
+		if ( geometry is null )
+			return;
+
+		Geometry.CollectExpiredShards( Time.Now, expiredShards );
+		foreach ( var index in expiredShards )
+		{
+			if ( !shardVisuals.TryGetValue( index, out var go ) )
+				continue;
+
+			shardVisuals.Remove( index );
+			if ( go.IsValid() )
+				go.Destroy();
+		}
+	}
+
+	void ClearShards()
+	{
+		foreach ( var go in shardVisuals.Values )
+		{
+			if ( go.IsValid() )
+				go.Destroy();
+		}
+
+		shardVisuals.Clear();
+	}
+
+	void MarkCracked( int index )
+	{
+		if ( !panelVisuals.TryGetValue( index, out var go ) )
+			authoredVisuals.TryGetValue( index, out go );
+
+		if ( !go.IsValid() )
+			return;
+
+		foreach ( var renderer in go.GetComponentsInChildren<ModelRenderer>( true ) )
+		{
+			if ( renderer.IsValid() )
+				renderer.Tint = GlassCrackTint;
+		}
+
+		if ( FindChild( go, "Crack A" ).IsValid() )
+			return;
+
+		if ( index < 0 || index >= Geometry.Walls.Count )
+			return;
+
+		var wall = Geometry.Walls[index];
+		if ( wall.Length < 1f )
+			return;
+
+		var mid = Geometry.ToWorld( wall.Center, 118f );
+		var along = new Vector3( wall.Direction.x, wall.Direction.y, 0f ) * (wall.Length * 0.38f);
+		var across = new Vector3( wall.Normal.x, wall.Normal.y, 0.35f ) * 42f;
+		PaintCrack( go, "Crack A", mid - along - across, mid + along + across );
+		PaintCrack( go, "Crack B", mid - along + across, mid + along - across );
+	}
+
+	void PaintCrack( GameObject parent, string name, Vector3 a, Vector3 b )
+	{
+		var go = Scene.CreateObject();
+		go.Name = name;
+		go.Parent = parent;
+		var line = go.AddComponent<PolyLine>();
+		line.HeadWidth = 4f;
+		line.TailWidth = 4f;
+		line.HeadTint = Color.White;
+		line.TailTint = new Color( 0.7f, 0.86f, 1f );
+		line.Apply();
+		line.SetPoints( new List<Vector3> { a, b } );
+	}
+
+	void RemovePanelVisual( int index )
+	{
+		if ( panelVisuals.Remove( index, out var go ) && go.IsValid() )
+			go.Destroy();
+	}
+
+	GameObject ShardRoot()
+	{
+		var root = FindChild( GameObject, "Shards" );
+		if ( root.IsValid() )
+			return root;
+
+		root = Scene.CreateObject();
+		root.Name = "Shards";
+		root.Parent = GameObject;
+		return root;
+	}
+
 	void ClearRuntimePanels()
 	{
 		foreach ( var go in panelVisuals.Values )
@@ -416,6 +582,61 @@ public sealed class ArenaBuilder : Component
 		SyncPanel( index );
 	}
 
+	public GlassHit StrikeBoard( int index, Vector2 hitPos, Vector2 hitNormal, float extraDegrees = 0f, bool allowSecond = false )
+	{
+		if ( index < 0 || index >= Geometry.Walls.Count )
+			return GlassHit.None;
+
+		var wall = Geometry.Walls[index];
+		if ( wall.Kind == WallKind.Shard )
+			return GlassHit.None;
+
+		var hit = Geometry.StrikePanel( index, hitPos, hitNormal, extraDegrees, allowSecond );
+		if ( hit == GlassHit.Kick )
+		{
+			SyncPanel( index );
+			return hit;
+		}
+
+		if ( hit == GlassHit.Crack )
+		{
+			SyncPanel( index );
+			MarkCracked( index );
+			var world = Geometry.ToPlayWorld( hitPos );
+			ArenaSounds.Crack( world );
+			ImpactFlash.Spawn( Scene, world, GlassCrackTint, 1.15f );
+			return hit;
+		}
+
+		if ( hit == GlassHit.Shatter )
+		{
+			RemovePanelVisual( index );
+			DropShard( hitPos, wall.Direction );
+			var world = Geometry.ToPlayWorld( hitPos );
+			ArenaSounds.Shatter( world );
+			ImpactFlash.Spawn( Scene, world, GlassShardTint, 1.8f );
+			return hit;
+		}
+
+		return hit;
+	}
+
+	public void DropShard( Vector2 center, Vector2 along )
+	{
+		if ( along.Length < 0.01f )
+			along = Vector2.Right;
+
+		along = along.Normal;
+		var half = Game.Random.Float( 35f, 45f );
+		var a = Geometry.ClampField( center - along * half );
+		var b = Geometry.ClampField( center + along * half );
+		var index = Geometry.AddShard( a, b, Time.Now + 1.4f );
+		if ( index < 0 )
+			return;
+
+		shardVisuals[index] = SpawnWall( ShardRoot(), Geometry.Walls[index], index, false );
+	}
+
 	void SyncPanel( int index )
 	{
 		if ( !panelVisuals.TryGetValue( index, out var go ) )
@@ -439,12 +660,28 @@ public sealed class ArenaBuilder : Component
 			bounds.z > 0.001f ? size.z / bounds.z : 1f );
 	}
 
-	static (float Thickness, float Height, Color Tint) WallSize( WallKind kind ) => kind switch
+	(float Thickness, float Height, Color Tint) WallSize( WallKind kind )
 	{
-		WallKind.Boundary => (32f, 140f, BoundaryTint),
-		WallKind.Core => (36f, 170f, CoreTint),
-		_ => (26f, 115f, PanelTint)
-	};
+		if ( kind == WallKind.Shard )
+			return (16f, 72f, GlassShardTint);
+
+		if ( GlassBoard )
+		{
+			return kind switch
+			{
+				WallKind.Boundary => (32f, 140f, GlassBoundaryTint),
+				WallKind.Core => (36f, 170f, GlassCoreTint),
+				_ => (22f, 108f, GlassPanelTint)
+			};
+		}
+
+		return kind switch
+		{
+			WallKind.Boundary => (32f, 140f, BoundaryTint),
+			WallKind.Core => (36f, 170f, CoreTint),
+			_ => (26f, 115f, PanelTint)
+		};
+	}
 
 	GameObject SpawnWall( GameObject parent, WallSegment wall, int index, bool authored )
 	{

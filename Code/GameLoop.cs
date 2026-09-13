@@ -13,8 +13,16 @@ public sealed class GameLoop : Component
 	public RunPhase Phase { get; private set; } = RunPhase.Menu;
 	public bool InCity => Phase == RunPhase.City;
 	public bool InMenu => Phase == RunPhase.Menu;
-	public bool WantsUiCursor => InMenu || Paused || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait || Phase == RunPhase.Dead || Phase == RunPhase.Extracted;
-	public bool CanPause => !InMenu && !Paused && (Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait);
+	public RunLocation Location { get; private set; } = RunLocation.Yard;
+	public int LocationIndex => Locations.Index( Location );
+	public bool HasNextRing => !Locations.IsLast( Location );
+	public string LocationCode => Locations.Code( Location );
+	public string LocationRule => Locations.Rule( Location );
+	public string BossName => Locations.Boss( Location );
+	public string NextRingCode => Locations.Code( Locations.Next( Location ) );
+	public string NextRingRule => Locations.Rule( Locations.Next( Location ) );
+	public bool WantsUiCursor => InMenu || Paused || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait || Phase == RunPhase.Dead || Phase == RunPhase.Extracted;
+	public bool CanPause => !InMenu && !Paused && (Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait);
 	public bool BlocksShot => Time.Now < uiClickUntil;
 	public ArenaGeometry Geometry => Arena.Geometry;
 	public List<Enemy> Enemies { get; } = new();
@@ -64,7 +72,7 @@ public sealed class GameLoop : Component
 	public bool ShopHasBundle => Phase == RunPhase.PickTrait && OpenOfferCount() >= 2;
 	public bool ShopCanBuyAll => ShopHasBundle && Scrap >= ShopBuyAllCost && ShopBuyAllCost > 0;
 
-	public float Threat => Progression.Threat( Lap );
+	public float Threat => Progression.Threat( Lap, LocationIndex );
 	public bool InBossFight { get; private set; }
 	public bool HasBossOffer => !InBossFight && Lap >= 5;
 	public bool CanSkipLap
@@ -89,7 +97,7 @@ public sealed class GameLoop : Component
 		{
 			foreach ( var enemy in Enemies )
 			{
-				if ( enemy.IsValid() && enemy.Alive && enemy.Kind == EnemyKind.Core )
+				if ( enemy.IsValid() && enemy.Alive && Locations.IsBoss( enemy.Kind ) )
 					return enemy.Health;
 			}
 
@@ -102,11 +110,11 @@ public sealed class GameLoop : Component
 		{
 			foreach ( var enemy in Enemies )
 			{
-				if ( enemy.IsValid() && enemy.Alive && enemy.Kind == EnemyKind.Core )
+				if ( enemy.IsValid() && enemy.Alive && Locations.IsBoss( enemy.Kind ) )
 					return enemy.MaxHealth;
 			}
 
-			return Progression.BossHealth( Lap );
+			return Progression.BossHealth( Lap, LocationIndex );
 		}
 	}
 
@@ -120,6 +128,7 @@ public sealed class GameLoop : Component
 	bool pendingBoss;
 	bool bossWon;
 	bool skipHinted;
+	public int BestLine { get; private set; } = -1;
 
 	public string SlotBlurb( int index )
 	{
@@ -127,7 +136,10 @@ public sealed class GameLoop : Component
 		if ( save is null || !save.HasProgress )
 			return "EMPTY";
 
-		return $"WH {save.Warehouse}  ·  BEST {save.BestExtract}  ·  {save.BuildingCount} BUILDINGS";
+		var line = Locations.LineBlurb( save.BestLine );
+		return line.Length > 0
+			? $"WH {save.Warehouse}  ·  BEST {save.BestExtract}  ·  {line}"
+			: $"WH {save.Warehouse}  ·  BEST {save.BestExtract}  ·  {save.BuildingCount} BUILDINGS";
 	}
 
 	public bool HasActiveSave => SlotInfo( ActiveSlot ) is not null && SlotInfo( ActiveSlot ).HasProgress;
@@ -165,7 +177,7 @@ public sealed class GameLoop : Component
 		if ( !City.IsValid() )
 			return;
 
-		var save = City.Capture( BestExtract );
+		var save = City.Capture( BestExtract, BestLine );
 		if ( !save.HasProgress && !SaveStore.Exists( ActiveSlot ) )
 			return;
 
@@ -218,6 +230,7 @@ public sealed class GameLoop : Component
 		if ( index == ActiveSlot )
 		{
 			BestExtract = 0;
+			BestLine = -1;
 			City?.Wipe();
 		}
 
@@ -231,11 +244,13 @@ public sealed class GameLoop : Component
 		if ( save is null || !save.HasProgress )
 		{
 			BestExtract = 0;
+			BestLine = -1;
 			City?.Wipe();
 			return;
 		}
 
 		BestExtract = save.BestExtract;
+		BestLine = save.BestLine;
 		City?.Apply( save );
 	}
 
@@ -269,6 +284,9 @@ public sealed class GameLoop : Component
 		}
 
 		City?.SetVisible( false );
+		Location = RunLocation.Yard;
+		if ( Arena.IsValid() )
+			Arena.ApplyLocation( Location );
 		Phase = RunPhase.Menu;
 		pendingBoss = false;
 		bossWon = false;
@@ -443,6 +461,7 @@ public sealed class GameLoop : Component
 
 			enemy.ShiftTime( dt );
 			enemy.GetComponent<ArenaBoss>()?.ShiftTime( dt );
+			enemy.GetComponent<ArenaLens>()?.ShiftTime( dt );
 		}
 
 		foreach ( var shot in Shots )
@@ -493,6 +512,9 @@ public sealed class GameLoop : Component
 		BloodShields = 0;
 		SnapUntil = 0f;
 		Lap = 1;
+		Location = RunLocation.Yard;
+		if ( Arena.IsValid() )
+			Arena.ApplyLocation( Location );
 		layoutSeed = Game.Random.Int( 1, int.MaxValue - 1 );
 		ExtractedRounds = 0;
 		BurnedRounds = 0;
@@ -519,7 +541,7 @@ public sealed class GameLoop : Component
 	public void RegisterKill( EnemyKind kind )
 	{
 		Kills++;
-		var gain = Progression.KillScrap( kind, Lap );
+		var gain = Progression.KillScrap( kind, Lap, LocationIndex );
 		if ( gain > 0 )
 			Scrap += gain;
 
@@ -632,7 +654,7 @@ public sealed class GameLoop : Component
 
 		if ( PressedEscape() )
 		{
-			if ( Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait )
+			if ( Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait )
 				Pause();
 			else
 				ShowMenu();
@@ -641,7 +663,7 @@ public sealed class GameLoop : Component
 
 		if ( Input.Pressed( "Reload" ) )
 		{
-			if ( Phase == RunPhase.City || Phase == RunPhase.Playing || Phase == RunPhase.DecideLap || Phase == RunPhase.PickTrait )
+			if ( Phase == RunPhase.City || Phase == RunPhase.Playing || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait )
 				Restart();
 			else
 				EnterCity( false );
@@ -683,6 +705,20 @@ public sealed class GameLoop : Component
 
 			if ( HasBossOffer && Input.Pressed( "Slot3" ) )
 				ContinueBoss();
+			return;
+		}
+
+		if ( Phase == RunPhase.DecideRing )
+		{
+			Mouse.CursorType = "pointer";
+			if ( Input.Pressed( "Slot1" ) )
+			{
+				Extract();
+				return;
+			}
+
+			if ( HasNextRing && Input.Pressed( "Slot2" ) )
+				EnterNextRing();
 			return;
 		}
 
@@ -927,7 +963,7 @@ public sealed class GameLoop : Component
 			return;
 
 		armorNoticeAt = Time.Now + 0.85f;
-		Announce( "ARMOR  ·  RICOCHET FIRST" );
+		Announce( Location == RunLocation.Glass ? "ARMOR  ·  BREAK GLASS OR HIT THE SIDE" : "ARMOR  ·  RICOCHET FIRST" );
 	}
 
 	public void BeatBoss()
@@ -938,7 +974,7 @@ public sealed class GameLoop : Component
 		bossWon = true;
 		InBossFight = false;
 		ArenaSounds.Pickup();
-		Announce( "NO MORE ROUNDS  ·  ×2" );
+		Announce( HasNextRing ? "RING CLEAR" : "NO MORE ROUNDS  ·  ×2" );
 	}
 
 	void FinishBossWin()
@@ -949,6 +985,18 @@ public sealed class GameLoop : Component
 		{
 			Geometry.CoreSolid = true;
 			Geometry.ClearBossWalls();
+		}
+
+		if ( LocationIndex > BestLine )
+			BestLine = LocationIndex;
+
+		if ( HasNextRing )
+		{
+			Phase = RunPhase.DecideRing;
+			ArenaSounds.Tele();
+			Announce( $"RING CLEAR  ·  {NextRingCode}  ·  {NextRingRule}" );
+			Autosave();
+			return;
 		}
 
 		var doubled = Math.Max( 1, Stash ) * 2;
@@ -994,10 +1042,18 @@ public sealed class GameLoop : Component
 
 	public void ChooseExtract()
 	{
-		if ( Paused || Phase != RunPhase.DecideLap )
+		if ( Paused || (Phase != RunPhase.DecideLap && Phase != RunPhase.DecideRing) )
 			return;
 
 		Extract();
+	}
+
+	public void ChooseNextRing()
+	{
+		if ( Paused || Phase != RunPhase.DecideRing || !HasNextRing )
+			return;
+
+		EnterNextRing();
 	}
 
 	public void ChooseContinue()
@@ -1111,7 +1167,7 @@ public sealed class GameLoop : Component
 		var added = GrantContinueRounds();
 		BeginTraitPick();
 		ArenaSounds.Warn();
-		Announce( $"CORE FIGHT  ·  +{added}  ·  STASH {Stash}" );
+		Announce( $"{Locations.FightCall( Location )}  ·  +{added}  ·  STASH {Stash}" );
 	}
 
 	int GrantContinueRounds()
@@ -1315,7 +1371,7 @@ public sealed class GameLoop : Component
 			ArenaSounds.Change();
 
 		Announce( fight
-			? "THE CORE  ·  RICOCHET TO BREAK IT"
+			? Locations.FightHint( Location )
 			: $"ARMED  ·  {Scrap} SCRAP" );
 	}
 
@@ -1367,13 +1423,29 @@ public sealed class GameLoop : Component
 		InBossFight = true;
 		RollArena( Lap );
 
+		if ( Location == RunLocation.Glass )
+		{
+			var lensObject = Scene.CreateObject();
+			lensObject.Name = "Lens";
+
+			var lensEnemy = lensObject.AddComponent<Enemy>();
+			lensEnemy.Arena = Arena;
+			lensEnemy.Loop = this;
+			lensEnemy.Setup( EnemyKind.Lens, Vector2.Zero, Progression.BossHealth( Lap, LocationIndex ) );
+			Enemies.Add( lensEnemy );
+
+			var lens = lensObject.AddComponent<ArenaLens>();
+			lens.Arm( lensEnemy );
+			return;
+		}
+
 		var go = Scene.CreateObject();
 		go.Name = "Core";
 
 		var enemy = go.AddComponent<Enemy>();
 		enemy.Arena = Arena;
 		enemy.Loop = this;
-		enemy.Setup( EnemyKind.Core, Vector2.Zero, Progression.BossHealth( Lap ) );
+		enemy.Setup( EnemyKind.Core, Vector2.Zero, Progression.BossHealth( Lap, LocationIndex ) );
 		Enemies.Add( enemy );
 
 		var boss = go.AddComponent<ArenaBoss>();
@@ -1405,8 +1477,14 @@ public sealed class GameLoop : Component
 			var enemy = go.AddComponent<Enemy>();
 			enemy.Arena = Arena;
 			enemy.Loop = this;
-			enemy.Setup( kind, ArenaGeometry.FromAngle( angle ) * radius, Progression.EnemyHealth( hp, lap ) );
+			enemy.Setup( kind, ArenaGeometry.FromAngle( angle ) * radius, Progression.EnemyHealth( hp, lap, LocationIndex ) );
 			Enemies.Add( enemy );
+		}
+
+		if ( Location == RunLocation.Glass )
+		{
+			SpawnGlassWave( lap, offset, hunt, mid, inner, outer, Add );
+			return;
 		}
 
 		switch ( lap )
@@ -1456,9 +1534,88 @@ public sealed class GameLoop : Component
 				break;
 		}
 
-		var extra = Progression.ExtraBodies( lap );
+		var extra = Progression.ExtraBodies( lap, LocationIndex );
 		for ( var i = 0; i < extra; i++ )
 			Add( EnemyKind.Chaser, offset + 0.85f * ( i + 3 ), hunt, 1 );
+	}
+
+	void SpawnGlassWave( int lap, float offset, float hunt, float mid, float inner, float outer, Action<EnemyKind, float, float, int> add )
+	{
+		switch ( lap )
+		{
+			case 1:
+				add( EnemyKind.Splinter, offset, hunt, 1 );
+				break;
+			case 2:
+				add( EnemyKind.Splinter, offset - 0.6f, hunt, 1 );
+				add( EnemyKind.Glimmer, offset + 1.4f, mid, 1 );
+				break;
+			case 3:
+				add( EnemyKind.Shardguard, offset, mid, 2 );
+				add( EnemyKind.Splinter, offset + 1.7f, hunt, 2 );
+				add( EnemyKind.Glimmer, offset - 1.5f, inner, 2 );
+				break;
+			case 4:
+				add( EnemyKind.Shardguard, offset - 0.4f, mid, 2 );
+				add( EnemyKind.Glimmer, offset + 1.9f, hunt, 2 );
+				add( EnemyKind.Shooter, offset + 3.2f, mid, 2 );
+				break;
+			case 5:
+				add( EnemyKind.Splinter, offset - 1.0f, hunt, 2 );
+				add( EnemyKind.Glimmer, offset + 0.6f, hunt, 2 );
+				add( EnemyKind.Shardguard, offset + 2.3f, mid, 2 );
+				add( EnemyKind.Chaser, offset + 3.6f, inner, 2 );
+				break;
+			default:
+				add( EnemyKind.Splinter, offset, hunt, 2 );
+				add( EnemyKind.Splinter, offset + 3.0f, hunt, 2 );
+				add( EnemyKind.Glimmer, offset + 1.4f, mid, 2 );
+				add( EnemyKind.Shardguard, offset + 3.8f, mid, 2 );
+				add( EnemyKind.Shooter, offset + 2.4f, mid, 2 );
+				break;
+		}
+
+		var extra = Progression.ExtraBodies( lap, LocationIndex );
+		for ( var i = 0; i < extra; i++ )
+			add( EnemyKind.Splinter, offset + 0.85f * (i + 3), hunt, 1 );
+	}
+
+	void EnterNextRing()
+	{
+		if ( !HasNextRing )
+			return;
+
+		Inventory?.ChamberAll();
+		if ( Health < HeartMax )
+			Health++;
+
+		Location = Locations.Next( Location );
+		Lap = 1;
+		skipHinted = false;
+		pendingBoss = false;
+		InBossFight = false;
+
+		if ( Arena.IsValid() )
+			Arena.ApplyLocation( Location );
+
+		if ( Runner.IsValid() )
+		{
+			Runner.GameObject.Enabled = true;
+			Runner.ResetLap( Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f );
+			Runner.ApplyPace( 1 );
+		}
+
+		ClearCombat();
+		SpawnWave( 1 );
+		Phase = RunPhase.Playing;
+		Mouse.CursorType = "crosshair";
+		ArenaSounds.Tele();
+		Announce( $"{LocationCode}  ·  {LocationRule}" );
+	}
+
+	public void RerollBoard()
+	{
+		RollArena( Lap );
 	}
 
 	void RollArena( int lap )
@@ -1466,7 +1623,7 @@ public sealed class GameLoop : Component
 		if ( !Arena.IsValid() )
 			return;
 
-		Arena.RollLayout( lap, layoutSeed );
+		Arena.RollLayout( lap, unchecked( layoutSeed + LocationIndex * 104729 ) );
 		NudgeLiveRounds();
 	}
 
