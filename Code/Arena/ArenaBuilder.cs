@@ -2,7 +2,7 @@ namespace LoopedLoaded;
 
 public sealed class ArenaBuilder : Component
 {
-	[Property] public string Code { get; set; } = "YARD";
+	[Property] public string Code { get; set; } = "GLASS";
 	[Property] public float TrackRadius { get; set; } = 1000f;
 	[Property] public float TrackWidth { get; set; } = 190f;
 	[Property] public float BoundaryRadius { get; set; } = 1170f;
@@ -26,7 +26,7 @@ public sealed class ArenaBuilder : Component
 	public static readonly Color GlassCrackTint = new Color( 0.94f, 0.98f, 1f );
 	public static readonly Color GlassShardTint = new Color( 0.88f, 0.96f, 1f );
 
-	public RunLocation Location { get; private set; } = RunLocation.Yard;
+	public RunLocation Location { get; private set; } = Locations.Start;
 	public int GlassBroken => Geometry.GlassBroken;
 	public bool GlassBoard => Location == RunLocation.Glass;
 

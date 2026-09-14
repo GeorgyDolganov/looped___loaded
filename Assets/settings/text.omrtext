@@ -9,7 +9,8 @@
     "Caught": "CAUGHT",
     "Dash": "DASH",
     "Slow": "SLOW",
-    "HurtStamp": "-1"
+    "HurtStamp": "-1",
+    "Task": "NEXT"
   },
   "Pause": {
     "Button": "PAUSE",
@@ -460,8 +461,50 @@
       "FightCall": "LENS FIGHT",
       "FightHint": "THE LENS  ·  BREAK GLASS THEN HIT THE SIDE",
       "Armor": "ARMOR  ·  BREAK GLASS OR HIT THE SIDE",
-      "BossKeep": "Shatter the glass, then hit the side. Keep the stash.",
+      "BossKeep": "Shatter the glass, then hit the side. Keep the stash. Extract or ride the next ring.",
       "BossLast": "Shatter the glass, then hit the side. Win: stash ×2, then city."
+    }
+  },
+  "Progress": {
+    "Catch": {
+      "Title": "CATCH IT BACK",
+      "Blurb": "Fire a round. Catch it before it dies."
+    },
+    "Lap": {
+      "Title": "FINISH A LAP",
+      "Blurb": "Reach the north mark. Extract or risk another."
+    },
+    "Extract": {
+      "Title": "BANK THE BIOMASS",
+      "Blurb": "Extract stashed rounds to the altar."
+    },
+    "Grow": {
+      "Title": "GROW A FRAME",
+      "Blurb": "Place an organ frame on the altar grid."
+    },
+    "Inject": {
+      "Title": "INJECT IT",
+      "Blurb": "Shoot the frame until it works."
+    },
+    "Chapel": {
+      "Title": "BUY A TRINKET",
+      "Blurb": "Spend bones in the chapel."
+    },
+    "Lens": {
+      "Title": "BREAK THE LENS",
+      "Blurb": "After lap 5, fight LENS."
+    },
+    "Ring": {
+      "Title": "RIDE THE NEXT RING",
+      "Blurb": "Keep the stash. Sit on YARD."
+    },
+    "Core": {
+      "Title": "BREAK THE CORE",
+      "Blurb": "Ricochet the nucleus."
+    },
+    "Done": {
+      "Title": "",
+      "Blurb": ""
     }
   },
   "__references": [],

@@ -2,17 +2,17 @@ namespace LoopedLoaded;
 
 public static class GameSettings
 {
-	public static ProgressionConfig Progression => Load( ref progression, "settings/progression.llprog" );
-	public static RunConfig Run => Load( ref run, "settings/run.llrun" );
-	public static EnemyConfig Enemies => Load( ref enemies, "settings/enemy.llenemy" );
-	public static TraitConfig Traits => Load( ref traits, "settings/traits.lltrait" );
-	public static CityConfig City => Load( ref city, "settings/city.llcity" );
-	public static BossConfig Boss => Load( ref boss, "settings/boss.llboss" );
+	public static ProgressionConfig Progression => Load( ref progression, "settings/progression.omrprog" );
+	public static RunConfig Run => Load( ref run, "settings/run.omrrun" );
+	public static EnemyConfig Enemies => Load( ref enemies, "settings/enemy.omrenemy" );
+	public static TraitConfig Traits => Load( ref traits, "settings/traits.omrtrait" );
+	public static CityConfig City => Load( ref city, "settings/city.omrcity" );
+	public static BossConfig Boss => Load( ref boss, "settings/boss.omrboss" );
 	public static TextConfig Text
 	{
 		get
 		{
-			var loaded = Load( ref text, "settings/text.lltext" );
+			var loaded = Load( ref text, "settings/text.omrtext" );
 			loaded.Ensure();
 			return loaded;
 		}

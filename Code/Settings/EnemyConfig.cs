@@ -1,6 +1,6 @@
 namespace LoopedLoaded;
 
-[AssetType( Name = "Enemy Config", Extension = "llenemy", Category = "Looped Loaded" )]
+[AssetType( Name = "Enemy Config", Extension = "omrenemy", Category = "Looped Loaded" )]
 public class EnemyConfig : GameResource
 {
 	[Property] public float InnerPad { get; set; } = 160f;

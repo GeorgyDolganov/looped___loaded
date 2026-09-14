@@ -1,9 +1,10 @@
 namespace LoopedLoaded;
 
-[AssetType( Name = "Progression Config", Extension = "llprog", Category = "Looped Loaded" )]
+[AssetType( Name = "Progression Config", Extension = "omrprog", Category = "Looped Loaded" )]
 public class ProgressionConfig : GameResource
 {
-	[Property] public float ThreatRatio { get; set; } = 1.22f;
+	[Property] public float ThreatRatio { get; set; } = 1.08f;
+	[Property] public float SwarmRatio { get; set; } = 1.4f;
 	[Property] public float PowerRatio { get; set; } = 1.6f;
 	[Property] public float CostRatio { get; set; } = 2f;
 	[Property] public float TraitRatio { get; set; } = 1.4f;
@@ -14,8 +15,9 @@ public class ProgressionConfig : GameResource
 	[Property] public float RoundRatio { get; set; } = 1.25f;
 	[Property] public int MaxSlots { get; set; } = 9;
 	[Property] public int BossBaseHealth { get; set; } = 12;
-	[Property] public int ExtraBodiesOffset { get; set; } = 2;
-	[Property] public int ExtraBodiesMax { get; set; } = 4;
+	[Property] public float ExtraBodiesScale { get; set; } = 2f;
+	[Property] public int ExtraBodiesOffset { get; set; } = 0;
+	[Property] public int ExtraBodiesMax { get; set; } = 14;
 	[Property] public int RoundsGrantedMin { get; set; } = 1;
 	[Property] public int RoundsGrantedMax { get; set; } = 4;
 	[Property] public float SlowDrainBase { get; set; } = 0.55f;

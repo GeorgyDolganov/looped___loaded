@@ -1,6 +1,6 @@
 namespace LoopedLoaded;
 
-[AssetType( Name = "Trait Config", Extension = "lltrait", Category = "Looped Loaded" )]
+[AssetType( Name = "Trait Config", Extension = "omrtrait", Category = "Looped Loaded" )]
 public class TraitConfig : GameResource
 {
 	[Property] public int MaxLevel { get; set; } = 3;

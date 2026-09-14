@@ -7,6 +7,7 @@ public sealed class GameSave
 	public int Warehouse { get; set; }
 	public int BestExtract { get; set; }
 	public int BestLine { get; set; } = -1;
+	public List<string> Tasks { get; set; } = new();
 	public List<PlotSave> Plots { get; set; } = new();
 
 	public int BuildingCount
@@ -27,7 +28,7 @@ public sealed class GameSave
 		}
 	}
 
-	public bool HasProgress => Warehouse > 0 || BestExtract > 0 || BuildingCount > 0 || BestLine >= 0;
+	public bool HasProgress => Warehouse > 0 || BestExtract > 0 || BuildingCount > 0 || BestLine >= 0 || (Tasks is not null && Tasks.Count > 0);
 }
 
 public sealed class PlotSave

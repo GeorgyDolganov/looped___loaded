@@ -1,6 +1,6 @@
 # ONE ROUND TRIP
 
-> Документ сменён. Актуальная версия: [ONE_ROUND_TRIP_GDD_v0.4.md](ONE_ROUND_TRIP_GDD_v0.4.md)
+> Документ сменён. Актуальная версия: [ONE_ROUND_TRIP_GDD_v0.5.md](ONE_ROUND_TRIP_GDD_v0.5.md). Каталог свойств (§8) по-прежнему отсюда.
 
 ## Game Design Document — v0.3 (архив)
 

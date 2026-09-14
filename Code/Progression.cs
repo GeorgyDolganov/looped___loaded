@@ -5,6 +5,7 @@ public static class Progression
 	static ProgressionConfig C => GameSettings.Progression;
 
 	public static float ThreatRatio => C.ThreatRatio;
+	public static float SwarmRatio => C.SwarmRatio;
 	public static float PowerRatio => C.PowerRatio;
 	public static float CostRatio => C.CostRatio;
 	public static float TraitRatio => C.TraitRatio;
@@ -18,6 +19,9 @@ public static class Progression
 
 	public static float Threat( int lap, int location = 0 )
 		=> MathF.Pow( ThreatRatio, Math.Max( 0, lap - 1 ) ) * LocationMul( location );
+
+	public static float Swarm( int lap, int location = 0 )
+		=> MathF.Pow( SwarmRatio, Math.Max( 0, lap - 1 ) + Math.Max( 0, location ) );
 
 	public static float Pace( int lap ) => MathF.Min( C.PaceCap, MathF.Pow( PaceRatio, Math.Max( 0, lap - 1 ) ) );
 
@@ -33,7 +37,7 @@ public static class Progression
 		=> Math.Max( 1, Whole( template * Threat( lap, location ) ) );
 
 	public static int ExtraBodies( int lap, int location = 0 )
-		=> Math.Clamp( Whole( Threat( lap, location ) ) - C.ExtraBodiesOffset, 0, C.ExtraBodiesMax );
+		=> Math.Clamp( (int)MathF.Round( ( Swarm( lap, location ) - 1f ) * C.ExtraBodiesScale ) - C.ExtraBodiesOffset, 0, C.ExtraBodiesMax );
 
 	public static int RoundsGranted( int arrivingLap )
 		=> Math.Clamp( Whole( MathF.Pow( RoundRatio, Math.Max( 0, arrivingLap - 2 ) ) ), C.RoundsGrantedMin, C.RoundsGrantedMax );
@@ -46,8 +50,8 @@ public static class Progression
 
 	public static int PackPrice( TraitPack pack ) => GameSettings.Traits.PackPrice( pack );
 
-	public static int TraitPrice( RoundTrait trait, int ownedLevel )
-		=> Cost( PackPrice( RoundTraits.Pack( trait ) ), Math.Max( 0, ownedLevel ) );
+	public static int TraitPrice( RoundTrait trait, int ownedLevel, int lap = 1, int location = 0 )
+		=> Math.Max( 1, Whole( Cost( PackPrice( RoundTraits.Pack( trait ) ), Math.Max( 0, ownedLevel ) ) * Swarm( lap, location ) ) );
 
 	public static int KillScrap( EnemyKind kind, int lap, int location = 0 )
 	{

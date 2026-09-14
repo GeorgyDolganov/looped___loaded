@@ -588,7 +588,7 @@
           "__enabled": true,
           "Flags": 0,
           "BoundaryRadius": 1170,
-          "Code": "YARD",
+          "Code": "GLASS",
           "CoreRadius": 230,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,

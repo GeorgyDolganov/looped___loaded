@@ -1,6 +1,6 @@
 namespace LoopedLoaded;
 
-[AssetType( Name = "City Config", Extension = "llcity", Category = "Looped Loaded" )]
+[AssetType( Name = "City Config", Extension = "omrcity", Category = "Looped Loaded" )]
 public class CityConfig : GameResource
 {
 	[Property] public int MinOffers { get; set; } = 2;

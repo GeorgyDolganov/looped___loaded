@@ -54,6 +54,14 @@
 					}
 					<label class="mod-extra">×@ThreatText</label>
 				</div>
+				@if ( Loop.HasTask )
+				{
+					<div class="task">
+						<label class="key">@GameSettings.Text.Hud.Task</label>
+						<label class="title">@Loop.TaskTitle</label>
+						<label class="blurb">@Loop.TaskBlurb</label>
+					</div>
+				}
 			</div>
 
 			<div class="top-right">
@@ -105,6 +113,14 @@
 					</div>
 					<label class="mods">@Loop.City.HoverText()</label>
 					<label class="clock">@CityBonuses</label>
+					@if ( Loop.HasTask )
+					{
+						<div class="task">
+							<label class="key">@GameSettings.Text.Hud.Task</label>
+							<label class="title">@Loop.TaskTitle</label>
+							<label class="blurb">@Loop.TaskBlurb</label>
+						</div>
+					}
 				</div>
 				<div class="bottom">
 					@if ( Loop.City.Building )
@@ -222,6 +238,14 @@
 				<label class="kicker">@GameSettings.Text.Pause.Kicker</label>
 				<label class="overlay-title">@GameSettings.Text.Pause.Title</label>
 				<label class="blurb">@GameSettings.Text.Pause.Blurb</label>
+				@if ( Loop.HasTask )
+				{
+					<div class="task overlay-task">
+						<label class="key">@GameSettings.Text.Hud.Task</label>
+						<label class="title">@Loop.TaskTitle</label>
+						<label class="blurb">@Loop.TaskBlurb</label>
+					</div>
+				}
 				<div class="cards">
 					<div class="card" onclick="@Resume">
 						<label class="key">@GameSettings.Text.Pause.Key1</label>
@@ -249,6 +273,14 @@
 				<label class="overlay-title">@GameSettings.Text.Menu.Title</label>
 				<label class="blurb">@GameSettings.Text.Menu.Blurb</label>
 				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Menu.SlotLine, Loop.ActiveSlot + 1, Loop.HasActiveSave ? Loop.SlotBlurb(Loop.ActiveSlot) : GameSettings.Text.Menu.SlotNew)</label>
+				@if ( Loop.HasTask )
+				{
+					<div class="task overlay-task">
+						<label class="key">@GameSettings.Text.Hud.Task</label>
+						<label class="title">@Loop.TaskTitle</label>
+						<label class="blurb">@Loop.TaskBlurb</label>
+					</div>
+				}
 				<div class="cards">
 					<div class="card" onclick="@StartRun">
 						<label class="key">@GameSettings.Text.Menu.Key1</label>
@@ -883,7 +915,9 @@
 		var g = System.HashCode.Combine(
 			Loop.IsValid() ? (int)Loop.Location : 0,
 			Loop.IsValid() ? Loop.BestLine : -1,
-			Loop.IsValid() && Loop.HasNextRing );
+			Loop.IsValid() && Loop.HasNextRing,
+			Loop.IsValid() ? Loop.TaskStamp : "",
+			Loop.IsValid() && Loop.HasTask );
 
 		return System.HashCode.Combine( a, b, c, d, e, f, g );
 	}
@@ -1005,6 +1039,45 @@
 		font-size: 13px;
 		color: #8aa4b8;
 		letter-spacing: 1px;
+	}
+
+	.task {
+		flex-direction: column;
+		align-items: flex-start;
+		margin-top: 12px;
+		max-width: 300px;
+	}
+
+	.task .key {
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 3px;
+		color: #ffd27a;
+	}
+
+	.task .title {
+		font-size: 16px;
+		font-weight: 700;
+		color: #eaf6ff;
+		margin-top: 2px;
+	}
+
+	.task .blurb {
+		font-size: 13px;
+		color: #8aa4b8;
+		margin-top: 2px;
+	}
+
+	.overlay .task.overlay-task {
+		align-items: center;
+		max-width: 520px;
+		margin-top: 0px;
+		margin-bottom: 18px;
+	}
+
+	.overlay .task.overlay-task .blurb {
+		text-align: center;
+		margin-bottom: 0px;
 	}
 
 	.mod-chip {

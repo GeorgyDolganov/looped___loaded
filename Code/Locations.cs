@@ -10,9 +10,11 @@ public static class Locations
 {
 	public static readonly RunLocation[] Route =
 	{
-		RunLocation.Yard,
-		RunLocation.Glass
+		RunLocation.Glass,
+		RunLocation.Yard
 	};
+
+	public static RunLocation Start => Route[0];
 
 	public static int Index( RunLocation location )
 	{

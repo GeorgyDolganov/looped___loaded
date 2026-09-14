@@ -1,6 +1,6 @@
 namespace LoopedLoaded;
 
-[AssetType( Name = "Boss Config", Extension = "llboss", Category = "Looped Loaded" )]
+[AssetType( Name = "Boss Config", Extension = "omrboss", Category = "Looped Loaded" )]
 public class BossConfig : GameResource
 {
 	[Property] public float Phase2Health { get; set; } = 0.66f;

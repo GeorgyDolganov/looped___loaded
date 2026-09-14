@@ -1,6 +1,6 @@
 namespace LoopedLoaded;
 
-[AssetType( Name = "Run Config", Extension = "llrun", Category = "Looped Loaded" )]
+[AssetType( Name = "Run Config", Extension = "omrrun", Category = "Looped Loaded" )]
 public class RunConfig : GameResource
 {
 	[Property] public int BossOfferLap { get; set; } = 5;

@@ -13,7 +13,7 @@ public sealed class GameLoop : Component
 	public RunPhase Phase { get; private set; } = RunPhase.Menu;
 	public bool InCity => Phase == RunPhase.City;
 	public bool InMenu => Phase == RunPhase.Menu;
-	public RunLocation Location { get; private set; } = RunLocation.Yard;
+	public RunLocation Location { get; private set; } = Locations.Start;
 	public int LocationIndex => Locations.Index( Location );
 	public bool HasNextRing => !Locations.IsLast( Location );
 	public string LocationCode => Locations.Code( Location );
@@ -134,6 +134,11 @@ public sealed class GameLoop : Component
 	bool bossWon;
 	bool skipHinted;
 	public int BestLine { get; private set; } = -1;
+	readonly ProgressTrack progress = new();
+	public bool HasTask => progress.HasCurrent;
+	public string TaskTitle => progress.Current?.Title ?? "";
+	public string TaskBlurb => progress.Current?.Blurb ?? "";
+	public string TaskStamp => progress.Stamp;
 
 	public string SlotBlurb( int index )
 	{
@@ -183,6 +188,7 @@ public sealed class GameLoop : Component
 			return;
 
 		var save = City.Capture( BestExtract, BestLine );
+		save.Tasks = progress.Capture();
 		if ( !save.HasProgress && !SaveStore.Exists( ActiveSlot ) )
 			return;
 
@@ -236,6 +242,7 @@ public sealed class GameLoop : Component
 		{
 			BestExtract = 0;
 			BestLine = -1;
+			progress.Clear();
 			City?.Wipe();
 		}
 
@@ -250,6 +257,7 @@ public sealed class GameLoop : Component
 		{
 			BestExtract = 0;
 			BestLine = -1;
+			progress.Clear();
 			City?.Wipe();
 			return;
 		}
@@ -257,6 +265,7 @@ public sealed class GameLoop : Component
 		BestExtract = save.BestExtract;
 		BestLine = save.BestLine;
 		City?.Apply( save );
+		progress.Apply( save.Tasks, City, BestLine, BestExtract );
 	}
 
 	void RefreshSaves()
@@ -269,6 +278,11 @@ public sealed class GameLoop : Component
 	{
 		Notice = text;
 		noticeAt = Time.Now;
+	}
+
+	public void NoteProgress( ProgressGoal goal, RunLocation location = default )
+	{
+		progress.Note( goal, location );
 	}
 
 	public void ShowMenu()
@@ -289,7 +303,7 @@ public sealed class GameLoop : Component
 		}
 
 		City?.SetVisible( false );
-		Location = RunLocation.Yard;
+		Location = Locations.Start;
 		if ( Arena.IsValid() )
 			Arena.ApplyLocation( Location );
 		Phase = RunPhase.Menu;
@@ -523,7 +537,7 @@ public sealed class GameLoop : Component
 		BloodShields = 0;
 		SnapUntil = 0f;
 		Lap = 1;
-		Location = RunLocation.Yard;
+		Location = Locations.Start;
 		if ( Arena.IsValid() )
 			Arena.ApplyLocation( Location );
 		layoutSeed = Game.Random.Int( 1, int.MaxValue - 1 );
@@ -612,6 +626,7 @@ public sealed class GameLoop : Component
 			Announce( chained > 0
 				? T.F( T.Announce.RoundChamberedHits, slot.Index + 1, chained )
 				: T.F( T.Announce.RoundChambered, slot.Index + 1 ) );
+		NoteProgress( ProgressGoal.CatchRound );
 	}
 
 	public void RecoverDropped( RoundSlot slot, string reason )
@@ -1024,6 +1039,8 @@ public sealed class GameLoop : Component
 		if ( LocationIndex > BestLine )
 			BestLine = LocationIndex;
 
+		NoteProgress( ProgressGoal.BeatBoss, Location );
+
 		if ( HasNextRing )
 		{
 			Phase = RunPhase.DecideRing;
@@ -1073,6 +1090,7 @@ public sealed class GameLoop : Component
 		Phase = RunPhase.DecideLap;
 		ArenaSounds.Tele();
 		Announce( T.F( T.Announce.LapClear, Lap ) );
+		NoteProgress( ProgressGoal.FinishLap );
 	}
 
 	public void ChooseExtract()
@@ -1134,9 +1152,9 @@ public sealed class GameLoop : Component
 	public int PriceOf( RoundTrait trait )
 	{
 		if ( !Inventory.IsValid() )
-			return Progression.TraitPrice( trait, 0 );
+			return Progression.TraitPrice( trait, 0, Lap, LocationIndex );
 
-		return Progression.TraitPrice( trait, Inventory.Loadout.TraitLevel( trait ) );
+		return Progression.TraitPrice( trait, Inventory.Loadout.TraitLevel( trait ), Lap, LocationIndex );
 	}
 
 	public void ChooseCity()
@@ -1160,7 +1178,10 @@ public sealed class GameLoop : Component
 	{
 		var packed = rounds >= 0 ? rounds : Stash;
 		if ( deposit && City.IsValid() )
+		{
 			City.Deposit( packed );
+			NoteProgress( ProgressGoal.Extract );
+		}
 
 		if ( Inventory.IsValid() )
 		{
@@ -1258,7 +1279,7 @@ public sealed class GameLoop : Component
 		Phase = RunPhase.PickTrait;
 	}
 
-	static RoundTrait TakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, RunLoadout loadout, int budget, params RoundTrait[] taken )
+	RoundTrait TakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, RunLoadout loadout, int budget, params RoundTrait[] taken )
 	{
 		bool Used( RoundTrait trait )
 		{
@@ -1297,7 +1318,7 @@ public sealed class GameLoop : Component
 			foreach ( var trait in pool )
 			{
 				var level = loadout is null ? 0 : loadout.TraitLevel( trait );
-				if ( Progression.TraitPrice( trait, level ) <= budget )
+				if ( Progression.TraitPrice( trait, level, Lap, LocationIndex ) <= budget )
 					cheap.Add( trait );
 			}
 
@@ -1356,6 +1377,7 @@ public sealed class GameLoop : Component
 		MarkBought( trait );
 		ArenaSounds.Pickup();
 		Announce( T.F( T.Announce.TraitBought, RoundTraits.Title( trait ), Inventory.Loadout.TraitLevel( trait ), Scrap ) );
+		NoteProgress( ProgressGoal.BuyTrait );
 
 		if ( OpenOfferCount() == 0 )
 			LeaveShop();
@@ -1530,39 +1552,39 @@ public sealed class GameLoop : Component
 				break;
 			case 2:
 				Add( EnemyKind.Chaser, offset - 0.7f, hunt, 1 );
-				Add( EnemyKind.Chaser, offset + 0.7f, hunt + 40f, 1 );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.7f, hunt + 40f, 1 );
 				break;
 			case 3:
 				Add( EnemyKind.Shield, offset, mid, 2 );
 				Add( EnemyKind.Chaser, offset + 1.6f, hunt, 2 );
-				Add( EnemyKind.Chaser, offset - 1.4f, inner, 2 );
+				Add( WaveCloak( EnemyKind.Chaser ), offset - 1.4f, inner, 2 );
 				break;
 			case 4:
 				Add( EnemyKind.Shield, offset - 0.5f, mid, 2 );
 				Add( EnemyKind.Shooter, offset + 1.8f, mid, 2 );
-				Add( EnemyKind.Chaser, offset + 2.8f, hunt, 2 );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 2.8f, hunt, 2 );
 				break;
 			case 5:
 				Add( EnemyKind.Chaser, offset - 1.1f, hunt, 2 );
-				Add( EnemyKind.Chaser, offset + 0.4f, hunt, 2 );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.4f, hunt, 2 );
 				Add( EnemyKind.Shooter, offset + 2.2f, mid, 2 );
 				Add( EnemyKind.Chaser, offset + 3.4f, inner, 2 );
 				break;
 			case 6:
-				Add( EnemyKind.Chaser, offset, hunt, 2 );
+				Add( WaveCloak( EnemyKind.Chaser ), offset, hunt, 2 );
 				Add( EnemyKind.Shield, offset + 2.1f, mid, 2 );
 				Add( EnemyKind.Shooter, offset + 4.0f, mid, 2 );
 				Add( EnemyKind.Shooter, offset - 2.2f, mid, 2 );
 				break;
 			case 7:
 				Add( EnemyKind.Chaser, offset - 0.8f, hunt, 2 );
-				Add( EnemyKind.Chaser, offset + 0.8f, outer - 40f, 2 );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.8f, outer - 40f, 2 );
 				Add( EnemyKind.Shield, offset + 2.4f, mid, 2 );
 				Add( EnemyKind.Shooter, offset + 4.2f, mid, 2 );
 				break;
 			default:
 				Add( EnemyKind.Chaser, offset, hunt, 2 );
-				Add( EnemyKind.Chaser, offset + 3.1f, hunt, 2 );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 3.1f, hunt, 2 );
 				Add( EnemyKind.Shield, offset + 1.5f, mid, 2 );
 				Add( EnemyKind.Shield, offset + 3.6f, mid, 2 );
 				Add( EnemyKind.Shooter, offset + 2.5f, mid, 2 );
@@ -1570,9 +1592,7 @@ public sealed class GameLoop : Component
 				break;
 		}
 
-		var extra = Progression.ExtraBodies( lap, LocationIndex );
-		for ( var i = 0; i < extra; i++ )
-			Add( EnemyKind.Chaser, offset + GameSettings.Enemies.Wave.ExtraAngle * ( i + 3 ), hunt, 1 );
+		AddWaveExtras( lap, offset, hunt, mid, inner, Add, EnemyKind.Chaser );
 	}
 
 	void SpawnGlassWave( int lap, float offset, float hunt, float mid, float inner, float outer, Action<EnemyKind, float, float, int> add )
@@ -1584,37 +1604,53 @@ public sealed class GameLoop : Component
 				break;
 			case 2:
 				add( EnemyKind.Splinter, offset - 0.6f, hunt, 1 );
-				add( EnemyKind.Glimmer, offset + 1.4f, mid, 1 );
+				add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, 1 );
 				break;
 			case 3:
 				add( EnemyKind.Shardguard, offset, mid, 2 );
 				add( EnemyKind.Splinter, offset + 1.7f, hunt, 2 );
-				add( EnemyKind.Glimmer, offset - 1.5f, inner, 2 );
+				add( WaveCloak( EnemyKind.Splinter ), offset - 1.5f, inner, 2 );
 				break;
 			case 4:
 				add( EnemyKind.Shardguard, offset - 0.4f, mid, 2 );
-				add( EnemyKind.Glimmer, offset + 1.9f, hunt, 2 );
+				add( WaveCloak( EnemyKind.Splinter ), offset + 1.9f, hunt, 2 );
 				add( EnemyKind.Shooter, offset + 3.2f, mid, 2 );
 				break;
 			case 5:
 				add( EnemyKind.Splinter, offset - 1.0f, hunt, 2 );
-				add( EnemyKind.Glimmer, offset + 0.6f, hunt, 2 );
+				add( WaveCloak( EnemyKind.Splinter ), offset + 0.6f, hunt, 2 );
 				add( EnemyKind.Shardguard, offset + 2.3f, mid, 2 );
 				add( EnemyKind.Chaser, offset + 3.6f, inner, 2 );
 				break;
 			default:
 				add( EnemyKind.Splinter, offset, hunt, 2 );
 				add( EnemyKind.Splinter, offset + 3.0f, hunt, 2 );
-				add( EnemyKind.Glimmer, offset + 1.4f, mid, 2 );
+				add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, 2 );
 				add( EnemyKind.Shardguard, offset + 3.8f, mid, 2 );
 				add( EnemyKind.Shooter, offset + 2.4f, mid, 2 );
 				break;
 		}
 
+		AddWaveExtras( lap, offset, hunt, mid, inner, add, EnemyKind.Splinter );
+	}
+
+	void AddWaveExtras( int lap, float offset, float hunt, float mid, float inner, Action<EnemyKind, float, float, int> add, EnemyKind kind )
+	{
 		var extra = Progression.ExtraBodies( lap, LocationIndex );
 		for ( var i = 0; i < extra; i++ )
-			add( EnemyKind.Splinter, offset + GameSettings.Enemies.Wave.ExtraAngle * (i + 3), hunt, 1 );
+		{
+			var angle = offset + MathF.Tau * ( i + 0.37f ) / extra;
+			var ring = ( i % 3 ) switch
+			{
+				0 => hunt,
+				1 => mid,
+				_ => inner
+			};
+			add( WaveCloak( kind ), angle, ring, 1 );
+		}
 	}
+
+	EnemyKind WaveCloak( EnemyKind fallback ) => Locations.IsLast( Location ) ? EnemyKind.Glimmer : fallback;
 
 	void EnterNextRing()
 	{
@@ -1622,6 +1658,7 @@ public sealed class GameLoop : Component
 			return;
 
 		Inventory?.ChamberAll();
+		NoteProgress( ProgressGoal.RideNextRing );
 		if ( Health < HeartMax )
 			Health += GameSettings.Run.RingHeal;
 
@@ -1647,6 +1684,7 @@ public sealed class GameLoop : Component
 		Mouse.CursorType = "crosshair";
 		ArenaSounds.Tele();
 		Announce( T.F( T.Announce.PlaceRule, LocationCode, LocationRule ) );
+		Autosave();
 	}
 
 	public void RerollBoard()

@@ -1,6 +1,6 @@
 namespace LoopedLoaded;
 
-[AssetType( Name = "Text Config", Extension = "lltext", Category = "Looped Loaded" )]
+[AssetType( Name = "Text Config", Extension = "omrtext", Category = "Looped Loaded" )]
 public class TextConfig : GameResource
 {
 	[Property] public HudCopy Hud { get; set; } = new();
@@ -15,6 +15,7 @@ public class TextConfig : GameResource
 	[Property] public TraitsCopy Traits { get; set; } = new();
 	[Property] public BuildingsCopy Buildings { get; set; } = new();
 	[Property] public PlacesCopy Places { get; set; } = new();
+	[Property] public ProgressCopy Progress { get; set; } = new();
 
 	public void Ensure()
 	{
@@ -31,6 +32,7 @@ public class TextConfig : GameResource
 		Traits.Rarity ??= new();
 		Buildings ??= new();
 		Places ??= new();
+		Progress ??= new();
 	}
 
 	public string F( string template, params object[] args )
@@ -151,6 +153,27 @@ public class TextConfig : GameResource
 	public string PlaceBossBlurb( RunLocation location, bool last ) => last
 		? Or( Place( location ).BossLast, "" )
 		: Or( Place( location ).BossKeep, "" );
+
+	public ProgressStepCopy ProgressStep( string id )
+	{
+		var pack = Progress ??= new();
+		return id switch
+		{
+			"catch" => pack.Catch ??= new(),
+			"lap" => pack.Lap ??= new(),
+			"extract" => pack.Extract ??= new(),
+			"grow" => pack.Grow ??= new(),
+			"inject" => pack.Inject ??= new(),
+			"chapel" => pack.Chapel ??= new(),
+			"lens" => pack.Lens ??= new(),
+			"ring" => pack.Ring ??= new(),
+			"core" => pack.Core ??= new(),
+			_ => pack.Done ??= new()
+		};
+	}
+
+	public string ProgressTitle( string id ) => Or( ProgressStep( id ).Title, id?.ToUpperInvariant() ?? "" );
+	public string ProgressBlurb( string id ) => Or( ProgressStep( id ).Blurb, "" );
 
 	public string CityModeLabel( CityMode mode )
 	{
@@ -281,6 +304,66 @@ public class BuildingsCopy
 	};
 }
 
+public class ProgressStepCopy
+{
+	[Property] public string Title { get; set; }
+	[Property] public string Blurb { get; set; }
+}
+
+public class ProgressCopy
+{
+	[Property] public ProgressStepCopy Catch { get; set; } = new()
+	{
+		Title = "CATCH IT BACK",
+		Blurb = "Fire a round. Catch it before it dies."
+	};
+	[Property] public ProgressStepCopy Lap { get; set; } = new()
+	{
+		Title = "FINISH A LAP",
+		Blurb = "Reach the north mark. Extract or risk another."
+	};
+	[Property] public ProgressStepCopy Extract { get; set; } = new()
+	{
+		Title = "BANK THE BIOMASS",
+		Blurb = "Extract stashed rounds to the altar."
+	};
+	[Property] public ProgressStepCopy Grow { get; set; } = new()
+	{
+		Title = "GROW A FRAME",
+		Blurb = "Place an organ frame on the altar grid."
+	};
+	[Property] public ProgressStepCopy Inject { get; set; } = new()
+	{
+		Title = "INJECT IT",
+		Blurb = "Shoot the frame until it works."
+	};
+	[Property] public ProgressStepCopy Chapel { get; set; } = new()
+	{
+		Title = "BUY A TRINKET",
+		Blurb = "Spend bones in the chapel."
+	};
+	[Property] public ProgressStepCopy Lens { get; set; } = new()
+	{
+		Title = "BREAK THE LENS",
+		Blurb = "After lap 5, fight LENS."
+	};
+	[Property] public ProgressStepCopy Ring { get; set; } = new()
+	{
+		Title = "RIDE THE NEXT RING",
+		Blurb = "Keep the stash. Sit on YARD."
+	};
+	[Property] public ProgressStepCopy Core { get; set; } = new()
+	{
+		Title = "BREAK THE CORE",
+		Blurb = "Ricochet the nucleus."
+	};
+	[Property] public ProgressStepCopy Done { get; set; } = new()
+	{
+		Title = "",
+		Blurb = ""
+	};
+}
+
 public class PlacesCopy
 {
 	[Property] public string LineCleared { get; set; } = "{0} CLEARED";
@@ -306,7 +389,7 @@ public class PlacesCopy
 		FightCall = "LENS FIGHT",
 		FightHint = "THE LENS  ·  BREAK GLASS THEN HIT THE SIDE",
 		Armor = "ARMOR  ·  BREAK GLASS OR HIT THE SIDE",
-		BossKeep = "Shatter the glass, then hit the side. Keep the stash.",
+		BossKeep = "Shatter the glass, then hit the side. Keep the stash. Extract or ride the next ring.",
 		BossLast = "Shatter the glass, then hit the side. Win: stash ×2, then city."
 	};
 }
@@ -323,6 +406,7 @@ public class HudCopy
 	[Property] public string Dash { get; set; } = "DASH";
 	[Property] public string Slow { get; set; } = "SLOW";
 	[Property] public string HurtStamp { get; set; } = "-1";
+	[Property] public string Task { get; set; } = "NEXT";
 }
 
 public class PauseCopy

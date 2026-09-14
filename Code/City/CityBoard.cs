@@ -109,6 +109,28 @@ public sealed class CityBoard : Component
 		WipePlots();
 	}
 
+	public bool HasOccupiedPlot()
+	{
+		foreach ( var plot in plots )
+		{
+			if ( plot.Occupied )
+				return true;
+		}
+
+		return false;
+	}
+
+	public bool HasWorkingPlot()
+	{
+		foreach ( var plot in plots )
+		{
+			if ( plot.Working )
+				return true;
+		}
+
+		return false;
+	}
+
 	void WipePlots()
 	{
 		foreach ( var plot in plots )
@@ -339,6 +361,8 @@ public sealed class CityBoard : Component
 			Loop?.Announce( plot.Working
 				? GameSettings.Text.F( GameSettings.Text.City.LevelReflects, Buildings.Title( plot.Kind ), plot.Level )
 				: GameSettings.Text.F( GameSettings.Text.City.Level, Buildings.Title( plot.Kind ), plot.Level ) );
+			if ( plot.Working )
+				Loop?.NoteProgress( ProgressGoal.WorkOrgan );
 		}
 
 		RefreshPlot( plot );
@@ -699,6 +723,7 @@ public sealed class CityBoard : Component
 		RefreshPlot( Hovered );
 		ArenaSounds.MenuOk();
 		Loop?.Announce( GameSettings.Text.F( GameSettings.Text.City.PlacedFrame, Buildings.Title( Selected ) ) );
+		Loop?.NoteProgress( ProgressGoal.PlaceFrame );
 		Loop?.Autosave();
 	}
 

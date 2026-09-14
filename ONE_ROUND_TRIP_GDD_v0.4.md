@@ -1,9 +1,11 @@
 # ONE ROUND TRIP
 
-## Game Design Document — v0.4
+> Документ сменён. Актуальная версия: [ONE_ROUND_TRIP_GDD_v0.5.md](ONE_ROUND_TRIP_GDD_v0.5.md)
+
+## Game Design Document — v0.4 (архив)
 
 **Дата:** 6 сентября 2026  
-**Статус:** рабочий документ для Game Jam III  
+**Статус:** архив. Четыре остановки, старт с YARD. Сменён v0.5.  
 **Платформа:** S&box, PC  
 **Жанр:** аркадный экшен с рикошетами, экстрактом ресурса, мета-городом и маршрутом локаций  
 **Рабочий слоган:** *One more lap. One more ring. Cash out or ride the next line.*
