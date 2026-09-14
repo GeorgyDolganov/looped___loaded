@@ -13,7 +13,7 @@ public sealed class GameLoop : Component
 	public RunPhase Phase { get; private set; } = RunPhase.Menu;
 	public bool InCity => Phase == RunPhase.City;
 	public bool InMenu => Phase == RunPhase.Menu;
-	public RunLocation Location { get; private set; } = Locations.Start;
+	public RunLocation Location { get; private set; } = RunLocation.Glass;
 	public int LocationIndex => Locations.Index( Location );
 	public bool HasNextRing => !Locations.IsLast( Location );
 	public string LocationCode => Locations.Code( Location );
@@ -39,7 +39,7 @@ public sealed class GameLoop : Component
 	public bool IsFrozen => Paused || Phase != RunPhase.Playing;
 
 	TextConfig T => GameSettings.Text;
-	public string Notice { get; private set; } = GameSettings.Text.Announce.AimFire;
+	public string Notice { get; private set; } = "AIM. FIRE. CATCH IT BACK.";
 	public float NoticeAge => Time.Now - noticeAt;
 	public bool NoticeVisible => NoticeAge < NoticeDuration;
 
@@ -139,6 +139,11 @@ public sealed class GameLoop : Component
 	public string TaskTitle => progress.Current?.Title ?? "";
 	public string TaskBlurb => progress.Current?.Blurb ?? "";
 	public string TaskStamp => progress.Stamp;
+	public IReadOnlyList<ProgressStep> CompletedTasks => progress.CompletedSteps;
+	public int TaskDone => progress.CompletedSteps.Count;
+	public int TaskTotal => ProgressTrack.Total;
+	float showcaseAt = -99f;
+	public float ShowcaseHold => Math.Clamp( 1.55f + TaskDone * 0.08f, 1.7f, 2.7f );
 
 	public string SlotBlurb( int index )
 	{
@@ -802,7 +807,19 @@ public sealed class GameLoop : Component
 			return;
 		}
 
-		if ( Phase == RunPhase.Dead || Phase == RunPhase.Extracted )
+		if ( Phase == RunPhase.Extracted )
+		{
+			Mouse.CursorType = "pointer";
+			if ( Time.Now - showcaseAt >= ShowcaseHold
+				|| Input.Pressed( "Jump" )
+				|| Input.Pressed( "Use" )
+				|| Input.Pressed( "Attack1" )
+				|| Input.Pressed( "Slot1" ) )
+				ChooseCity();
+			return;
+		}
+
+		if ( Phase == RunPhase.Dead )
 		{
 			Mouse.CursorType = "pointer";
 			return;
@@ -1176,6 +1193,13 @@ public sealed class GameLoop : Component
 
 	void EnterCity( bool deposit, int rounds = -1 )
 	{
+		if ( !deposit && Phase == RunPhase.Extracted )
+		{
+			Phase = RunPhase.City;
+			Mouse.CursorType = "crosshair";
+			return;
+		}
+
 		var packed = rounds >= 0 ? rounds : Stash;
 		if ( deposit && City.IsValid() )
 		{
@@ -1190,14 +1214,24 @@ public sealed class GameLoop : Component
 		}
 
 		ClearCombat();
-		Phase = RunPhase.City;
 		City?.EnsureBuilt();
 		City?.SetVisible( true );
 
 		if ( Runner.IsValid() )
 			Runner.GameObject.Enabled = false;
 		ArenaSounds.Tele();
-		Mouse.CursorType = "crosshair";
+		if ( deposit )
+		{
+			Phase = RunPhase.Extracted;
+			showcaseAt = Time.Now;
+			Mouse.CursorType = "pointer";
+		}
+		else
+		{
+			Phase = RunPhase.City;
+			Mouse.CursorType = "crosshair";
+		}
+
 		Announce( deposit ? T.F( T.Announce.CityDeposit, ExtractedRounds ) : T.Announce.City );
 		Autosave();
 	}

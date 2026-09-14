@@ -14,7 +14,7 @@ public static class Locations
 		RunLocation.Yard
 	};
 
-	public static RunLocation Start => Route[0];
+	public const RunLocation Start = RunLocation.Glass;
 
 	public static int Index( RunLocation location )
 	{

@@ -489,6 +489,9 @@ public class DecideCopy
 	[Property] public string ExtractedOne { get; set; } = "{0} ROUND BANKED  ·  BEST {1}";
 	[Property] public string ExtractedMany { get; set; } = "{0} ROUNDS BANKED  ·  BEST {1}";
 	[Property] public string ExtractedCityBlurb { get; set; } = "Return to construction.";
+	[Property] public string ShowcaseKicker { get; set; } = "DONE";
+	[Property] public string ShowcaseCount { get; set; } = "{0} / {1}";
+	[Property] public string ShowcaseContinue { get; set; } = "CLICK  ·  SPACE  ·  R ALTAR";
 	[Property] public string City { get; set; } = "CITY";
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
@@ -528,6 +531,7 @@ public class HelpCopy
 	[Property] public string ShopThree { get; set; } = "CLICK A CARD  ·  1 / 2 / 3 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
 	[Property] public string ShopTwo { get; set; } = "CLICK A CARD  ·  1 / 2 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
 	[Property] public string Dead { get; set; } = "CLICK CITY  ·  R CITY  ·  ESC MENU";
+	[Property] public string Extracted { get; set; } = "CLICK  ·  SPACE  ·  R ALTAR";
 	[Property] public string BossGlass { get; set; } = "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
 	[Property] public string BossYard { get; set; } = "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
 	[Property] public string PlayGlassSkip { get; set; } = "PANELS SHATTER  ·  E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";

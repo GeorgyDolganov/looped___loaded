@@ -463,16 +463,24 @@
 
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.Extracted )
 		{
-			<div class="overlay choose">
+			<div class="overlay choose showcase" onclick="@GoCity">
+				<label class="kicker">@GameSettings.Text.Decide.ShowcaseKicker  ·  @GameSettings.Text.F(GameSettings.Text.Decide.ShowcaseCount, Loop.TaskDone, Loop.TaskTotal)</label>
 				<label class="overlay-title">@GameSettings.Text.Decide.Extracted</label>
 				<label class="blurb">@(Loop.ExtractedRounds == 1 ? GameSettings.Text.F(GameSettings.Text.Decide.ExtractedOne, Loop.ExtractedRounds, Loop.BestExtract) : GameSettings.Text.F(GameSettings.Text.Decide.ExtractedMany, Loop.ExtractedRounds, Loop.BestExtract))</label>
-				<div class="cards">
-					<div class="card" onclick="@GoCity">
-						<label class="key">@GameSettings.Text.Decide.KeyR</label>
-						<label class="title">@GameSettings.Text.Decide.City</label>
-						<label class="blurb">@GameSettings.Text.Decide.ExtractedCityBlurb</label>
-					</div>
+				<div class="reel">
+					@for ( var i = 0; i < Loop.CompletedTasks.Count; i++ )
+					{
+						var step = Loop.CompletedTasks[i];
+						<div class="beat" style="animation-delay: @(i * 70)ms">
+							<div class="mark"></div>
+							<div class="copy">
+								<label class="title">@step.Title</label>
+								<label class="blurb">@step.Blurb</label>
+							</div>
+						</div>
+					}
 				</div>
+				<label class="blurb continue">@GameSettings.Text.Decide.ShowcaseContinue</label>
 			</div>
 		}
 
@@ -532,7 +540,11 @@
 	void PickOfferC() => Loop?.ChooseUpgrade( Loop.OfferC );
 	void BuyAllOffers() => Loop?.ChooseBuyAll();
 	void FinishShop() => Loop?.ChooseShopGo();
-	void GoCity() => Loop?.ChooseCity();
+	void GoCity()
+	{
+		Loop?.NoteUiClick();
+		Loop?.ChooseCity();
+	}
 
 	int LapPercent => Loop.IsValid() ? (int)(Loop.LapFraction * 100f) : 0;
 	int BossPercent => Loop.IsValid() && Loop.BossMaxHealth > 0 ? (int)(Loop.BossHealth / (float)Loop.BossMaxHealth * 100f) : 0;
@@ -619,7 +631,8 @@
 				RunPhase.DecideLap => Loop.HasBossOffer ? GameSettings.Text.F( GameSettings.Text.Help.DecideLapBoss, Loop.BossName ) : GameSettings.Text.Help.DecideLap,
 				RunPhase.DecideRing => Loop.HasNextRing ? GameSettings.Text.Help.DecideRingNext : GameSettings.Text.Help.DecideRing,
 				RunPhase.PickTrait => Loop.HasThirdOffer ? GameSettings.Text.Help.ShopThree : GameSettings.Text.Help.ShopTwo,
-				RunPhase.Dead or RunPhase.Extracted => GameSettings.Text.Help.Dead,
+				RunPhase.Dead => GameSettings.Text.Help.Dead,
+				RunPhase.Extracted => GameSettings.Text.Help.Extracted,
 				_ => Loop.InBossFight
 					? Loop.Location == RunLocation.Glass
 						? GameSettings.Text.Help.BossGlass
@@ -917,7 +930,8 @@
 			Loop.IsValid() ? Loop.BestLine : -1,
 			Loop.IsValid() && Loop.HasNextRing,
 			Loop.IsValid() ? Loop.TaskStamp : "",
-			Loop.IsValid() && Loop.HasTask );
+			Loop.IsValid() && Loop.HasTask,
+			Loop.IsValid() ? Loop.TaskDone : 0 );
 
 		return System.HashCode.Combine( a, b, c, d, e, f, g );
 	}
@@ -1757,6 +1771,69 @@
 		font-size: 16px;
 		color: #8aa4b8;
 		margin-bottom: 22px;
+	}
+
+	.overlay.showcase {
+		pointer-events: all;
+		cursor: pointer;
+		background-color: rgba(4, 8, 14, 0.72);
+	}
+
+	.overlay.showcase .reel {
+		flex-direction: column;
+		align-items: stretch;
+		width: 520px;
+		max-width: 86%;
+		margin-bottom: 18px;
+	}
+
+	.overlay.showcase .beat {
+		flex-direction: row;
+		align-items: center;
+		padding: 10px 14px;
+		margin-bottom: 6px;
+		border-radius: 10px;
+		background-color: rgba(10, 18, 26, 0.92);
+		border: 2px solid rgba(255, 184, 60, 0.45);
+		opacity: 0;
+		animation-name: card-in;
+		animation-duration: 0.28s;
+		animation-timing-function: ease-out;
+		animation-fill-mode: forwards;
+	}
+
+	.overlay.showcase .beat .mark {
+		width: 14px;
+		height: 14px;
+		border-radius: 4px;
+		margin-right: 12px;
+		background-color: #ffd27a;
+	}
+
+	.overlay.showcase .beat .copy {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.overlay.showcase .beat .title {
+		font-size: 16px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #eaf6ff;
+	}
+
+	.overlay.showcase .beat .blurb {
+		font-size: 13px;
+		color: #8aa4b8;
+		margin-bottom: 0px;
+		margin-top: 2px;
+	}
+
+	.overlay.showcase .blurb.continue {
+		margin-bottom: 0px;
+		font-size: 13px;
+		letter-spacing: 2px;
+		color: #5f7f96;
 	}
 
 	.cards {

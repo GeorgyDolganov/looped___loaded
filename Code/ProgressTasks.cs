@@ -39,12 +39,15 @@ public sealed class ProgressTrack
 
 	readonly HashSet<string> done = new( StringComparer.OrdinalIgnoreCase );
 
+	public static int Total => Route.Length;
+
 	public ProgressTrack()
 	{
 		Refresh();
 	}
 
 	public ProgressStep Current { get; private set; }
+	public IReadOnlyList<ProgressStep> CompletedSteps { get; private set; } = Array.Empty<ProgressStep>();
 	public bool HasCurrent => Current is not null;
 	public string Stamp => Current?.Id ?? "done";
 
@@ -138,13 +141,19 @@ public sealed class ProgressTrack
 	void Refresh()
 	{
 		Current = null;
+		var completed = new List<ProgressStep>();
 		foreach ( var step in Route )
 		{
 			if ( done.Contains( step.Id ) )
+			{
+				completed.Add( step );
 				continue;
+			}
 
-			Current = step;
-			return;
+			if ( Current is null )
+				Current = step;
 		}
+
+		CompletedSteps = completed;
 	}
 }

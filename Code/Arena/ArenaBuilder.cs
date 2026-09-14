@@ -26,7 +26,7 @@ public sealed class ArenaBuilder : Component
 	public static readonly Color GlassCrackTint = new Color( 0.94f, 0.98f, 1f );
 	public static readonly Color GlassShardTint = new Color( 0.88f, 0.96f, 1f );
 
-	public RunLocation Location { get; private set; } = Locations.Start;
+	public RunLocation Location { get; private set; } = RunLocation.Glass;
 	public int GlassBroken => Geometry.GlassBroken;
 	public bool GlassBoard => Location == RunLocation.Glass;
 
