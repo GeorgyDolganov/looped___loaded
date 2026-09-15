@@ -241,5 +241,6 @@ public enum RunPhase
 	PickTrait,
 	Dead,
 	Extracted,
+	Won,
 	City
 }

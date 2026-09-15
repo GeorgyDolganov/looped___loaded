@@ -11,7 +11,7 @@ public sealed class GameLoop : Component
 	[Property] public float NoticeDuration { get; set; } = 1.6f;
 	[Property] public int MaxHealth { get; set; } = 3;
 	public RunPhase Phase { get; private set; } = RunPhase.Menu;
-	public bool InCity => Phase == RunPhase.City;
+	public bool InCity => Phase == RunPhase.City || Phase == RunPhase.Won;
 	public bool InMenu => Phase == RunPhase.Menu;
 	public RunLocation Location { get; private set; } = RunLocation.Glass;
 	public int LocationIndex => Locations.Index( Location );
@@ -21,7 +21,7 @@ public sealed class GameLoop : Component
 	public string BossName => Locations.Boss( Location );
 	public string NextRingCode => Locations.Code( Locations.Next( Location ) );
 	public string NextRingRule => Locations.Rule( Locations.Next( Location ) );
-	public bool WantsUiCursor => InMenu || Paused || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait || Phase == RunPhase.Dead || Phase == RunPhase.Extracted;
+	public bool WantsUiCursor => InMenu || Paused || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait || Phase == RunPhase.Dead || Phase == RunPhase.Extracted || Phase == RunPhase.Won;
 	public bool CanPause => !InMenu && !Paused && (Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait);
 	public bool BlocksShot => Time.Now < uiClickUntil;
 	public ArenaGeometry Geometry => Arena.Geometry;
@@ -31,6 +31,10 @@ public sealed class GameLoop : Component
 	public List<GibChunk> Gibs { get; } = new();
 
 	public MenuPage MenuView { get; private set; } = MenuPage.Title;
+	public MenuChoice MenuFocus { get; private set; } = MenuChoice.Continue;
+	public SettingRow SettingCursor { get; private set; } = SettingRow.Music;
+	static readonly MenuChoice[] MenuOrder = { MenuChoice.Continue, MenuChoice.Upgrades, MenuChoice.Saves, MenuChoice.Settings, MenuChoice.Quit };
+	public static readonly SettingRow[] SettingOrder = { SettingRow.Music, SettingRow.Sfx, SettingRow.Shake };
 	public int ActiveSlot { get; private set; }
 	public int SaveCursor { get; private set; }
 	readonly GameSave[] slotCache = new GameSave[SaveStore.Slots];
@@ -62,6 +66,8 @@ public sealed class GameLoop : Component
 	public int ExtractedRounds { get; private set; }
 	public int BurnedRounds { get; private set; }
 	public int BestExtract { get; private set; }
+	public int FedBiomass { get; private set; }
+	public int WinNeed => Math.Max( 1, GameSettings.Run.WinBiomass );
 	public float RunTime => Time.Now - runStartedAt;
 
 	public RoundTrait OfferA { get; private set; }
@@ -142,8 +148,6 @@ public sealed class GameLoop : Component
 	public IReadOnlyList<ProgressStep> CompletedTasks => progress.CompletedSteps;
 	public int TaskDone => progress.CompletedSteps.Count;
 	public int TaskTotal => ProgressTrack.Total;
-	float showcaseAt = -99f;
-	public float ShowcaseHold => Math.Clamp( 1.55f + TaskDone * 0.08f, 1.7f, 2.7f );
 
 	public string SlotBlurb( int index )
 	{
@@ -193,6 +197,7 @@ public sealed class GameLoop : Component
 			return;
 
 		var save = City.Capture( BestExtract, BestLine );
+		save.FedBiomass = FedBiomass;
 		save.Tasks = progress.Capture();
 		if ( !save.HasProgress && !SaveStore.Exists( ActiveSlot ) )
 			return;
@@ -244,12 +249,7 @@ public sealed class GameLoop : Component
 			return;
 		}
 		if ( index == ActiveSlot )
-		{
-			BestExtract = 0;
-			BestLine = -1;
-			progress.Clear();
-			City?.Wipe();
-		}
+			WipeCampaign();
 
 		RefreshSaves();
 		ArenaSounds.MenuBack();
@@ -260,16 +260,14 @@ public sealed class GameLoop : Component
 	{
 		if ( save is null || !save.HasProgress )
 		{
-			BestExtract = 0;
-			BestLine = -1;
-			progress.Clear();
-			City?.Wipe();
+			WipeCampaign();
 			return;
 		}
 
 		BestExtract = save.BestExtract;
 		BestLine = save.BestLine;
 		City?.Apply( save );
+		FedBiomass = Math.Max( save.FedBiomass, City.IsValid() ? City.Warehouse : save.Warehouse );
 		progress.Apply( save.Tasks, City, BestLine, BestExtract );
 	}
 
@@ -319,6 +317,7 @@ public sealed class GameLoop : Component
 		invulnUntil = 0f;
 		ClearPause();
 		MenuView = MenuPage.Title;
+		MenuFocus = MenuChoice.Continue;
 		Autosave();
 		if ( Arena.IsValid() )
 			Arena.ClearGeneratedLayout();
@@ -347,6 +346,137 @@ public sealed class GameLoop : Component
 		return Input.Pressed( "Menu" );
 	}
 
+	public int OrganCount => City.IsValid() ? City.OccupiedPlots : 0;
+
+	public void FocusMenu( MenuChoice item )
+	{
+		if ( MenuFocus == item )
+			return;
+
+		MenuFocus = item;
+		ArenaSounds.MenuMove();
+	}
+
+	public void ActivateMenu( MenuChoice item )
+	{
+		MenuFocus = item;
+
+		switch ( item )
+		{
+			case MenuChoice.Continue:
+				Restart();
+				return;
+			case MenuChoice.Upgrades:
+				OpenCityFromMenu();
+				return;
+			case MenuChoice.Saves:
+				OpenSaves();
+				return;
+			case MenuChoice.Settings:
+				OpenSettings();
+				return;
+			default:
+				QuitGame();
+				return;
+		}
+	}
+
+	public void OpenSettings()
+	{
+		UserSettings.Load();
+		SettingCursor = SettingRow.Music;
+		MenuView = MenuPage.Settings;
+		ArenaSounds.MenuOk();
+	}
+
+	public void CloseSettings()
+	{
+		MenuView = MenuPage.Title;
+		MenuFocus = MenuChoice.Settings;
+		ArenaSounds.MenuBack();
+	}
+
+	public void HighlightSetting( SettingRow row )
+	{
+		if ( SettingCursor == row )
+			return;
+
+		SettingCursor = row;
+		ArenaSounds.MenuMove();
+	}
+
+	public void NudgeSetting( SettingRow row, int delta )
+	{
+		SettingCursor = row;
+
+		if ( UserSettings.Nudge( row, delta ) )
+			ArenaSounds.MenuMove();
+		else
+			ArenaSounds.Deny();
+	}
+
+	public void SetSetting( SettingRow row, int steps )
+	{
+		SettingCursor = row;
+		NoteUiClick();
+
+		if ( UserSettings.Set( row, steps * 0.1f ) )
+			ArenaSounds.MenuOk();
+		else
+			ArenaSounds.Deny();
+	}
+
+	void StepSettings( int delta )
+	{
+		var rows = SettingOrder;
+		var index = Array.IndexOf( rows, SettingCursor );
+		if ( index < 0 )
+			index = 0;
+
+		index = (index + delta + rows.Length) % rows.Length;
+		HighlightSetting( rows[index] );
+	}
+
+	void TickSettings()
+	{
+		if ( Input.Pressed( "MenuUp" ) || Input.Pressed( "Forward" ) )
+		{
+			StepSettings( -1 );
+			return;
+		}
+
+		if ( Input.Pressed( "MenuDown" ) || Input.Pressed( "Backward" ) )
+		{
+			StepSettings( 1 );
+			return;
+		}
+
+		if ( Input.Pressed( "MenuLeft" ) || Input.Pressed( "Left" ) )
+		{
+			NudgeSetting( SettingCursor, -1 );
+			return;
+		}
+
+		if ( Input.Pressed( "MenuRight" ) || Input.Pressed( "Right" ) )
+		{
+			NudgeSetting( SettingCursor, 1 );
+			return;
+		}
+
+		if ( PressedEscape() || Input.Pressed( "MenuSelect" ) || Input.Pressed( "Jump" ) )
+			CloseSettings();
+	}
+
+	void StepMenu( int delta )
+	{
+		var index = Array.IndexOf( MenuOrder, MenuFocus );
+		if ( index < 0 )
+			index = 0;
+
+		index = (index + delta + MenuOrder.Length) % MenuOrder.Length;
+		FocusMenu( MenuOrder[index] );
+	}
+
 	void TickMenu()
 	{
 		Mouse.CursorType = "pointer";
@@ -357,21 +487,57 @@ public sealed class GameLoop : Component
 			return;
 		}
 
-		if ( Input.Pressed( "Jump" ) || Input.Pressed( "Slot1" ) )
+		if ( MenuView == MenuPage.Settings )
 		{
-			Restart();
+			TickSettings();
+			return;
+		}
+
+		if ( Input.Pressed( "MenuUp" ) || Input.Pressed( "Forward" ) )
+		{
+			StepMenu( -1 );
+			return;
+		}
+
+		if ( Input.Pressed( "MenuDown" ) || Input.Pressed( "Backward" ) )
+		{
+			StepMenu( 1 );
+			return;
+		}
+
+		if ( Input.Pressed( "MenuSelect" ) || Input.Pressed( "Jump" ) )
+		{
+			ActivateMenu( MenuFocus );
+			return;
+		}
+
+		if ( Input.Pressed( "Slot1" ) )
+		{
+			ActivateMenu( MenuChoice.Continue );
 			return;
 		}
 
 		if ( Input.Pressed( "Slot2" ) )
 		{
-			OpenCityFromMenu();
+			ActivateMenu( MenuChoice.Upgrades );
 			return;
 		}
 
 		if ( Input.Pressed( "Slot3" ) )
 		{
-			OpenSaves();
+			ActivateMenu( MenuChoice.Saves );
+			return;
+		}
+
+		if ( Input.Pressed( "Slot4" ) )
+		{
+			ActivateMenu( MenuChoice.Settings );
+			return;
+		}
+
+		if ( Input.Pressed( "Slot5" ) )
+		{
+			ActivateMenu( MenuChoice.Quit );
 			return;
 		}
 
@@ -676,6 +842,7 @@ public sealed class GameLoop : Component
 	protected override void OnStart()
 	{
 		runStartedAt = Time.Now;
+		UserSettings.Load();
 		Mouse.Visibility = MouseVisibility.Visible;
 		Mouse.CursorType = "crosshair";
 		ArenaMusic.Tick( this );
@@ -716,6 +883,15 @@ public sealed class GameLoop : Component
 
 		if ( Input.Pressed( "Reload" ) )
 		{
+			if ( Phase == RunPhase.Won )
+			{
+				PlayAgain();
+				return;
+			}
+
+			if ( Phase == RunPhase.Extracted )
+				return;
+
 			if ( Phase == RunPhase.City || Phase == RunPhase.Playing || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait )
 				Restart();
 			else
@@ -810,12 +986,19 @@ public sealed class GameLoop : Component
 		if ( Phase == RunPhase.Extracted )
 		{
 			Mouse.CursorType = "pointer";
-			if ( Time.Now - showcaseAt >= ShowcaseHold
-				|| Input.Pressed( "Jump" )
+			if ( Input.Pressed( "Jump" ) )
+				ChooseCity();
+			return;
+		}
+
+		if ( Phase == RunPhase.Won )
+		{
+			Mouse.CursorType = "pointer";
+			if ( Input.Pressed( "Jump" )
 				|| Input.Pressed( "Use" )
 				|| Input.Pressed( "Attack1" )
 				|| Input.Pressed( "Slot1" ) )
-				ChooseCity();
+				PlayAgain();
 			return;
 		}
 
@@ -1182,6 +1365,26 @@ public sealed class GameLoop : Component
 		EnterCity( false );
 	}
 
+	public void PlayAgain()
+	{
+		if ( Paused || Phase != RunPhase.Won )
+			return;
+
+		NoteUiClick();
+		WipeCampaign();
+		Restart();
+	}
+
+	void WipeCampaign()
+	{
+		BestExtract = 0;
+		BestLine = -1;
+		FedBiomass = 0;
+		ExtractedRounds = 0;
+		progress.Clear();
+		City?.Wipe();
+	}
+
 	void Extract()
 	{
 		ExtractedRounds = Stash;
@@ -1201,9 +1404,13 @@ public sealed class GameLoop : Component
 		}
 
 		var packed = rounds >= 0 ? rounds : Stash;
+		var crossed = false;
 		if ( deposit && City.IsValid() )
 		{
+			var before = FedBiomass;
 			City.Deposit( packed );
+			FedBiomass += Math.Max( 0, packed );
+			crossed = before < WinNeed && FedBiomass >= WinNeed;
 			NoteProgress( ProgressGoal.Extract );
 		}
 
@@ -1220,10 +1427,18 @@ public sealed class GameLoop : Component
 		if ( Runner.IsValid() )
 			Runner.GameObject.Enabled = false;
 		ArenaSounds.Tele();
+		if ( crossed )
+		{
+			Phase = RunPhase.Won;
+			Mouse.CursorType = "pointer";
+			Announce( T.Announce.Won );
+			Autosave();
+			return;
+		}
+
 		if ( deposit )
 		{
 			Phase = RunPhase.Extracted;
-			showcaseAt = Time.Now;
 			Mouse.CursorType = "pointer";
 		}
 		else
@@ -1832,3 +2047,4 @@ public sealed class GameLoop : Component
 		return radians < 0f ? radians + MathF.Tau : radians;
 	}
 }
+

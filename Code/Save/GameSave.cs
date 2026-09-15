@@ -5,6 +5,7 @@ public sealed class GameSave
 	public int Version { get; set; } = 1;
 	public long SavedAt { get; set; }
 	public int Warehouse { get; set; }
+	public int FedBiomass { get; set; }
 	public int BestExtract { get; set; }
 	public int BestLine { get; set; } = -1;
 	public List<string> Tasks { get; set; } = new();
@@ -28,7 +29,7 @@ public sealed class GameSave
 		}
 	}
 
-	public bool HasProgress => Warehouse > 0 || BestExtract > 0 || BuildingCount > 0 || BestLine >= 0 || (Tasks is not null && Tasks.Count > 0);
+	public bool HasProgress => Warehouse > 0 || FedBiomass > 0 || BestExtract > 0 || BuildingCount > 0 || BestLine >= 0 || (Tasks is not null && Tasks.Count > 0);
 }
 
 public sealed class PlotSave
@@ -45,5 +46,22 @@ public sealed class PlotSave
 public enum MenuPage
 {
 	Title,
-	Saves
+	Saves,
+	Settings
+}
+
+public enum SettingRow
+{
+	Music,
+	Sfx,
+	Shake
+}
+
+public enum MenuChoice
+{
+	Continue,
+	Upgrades,
+	Saves,
+	Settings,
+	Quit
 }

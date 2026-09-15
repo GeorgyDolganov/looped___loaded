@@ -109,6 +109,21 @@ public sealed class CityBoard : Component
 		WipePlots();
 	}
 
+	public int OccupiedPlots
+	{
+		get
+		{
+			var count = 0;
+			foreach ( var plot in plots )
+			{
+				if ( plot.Occupied )
+					count++;
+			}
+
+			return count;
+		}
+	}
+
 	public bool HasOccupiedPlot()
 	{
 		foreach ( var plot in plots )

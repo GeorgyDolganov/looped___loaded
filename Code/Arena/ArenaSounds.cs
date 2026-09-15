@@ -62,6 +62,10 @@ public static class ArenaSounds
 		if ( !events.TryGetValue( key, out var ev ) || ev is null )
 			return;
 
+		var gain = UserSettings.Sfx;
+		if ( gain <= 0.001f )
+			return;
+
 		var ui = forceUi || ev.UI || !at.HasValue;
 		var handle = Sound.Play( ev, at ?? Vector3.Zero, 0f );
 		handle.OcclusionEnabled = false;
@@ -70,8 +74,7 @@ public static class ArenaSounds
 		handle.DistanceAttenuation = false;
 		handle.Distance = 20000f;
 		handle.SpacialBlend = ui ? 0f : 0.2f;
-		if ( key == "fire" )
-			handle.Volume = 1.35f;
+		handle.Volume = (key == "fire" ? 1.35f : 1f) * gain;
 	}
 
 	static void Ensure()

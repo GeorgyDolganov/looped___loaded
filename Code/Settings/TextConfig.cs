@@ -7,6 +7,7 @@ public class TextConfig : GameResource
 	[Property] public PauseCopy Pause { get; set; } = new();
 	[Property] public MenuCopy Menu { get; set; } = new();
 	[Property] public SavesCopy Saves { get; set; } = new();
+	[Property] public OptionsCopy Options { get; set; } = new();
 	[Property] public DecideCopy Decide { get; set; } = new();
 	[Property] public ShopCopy Shop { get; set; } = new();
 	[Property] public HelpCopy Help { get; set; } = new();
@@ -23,6 +24,7 @@ public class TextConfig : GameResource
 		Pause ??= new();
 		Menu ??= new();
 		Saves ??= new();
+		Options ??= new();
 		Decide ??= new();
 		Shop ??= new();
 		Help ??= new();
@@ -407,6 +409,17 @@ public class HudCopy
 	[Property] public string Slow { get; set; } = "SLOW";
 	[Property] public string HurtStamp { get; set; } = "-1";
 	[Property] public string Task { get; set; } = "NEXT";
+	[Property] public string FeedCount { get; set; } = "TOTAL BIOMASS {0} / {1}";
+	[Property] public string Objective { get; set; } = "NEXT OBJECTIVE";
+	[Property] public string Trinkets { get; set; } = "TRINKETS";
+	[Property] public string TrinketsNone { get; set; } = "NONE";
+	[Property] public string Health { get; set; } = "HEALTH";
+	[Property] public string Ammo { get; set; } = "AMMO";
+	[Property] public string DashKey { get; set; } = "SPACE";
+	[Property] public string SlowKey { get; set; } = "RMB";
+	[Property] public string Fed { get; set; } = "TOTAL BIOMASS";
+	[Property] public string Threat { get; set; } = "THREAT {0}";
+	[Property] public string FedValue { get; set; } = "{0} / {1}";
 }
 
 public class PauseCopy
@@ -444,6 +457,32 @@ public class MenuCopy
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
 	[Property] public string Key3 { get; set; } = "3";
+	[Property] public string Tagline { get; set; } = "Bring the brains to the EKKE.";
+	[Property] public string Settings { get; set; } = "SETTINGS";
+	[Property] public string Quit { get; set; } = "QUIT";
+	[Property] public string ActiveSave { get; set; } = "ACTIVE SAVE — SLOT {0}";
+	[Property] public string NavigateHint { get; set; } = "NAVIGATE";
+	[Property] public string SelectHint { get; set; } = "ENTER SELECT";
+	[Property] public string Objective { get; set; } = "NEXT OBJECTIVE";
+	[Property] public string ObjectiveDone { get; set; } = "ALL OBJECTIVES DONE";
+	[Property] public string StatBiomass { get; set; } = "BIOMASS";
+	[Property] public string StatBest { get; set; } = "BEST";
+	[Property] public string StatOrgans { get; set; } = "ORGANS";
+}
+
+public class OptionsCopy
+{
+	[Property] public string Kicker { get; set; } = "OPTIONS";
+	[Property] public string Title { get; set; } = "SETTINGS";
+	[Property] public string Tagline { get; set; } = "Saved the moment you change it.";
+	[Property] public string Music { get; set; } = "MUSIC";
+	[Property] public string Sfx { get; set; } = "SOUND";
+	[Property] public string Shake { get; set; } = "SCREEN SHAKE";
+	[Property] public string Value { get; set; } = "{0}%";
+	[Property] public string Off { get; set; } = "OFF";
+	[Property] public string Back { get; set; } = "BACK";
+	[Property] public string AdjustHint { get; set; } = "ADJUST";
+	[Property] public string BackHint { get; set; } = "ESC BACK";
 }
 
 public class SavesCopy
@@ -491,7 +530,13 @@ public class DecideCopy
 	[Property] public string ExtractedCityBlurb { get; set; } = "Return to construction.";
 	[Property] public string ShowcaseKicker { get; set; } = "DONE";
 	[Property] public string ShowcaseCount { get; set; } = "{0} / {1}";
-	[Property] public string ShowcaseContinue { get; set; } = "CLICK  ·  SPACE  ·  R ALTAR";
+	[Property] public string ShowcaseContinue { get; set; } = "Back to the altar.";
+	[Property] public string WonKicker { get; set; } = "THE FEEDING";
+	[Property] public string Won { get; set; } = "EKKE IS FULL";
+	[Property] public string WonBlurb { get; set; } = "{0} BIOMASS ON THE ALTAR. THE MOUTH IS QUIET.";
+	[Property] public string WonPlay { get; set; } = "PLAY AGAIN";
+	[Property] public string WonPlayBlurb { get; set; } = "A new body. Feed it again.";
+	[Property] public string WonKey { get; set; } = "SPACE";
 	[Property] public string City { get; set; } = "CITY";
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
@@ -531,7 +576,8 @@ public class HelpCopy
 	[Property] public string ShopThree { get; set; } = "CLICK A CARD  ·  1 / 2 / 3 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
 	[Property] public string ShopTwo { get; set; } = "CLICK A CARD  ·  1 / 2 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
 	[Property] public string Dead { get; set; } = "CLICK CITY  ·  R CITY  ·  ESC MENU";
-	[Property] public string Extracted { get; set; } = "CLICK  ·  SPACE  ·  R ALTAR";
+	[Property] public string Extracted { get; set; } = "SPACE CONTINUE";
+	[Property] public string Won { get; set; } = "CLICK  ·  SPACE PLAY AGAIN  ·  ESC MENU";
 	[Property] public string BossGlass { get; set; } = "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
 	[Property] public string BossYard { get; set; } = "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
 	[Property] public string PlayGlassSkip { get; set; } = "PANELS SHATTER  ·  E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
@@ -569,6 +615,7 @@ public class AnnounceCopy
 	[Property] public string ArenaSkip { get; set; } = "ARENA CLEAR  ·  E SKIP LAP";
 	[Property] public string LapClear { get; set; } = "LAP {0} CLEAR";
 	[Property] public string CityDeposit { get; set; } = "CITY  ·  +{0} WAREHOUSE";
+	[Property] public string Won { get; set; } = "EKKE IS FULL";
 	[Property] public string City { get; set; } = "CITY";
 	[Property] public string ContinueRounds { get; set; } = "+{0} ROUND  ·  STASH {1}  ·  ×{2:0.00}";
 	[Property] public string StashMax { get; set; } = "STASH MAX  ·  ×{0:0.00}";

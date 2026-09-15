@@ -4,6 +4,7 @@ namespace LoopedLoaded;
 public class RunConfig : GameResource
 {
 	[Property] public int BossOfferLap { get; set; } = 5;
+	[Property] public int WinBiomass { get; set; } = 100;
 	[Property] public int FinalStashMul { get; set; } = 2;
 	[Property] public int RingHeal { get; set; } = 1;
 	[Property] public float IFrames { get; set; } = 1.05f;

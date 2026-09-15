@@ -17,12 +17,7 @@ public static class Blocks
 		go.Parent = parent;
 		go.WorldPosition = position;
 		go.WorldRotation = rotation;
-
-		var bounds = model.Bounds.Size;
-		go.WorldScale = new Vector3(
-			bounds.x > 0.001f ? size.x / bounds.x : 1f,
-			bounds.y > 0.001f ? size.y / bounds.y : 1f,
-			bounds.z > 0.001f ? size.z / bounds.z : 1f );
+		go.LocalScale = Fit( model, size );
 
 		var renderer = go.AddComponent<ModelRenderer>();
 		renderer.Model = model;
@@ -38,6 +33,15 @@ public static class Blocks
 
 	public static GameObject SpawnSphere( GameObject parent, string name, Vector3 position, float diameter, Color tint, bool shadows = false )
 		=> Spawn( parent, name, Sphere, position, Rotation.Identity, diameter, tint, shadows );
+
+	public static Vector3 Fit( Model model, Vector3 size )
+	{
+		var bounds = model.IsValid() ? model.Bounds.Size : Vector3.Zero;
+		return new Vector3(
+			bounds.x > 0.001f ? size.x / bounds.x : 1f,
+			bounds.y > 0.001f ? size.y / bounds.y : 1f,
+			bounds.z > 0.001f ? size.z / bounds.z : 1f );
+	}
 
 	public static Rotation FlatFacing( Vector2 direction ) => Rotation.FromYaw( MathX.RadianToDegree( MathF.Atan2( direction.y, direction.x ) ) );
 }

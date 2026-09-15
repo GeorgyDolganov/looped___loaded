@@ -100,7 +100,7 @@ public sealed class ArenaCamera : Component
 		if ( hurt <= 0.01f )
 			return;
 
-		var amp = hurt * 52f;
+		var amp = hurt * 52f * UserSettings.Shake;
 		var t = Time.Now * 54f;
 		var rot = camera.WorldRotation;
 		camera.WorldPosition += rot.Right * MathF.Sin( t ) * amp

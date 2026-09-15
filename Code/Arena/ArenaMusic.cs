@@ -29,7 +29,7 @@ public static class ArenaMusic
 		player.Paused = loop.Paused;
 		player.Repeat = true;
 		player.ListenLocal = true;
-		player.Volume = VolumeFor( loop, key );
+		player.Volume = VolumeFor( loop, key ) * UserSettings.Music;
 	}
 
 	public static void Stop()

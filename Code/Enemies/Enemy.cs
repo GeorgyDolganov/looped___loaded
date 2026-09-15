@@ -277,17 +277,7 @@ public sealed class Enemy : Component
 		if ( Locations.IsBoss( Kind ) )
 			Loop.BeatBoss();
 		else
-		{
-			if ( Kind == EnemyKind.Splinter && Loop.Arena.IsValid() )
-			{
-				var along = Loop.Runner.IsValid()
-					? new Vector2( -Loop.Runner.Tangent.y, Loop.Runner.Tangent.x )
-					: Vector2.Right;
-				Loop.Arena.DropShard( Flat, along );
-			}
-
 			Loop.RegisterKill( Kind, Flat );
-		}
 	}
 
 	Vector2 LookFlat

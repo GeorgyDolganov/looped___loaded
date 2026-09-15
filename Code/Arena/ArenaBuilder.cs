@@ -663,7 +663,7 @@ public sealed class ArenaBuilder : Component
 	(float Thickness, float Height, Color Tint) WallSize( WallKind kind )
 	{
 		if ( kind == WallKind.Shard )
-			return (16f, 72f, GlassShardTint);
+			return (8f, 88f, GlassShardTint);
 
 		if ( GlassBoard )
 		{

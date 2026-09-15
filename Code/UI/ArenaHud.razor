@@ -18,98 +18,153 @@
 
 		@if ( !Loop.InCity && !Loop.InMenu && Loop.Inventory.IsValid() )
 		{
-			<div class="top-left">
-				<div class="lap-chip">
-					<label class="key">@(Loop.InBossFight ? Loop.BossName : Loop.LocationCode)</label>
-					<label class="value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
+			<div class="run-left">
+				<div class="hud-panel lap-panel">
+					<div class="rivet a"></div>
+					<div class="rivet b"></div>
+					<div class="lap-row">
+						<div class="lap-head">
+							<label class="place">@(Loop.InBossFight ? Loop.BossName : Loop.LocationCode)</label>
+							<label class="lap-value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
+						</div>
+						<label class="lap-clock">@TimeText</label>
+					</div>
+					<div class="bar">
+						<div class="bar-fill @(Loop.InBossFight ? "boss" : "lap")" style="width: @(Loop.InBossFight ? BossPercent : LapPercent)%"></div>
+					</div>
 				</div>
-				<div class="meter">
-					<div class="fill lap @(Loop.InBossFight ? "boss" : "")" style="width: @(Loop.InBossFight ? BossPercent : LapPercent)%"></div>
-				</div>
-				<div class="hearts">
-					@for ( var i = 0; i < Loop.HeartMax; i++ )
+
+				<div class="hud-panel brief-panel">
+					@if ( Loop.HasTask )
 					{
-						<div class="heart @(i < Loop.Health ? "live" : "dead") @(i < Loop.Health && Loop.HurtAmount > 0.08f ? "sting" : "")"></div>
+						<div class="brief-accent"></div>
+						<label class="brief-kicker">@GameSettings.Text.Hud.Objective</label>
+						<label class="brief-title">@Loop.TaskTitle</label>
+						<label class="brief-blurb">@Loop.TaskBlurb</label>
+						<div class="panel-split"></div>
 					}
-				</div>
-				<label class="clock">@TimeText</label>
-				<div class="mods">
-					@if ( EquippedTraits.Count == 0 )
-					{
-						<label>@GameSettings.Text.Hud.Plain</label>
-					}
-					else
-					{
-						@foreach ( var trait in EquippedTraits )
+					<div class="trinkets">
+						<label class="trinket-key">@GameSettings.Text.Hud.Trinkets</label>
+						<label class="trinket-dash">—</label>
+						@if ( EquippedTraits.Count == 0 )
 						{
-							<div class="mod-chip">
-								<img src="@RoundTraits.Icon( trait )" />
-								<label>@TraitLevel( trait )</label>
-							</div>
+							<label class="trinket-none">@GameSettings.Text.Hud.TrinketsNone</label>
 						}
-					}
-					@if ( Loop.BloodShields > 0 )
-					{
-						<label class="mod-extra">@GameSettings.Text.F(GameSettings.Text.Hud.Shield, Loop.BloodShields)</label>
-					}
-					<label class="mod-extra">×@ThreatText</label>
-				</div>
-				@if ( Loop.HasTask )
-				{
-					<div class="task">
-						<label class="key">@GameSettings.Text.Hud.Task</label>
-						<label class="title">@Loop.TaskTitle</label>
-						<label class="blurb">@Loop.TaskBlurb</label>
+						else
+						{
+							@foreach ( var trait in EquippedTraits )
+							{
+								<div class="trinket">
+									<img src="@RoundTraits.Icon( trait )" />
+									<label>@TraitLevel( trait )</label>
+								</div>
+							}
+						}
+						@if ( Loop.BloodShields > 0 )
+						{
+							<label class="trinket-tag">@GameSettings.Text.F(GameSettings.Text.Hud.Shield, Loop.BloodShields)</label>
+						}
+						<label class="trinket-tag">@GameSettings.Text.F(GameSettings.Text.Hud.Threat, ThreatText)</label>
 					</div>
-				}
+				</div>
 			</div>
 
-			<div class="top-right">
-				<div class="stat scrap"><label class="key">@GameSettings.Text.Hud.Scrap</label><label class="value">@Loop.Scrap</label></div>
-				<div class="stat"><label class="key">@GameSettings.Text.Hud.Stash</label><label class="value">@Loop.Stash</label></div>
-				<div class="stat"><label class="key">@GameSettings.Text.Hud.Best</label><label class="value">@Loop.BestExtract</label></div>
-				<div class="stat"><label class="key">@GameSettings.Text.Hud.Kills</label><label class="value">@Loop.Kills</label></div>
-				<div class="stat"><label class="key">@GameSettings.Text.Hud.Caught</label><label class="value">@Loop.Catches</label></div>
+			<div class="run-right">
+				<div class="hud-panel stat-panel">
+					<div class="rivet a"></div>
+					<div class="rivet b"></div>
+					<div class="stat-row lead">
+						<label class="key">@GameSettings.Text.Hud.Scrap</label>
+						<label class="value">@Loop.Scrap</label>
+					</div>
+					<div class="stat-row lead">
+						<label class="key">@GameSettings.Text.Hud.Stash</label>
+						<label class="value">@Loop.Stash</label>
+					</div>
+					<div class="panel-split"></div>
+					<div class="stat-row">
+						<label class="key">@GameSettings.Text.Hud.Best</label>
+						<label class="value">@Loop.BestExtract</label>
+					</div>
+					<div class="stat-row">
+						<label class="key">@GameSettings.Text.Hud.Kills</label>
+						<label class="value">@Loop.Kills</label>
+					</div>
+					<div class="stat-row">
+						<label class="key">@GameSettings.Text.Hud.Caught</label>
+						<label class="value">@Loop.Catches</label>
+					</div>
+					<div class="stat-row">
+						<label class="key">@GameSettings.Text.Hud.Fed</label>
+						<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+					</div>
+				</div>
 			</div>
 
-			<div class="bottom">
-				<div class="slots">
-					@foreach ( var slot in Loop.Inventory.Slots )
-					{
-						<div class="slot @StatusClass(slot) @(slot.Index == Loop.Inventory.SelectedIndex ? "selected" : "")">
-							<div class="pip" style="background-color: @PipColor(slot)"></div>
-							<label class="idx">@(slot.Index + 1)</label>
-						</div>
-					}
-				</div>
-
-				<div class="meters">
-					<div class="dash">
-						<label class="key">@GameSettings.Text.Hud.Dash</label>
-						<div class="meter">
-							<div class="fill dash @(DashReady ? "ready" : "")" style="width: @(DashPercent)%"></div>
+			<div class="run-tray">
+				<div class="tray">
+					<div class="tray-cell">
+						<label class="cell-key">@GameSettings.Text.Hud.Health</label>
+						<div class="hp-row">
+							@for ( var i = 0; i < Loop.HeartMax; i++ )
+							{
+								<div class="hp @(i < Loop.Health ? "live" : "dead") @(i < Loop.Health && Loop.HurtAmount > 0.08f ? "sting" : "")"></div>
+							}
 						</div>
 					</div>
+
+					<div class="cell-split"></div>
+
+					<div class="tray-cell">
+						<label class="cell-key">@GameSettings.Text.Hud.Ammo</label>
+						<div class="round-row">
+							@foreach ( var slot in Loop.Inventory.Slots )
+							{
+								<div class="round @StatusClass(slot) @(slot.Index == Loop.Inventory.SelectedIndex ? "picked" : "")" style="background-color: @PipColor(slot)"></div>
+							}
+						</div>
+						<label class="cell-value">@Loop.Stash</label>
+					</div>
+
+					<div class="cell-split"></div>
+
+					<div class="tray-cell">
+						<label class="cell-key">@GameSettings.Text.Hud.Dash</label>
+						<div class="bar tray-bar">
+							<div class="bar-fill dash @(DashReady ? "ready" : "")" style="width: @(DashPercent)%"></div>
+						</div>
+						<label class="chip">@GameSettings.Text.Hud.DashKey</label>
+					</div>
+
 					@if ( SlowUnlocked )
 					{
-						<div class="dash">
-							<label class="key">@GameSettings.Text.Hud.Slow</label>
-							<div class="meter">
-								<div class="fill slow @(Slowing ? "on" : "")" style="width: @(SlowPercent)%"></div>
+						<div class="cell-split"></div>
+
+						<div class="tray-cell">
+							<label class="cell-key">@GameSettings.Text.Hud.Slow</label>
+							<div class="bar tray-bar">
+								<div class="bar-fill slow @(Slowing ? "on" : "")" style="width: @(SlowPercent)%"></div>
 							</div>
+							<label class="chip">@GameSettings.Text.Hud.SlowKey</label>
 						</div>
 					}
 				</div>
 			</div>
 		}
 
-		@if ( Loop.InCity && Loop.City.IsValid() )
+		@if ( Loop.Phase == RunPhase.City && Loop.City.IsValid() )
 		{
 			<div class="city">
 				<div class="top-left">
 					<div class="lap-chip">
 						<label class="key">@Loop.City.ModeLabel</label>
 						<label class="value">@GameSettings.Text.F(GameSettings.Text.City.WarehouseHud, Loop.City.Warehouse)</label>
+					</div>
+					<div class="feed">
+						<label class="feed-line">@GameSettings.Text.F(GameSettings.Text.Hud.FeedCount, Loop.FedBiomass, Loop.WinNeed)</label>
+						<div class="meter">
+							<div class="fill feed" style="width: @(FeedPercent)%"></div>
+						</div>
 					</div>
 					<label class="mods">@Loop.City.HoverText()</label>
 					<label class="clock">@CityBonuses</label>
@@ -268,34 +323,132 @@
 
 		@if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Title )
 		{
-			<div class="overlay menu">
-				<label class="kicker">@GameSettings.Text.Menu.Kicker</label>
-				<label class="overlay-title">@GameSettings.Text.Menu.Title</label>
-				<label class="blurb">@GameSettings.Text.Menu.Blurb</label>
-				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Menu.SlotLine, Loop.ActiveSlot + 1, Loop.HasActiveSave ? Loop.SlotBlurb(Loop.ActiveSlot) : GameSettings.Text.Menu.SlotNew)</label>
-				@if ( Loop.HasTask )
-				{
-					<div class="task overlay-task">
-						<label class="key">@GameSettings.Text.Hud.Task</label>
-						<label class="title">@Loop.TaskTitle</label>
-						<label class="blurb">@Loop.TaskBlurb</label>
+			<div class="overlay title">
+				<div class="title-scrim"></div>
+
+				<div class="rail">
+					<div class="brand">
+						<div class="brand-slash"></div>
+						<label class="brand-line">@BrandTop</label>
+						<label class="brand-line">@BrandBottom</label>
 					</div>
-				}
-				<div class="cards">
-					<div class="card" onclick="@StartRun">
-						<label class="key">@GameSettings.Text.Menu.Key1</label>
-						<label class="title">@(Loop.HasActiveSave ? GameSettings.Text.Menu.Continue : GameSettings.Text.Menu.Play)</label>
-						<label class="blurb">@(Loop.HasActiveSave ? GameSettings.Text.Menu.ContinueBlurb : GameSettings.Text.Menu.PlayBlurb)</label>
+
+					<div class="brand-rule">
+						<div class="rule-bar"></div>
+						<label class="tagline">@GameSettings.Text.Menu.Tagline</label>
 					</div>
-					<div class="card" onclick="@OpenCity">
-						<label class="key">@GameSettings.Text.Menu.Key2</label>
-						<label class="title">@GameSettings.Text.Menu.City</label>
-						<label class="blurb">@GameSettings.Text.Menu.CityBlurb</label>
+
+					<div class="rail-list">
+						@foreach ( var row in MainRows )
+						{
+							<div class="rail-row @(Loop.MenuFocus == row.Item ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( row.Item ))" onclick="@(() => PickRow( row.Item ))">
+								<div class="rivet a"></div>
+								<div class="rivet b"></div>
+								<label class="caret">play_arrow</label>
+								<label class="row-title">@row.Title</label>
+								<label class="row-key">@row.Key</label>
+							</div>
+						}
 					</div>
-					<div class="card" onclick="@OpenSaves">
-						<label class="key">@GameSettings.Text.Menu.Key3</label>
-						<label class="title">@GameSettings.Text.Menu.Saves</label>
-						<label class="blurb">@GameSettings.Text.Menu.SavesBlurb</label>
+
+					<div class="rail-split"></div>
+
+					<div class="rail-list quiet">
+						<div class="rail-row @(Loop.MenuFocus == MenuChoice.Settings ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( MenuChoice.Settings ))" onclick="@(() => PickRow( MenuChoice.Settings ))">
+							<label class="row-title">@GameSettings.Text.Menu.Settings</label>
+						</div>
+						<div class="rail-row @(Loop.MenuFocus == MenuChoice.Quit ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( MenuChoice.Quit ))" onclick="@(() => PickRow( MenuChoice.Quit ))">
+							<label class="row-title">@GameSettings.Text.Menu.Quit</label>
+						</div>
+					</div>
+
+					<label class="rail-slot">@GameSettings.Text.F(GameSettings.Text.Menu.ActiveSave, Loop.ActiveSlot + 1)</label>
+
+					<div class="rail-hint">
+						<label class="icon">expand_less</label>
+						<label class="icon">expand_more</label>
+						<label class="word">@GameSettings.Text.Menu.NavigateHint</label>
+						<label class="word">@GameSettings.Text.Menu.SelectHint</label>
+					</div>
+				</div>
+
+				<div class="objective">
+					<div class="rivet a"></div>
+					<div class="rivet b"></div>
+					<div class="rivet c"></div>
+					<div class="rivet d"></div>
+					<label class="obj-kicker">@GameSettings.Text.Menu.Objective</label>
+					<label class="obj-title">@(Loop.HasTask ? Loop.TaskTitle : GameSettings.Text.Menu.ObjectiveDone)</label>
+					@if ( Loop.HasTask )
+					{
+						<label class="obj-blurb">@Loop.TaskBlurb</label>
+					}
+					<div class="obj-split"></div>
+					<div class="obj-stats">
+						<div class="obj-stat">
+							<label class="key">@GameSettings.Text.Menu.StatBiomass</label>
+							<label class="value">@Loop.FedBiomass</label>
+						</div>
+						<div class="obj-stat">
+							<label class="key">@GameSettings.Text.Menu.StatBest</label>
+							<label class="value">@Loop.BestExtract</label>
+						</div>
+						<div class="obj-stat">
+							<label class="key">@GameSettings.Text.Menu.StatOrgans</label>
+							<label class="value">@Loop.OrganCount</label>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+
+		@if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Settings )
+		{
+			<div class="overlay title">
+				<div class="title-scrim"></div>
+
+				<div class="rail">
+					<label class="page-kicker">@GameSettings.Text.Options.Kicker</label>
+					<label class="page-title">@GameSettings.Text.Options.Title</label>
+
+					<div class="brand-rule">
+						<div class="rule-bar"></div>
+						<label class="tagline">@GameSettings.Text.Options.Tagline</label>
+					</div>
+
+					<div class="rail-list">
+						@foreach ( var row in SettingRows )
+						{
+							<div class="rail-row slider @(Loop.SettingCursor == row.Row ? "on" : "")" onmouseover="@(() => Loop.HighlightSetting( row.Row ))">
+								<label class="row-title">@row.Title</label>
+								<div class="ticks">
+									@for ( var i = 1; i <= 10; i++ )
+									{
+										var step = i;
+										<div class="tick @(step <= row.Steps ? "lit" : "")" onclick="@(() => Loop.SetSetting( row.Row, step ))"></div>
+									}
+								</div>
+								<label class="row-value">@row.Value</label>
+							</div>
+						}
+					</div>
+
+					<div class="rail-split"></div>
+
+					<div class="rail-list quiet">
+						<div class="rail-row back" onclick="@BackToTitle">
+							<label class="row-title">@GameSettings.Text.Options.Back</label>
+						</div>
+					</div>
+
+					<div class="rail-hint">
+						<label class="icon">expand_less</label>
+						<label class="icon">expand_more</label>
+						<label class="word">@GameSettings.Text.Menu.NavigateHint</label>
+						<label class="icon">chevron_left</label>
+						<label class="icon">chevron_right</label>
+						<label class="word">@GameSettings.Text.Options.AdjustHint</label>
+						<label class="word">@GameSettings.Text.Options.BackHint</label>
 					</div>
 				</div>
 			</div>
@@ -463,7 +616,7 @@
 
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.Extracted )
 		{
-			<div class="overlay choose showcase" onclick="@GoCity">
+			<div class="overlay choose showcase">
 				<label class="kicker">@GameSettings.Text.Decide.ShowcaseKicker  ·  @GameSettings.Text.F(GameSettings.Text.Decide.ShowcaseCount, Loop.TaskDone, Loop.TaskTotal)</label>
 				<label class="overlay-title">@GameSettings.Text.Decide.Extracted</label>
 				<label class="blurb">@(Loop.ExtractedRounds == 1 ? GameSettings.Text.F(GameSettings.Text.Decide.ExtractedOne, Loop.ExtractedRounds, Loop.BestExtract) : GameSettings.Text.F(GameSettings.Text.Decide.ExtractedMany, Loop.ExtractedRounds, Loop.BestExtract))</label>
@@ -480,7 +633,29 @@
 						</div>
 					}
 				</div>
-				<label class="blurb continue">@GameSettings.Text.Decide.ShowcaseContinue</label>
+				<div class="cards">
+					<div class="card" onclick="@GoCity">
+						<label class="key">@GameSettings.Text.Shop.KeySpace</label>
+						<label class="title">@GameSettings.Text.Menu.Continue</label>
+						<label class="blurb">@GameSettings.Text.Decide.ShowcaseContinue</label>
+					</div>
+				</div>
+			</div>
+		}
+
+		@if ( !Loop.Paused && Loop.Phase == RunPhase.Won )
+		{
+			<div class="overlay menu victory" onclick="@PlayAgain">
+				<label class="kicker">@GameSettings.Text.Decide.WonKicker</label>
+				<label class="overlay-title">@GameSettings.Text.Decide.Won</label>
+				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.WonBlurb, Loop.FedBiomass)</label>
+				<div class="cards">
+					<div class="card" onclick="@PlayAgain">
+						<label class="key">@GameSettings.Text.Decide.WonKey</label>
+						<label class="title">@GameSettings.Text.Decide.WonPlay</label>
+						<label class="blurb">@GameSettings.Text.Decide.WonPlayBlurb</label>
+					</div>
+				</div>
 			</div>
 		}
 
@@ -523,6 +698,77 @@
 	}
 	void PauseToMenu() => Loop?.ShowMenu();
 	void StartRun() => Loop?.Restart();
+
+	void PickRow( MenuChoice item )
+	{
+		Loop?.NoteUiClick();
+		Loop?.ActivateMenu( item );
+	}
+
+	List<(MenuChoice Item, string Title, string Key)> MainRows
+	{
+		get
+		{
+			var copy = GameSettings.Text.Menu;
+			return new()
+			{
+				(MenuChoice.Continue, Loop.IsValid() && Loop.HasActiveSave ? copy.Continue : copy.Play, copy.Key1),
+				(MenuChoice.Upgrades, copy.City, copy.Key2),
+				(MenuChoice.Saves, copy.Saves, copy.Key3)
+			};
+		}
+	}
+
+	void BackToTitle()
+	{
+		Loop?.NoteUiClick();
+		Loop?.CloseSettings();
+	}
+
+	List<(SettingRow Row, string Title, string Value, int Steps)> SettingRows
+	{
+		get
+		{
+			var copy = GameSettings.Text.Options;
+			var list = new List<(SettingRow, string, string, int)>();
+			foreach ( var row in GameLoop.SettingOrder )
+			{
+				var title = row switch
+				{
+					SettingRow.Music => copy.Music,
+					SettingRow.Sfx => copy.Sfx,
+					_ => copy.Shake
+				};
+
+				var steps = UserSettings.Steps( row );
+				var value = steps == 0 ? copy.Off : GameSettings.Text.F( copy.Value, UserSettings.Percent( row ) );
+				list.Add( (row, title, value, steps) );
+			}
+
+			return list;
+		}
+	}
+
+	string BrandTop
+	{
+		get
+		{
+			var title = (GameSettings.Text.Menu.Title ?? "").ToUpperInvariant();
+			var split = title.IndexOf( '&' );
+			return split < 0 ? title : title.Substring( 0, split + 1 ).Trim();
+		}
+	}
+
+	string BrandBottom
+	{
+		get
+		{
+			var title = (GameSettings.Text.Menu.Title ?? "").ToUpperInvariant();
+			var split = title.IndexOf( '&' );
+			return split < 0 ? "" : title.Substring( split + 1 ).Trim();
+		}
+	}
+
 	void OpenCity() => Loop?.OpenCityFromMenu();
 	void OpenSaves() => Loop?.OpenSaves();
 	void HighlightSlot1() => Loop?.HighlightSave( 0 );
@@ -545,9 +791,15 @@
 		Loop?.NoteUiClick();
 		Loop?.ChooseCity();
 	}
+	void PlayAgain()
+	{
+		Loop?.NoteUiClick();
+		Loop?.PlayAgain();
+	}
 
 	int LapPercent => Loop.IsValid() ? (int)(Loop.LapFraction * 100f) : 0;
 	int BossPercent => Loop.IsValid() && Loop.BossMaxHealth > 0 ? (int)(Loop.BossHealth / (float)Loop.BossMaxHealth * 100f) : 0;
+	int FeedPercent => Loop.IsValid() && Loop.WinNeed > 0 ? (int)(Math.Clamp( Loop.FedBiomass / (float)Loop.WinNeed, 0f, 1f ) * 100f) : 0;
 	int HurtPercent => Loop.IsValid() ? (int)(Loop.HurtAmount * 100f) : 0;
 	string HurtVeil => (Loop.IsValid() ? Loop.HurtAmount * 0.55f : 0f).ToString( "0.###" );
 	int DashPercent => Runner.IsValid() ? (int)(Runner.DashCharge * 100f) : 0;
@@ -622,6 +874,9 @@
 			if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Saves )
 				return GameSettings.Text.Help.Saves;
 
+			if ( Loop.Phase == RunPhase.Menu )
+				return "";
+
 			return Loop.Phase switch
 			{
 				RunPhase.Menu => GameSettings.Text.Help.Menu,
@@ -633,6 +888,7 @@
 				RunPhase.PickTrait => Loop.HasThirdOffer ? GameSettings.Text.Help.ShopThree : GameSettings.Text.Help.ShopTwo,
 				RunPhase.Dead => GameSettings.Text.Help.Dead,
 				RunPhase.Extracted => GameSettings.Text.Help.Extracted,
+				RunPhase.Won => GameSettings.Text.Help.Won,
 				_ => Loop.InBossFight
 					? Loop.Location == RunLocation.Glass
 						? GameSettings.Text.Help.BossGlass
@@ -931,7 +1187,15 @@
 			Loop.IsValid() && Loop.HasNextRing,
 			Loop.IsValid() ? Loop.TaskStamp : "",
 			Loop.IsValid() && Loop.HasTask,
-			Loop.IsValid() ? Loop.TaskDone : 0 );
+			Loop.IsValid() ? Loop.TaskDone : 0,
+			Loop.IsValid() ? Loop.FedBiomass : 0,
+			System.HashCode.Combine(
+				Loop.IsValid() ? (int)Loop.MenuFocus : 0,
+				Loop.IsValid() ? Loop.OrganCount : 0,
+				Loop.IsValid() ? (int)Loop.SettingCursor : 0,
+				UserSettings.Steps( SettingRow.Music ),
+				UserSettings.Steps( SettingRow.Sfx ),
+				UserSettings.Steps( SettingRow.Shake ) ) );
 
 		return System.HashCode.Combine( a, b, c, d, e, f, g );
 	}
@@ -949,13 +1213,13 @@
 		position: absolute;
 		width: 100%;
 		height: 100%;
-		font-family: Poppins;
-		color: #cfe6f5;
+		font-family: "Barlow Condensed";
+		color: #e8e0d4;
 		pointer-events: none;
 	}
 
 	.hud label {
-		color: #cfe6f5;
+		color: #e8e0d4;
 	}
 
 	.top-left {
@@ -973,14 +1237,14 @@
 
 	.lap-chip .key {
 		font-size: 18px;
-		color: #5f7f96;
+		color: #7b746a;
 		margin-right: 10px;
 	}
 
 	.lap-chip .value {
 		font-size: 46px;
 		font-weight: 700;
-		color: #eaf6ff;
+		color: #f4ece0;
 	}
 
 	.hearts {
@@ -993,11 +1257,11 @@
 		height: 18px;
 		border-radius: 4px;
 		margin-right: 6px;
-		background-color: #3a4a58;
+		background-color: rgba(200, 190, 170, 0.16);
 	}
 
 	.heart.live {
-		background-color: #f05a46;
+		background-color: #e0453a;
 	}
 
 	.heart.live.sting {
@@ -1028,13 +1292,13 @@
 	}
 
 	.notice.hurt label {
-		color: #ff4a3a;
+		color: #ff5742;
 		font-size: 42px;
 	}
 
 	.clock {
 		font-size: 16px;
-		color: #5f7f96;
+		color: #7b746a;
 		margin-top: 6px;
 	}
 
@@ -1045,13 +1309,13 @@
 		max-width: 360px;
 		margin-top: 8px;
 		font-size: 13px;
-		color: #8aa4b8;
+		color: #8e8b86;
 		letter-spacing: 1px;
 	}
 
 	.mods > label {
 		font-size: 13px;
-		color: #8aa4b8;
+		color: #8e8b86;
 		letter-spacing: 1px;
 	}
 
@@ -1063,22 +1327,22 @@
 	}
 
 	.task .key {
-		font-size: 12px;
+		font-size: 16px;
 		font-weight: 700;
 		letter-spacing: 3px;
-		color: #ffd27a;
+		color: #f0b429;
 	}
 
 	.task .title {
-		font-size: 16px;
+		font-size: 21px;
 		font-weight: 700;
-		color: #eaf6ff;
+		color: #f4ece0;
 		margin-top: 2px;
 	}
 
 	.task .blurb {
-		font-size: 13px;
-		color: #8aa4b8;
+		font-size: 17px;
+		color: #8e8b86;
 		margin-top: 2px;
 	}
 
@@ -1111,13 +1375,13 @@
 
 	.mod-chip label {
 		font-size: 13px;
-		color: #ffd27a;
+		color: #f0b429;
 		margin-left: 4px;
 	}
 
 	.mod-extra {
 		font-size: 13px;
-		color: #8aa4b8;
+		color: #8e8b86;
 		letter-spacing: 1px;
 		margin-right: 8px;
 	}
@@ -1136,7 +1400,7 @@
 	.meter {
 		width: 260px;
 		height: 6px;
-		background-color: rgba(120, 170, 200, 0.16);
+		background-color: rgba(200, 190, 170, 0.16);
 		border-radius: 3px;
 		margin-top: 4px;
 		flex-direction: row;
@@ -1155,15 +1419,15 @@
 	}
 
 	.meter .fill.lap.boss {
-		background-color: #e23d4a;
+		background-color: #e0453a;
 	}
 
 	.meter .fill.dash {
-		background-color: #6a7f90;
+		background-color: #6a6257;
 	}
 
 	.meter .fill.dash.ready {
-		background-color: #ffb83c;
+		background-color: #f0b429;
 	}
 
 	.meter .fill.slow {
@@ -1172,6 +1436,29 @@
 
 	.meter .fill.slow.on {
 		background-color: #b48cff;
+	}
+
+	.meter .fill.feed {
+		background-color: #e0453a;
+	}
+
+	.feed {
+		flex-direction: column;
+		align-items: flex-end;
+		margin-bottom: 10px;
+	}
+
+	.feed-line {
+		font-size: 16px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #f0b429;
+	}
+
+	.city .feed {
+		align-items: flex-start;
+		margin-top: 8px;
+		margin-bottom: 4px;
 	}
 
 	.top-right {
@@ -1190,13 +1477,13 @@
 
 	.stat .key {
 		font-size: 14px;
-		color: #4f6c80;
+		color: #7b746a;
 		margin-right: 10px;
 	}
 
 	.stat.scrap .key,
 	.stat.scrap .value {
-		color: #ffd27a;
+		color: #f0b429;
 	}
 
 	.stat.scrap .value {
@@ -1219,11 +1506,12 @@
 	}
 
 	.notice label {
-		font-size: 34px;
+		font-family: "Barlow Condensed";
+		font-size: 40px;
 		font-weight: 700;
 		letter-spacing: 4px;
-		color: #ffd27a;
-		text-shadow: 0px 0px 22px rgba(255, 180, 60, 0.7);
+		color: #f0b429;
+		text-shadow: 0px 0px 22px rgba(240, 180, 41, 0.65);
 	}
 
 	.notice.on {
@@ -1254,14 +1542,14 @@
 		align-items: center;
 		padding: 8px 10px;
 		border-radius: 10px;
-		background-color: rgba(10, 18, 26, 0.7);
-		border: 2px solid rgba(120, 170, 200, 0.2);
+		background-color: rgba(14, 15, 17, 0.7);
+		border: 2px solid rgba(200, 190, 170, 0.2);
 		margin: 4px;
 	}
 
 	.slot.selected {
-		background-color: rgba(18, 28, 40, 0.9);
-		border-color: #eaf6ff;
+		background-color: rgba(20, 20, 22, 0.9);
+		border-color: #f4ece0;
 	}
 
 	.slot .pip {
@@ -1269,7 +1557,7 @@
 		height: 18px;
 		border-radius: 9px;
 		margin-right: 8px;
-		background-color: #3a4a58;
+		background-color: rgba(200, 190, 170, 0.16);
 	}
 
 	.slot .idx {
@@ -1278,7 +1566,7 @@
 	}
 
 	.slot.chambered {
-		border-color: rgba(255, 184, 60, 0.75);
+		border-color: rgba(240, 180, 41, 0.75);
 	}
 
 	.slot.inflight {
@@ -1307,7 +1595,7 @@
 
 	.dash .key {
 		font-size: 13px;
-		color: #4f6c80;
+		color: #7b746a;
 		margin-right: 10px;
 	}
 
@@ -1336,7 +1624,7 @@
 	.city .slot .idx {
 		font-size: 13px;
 		font-weight: 600;
-		color: #8aa4b8;
+		color: #8e8b86;
 		margin-top: 2px;
 	}
 
@@ -1476,8 +1764,8 @@
 		padding: 14px 18px;
 		margin-bottom: 10px;
 		border-radius: 12px;
-		background-color: rgba(10, 18, 26, 0.92);
-		border: 2px solid rgba(255, 184, 60, 0.45);
+		background-color: rgba(14, 15, 17, 0.92);
+		border: 2px solid rgba(240, 180, 41, 0.45);
 	}
 
 	.blueprint .glyph {
@@ -1599,19 +1887,19 @@
 	.blueprint .payoff {
 		font-size: 15px;
 		font-weight: 700;
-		color: #ffd27a;
+		color: #f0b429;
 		margin-top: 2px;
 	}
 
 	.blueprint .blurb {
 		font-size: 14px;
-		color: #8aa4b8;
+		color: #8e8b86;
 		margin-top: 4px;
 	}
 
 	.blueprint .cost {
 		font-size: 13px;
-		color: #5f7f96;
+		color: #7b746a;
 		margin-top: 6px;
 	}
 
@@ -1624,13 +1912,13 @@
 	.promise .tag {
 		font-size: 14px;
 		font-weight: 700;
-		color: #ffd27a;
+		color: #f0b429;
 		margin-top: 6px;
 	}
 
 	.heart.add {
-		background-color: rgba(10, 18, 26, 0.2);
-		border: 2px solid #f05a46;
+		background-color: rgba(14, 15, 17, 0.2);
+		border: 2px solid #e0453a;
 	}
 
 	.shots {
@@ -1643,7 +1931,7 @@
 		height: 14px;
 		border-radius: 7px;
 		margin-right: 8px;
-		background-color: #6a7f90;
+		background-color: #6a6257;
 	}
 
 	.shot.big {
@@ -1671,8 +1959,8 @@
 		height: 36px;
 		border-radius: 4px;
 		margin-right: 6px;
-		background-color: rgba(120, 170, 200, 0.25);
-		border: 2px solid rgba(120, 170, 200, 0.45);
+		background-color: rgba(200, 190, 170, 0.25);
+		border: 2px solid rgba(200, 190, 170, 0.45);
 	}
 
 	.mini-card.add {
@@ -1683,100 +1971,114 @@
 
 	.help {
 		position: absolute;
-		bottom: 18px;
+		bottom: 10px;
 		width: 100%;
 		text-align: center;
-		font-size: 13px;
-		color: #3f5666;
+		font-family: "Barlow Condensed";
+		font-size: 16px;
+		letter-spacing: 2px;
+		color: #5a544c;
 	}
 
 	.pause-btn {
 		position: absolute;
-		right: 28px;
-		top: 22px;
+		right: 26px;
+		top: 24px;
 		flex-direction: row;
 		align-items: center;
-		padding: 10px 14px;
+		padding: 10px 20px;
 		border-radius: 10px;
-		background-color: rgba(10, 18, 26, 0.88);
-		border: 2px solid rgba(255, 184, 60, 0.55);
+		background-color: rgba(14, 15, 17, 0.86);
+		border: 2px solid rgba(240, 180, 41, 0.3);
 		pointer-events: all;
 		cursor: pointer;
 		z-index: 40;
+		transition: background-color 0.12s ease-out, border-color 0.12s ease-out;
 	}
 
 	.pause-btn:hover {
-		border-color: #ffd27a;
-		background-color: rgba(255, 210, 122, 0.18);
+		border-color: #f0b429;
+		background-color: rgba(240, 180, 41, 0.18);
 	}
 
 	.pause-glyph {
 		flex-direction: row;
 		align-items: center;
-		margin-right: 10px;
+		margin-right: 12px;
 	}
 
 	.pause-bar {
-		width: 6px;
-		height: 18px;
-		margin-right: 4px;
+		width: 7px;
+		height: 22px;
+		margin-right: 5px;
 		border-radius: 2px;
-		background-color: #ffd27a;
+		background-color: #f0b429;
 	}
 
 	.pause-btn label {
-		font-size: 14px;
+		font-family: "Barlow Condensed";
+		font-size: 26px;
 		font-weight: 700;
-		letter-spacing: 2px;
-		color: #ffd27a;
+		letter-spacing: 3px;
+		color: #f0b429;
 	}
 
 	.overlay {
 		position: absolute;
 		width: 100%;
 		height: 100%;
-		background-color: rgba(4, 8, 14, 0.55);
+		background-color: rgba(5, 5, 7, 0.55);
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
 	}
 
 	.overlay.menu {
-		background-color: rgba(4, 8, 14, 0.78);
+		background-color: rgba(5, 5, 7, 0.78);
+	}
+
+	.overlay.victory {
+		pointer-events: all;
+		cursor: pointer;
+		background-color: rgba(7, 5, 5, 0.86);
+	}
+
+	.overlay.victory .overlay-title {
+		font-size: 64px;
+		letter-spacing: 8px;
+		color: #ff7a4a;
 	}
 
 	.overlay .kicker {
-		font-size: 14px;
-		font-weight: 700;
-		letter-spacing: 8px;
-		color: #5f7f96;
+		font-size: 18px;
+		font-weight: 600;
+		letter-spacing: 6px;
+		color: #f0b429;
 		margin-bottom: 8px;
 	}
 
 	.overlay.menu .overlay-title {
-		font-size: 58px;
-		letter-spacing: 6px;
+		font-size: 66px;
+		letter-spacing: 3px;
 		margin-bottom: 8px;
 	}
 
 	.overlay-title {
-		font-size: 42px;
-		font-weight: 700;
-		letter-spacing: 4px;
-		color: #ffd27a;
+		font-family: Anton;
+		font-size: 54px;
+		letter-spacing: 2px;
+		color: #f4ece0;
 		margin-bottom: 12px;
 	}
 
 	.overlay .blurb {
-		font-size: 16px;
-		color: #8aa4b8;
+		font-size: 20px;
+		color: #8e8b86;
 		margin-bottom: 22px;
 	}
 
 	.overlay.showcase {
-		pointer-events: all;
-		cursor: pointer;
-		background-color: rgba(4, 8, 14, 0.72);
+		background-color: rgba(5, 5, 7, 0.72);
 	}
 
 	.overlay.showcase .reel {
@@ -1793,8 +2095,8 @@
 		padding: 10px 14px;
 		margin-bottom: 6px;
 		border-radius: 10px;
-		background-color: rgba(10, 18, 26, 0.92);
-		border: 2px solid rgba(255, 184, 60, 0.45);
+		background-color: rgba(14, 15, 17, 0.92);
+		border: 2px solid rgba(240, 180, 41, 0.45);
 		opacity: 0;
 		animation-name: card-in;
 		animation-duration: 0.28s;
@@ -1807,7 +2109,7 @@
 		height: 14px;
 		border-radius: 4px;
 		margin-right: 12px;
-		background-color: #ffd27a;
+		background-color: #f0b429;
 	}
 
 	.overlay.showcase .beat .copy {
@@ -1816,24 +2118,17 @@
 	}
 
 	.overlay.showcase .beat .title {
-		font-size: 16px;
+		font-size: 20px;
 		font-weight: 700;
 		letter-spacing: 1px;
-		color: #eaf6ff;
+		color: #f4ece0;
 	}
 
 	.overlay.showcase .beat .blurb {
-		font-size: 13px;
-		color: #8aa4b8;
+		font-size: 17px;
+		color: #8e8b86;
 		margin-bottom: 0px;
 		margin-top: 2px;
-	}
-
-	.overlay.showcase .blurb.continue {
-		margin-bottom: 0px;
-		font-size: 13px;
-		letter-spacing: 2px;
-		color: #5f7f96;
 	}
 
 	.cards {
@@ -1844,12 +2139,12 @@
 	}
 
 	.card {
-		width: 280px;
-		padding: 22px;
+		width: 300px;
+		padding: 24px;
 		margin: 0px 12px 16px 12px;
-		border-radius: 12px;
-		background-color: rgba(10, 18, 26, 0.92);
-		border: 2px solid rgba(255, 184, 60, 0.55);
+		border-radius: 10px;
+		background-color: rgba(14, 15, 17, 0.9);
+		border: 2px solid rgba(240, 180, 41, 0.3);
 		flex-direction: column;
 		cursor: pointer;
 		overflow: hidden;
@@ -1871,8 +2166,8 @@
 	.card:hover,
 	.card.hot {
 		transform: scale( 1.08 ) translateY( -12px );
-		border-color: #ffd27a;
-		background-color: rgba(255, 210, 122, 0.18);
+		border-color: #f0b429;
+		background-color: rgba(240, 180, 41, 0.18);
 	}
 
 	.card:active {
@@ -1880,13 +2175,13 @@
 	}
 
 	.card.selected {
-		border-color: #ffd27a;
-		background: rgba(255, 210, 122, 0.14);
+		border-color: #f0b429;
+		background: rgba(240, 180, 41, 0.14);
 	}
 
 	.card.upgrade:hover,
 	.card.upgrade.hot {
-		background-color: rgba(18, 36, 52, 0.98);
+		background-color: rgba(22, 21, 19, 0.98);
 	}
 
 	.overlay.menu.picking .card {
@@ -1898,8 +2193,8 @@
 	.overlay.menu.picking .card.selected.hot {
 		opacity: 1;
 		transform: scale( 1.1 ) translateY( -14px );
-		border-color: #ffe7a8;
-		background-color: rgba(255, 210, 122, 0.24);
+		border-color: #ffd469;
+		background-color: rgba(240, 180, 41, 0.24);
 	}
 
 	.card.poor {
@@ -1907,7 +2202,7 @@
 	}
 
 	.card.poor .cost {
-		color: #f05a46;
+		color: #e0453a;
 	}
 
 	.card.upgrade.poor {
@@ -1922,26 +2217,26 @@
 	.card.upgrade.bought:hover,
 	.card.upgrade.bought.hot {
 		transform: none;
-		background-color: rgba(10, 18, 26, 0.92);
+		background-color: rgba(14, 15, 17, 0.92);
 	}
 
 	.card .rarity {
-		font-size: 13px;
+		font-size: 17px;
 		font-weight: 700;
 		letter-spacing: 2px;
-		color: #5f7f96;
+		color: #7b746a;
 		margin-top: 4px;
 	}
 
 	.card .cost {
-		font-size: 15px;
+		font-size: 19px;
 		font-weight: 700;
-		color: #ffd27a;
+		color: #f0b429;
 		margin-top: 10px;
 	}
 
 	.card.upgrade.poor .cost {
-		color: #f05a46;
+		color: #e0453a;
 	}
 
 	.card.upgrade.bought .cost {
@@ -1950,33 +2245,37 @@
 
 	.card.hot .key,
 	.card:hover .key {
-		color: #fff6d8;
+		color: #fff1cf;
 	}
 
 	.card.hot .title,
 	.card:hover .title {
-		color: #ffd27a;
+		color: #f0b429;
 	}
 
 	.card.hot .blurb,
 	.card:hover .blurb {
-		color: #d5e6f2;
+		color: #ded5c8;
 	}
 
 	.card .key {
-		font-size: 16px;
-		color: #ffb83c;
+		font-size: 20px;
+		font-weight: 600;
+		letter-spacing: 2px;
+		color: #f0b429;
 	}
 
 	.card .title {
-		font-size: 26px;
+		font-size: 32px;
 		font-weight: 700;
+		letter-spacing: 1px;
+		color: #f4ece0;
 		margin-top: 6px;
 	}
 
 	.card .blurb {
-		font-size: 16px;
-		color: #8aa4b8;
+		font-size: 19px;
+		color: #8e8b86;
 		margin-top: 8px;
 		margin-bottom: 0px;
 	}
@@ -2007,14 +2306,14 @@
 		margin-left: -14px;
 		margin-top: -14px;
 		border-radius: 14px;
-		background-color: rgba(255, 210, 122, 0.28);
+		background-color: rgba(240, 180, 41, 0.28);
 	}
 
 	.cursor-ring {
 		width: 72px;
 		height: 72px;
 		border-radius: 36px;
-		border: 2px solid rgba(255, 210, 122, 0.55);
+		border: 2px solid rgba(240, 180, 41, 0.55);
 		animation-name: cursor-pulse;
 		animation-duration: 1.15s;
 		animation-timing-function: ease-out;
@@ -2026,7 +2325,746 @@
 		width: 10px;
 		height: 10px;
 		border-radius: 5px;
-		background-color: #ffd27a;
+		background-color: #f0b429;
+	}
+
+	.run-left {
+		position: absolute;
+		left: 26px;
+		top: 24px;
+		width: 400px;
+		flex-direction: column;
+		align-items: stretch;
+		font-family: "Barlow Condensed";
+	}
+
+	.run-right {
+		position: absolute;
+		right: 26px;
+		top: 108px;
+		width: 360px;
+		flex-direction: column;
+		align-items: stretch;
+		font-family: "Barlow Condensed";
+	}
+
+	.hud-panel {
+		position: relative;
+		flex-direction: column;
+		align-items: stretch;
+		padding: 16px 20px;
+		margin-bottom: 12px;
+		border-radius: 10px;
+		background-color: rgba(14, 15, 17, 0.86);
+		border: 2px solid rgba(240, 180, 41, 0.16);
+	}
+
+	.hud-panel .rivet {
+		position: absolute;
+		width: 5px;
+		height: 5px;
+		border-radius: 3px;
+		background-color: rgba(240, 180, 41, 0.4);
+	}
+
+	.hud-panel .rivet.a {
+		left: 9px;
+		top: 9px;
+	}
+
+	.hud-panel .rivet.b {
+		right: 9px;
+		bottom: 9px;
+	}
+
+	.lap-row {
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: space-between;
+	}
+
+	.lap-head {
+		flex-direction: row;
+		align-items: baseline;
+	}
+
+	.lap-row .place {
+		margin-right: 14px;
+		font-size: 24px;
+		font-weight: 600;
+		letter-spacing: 3px;
+		color: #cdc6ba;
+	}
+
+	.lap-row .lap-value {
+		font-size: 50px;
+		line-height: 44px;
+		font-weight: 700;
+		color: #f4ece0;
+	}
+
+	.lap-row .lap-clock {
+		font-size: 24px;
+		font-weight: 600;
+		letter-spacing: 2px;
+		color: #8e8b86;
+	}
+
+	.bar {
+		height: 12px;
+		margin-top: 12px;
+		border-radius: 6px;
+		background-color: rgba(200, 190, 170, 0.14);
+		flex-direction: row;
+		align-items: stretch;
+		justify-content: flex-start;
+		overflow: hidden;
+	}
+
+	.bar-fill {
+		height: 100%;
+		border-radius: 6px;
+	}
+
+	.bar-fill.lap {
+		background-color: #f0b429;
+	}
+
+	.bar-fill.boss {
+		background-color: #e0453a;
+	}
+
+	.bar-fill.dash {
+		background-color: #6a6257;
+	}
+
+	.bar-fill.dash.ready {
+		background-color: #f0b429;
+	}
+
+	.bar-fill.slow {
+		background-color: #6a5f7a;
+	}
+
+	.bar-fill.slow.on {
+		background-color: #b48cff;
+	}
+
+	.brief-panel {
+		padding-left: 26px;
+	}
+
+	.brief-accent {
+		position: absolute;
+		left: 10px;
+		top: 16px;
+		width: 4px;
+		height: 88px;
+		border-radius: 2px;
+		background-color: #f0b429;
+	}
+
+	.brief-kicker {
+		font-size: 17px;
+		font-weight: 600;
+		letter-spacing: 4px;
+		color: #f0b429;
+	}
+
+	.brief-title {
+		margin-top: 2px;
+		font-size: 32px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #f4ece0;
+	}
+
+	.brief-blurb {
+		margin-top: 2px;
+		font-size: 20px;
+		color: #8e8b86;
+	}
+
+	.panel-split {
+		height: 2px;
+		margin-top: 12px;
+		margin-bottom: 10px;
+		background-color: rgba(200, 190, 170, 0.12);
+	}
+
+	.trinkets {
+		flex-direction: row;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.trinket-key {
+		font-size: 17px;
+		letter-spacing: 4px;
+		color: #7b746a;
+	}
+
+	.trinket-dash {
+		margin: 0px 8px;
+		font-size: 17px;
+		color: #4f4a43;
+	}
+
+	.trinket-none {
+		font-size: 17px;
+		letter-spacing: 3px;
+		color: #7b746a;
+	}
+
+	.trinket {
+		flex-direction: row;
+		align-items: center;
+		margin-right: 8px;
+	}
+
+	.trinket img {
+		width: 34px;
+		height: 34px;
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: center;
+	}
+
+	.trinket label {
+		margin-left: 3px;
+		font-size: 18px;
+		font-weight: 600;
+		color: #f0b429;
+	}
+
+	.trinket-tag {
+		margin-left: 8px;
+		font-size: 17px;
+		letter-spacing: 2px;
+		color: #7b746a;
+	}
+
+	.stat-row {
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: space-between;
+		margin-bottom: 2px;
+	}
+
+	.stat-row .key {
+		font-size: 17px;
+		letter-spacing: 3px;
+		color: #7b746a;
+	}
+
+	.stat-row .value {
+		font-size: 20px;
+		font-weight: 600;
+		color: #cdc6ba;
+	}
+
+	.stat-row.lead .key {
+		font-size: 21px;
+		letter-spacing: 2px;
+		color: #a39c91;
+	}
+
+	.stat-row.lead .value {
+		font-size: 30px;
+		font-weight: 700;
+		color: #f4ece0;
+	}
+
+	.run-tray {
+		position: absolute;
+		bottom: 34px;
+		width: 100%;
+		justify-content: center;
+		font-family: "Barlow Condensed";
+	}
+
+	.tray {
+		flex-direction: row;
+		align-items: center;
+		padding: 12px 24px;
+		border-radius: 12px;
+		background-color: rgba(14, 15, 17, 0.88);
+		border: 2px solid rgba(240, 180, 41, 0.16);
+	}
+
+	.tray-cell {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.cell-key {
+		margin-right: 12px;
+		font-size: 18px;
+		letter-spacing: 3px;
+		color: #7b746a;
+	}
+
+	.cell-value {
+		margin-left: 12px;
+		font-size: 30px;
+		font-weight: 700;
+		color: #f4ece0;
+	}
+
+	.cell-split {
+		width: 2px;
+		height: 34px;
+		margin: 0px 20px;
+		background-color: rgba(200, 190, 170, 0.12);
+	}
+
+	.hp-row {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.hp {
+		width: 20px;
+		height: 20px;
+		margin-right: 6px;
+		border-radius: 4px;
+		background-color: rgba(200, 190, 170, 0.16);
+	}
+
+	.hp.live {
+		background-color: #e0453a;
+	}
+
+	.hp.live.sting {
+		background-color: #ffffff;
+	}
+
+	.round-row {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.round {
+		width: 14px;
+		height: 26px;
+		margin-right: 5px;
+		border-radius: 7px;
+		border: 2px solid rgba(0, 0, 0, 0);
+		opacity: 0.5;
+	}
+
+	.round.chambered {
+		opacity: 1;
+	}
+
+	.round.inflight {
+		opacity: 0.8;
+	}
+
+	.round.dropped {
+		opacity: 0.35;
+	}
+
+	.round.picked {
+		opacity: 1;
+		border-color: #f4ece0;
+	}
+
+	.tray-bar {
+		width: 150px;
+		margin-top: 0px;
+	}
+
+	.chip {
+		margin-left: 12px;
+		padding: 3px 10px;
+		border-radius: 6px;
+		font-size: 16px;
+		font-weight: 600;
+		letter-spacing: 2px;
+		color: #cdc6ba;
+		background-color: rgba(200, 190, 170, 0.12);
+	}
+
+	.overlay.title {
+		background-color: rgba(0, 0, 0, 0);
+		align-items: stretch;
+		justify-content: flex-start;
+		font-family: "Barlow Condensed";
+	}
+
+	.title-scrim {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background-image: linear-gradient(to right, rgba(5, 5, 7, 0.96) 0%, rgba(5, 5, 7, 0.9) 26%, rgba(5, 5, 7, 0.5) 52%, rgba(5, 5, 7, 0.12) 74%, rgba(5, 5, 7, 0.34) 100%);
+	}
+
+	.rail {
+		position: absolute;
+		left: 72px;
+		top: 62px;
+		width: 600px;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.brand {
+		position: relative;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.brand-slash {
+		position: absolute;
+		left: -16px;
+		top: 14px;
+		width: 196px;
+		height: 44px;
+		background-color: rgba(168, 26, 22, 0.85);
+		transform: rotate( -12deg );
+	}
+
+	.brand-line {
+		font-family: Anton;
+		font-size: 92px;
+		line-height: 78px;
+		letter-spacing: 2px;
+		color: #f4ece0;
+		text-shadow: 0px 4px 0px rgba(0, 0, 0, 0.5);
+		z-index: 1;
+	}
+
+	.brand-rule {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 20px;
+		margin-bottom: 38px;
+	}
+
+	.rule-bar {
+		width: 84px;
+		height: 3px;
+		margin-right: 18px;
+		background-color: #f0b429;
+	}
+
+	.tagline {
+		font-size: 20px;
+		letter-spacing: 3px;
+		color: #9b968d;
+	}
+
+	.rail-list {
+		width: 100%;
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.rail-row {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		height: 74px;
+		padding: 0px 24px;
+		margin-bottom: 10px;
+		background-color: rgba(16, 17, 19, 0.82);
+		border-left: 4px solid rgba(240, 180, 41, 0);
+		pointer-events: all;
+		cursor: pointer;
+		transition: background-color 0.12s ease-out, transform 0.12s ease-out, border-color 0.12s ease-out;
+	}
+
+	.rail-row .caret {
+		width: 40px;
+		font-family: "Material Icons";
+		font-size: 32px;
+		color: #191510;
+		opacity: 0;
+		transition: opacity 0.12s ease-out;
+	}
+
+	.rail-row .row-title {
+		font-size: 38px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #efe6d8;
+	}
+
+	.rail-row .row-key {
+		position: absolute;
+		right: 24px;
+		font-size: 24px;
+		font-weight: 600;
+		color: #6d6862;
+	}
+
+	.rail-row .rivet {
+		position: absolute;
+		left: 10px;
+		width: 5px;
+		height: 5px;
+		border-radius: 3px;
+		background-color: rgba(25, 21, 16, 0);
+	}
+
+	.rail-row .rivet.a {
+		top: 10px;
+	}
+
+	.rail-row .rivet.b {
+		bottom: 10px;
+	}
+
+	.rail-row.on {
+		background-color: #f0b429;
+		border-left-color: #ffd56b;
+		transform: translateX( 6px );
+	}
+
+	.rail-row.on .caret {
+		opacity: 1;
+	}
+
+	.rail-row.on .row-title {
+		color: #191510;
+	}
+
+	.rail-row.on .row-key {
+		color: rgba(25, 21, 16, 0.7);
+	}
+
+	.rail-row.on .rivet {
+		background-color: rgba(25, 21, 16, 0.32);
+	}
+
+	.rail-split {
+		width: 100%;
+		height: 2px;
+		margin-top: 14px;
+		margin-bottom: 18px;
+		background-color: rgba(200, 190, 170, 0.14);
+	}
+
+	.rail-list.quiet .rail-row {
+		height: 58px;
+		padding-left: 64px;
+		background-color: rgba(16, 17, 19, 0.6);
+	}
+
+	.rail-list.quiet .row-title {
+		font-size: 28px;
+		letter-spacing: 3px;
+		color: #b6ada0;
+	}
+
+	.rail-list.quiet .rail-row.on,
+	.rail-list.quiet .rail-row.back:hover {
+		background-color: #f0b429;
+	}
+
+	.rail-list.quiet .rail-row.on .row-title,
+	.rail-list.quiet .rail-row.back:hover .row-title {
+		color: #191510;
+	}
+
+	.rail-list.quiet .rail-row.back {
+		border-left-color: rgba(240, 180, 41, 0.75);
+	}
+
+	.page-kicker {
+		font-size: 18px;
+		font-weight: 600;
+		letter-spacing: 6px;
+		color: #f0b429;
+		margin-bottom: 4px;
+	}
+
+	.page-title {
+		font-family: Anton;
+		font-size: 68px;
+		line-height: 64px;
+		letter-spacing: 3px;
+		color: #f4ece0;
+		text-shadow: 0px 4px 0px rgba(0, 0, 0, 0.5);
+	}
+
+	.rail-row.slider {
+		cursor: default;
+	}
+
+	.rail-row.slider .row-title {
+		width: 230px;
+		font-size: 26px;
+		letter-spacing: 2px;
+	}
+
+	.rail-row.slider.on {
+		background-color: rgba(240, 180, 41, 0.16);
+		border-left-color: #f0b429;
+		transform: translateX( 0px );
+	}
+
+	.rail-row.slider.on .row-title {
+		color: #f6e2b0;
+	}
+
+	.ticks {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.tick {
+		width: 18px;
+		height: 22px;
+		margin-right: 4px;
+		background-color: rgba(200, 190, 170, 0.16);
+		pointer-events: all;
+		cursor: pointer;
+		transition: background-color 0.1s ease-out;
+	}
+
+	.tick:hover {
+		background-color: rgba(240, 180, 41, 0.45);
+	}
+
+	.tick.lit {
+		background-color: #f0b429;
+	}
+
+	.rail-row.slider .row-value {
+		position: absolute;
+		right: 24px;
+		width: 80px;
+		text-align: right;
+		font-size: 24px;
+		font-weight: 600;
+		letter-spacing: 1px;
+		color: #b6ada0;
+	}
+
+	.rail-slot {
+		margin-top: 32px;
+		font-size: 20px;
+		letter-spacing: 4px;
+		color: #8d8579;
+	}
+
+	.rail-hint {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 12px;
+	}
+
+	.rail-hint .icon {
+		font-family: "Material Icons";
+		font-size: 22px;
+		color: #6d6862;
+	}
+
+	.rail-hint .word {
+		margin-left: 12px;
+		font-size: 18px;
+		letter-spacing: 3px;
+		color: #6d6862;
+	}
+
+	.objective {
+		position: absolute;
+		right: 64px;
+		bottom: 58px;
+		width: 600px;
+		padding: 26px 30px;
+		flex-direction: column;
+		align-items: stretch;
+		background-color: rgba(14, 15, 17, 0.88);
+		border: 2px solid rgba(240, 180, 41, 0.28);
+	}
+
+	.objective .rivet {
+		position: absolute;
+		width: 6px;
+		height: 6px;
+		border-radius: 3px;
+		background-color: rgba(240, 180, 41, 0.45);
+	}
+
+	.objective .rivet.a {
+		left: 10px;
+		top: 10px;
+	}
+
+	.objective .rivet.b {
+		right: 10px;
+		top: 10px;
+	}
+
+	.objective .rivet.c {
+		left: 10px;
+		bottom: 10px;
+	}
+
+	.objective .rivet.d {
+		right: 10px;
+		bottom: 10px;
+	}
+
+	.obj-kicker {
+		font-size: 18px;
+		font-weight: 600;
+		letter-spacing: 5px;
+		color: #f0b429;
+	}
+
+	.obj-title {
+		margin-top: 6px;
+		font-size: 42px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #f4ece0;
+	}
+
+	.obj-blurb {
+		margin-top: 4px;
+		font-size: 22px;
+		color: #948d83;
+	}
+
+	.obj-split {
+		height: 2px;
+		margin-top: 18px;
+		margin-bottom: 16px;
+		background-color: rgba(200, 190, 170, 0.14);
+	}
+
+	.obj-stats {
+		flex-direction: row;
+		align-items: stretch;
+	}
+
+	.obj-stat {
+		width: 33.3%;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.obj-stats .obj-stat:nth-child(2),
+	.obj-stats .obj-stat:nth-child(3) {
+		padding-left: 24px;
+		border-left: 2px solid rgba(200, 190, 170, 0.12);
+	}
+
+	.obj-stat .key {
+		font-size: 16px;
+		letter-spacing: 4px;
+		color: #7b746a;
+	}
+
+	.obj-stat .value {
+		font-size: 46px;
+		line-height: 46px;
+		font-weight: 700;
+		color: #f4ece0;
 	}
 
 	@@keyframes card-in {
@@ -2055,3 +3093,4 @@
 		}
 	}
 </style>
+

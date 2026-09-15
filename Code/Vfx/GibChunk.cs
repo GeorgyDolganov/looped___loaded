@@ -8,33 +8,16 @@ public sealed class GibChunk : Component
 	static readonly (string Name, GibPart Kind)[] BodyParts =
 	{
 		("head", GibPart.Head),
-		("neck", GibPart.Small),
 		("spine_2", GibPart.Chest),
-		("spine_1", GibPart.Chest),
-		("spine", GibPart.Chest),
 		("hips", GibPart.Hips),
-		("shoulder_L", GibPart.Limb),
-		("shoulder_R", GibPart.Limb),
 		("upper_arm_L", GibPart.Limb),
 		("upper_arm_R", GibPart.Limb),
-		("arm_L", GibPart.Limb),
-		("arm_R", GibPart.Limb),
 		("forearm_L", GibPart.Limb),
 		("forearm_R", GibPart.Limb),
-		("hand_ik_L", GibPart.Small),
-		("hand_ik_R", GibPart.Small),
-		("fist_L", GibPart.Small),
-		("fist_R", GibPart.Small),
-		("hand_L", GibPart.Small),
-		("hand_R", GibPart.Small),
 		("thigh_L", GibPart.Limb),
 		("thigh_R", GibPart.Limb),
 		("shin_L", GibPart.Limb),
-		("shin_R", GibPart.Limb),
-		("calf_L", GibPart.Limb),
-		("calf_R", GibPart.Limb),
-		("foot_L", GibPart.Small),
-		("foot_R", GibPart.Small)
+		("shin_R", GibPart.Limb)
 	};
 
 	enum GibPart
@@ -55,21 +38,6 @@ public sealed class GibChunk : Component
 	float life;
 	float ground = 8f;
 	ModelRenderer mesh;
-	Material flesh;
-
-	static Material hoboMat;
-
-	static Material HoboMat
-	{
-		get
-		{
-			if ( hoboMat.IsValid() )
-				return hoboMat;
-
-			hoboMat = Material.Load( "materials/hobo/hobo.vmat" );
-			return hoboMat.IsValid() ? hoboMat : Blocks.Flat;
-		}
-	}
 
 	public static void Burst( GameLoop host, Scene scene, SkinnedModelRenderer skin, Vector3 origin, Vector2 impulse, Color mark, float radius, GameObject shield )
 	{
@@ -86,17 +54,16 @@ public sealed class GibChunk : Component
 				if ( !BoneWorld( skin, entry.Name, out var tx ) )
 					continue;
 
-				Throw( host, scene, tx.Position, tx.Rotation, impulse, origin, meat, entry.Kind, scale, true );
+				Throw( host, scene, tx.Position, tx.Rotation, impulse, origin, meat, entry.Kind, scale );
 			}
 		}
 
-		var extras = scale > 1.6f ? 10 : 5;
+		var extras = scale > 1.6f ? 6 : 3;
 		for ( var i = 0; i < extras; i++ )
 		{
 			var offset = ArenaGeometry.FromAngle( Game.Random.Float( 0f, MathF.Tau ) ) * Game.Random.Float( 12f, 38f * scale );
 			var at = origin + new Vector3( offset.x, offset.y, Game.Random.Float( 24f, 90f * scale ) );
-			var kind = i % 3 == 0 ? GibPart.Chest : GibPart.Limb;
-			Throw( host, scene, at, Toss(), impulse, origin, meat, kind, scale, true );
+			Throw( host, scene, at, Toss(), impulse, origin, meat, GibPart.Small, scale );
 		}
 
 		var drops = scale > 1.6f ? 18 : 11;
@@ -104,35 +71,34 @@ public sealed class GibChunk : Component
 		{
 			var offset = ArenaGeometry.FromAngle( Game.Random.Float( 0f, MathF.Tau ) ) * Game.Random.Float( 6f, 28f * scale );
 			var at = origin + new Vector3( offset.x, offset.y, Game.Random.Float( 18f, 70f * scale ) );
-			Throw( host, scene, at, Toss(), impulse, origin, Color.Lerp( Meat, Clot, Game.Random.Float( 0f, 1f ) ), GibPart.Drop, scale, false );
+			Throw( host, scene, at, Toss(), impulse, origin, Color.Lerp( Meat, Clot, Game.Random.Float( 0f, 1f ) ), GibPart.Drop, scale );
 		}
 
 		if ( !shield.IsValid() )
 			return;
 
 		for ( var i = 0; i < 5; i++ )
-			Throw( host, scene, shield.WorldPosition, shield.WorldRotation, impulse, origin, mark * 1.15f, GibPart.Shard, scale, false );
+			Throw( host, scene, shield.WorldPosition, shield.WorldRotation, impulse, origin, mark * 1.15f, GibPart.Shard, scale );
 	}
 
-	static void Throw( GameLoop host, Scene scene, Vector3 at, Rotation rotation, Vector2 impulse, Vector3 origin, Color tint, GibPart kind, float scale, bool flesh )
+	static void Throw( GameLoop host, Scene scene, Vector3 at, Rotation rotation, Vector2 impulse, Vector3 origin, Color tint, GibPart kind, float scale )
 	{
 		var go = scene.CreateObject();
 		go.Name = "Gib";
 		go.WorldPosition = at;
-		go.WorldRotation = rotation;
 
 		var chunk = go.AddComponent<GibChunk>();
-		chunk.Arm( host, at, rotation, impulse, origin, tint, kind, scale, flesh );
+		chunk.Arm( host, at, rotation, impulse, origin, tint, kind, scale );
 		if ( host.IsValid() )
 			host.Gibs.Add( chunk );
 	}
 
-	void Arm( GameLoop host, Vector3 at, Rotation rotation, Vector2 impulse, Vector3 origin, Color color, GibPart kind, float scale, bool flesh )
+	void Arm( GameLoop host, Vector3 at, Rotation rotation, Vector2 impulse, Vector3 origin, Color color, GibPart kind, float scale )
 	{
 		loop = host;
 		tint = color;
 		WorldPosition = at;
-		WorldRotation = rotation;
+		WorldRotation = Rotation.Identity;
 		ground = 8f;
 		life = kind == GibPart.Drop ? Game.Random.Float( 0.55f, 0.95f ) : Game.Random.Float( 1.15f, 1.85f );
 		if ( scale > 1.6f )
@@ -153,35 +119,35 @@ public sealed class GibChunk : Component
 			Game.Random.Float( -12f, 12f ),
 			Game.Random.Float( -16f, 16f ) );
 
-		this.flesh = flesh ? HoboMat : Blocks.Flat;
 		Build( kind, scale );
+		WorldRotation = rotation;
 	}
 
 	void Build( GibPart kind, float scale )
 	{
 		var size = kind switch
 		{
-			GibPart.Head => new Vector3( 19f, 19f, 19f ),
-			GibPart.Chest => new Vector3( 23f, 15f, 19f ),
-			GibPart.Hips => new Vector3( 20f, 14f, 12f ),
-			GibPart.Limb => new Vector3( 24f, 7.5f, 7.5f ),
-			GibPart.Small => new Vector3( 9f, 7f, 7f ),
-			GibPart.Shard => new Vector3( 11f, 24f, 4f ),
+			GibPart.Head => new Vector3( 18f, 18f, 18f ),
+			GibPart.Chest => new Vector3( 22f, 10f, 14f ),
+			GibPart.Hips => new Vector3( 18f, 11f, 9f ),
+			GibPart.Limb => new Vector3( 28f, 6f, 6f ),
+			GibPart.Small => new Vector3( 8f, 8f, 8f ),
+			GibPart.Shard => new Vector3( 8f, 28f, 3f ),
 			_ => new Vector3( 5f, 5f, 5f )
 		} * scale;
 
-		GameObject piece;
-		if ( kind is GibPart.Head or GibPart.Drop )
-			piece = Blocks.SpawnSphere( GameObject, "Mesh", WorldPosition, size.x, tint, false );
-		else
-			piece = Blocks.SpawnBox( GameObject, "Mesh", WorldPosition, Rotation.Identity, size, tint, false );
+		var ball = kind is GibPart.Head or GibPart.Drop or GibPart.Small;
+		var piece = ball
+			? Blocks.SpawnSphere( GameObject, "Mesh", WorldPosition, size.x, tint, false )
+			: Blocks.SpawnBox( GameObject, "Mesh", WorldPosition, Rotation.Identity, size, tint, false );
 
 		piece.LocalPosition = Vector3.Zero;
 		piece.LocalRotation = Rotation.Identity;
+		piece.LocalScale = Blocks.Fit( ball ? Blocks.Sphere : Blocks.Box, ball ? new Vector3( size.x, size.x, size.x ) : size );
 		mesh = piece.GetComponent<ModelRenderer>();
 		if ( mesh.IsValid() )
 		{
-			mesh.MaterialOverride = flesh.IsValid() ? flesh : Blocks.Flat;
+			mesh.MaterialOverride = Blocks.Flat;
 			mesh.Tint = tint;
 		}
 	}
