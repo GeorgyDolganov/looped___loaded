@@ -7,7 +7,6 @@ public sealed class GameLoop : Component
 	[Property] public PlayerAim Aim { get; set; }
 	[Property] public RoundInventory Inventory { get; set; }
 	[Property] public CityBoard City { get; set; }
-	[Property] public float LostRoundMinArc { get; set; } = 460f;
 	[Property] public float NoticeDuration { get; set; } = 1.6f;
 	[Property] public int MaxHealth { get; set; } = 3;
 	public RunPhase Phase { get; private set; } = RunPhase.Menu;
@@ -43,14 +42,14 @@ public sealed class GameLoop : Component
 	public bool IsFrozen => Paused || Phase != RunPhase.Playing;
 
 	TextConfig T => GameSettings.Text;
-	public string Notice { get; private set; } = "AIM. FIRE. CATCH IT BACK.";
+	public string Notice { get; private set; } = "AIM. FIRE.";
 	public float NoticeAge => Time.Now - noticeAt;
 	public bool NoticeVisible => NoticeAge < NoticeDuration;
 
 	public int Lap { get; private set; } = 1;
 	int layoutSeed;
 	public float LapFraction => Phase == RunPhase.DecideLap ? 1f : Runner.IsValid() ? Runner.LapFraction : 0f;
-	public int Stash => Inventory.IsValid() ? Inventory.Slots.Count : 0;
+	public int Stash { get; private set; }
 	public int HeartMax => MaxHealth + (City.IsValid() ? City.Stats().BonusHealth : 0);
 	public int Health { get; private set; }
 	public float HurtAmount => Math.Clamp( 1f - (Time.Now - lastHurtAt) / GameSettings.Run.HurtFlash, 0f, 1f );
@@ -61,8 +60,6 @@ public sealed class GameLoop : Component
 	public int Catches { get; private set; }
 	public int Losses { get; private set; }
 	public int BloodShields { get; private set; }
-	public float SnapUntil { get; private set; }
-	public float SnapBoost => Time.Now < SnapUntil && Inventory.IsValid() ? Inventory.Loadout.SnapSpeed : 1f;
 	public int ExtractedRounds { get; private set; }
 	public int BurnedRounds { get; private set; }
 	public int BestExtract { get; private set; }
@@ -70,13 +67,18 @@ public sealed class GameLoop : Component
 	public int WinNeed => Math.Max( 1, GameSettings.Run.WinBiomass );
 	public float RunTime => Time.Now - runStartedAt;
 
-	public RoundTrait OfferA { get; private set; }
-	public RoundTrait OfferB { get; private set; }
-	public RoundTrait OfferC { get; private set; }
-	public bool HasThirdOffer { get; private set; }
-	public bool OfferABought { get; private set; }
-	public bool OfferBBought { get; private set; }
-	public bool OfferCBought { get; private set; }
+	public IReadOnlyList<ShopOffer> Offers => offers;
+	public int OfferStamp
+	{
+		get
+		{
+			var hash = offers.Count;
+			foreach ( var offer in offers )
+				hash = System.HashCode.Combine( hash, (int)offer.Trait, offer.Bought );
+
+			return hash;
+		}
+	}
 	public int ShopBuyAllCost => Phase == RunPhase.PickTrait ? RemainingOfferCost() : 0;
 	public bool ShopHasBundle => Phase == RunPhase.PickTrait && OpenOfferCount() >= 2;
 	public bool ShopCanBuyAll => ShopHasBundle && Scrap >= ShopBuyAllCost && ShopBuyAllCost > 0;
@@ -137,6 +139,8 @@ public sealed class GameLoop : Component
 	float pauseStartedAt;
 	float uiClickUntil;
 	bool pendingBoss;
+	readonly List<ShopOffer> offers = new();
+	static readonly string[] OfferSlots = { "Slot1", "Slot2", "Slot3", "Slot4", "Slot5", "Slot6", "Slot7", "Slot8", "Slot9" };
 	bool bossWon;
 	bool skipHinted;
 	public int BestLine { get; private set; } = -1;
@@ -294,10 +298,7 @@ public sealed class GameLoop : Component
 		ClearCombat();
 
 		if ( Inventory.IsValid() )
-		{
-			foreach ( var slot in Inventory.Slots )
-				slot.ResetCombat();
-		}
+			Inventory.ChamberAll();
 
 		if ( Runner.IsValid() )
 		{
@@ -696,7 +697,10 @@ public sealed class GameLoop : Component
 			}
 
 			if ( Inventory.IsValid() )
+			{
+				Inventory.ResetLoadout();
 				Inventory.Loadout.BonusDamage = stats.BonusDamage;
+			}
 
 			City.SetVisible( false );
 		}
@@ -706,7 +710,7 @@ public sealed class GameLoop : Component
 		Catches = 0;
 		Losses = 0;
 		BloodShields = 0;
-		SnapUntil = 0f;
+		Stash = 1;
 		Lap = 1;
 		Location = Locations.Start;
 		if ( Arena.IsValid() )
@@ -764,79 +768,10 @@ public sealed class GameLoop : Component
 		}
 	}
 
-	public void CatchRound( RoundProjectile projectile )
+	public void NoteShot()
 	{
-		var slot = SlotOf( projectile.SlotIndex );
-		if ( slot is null )
-			return;
-
-		var world = Geometry.ToPlayWorld( projectile.Flat );
-		var chained = projectile.TargetsHit;
-		var threshold = Inventory.Loadout.BloodThreshold;
-		var shielded = false;
-		if ( threshold > 0 && projectile.Kills >= threshold )
-		{
-			BloodShields++;
-			shielded = true;
-		}
-
-		if ( Inventory.Loadout.SnapPreview > 0 )
-			SnapUntil = Time.Now + GameSettings.Traits.Snap.Duration;
-
-		slot.ResetCombat();
-		slot.Status = RoundStatus.Chambered;
-		Inventory.TrySelect( slot.Index );
-		Catches++;
-
-		ArenaSounds.Pickup( world );
-		ImpactFlash.Spawn( Scene, world, slot.Tint, 1.4f );
-
-		if ( shielded )
-			Announce( T.F( T.Announce.RoundChamberedShield, slot.Index + 1 ) );
-		else
-			Announce( chained > 0
-				? T.F( T.Announce.RoundChamberedHits, slot.Index + 1, chained )
-				: T.F( T.Announce.RoundChambered, slot.Index + 1 ) );
-		NoteProgress( ProgressGoal.CatchRound );
-	}
-
-	public void RecoverDropped( RoundSlot slot, string reason )
-	{
-		if ( slot is null || slot.Status != RoundStatus.Dropped || !slot.Lost.IsValid() )
-			return;
-
-		var world = Geometry.ToPlayWorld( slot.Lost.Flat );
-		slot.ResetCombat();
-		slot.Status = RoundStatus.Chambered;
-		Inventory.TrySelect( slot.Index );
-		ArenaSounds.Pickup( world );
-		ImpactFlash.Spawn( Scene, world, slot.Tint, 1.1f );
-		Announce( T.F( T.Announce.RoundStatus, slot.Index + 1, reason ) );
-	}
-
-	public void LoseRound( RoundProjectile projectile )
-	{
-		var slot = SlotOf( projectile.SlotIndex );
-		if ( slot is null )
-			return;
-
-		var resting = SnapToTrack( projectile.Flat );
-		projectile.GameObject.Destroy();
-
-		var go = Scene.CreateObject();
-		go.Name = $"Dropped Round {slot.Index + 1}";
-
-		var dropped = go.AddComponent<DroppedRound>();
-		dropped.Tint = slot.Tint;
-		dropped.Place( this, resting, slot.Index );
-
-		slot.Flying = null;
-		slot.Lost = dropped;
-		slot.Status = RoundStatus.Dropped;
-		Losses++;
-
-		ArenaSounds.Lose();
-		Announce( T.F( T.Announce.RoundLost, slot.Index + 1 ) );
+		ShotsFired++;
+		NoteProgress( ProgressGoal.FireShot );
 	}
 
 	protected override void OnStart()
@@ -954,22 +889,14 @@ public sealed class GameLoop : Component
 		if ( Phase == RunPhase.PickTrait )
 		{
 			Mouse.CursorType = "pointer";
-			if ( Input.Pressed( "Slot1" ) )
+			var slotCount = Math.Min( offers.Count, OfferSlots.Length );
+			for ( var i = 0; i < slotCount; i++ )
 			{
-				TryBuyOffer( OfferA );
-				return;
-			}
-
-			if ( Input.Pressed( "Slot2" ) )
-			{
-				TryBuyOffer( OfferB );
-				return;
-			}
-
-			if ( HasThirdOffer && Input.Pressed( "Slot3" ) )
-			{
-				TryBuyOffer( OfferC );
-				return;
+				if ( Input.Pressed( OfferSlots[i] ) )
+				{
+					TryBuyOfferAt( i );
+					return;
+				}
 			}
 
 			if ( Input.Pressed( "Use" ) )
@@ -1008,124 +935,18 @@ public sealed class GameLoop : Component
 			return;
 		}
 
-		HandleSelect();
+		HandleFire();
 
 		if ( Input.Pressed( "Jump" ) && Runner.TryDash() )
 			ArenaSounds.Jump( Runner.WorldPosition );
 
-		if ( Input.Pressed( "Attack1" ) && !BlocksShot )
-			Fire();
-
-		CheckPickup();
-		CheckSwipe();
 		CheckHits();
 		CheckLap();
 	}
 
-	void HandleSelect()
+	void HandleFire()
 	{
-		var prev = Inventory.SelectedIndex;
-
-		for ( var i = 0; i < Progression.MaxSlots; i++ )
-		{
-			if ( Input.Pressed( $"Slot{i + 1}" ) )
-				Inventory.TrySelect( i );
-		}
-
-		if ( Input.Pressed( "SlotPrev" ) )
-			Inventory.SelectNextChambered( -1 );
-
-		if ( Input.Pressed( "SlotNext" ) )
-			Inventory.SelectNextChambered( 1 );
-
-		var wheel = Input.MouseWheel;
-		if ( wheel.y > 0.1f )
-			Inventory.SelectNextChambered( -1 );
-		else if ( wheel.y < -0.1f )
-			Inventory.SelectNextChambered( 1 );
-
-		if ( Inventory.SelectedIndex != prev )
-			ArenaSounds.Change();
-	}
-
-	void Fire()
-	{
-		var slot = Inventory.Selected;
-
-		if ( slot is null || slot.Status != RoundStatus.Chambered )
-		{
-			ArenaSounds.Deny();
-			Announce( ChamberDeny() );
-			return;
-		}
-
-		var go = Scene.CreateObject();
-		go.Name = $"Round {slot.Index + 1}";
-
-		var projectile = go.AddComponent<RoundProjectile>();
-		projectile.Launch( this, Inventory.Loadout.BuildFlight( slot ), Aim.Muzzle, Aim.Direction );
-
-		slot.Flying = projectile;
-		slot.Lost = null;
-		slot.Status = RoundStatus.InFlight;
-		Inventory.AfterFired( slot );
-		ShotsFired++;
-
-		ArenaSounds.Fire( Aim.MuzzleWorld );
-		ImpactFlash.Spawn( Scene, Aim.MuzzleWorld, slot.Tint, 0.8f );
-	}
-
-	string ChamberDeny()
-	{
-		if ( Inventory.Slots.Any( s => s.Status == RoundStatus.Chambered ) )
-			return T.Announce.SelectChambered;
-
-		if ( Inventory.Slots.Any( s => s.Status == RoundStatus.InFlight ) )
-			return T.Announce.StillInFlight;
-
-		return T.Announce.LostOnRing;
-	}
-
-	void CheckSwipe()
-	{
-		if ( !Runner.IsValid() || !Runner.Dashing || !Inventory.IsValid() )
-			return;
-
-		var reach = Inventory.Loadout.SwipeRadius;
-		if ( reach <= 1f )
-			return;
-
-		foreach ( var slot in Inventory.Slots )
-		{
-			if ( slot.Status != RoundStatus.InFlight || !slot.Flying.IsValid() || !slot.Flying.Armed )
-				continue;
-
-			if ( (slot.Flying.Flat - Runner.Flat).Length > reach + slot.Flying.Radius )
-				continue;
-
-			CatchRound( slot.Flying );
-		}
-	}
-
-	void CheckPickup()
-	{
-		foreach ( var slot in Inventory.Slots )
-		{
-			if ( slot.Status != RoundStatus.Dropped || !slot.Lost.IsValid() )
-				continue;
-
-			if ( (Runner.Flat - slot.Lost.Flat).Length > Inventory.PickupRadius )
-				continue;
-
-			var world = Geometry.ToPlayWorld( slot.Lost.Flat );
-			slot.ResetCombat();
-			slot.Status = RoundStatus.Chambered;
-			Inventory.TrySelect( slot.Index );
-
-			ArenaSounds.Pickup( world );
-			ImpactFlash.Spawn( Scene, world, slot.Tint, 1.2f );
-			Announce( T.F( T.Announce.RoundStatus, slot.Index + 1, T.Announce.Recovered ) );
-		}
+		Inventory?.TickGun();
 	}
 
 	void CheckHits()
@@ -1286,6 +1107,7 @@ public sealed class GameLoop : Component
 	void OpenLapClear()
 	{
 		VacuumBones();
+		Inventory?.ChamberAll();
 		skipHinted = false;
 		Phase = RunPhase.DecideLap;
 		ArenaSounds.Tele();
@@ -1331,6 +1153,14 @@ public sealed class GameLoop : Component
 			return;
 
 		TryBuyOffer( trait );
+	}
+
+	public void ChooseUpgradeAt( int index )
+	{
+		if ( Paused || Phase != RunPhase.PickTrait )
+			return;
+
+		TryBuyOfferAt( index );
 	}
 
 	public void ChooseBuyAll()
@@ -1415,10 +1245,7 @@ public sealed class GameLoop : Component
 		}
 
 		if ( Inventory.IsValid() )
-		{
-			foreach ( var slot in Inventory.Slots )
-				slot.ResetCombat();
-		}
+			Inventory.ChamberAll();
 
 		ClearCombat();
 		City?.EnsureBuilt();
@@ -1478,21 +1305,12 @@ public sealed class GameLoop : Component
 	int GrantContinueRounds()
 	{
 		var want = Progression.RoundsGranted( Lap );
-		var added = 0;
+		var room = Progression.MaxSlots - Stash;
+		if ( room <= 0 )
+			return 0;
 
-		for ( var i = 0; i < want; i++ )
-		{
-			if ( Inventory.Slots.Count >= Progression.MaxSlots )
-				break;
-
-			var granted = Inventory.GrantSlot();
-			if ( granted is null )
-				break;
-
-			Inventory.TrySelect( granted.Index );
-			added++;
-		}
-
+		var added = Math.Min( want, room );
+		Stash += added;
 		return added;
 	}
 
@@ -1516,19 +1334,21 @@ public sealed class GameLoop : Component
 		var count = City.IsValid() ? City.Stats().OfferCount : GameSettings.City.MinOffers;
 		count = Math.Clamp( count, GameSettings.City.MinOffers, GameSettings.City.MaxOffers );
 
-		OfferA = TakeTrait( fresh, owned, loadout, Scrap );
-		OfferB = TakeTrait( fresh, owned, loadout, 0, OfferA );
-		HasThirdOffer = count >= GameSettings.City.MaxOffers;
-		if ( HasThirdOffer )
-			OfferC = TakeTrait( fresh, owned, loadout, 0, OfferA, OfferB );
+		offers.Clear();
+		var taken = new List<RoundTrait>();
+		for ( var i = 0; i < count; i++ )
+		{
+			if ( !TryTakeTrait( fresh, owned, loadout, i == 0 ? Scrap : 0, taken, out var trait ) )
+				break;
 
-		OfferABought = false;
-		OfferBBought = false;
-		OfferCBought = false;
+			taken.Add( trait );
+			offers.Add( new ShopOffer { Trait = trait } );
+		}
+
 		Phase = RunPhase.PickTrait;
 	}
 
-	RoundTrait TakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, RunLoadout loadout, int budget, params RoundTrait[] taken )
+	bool TryTakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, RunLoadout loadout, int budget, List<RoundTrait> taken, out RoundTrait pick )
 	{
 		bool Used( RoundTrait trait )
 		{
@@ -1559,7 +1379,10 @@ public sealed class GameLoop : Component
 		}
 
 		if ( pool.Count == 0 )
-			return RoundTrait.Pierce;
+		{
+			pick = default;
+			return false;
+		}
 
 		if ( budget > 0 )
 		{
@@ -1575,13 +1398,13 @@ public sealed class GameLoop : Component
 				pool = cheap;
 		}
 
-		var pick = WeightedTrait( pool );
+		pick = WeightedTrait( pool );
 		if ( hadFresh )
 			fresh.Remove( pick );
 		else
 			owned.Remove( pick );
 
-		return pick;
+		return true;
 	}
 
 	static RoundTrait WeightedTrait( List<RoundTrait> pool )
@@ -1607,12 +1430,27 @@ public sealed class GameLoop : Component
 
 	void TryBuyOffer( RoundTrait trait )
 	{
-		if ( !MatchesOpenOffer( trait ) )
+		for ( var i = 0; i < offers.Count; i++ )
+		{
+			if ( !offers[i].Bought && offers[i].Trait == trait )
+			{
+				TryBuyOfferAt( i );
+				return;
+			}
+		}
+
+		ArenaSounds.Deny();
+	}
+
+	void TryBuyOfferAt( int index )
+	{
+		if ( index < 0 || index >= offers.Count || offers[index].Bought )
 		{
 			ArenaSounds.Deny();
 			return;
 		}
 
+		var trait = offers[index].Trait;
 		var price = PriceOf( trait );
 		if ( Scrap < price )
 		{
@@ -1623,7 +1461,7 @@ public sealed class GameLoop : Component
 
 		Scrap -= price;
 		Inventory.Loadout.Install( trait );
-		MarkBought( trait );
+		offers[index].Bought = true;
 		ArenaSounds.Pickup();
 		Announce( T.F( T.Announce.TraitBought, RoundTraits.Title( trait ), Inventory.Loadout.TraitLevel( trait ), Scrap ) );
 		NoteProgress( ProgressGoal.BuyTrait );
@@ -1642,18 +1480,14 @@ public sealed class GameLoop : Component
 			return;
 		}
 
-		if ( !OfferABought )
-			TryBuyOffer( OfferA );
-		if ( Phase != RunPhase.PickTrait )
-			return;
+		for ( var i = 0; i < offers.Count; i++ )
+		{
+			if ( Phase != RunPhase.PickTrait )
+				return;
 
-		if ( !OfferBBought )
-			TryBuyOffer( OfferB );
-		if ( Phase != RunPhase.PickTrait )
-			return;
-
-		if ( HasThirdOffer && !OfferCBought )
-			TryBuyOffer( OfferC );
+			if ( !offers[i].Bought )
+				TryBuyOfferAt( i );
+		}
 	}
 
 	void LeaveShop()
@@ -1681,43 +1515,27 @@ public sealed class GameLoop : Component
 			: T.F( T.Announce.Armed, Scrap ) );
 	}
 
-	bool MatchesOpenOffer( RoundTrait trait )
-	{
-		if ( !OfferABought && trait == OfferA )
-			return true;
-		if ( !OfferBBought && trait == OfferB )
-			return true;
-		if ( HasThirdOffer && !OfferCBought && trait == OfferC )
-			return true;
-
-		return false;
-	}
-
-	void MarkBought( RoundTrait trait )
-	{
-		if ( !OfferABought && trait == OfferA )
-			OfferABought = true;
-		else if ( !OfferBBought && trait == OfferB )
-			OfferBBought = true;
-		else if ( HasThirdOffer && !OfferCBought && trait == OfferC )
-			OfferCBought = true;
-	}
-
 	int OpenOfferCount()
 	{
 		var n = 0;
-		if ( !OfferABought ) n++;
-		if ( !OfferBBought ) n++;
-		if ( HasThirdOffer && !OfferCBought ) n++;
+		foreach ( var offer in offers )
+		{
+			if ( !offer.Bought )
+				n++;
+		}
+
 		return n;
 	}
 
 	int RemainingOfferCost()
 	{
 		var sum = 0;
-		if ( !OfferABought ) sum += PriceOf( OfferA );
-		if ( !OfferBBought ) sum += PriceOf( OfferB );
-		if ( HasThirdOffer && !OfferCBought ) sum += PriceOf( OfferC );
+		foreach ( var offer in offers )
+		{
+			if ( !offer.Bought )
+				sum += PriceOf( offer.Trait );
+		}
+
 		return sum;
 	}
 
@@ -1955,8 +1773,8 @@ public sealed class GameLoop : Component
 		if ( !Inventory.IsValid() )
 			return;
 
-		foreach ( var slot in Inventory.Slots )
-			slot.Flying?.NudgeOut();
+		foreach ( var shot in Inventory.Live )
+			shot?.NudgeOut();
 	}
 
 	void ClearCombat()
@@ -1971,6 +1789,8 @@ public sealed class GameLoop : Component
 		ClearEnemies();
 		VacuumBones();
 		ClearGibs();
+
+		Inventory?.ClearShots();
 
 		foreach ( var shot in Shots.ToArray() )
 		{
@@ -2016,35 +1836,11 @@ public sealed class GameLoop : Component
 
 		Enemies.Clear();
 	}
+}
 
-	RoundSlot SlotOf( int index )
-	{
-		if ( index < 0 || index >= Inventory.Slots.Count )
-			return null;
-
-		return Inventory.Slots[index];
-	}
-
-	Vector2 SnapToTrack( Vector2 flat )
-	{
-		var radius = Geometry.TrackRadius;
-		var angle = flat.Length < 1f ? Runner.Angle : ArenaGeometry.ToAngle( flat );
-		var minArc = LostRoundMinArc;
-		var rim = Inventory.IsValid() ? Inventory.Loadout.RimMinAngle : 0f;
-		if ( rim > 0.01f )
-			minArc = MathX.DegreeToRadian( rim ) * radius;
-
-		var ahead = Wrap( Runner.Angle - angle ) * radius;
-		if ( ahead < minArc )
-			angle = Runner.Angle - minArc / radius;
-
-		return ArenaGeometry.FromAngle( angle ) * radius;
-	}
-
-	static float Wrap( float radians )
-	{
-		radians %= MathF.Tau;
-		return radians < 0f ? radians + MathF.Tau : radians;
-	}
+public sealed class ShopOffer
+{
+	public RoundTrait Trait { get; set; }
+	public bool Bought { get; set; }
 }
 

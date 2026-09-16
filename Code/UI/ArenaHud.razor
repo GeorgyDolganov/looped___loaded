@@ -92,7 +92,7 @@
 					</div>
 					<div class="stat-row">
 						<label class="key">@GameSettings.Text.Hud.Caught</label>
-						<label class="value">@Loop.Catches</label>
+						<label class="value">@Loop.ShotsFired</label>
 					</div>
 					<div class="stat-row">
 						<label class="key">@GameSettings.Text.Hud.Fed</label>
@@ -117,13 +117,10 @@
 
 					<div class="tray-cell">
 						<label class="cell-key">@GameSettings.Text.Hud.Ammo</label>
-						<div class="round-row">
-							@foreach ( var slot in Loop.Inventory.Slots )
-							{
-								<div class="round @StatusClass(slot) @(slot.Index == Loop.Inventory.SelectedIndex ? "picked" : "")" style="background-color: @PipColor(slot)"></div>
-							}
+						<div class="bar tray-bar">
+							<div class="bar-fill dash @(ReloadReady ? "ready" : "")" style="width: @(ReloadPercent)%"></div>
 						</div>
-						<label class="cell-value">@Loop.Stash</label>
+						<label class="cell-value">@(ReloadReady ? "RDY" : Loop.Inventory.Beaming ? "BEAM" : Loop.Inventory.ReloadLeft.ToString( "0.0" ))</label>
 					</div>
 
 					<div class="cell-split"></div>
@@ -552,31 +549,17 @@
 				<label class="overlay-title">@GameSettings.Text.Shop.Title</label>
 				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Shop.Blurb, Loop.Scrap)</label>
 				<div class="cards">
-					<div class="card @OfferClass(Loop.OfferA, Loop.OfferABought)" style="border-color: @TraitBorder(Loop.OfferA)" onclick="@PickOfferA">
-						<label class="key">@GameSettings.Text.Shop.Key1</label>
-						<img class="art" src="@RoundTraits.Icon(Loop.OfferA)" />
-						<label class="title">@RoundTraits.Title(Loop.OfferA)</label>
-						<label class="rarity">@RoundTraits.Rarity(Loop.OfferA)</label>
-						<label class="blurb">@OfferBlurb(Loop.OfferA, Loop.OfferABought)</label>
-						<label class="cost">@OfferCost(Loop.OfferA, Loop.OfferABought)</label>
-					</div>
-					<div class="card @OfferClass(Loop.OfferB, Loop.OfferBBought)" style="border-color: @TraitBorder(Loop.OfferB)" onclick="@PickOfferB">
-						<label class="key">@GameSettings.Text.Shop.Key2</label>
-						<img class="art" src="@RoundTraits.Icon(Loop.OfferB)" />
-						<label class="title">@RoundTraits.Title(Loop.OfferB)</label>
-						<label class="rarity">@RoundTraits.Rarity(Loop.OfferB)</label>
-						<label class="blurb">@OfferBlurb(Loop.OfferB, Loop.OfferBBought)</label>
-						<label class="cost">@OfferCost(Loop.OfferB, Loop.OfferBBought)</label>
-					</div>
-					@if ( Loop.HasThirdOffer )
+					@for ( var i = 0; i < Loop.Offers.Count; i++ )
 					{
-						<div class="card @OfferClass(Loop.OfferC, Loop.OfferCBought)" style="border-color: @TraitBorder(Loop.OfferC)" onclick="@PickOfferC">
-							<label class="key">@GameSettings.Text.Shop.Key3</label>
-							<img class="art" src="@RoundTraits.Icon(Loop.OfferC)" />
-							<label class="title">@RoundTraits.Title(Loop.OfferC)</label>
-							<label class="rarity">@RoundTraits.Rarity(Loop.OfferC)</label>
-							<label class="blurb">@OfferBlurb(Loop.OfferC, Loop.OfferCBought)</label>
-							<label class="cost">@OfferCost(Loop.OfferC, Loop.OfferCBought)</label>
+						var offer = Loop.Offers[i];
+						var index = i;
+						<div class="card @OfferClass(offer.Trait, offer.Bought)" style="border-color: @TraitBorder(offer.Trait)" onclick="@(() => PickOffer(index))">
+							<label class="key">@GameSettings.Text.Shop.KeyOf(index)</label>
+							<img class="art" src="@RoundTraits.Icon(offer.Trait)" />
+							<label class="title">@RoundTraits.Title(offer.Trait)</label>
+							<label class="rarity">@RoundTraits.Rarity(offer.Trait)</label>
+							<label class="blurb">@OfferBlurb(offer.Trait, offer.Bought)</label>
+							<label class="cost">@OfferCost(offer.Trait, offer.Bought)</label>
 						</div>
 					}
 				</div>
@@ -781,9 +764,7 @@
 	void ChooseContinue() => Loop?.ChooseContinue();
 	void ChooseBoss() => Loop?.ChooseBoss();
 	void ChooseNextRing() => Loop?.ChooseNextRing();
-	void PickOfferA() => Loop?.ChooseUpgrade( Loop.OfferA );
-	void PickOfferB() => Loop?.ChooseUpgrade( Loop.OfferB );
-	void PickOfferC() => Loop?.ChooseUpgrade( Loop.OfferC );
+	void PickOffer( int index ) => Loop?.ChooseUpgradeAt( index );
 	void BuyAllOffers() => Loop?.ChooseBuyAll();
 	void FinishShop() => Loop?.ChooseShopGo();
 	void GoCity()
@@ -804,6 +785,8 @@
 	string HurtVeil => (Loop.IsValid() ? Loop.HurtAmount * 0.55f : 0f).ToString( "0.###" );
 	int DashPercent => Runner.IsValid() ? (int)(Runner.DashCharge * 100f) : 0;
 	int SlowPercent => Runner.IsValid() ? (int)(Runner.SlowCharge * 100f) : 0;
+	int ReloadPercent => Loop.IsValid() && Loop.Inventory.IsValid() ? (int)(Loop.Inventory.Reload01 * 100f) : 0;
+	bool ReloadReady => Loop.IsValid() && Loop.Inventory.IsValid() && Loop.Inventory.Ready;
 	bool DashReady => Runner.IsValid() && Runner.DashCharge >= 1f;
 	bool SlowUnlocked => Runner.IsValid() && Runner.SlowUnlocked;
 	bool Slowing => Runner.IsValid() && Runner.Slowing;
@@ -885,7 +868,7 @@
 					: GameSettings.Text.Help.CityShoot,
 				RunPhase.DecideLap => Loop.HasBossOffer ? GameSettings.Text.F( GameSettings.Text.Help.DecideLapBoss, Loop.BossName ) : GameSettings.Text.Help.DecideLap,
 				RunPhase.DecideRing => Loop.HasNextRing ? GameSettings.Text.Help.DecideRingNext : GameSettings.Text.Help.DecideRing,
-				RunPhase.PickTrait => Loop.HasThirdOffer ? GameSettings.Text.Help.ShopThree : GameSettings.Text.Help.ShopTwo,
+				RunPhase.PickTrait => GameSettings.Text.F( GameSettings.Text.Help.Shop, Loop.Offers.Count ),
 				RunPhase.Dead => GameSettings.Text.Help.Dead,
 				RunPhase.Extracted => GameSettings.Text.Help.Extracted,
 				RunPhase.Won => GameSettings.Text.Help.Won,
@@ -917,14 +900,12 @@
 			if ( stats.BonusDamage > 0 ) parts.Add( GameSettings.Text.F( GameSettings.Text.City.BonusDmg, stats.BonusDamage ) );
 			if ( stats.DashCooldownScale < 0.99f ) parts.Add( GameSettings.Text.City.BonusDash );
 			if ( stats.SlowUnlocked ) parts.Add( GameSettings.Text.City.BonusSlow );
-			if ( stats.OfferCount >= 3 ) parts.Add( GameSettings.Text.City.BonusCards );
+			if ( stats.OfferCount > GameSettings.City.MinOffers ) parts.Add( GameSettings.Text.F( GameSettings.Text.City.BonusCards, stats.OfferCount ) );
 			return parts.Count == 0 ? GameSettings.Text.City.NoBonuses : string.Join( "  ", parts );
 		}
 	}
 
 	string KindClass( BuildingKind kind ) => kind.ToString().ToLowerInvariant();
-
-	string StatusClass( RoundSlot slot ) => slot.Status.ToString().ToLower();
 
 	string ExtractBank( int stash ) => stash == 1
 		? GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankOne, stash )
@@ -964,12 +945,6 @@
 			return "upgrade poor";
 
 		return "upgrade";
-	}
-
-	string PipColor( RoundSlot slot )
-	{
-		var c = slot.Tint;
-		return $"rgb({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)})";
 	}
 
 	string TraitBorder( RoundTrait trait )
@@ -1128,7 +1103,7 @@
 			LapPercent,
 			DashPercent,
 			Loop.IsValid() ? Loop.Stash : 0,
-			Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.SelectedIndex : 0,
+			Loop.IsValid() && Loop.Inventory.IsValid() ? ReloadPercent : 0,
 			Loop.IsValid() && Loop.NoticeVisible );
 
 		var b = System.HashCode.Combine(
@@ -1139,13 +1114,13 @@
 			Loop.IsValid() ? Loop.BestExtract : 0,
 			Loop.IsValid() ? Loop.ExtractedRounds : 0,
 			Loop.IsValid() ? Loop.BurnedRounds : 0,
-			Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Slots.Sum( s => s.StatusHash ) : 0 );
+			Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.ShotsFired : 0 );
 
 		var c = System.HashCode.Combine(
 			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.Warehouse : 0,
 			Loop.IsValid() && Loop.City.IsValid() ? (int)Loop.City.Selected : 0,
 			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.HoverText() : "",
-			Loop.IsValid() && Loop.HasThirdOffer,
+			Loop.IsValid() ? Loop.Offers.Count : 0,
 			Loop.IsValid() ? Loop.HeartMax : 0,
 			CityBonuses,
 			HurtPercent,
@@ -1173,13 +1148,10 @@
 
 		var f = System.HashCode.Combine(
 			Loop.IsValid() ? Loop.Scrap : 0,
-			Loop.IsValid() && Loop.OfferABought,
-			Loop.IsValid() && Loop.OfferBBought,
-			Loop.IsValid() && Loop.OfferCBought,
+			Loop.IsValid() ? Loop.OfferStamp : 0,
 			Loop.IsValid() && Loop.ShopHasBundle,
 			Loop.IsValid() && Loop.ShopCanBuyAll,
-			Loop.IsValid() ? Loop.ShopBuyAllCost : 0,
-			Loop.IsValid() ? (int)Loop.OfferA : 0 );
+			Loop.IsValid() ? Loop.ShopBuyAllCost : 0 );
 
 		var g = System.HashCode.Combine(
 			Loop.IsValid() ? (int)Loop.Location : 0,
@@ -2135,7 +2107,7 @@
 		flex-direction: row;
 		flex-wrap: wrap;
 		justify-content: center;
-		max-width: 1100px;
+		max-width: 1680px;
 	}
 
 	.card {
@@ -2161,6 +2133,14 @@
 
 	.cards .card:nth-child(3) {
 		animation-delay: 0.1s;
+	}
+
+	.cards .card:nth-child(4) {
+		animation-delay: 0.15s;
+	}
+
+	.cards .card:nth-child(5) {
+		animation-delay: 0.2s;
 	}
 
 	.card:hover,

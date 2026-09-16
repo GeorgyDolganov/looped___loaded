@@ -1,6 +1,6 @@
 # ONE ROUND TRIP
 
-> Документ сменён. Актуальная версия: [ONE_ROUND_TRIP_GDD_v0.5.md](ONE_ROUND_TRIP_GDD_v0.5.md). Каталог свойств (§8) по-прежнему отсюда.
+> Документ сменён. Актуальная версия: [ONE_ROUND_TRIP_GDD_v0.6.md](ONE_ROUND_TRIP_GDD_v0.6.md). Каталог свойств (§8) мёртв; не переносить в билд.
 
 ## Game Design Document — v0.3 (архив)
 

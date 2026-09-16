@@ -156,18 +156,24 @@ public sealed class GameBootstrap : Component
 	{
 		var go = camera.GameObject;
 
-		var bloom = go.GetComponent<Bloom>() ?? go.AddComponent<Bloom>();
-		bloom.Strength = 0.55f;
-		bloom.Threshold = 1.05f;
-		bloom.Tint = new Color( 1f, 0.96f, 0.9f );
+		if ( !go.GetComponent<Bloom>().IsValid() )
+		{
+			var bloom = go.AddComponent<Bloom>();
+			bloom.Strength = 0.55f;
+			bloom.Threshold = 1.05f;
+			bloom.Tint = new Color( 1f, 0.96f, 0.9f );
+		}
 
-		var tone = go.GetComponent<Tonemapping>() ?? go.AddComponent<Tonemapping>();
-		tone.Mode = Tonemapping.TonemappingMode.AgX;
-		tone.AutoExposureEnabled = true;
-		tone.ExposureCompensation = 0.06f;
-		tone.MinimumExposure = 1f;
-		tone.MaximumExposure = 1.35f;
-		tone.Rate = 1.2f;
+		if ( !go.GetComponent<Tonemapping>().IsValid() )
+		{
+			var tone = go.AddComponent<Tonemapping>();
+			tone.Mode = Tonemapping.TonemappingMode.AgX;
+			tone.AutoExposureEnabled = true;
+			tone.ExposureCompensation = 0.06f;
+			tone.MinimumExposure = 1f;
+			tone.MaximumExposure = 1.35f;
+			tone.Rate = 1.2f;
+		}
 
 		var look = go.GetComponent<QuakeArenaLook>() ?? go.AddComponent<QuakeArenaLook>();
 		if ( !look.Loop.IsValid() )
@@ -183,8 +189,8 @@ public sealed class GameBootstrap : Component
 			sun.WorldRotation = Rotation.From( 72f, 55f, 0f );
 
 			var light = sun.AddComponent<DirectionalLight>();
-			light.LightColor = new Color( 0.55f, 0.62f, 0.78f );
-			light.SkyColor = new Color( 0.04f, 0.05f, 0.08f );
+			light.LightColor = new Color( 0.78f, 0.76f, 0.72f );
+			light.SkyColor = new Color( 0.06f, 0.06f, 0.07f );
 			light.Shadows = true;
 		}
 
@@ -194,6 +200,6 @@ public sealed class GameBootstrap : Component
 		var ambientObject = Scene.CreateObject();
 		ambientObject.Name = "Ambient";
 		var ambient = ambientObject.AddComponent<AmbientLight>();
-		ambient.Color = new Color( 0.06f, 0.08f, 0.12f );
+		ambient.Color = new Color( 0.08f, 0.08f, 0.085f );
 	}
 }

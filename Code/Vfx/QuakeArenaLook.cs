@@ -1,22 +1,24 @@
 namespace LoopedLoaded;
 
+[Title( "Quake Arena Look" )]
+[Category( "Post Processing" )]
 public sealed class QuakeArenaLook : BasePostProcess<QuakeArenaLook>
 {
 	[Property] public GameLoop Loop { get; set; }
-	[Property, Range( 0f, 1f )] public float Intensity { get; set; } = 1f;
-	[Property, Range( 0.6f, 2f )] public float Contrast { get; set; } = 1.06f;
-	[Property, Range( 0.4f, 2.2f )] public float Saturation { get; set; } = 1.12f;
-	[Property, Range( 0f, 1.2f )] public float Overbright { get; set; } = 0.12f;
-	[Property, Range( 0f, 1f )] public float Split { get; set; } = 0.1f;
-	[Property] public Color ShadowTint { get; set; } = new Color( 0.78f, 0.9f, 1f );
-	[Property] public Color HighlightTint { get; set; } = new Color( 1f, 0.9f, 0.78f );
-	[Property, Range( 0f, 0.2f )] public float Dither { get; set; } = 0f;
-	[Property, Range( 0f, 96f )] public float Quantize { get; set; } = 0f;
-	[Property, Range( 0f, 0.4f )] public float Scanlines { get; set; } = 0f;
-	[Property, Range( 0f, 2f )] public float Chromatic { get; set; } = 0.18f;
-	[Property, Range( 0f, 1f )] public float Vignette { get; set; } = 0.16f;
-	[Property, Range( 0f, 1f )] public float Sharpen { get; set; } = 0.12f;
-	[Property, Range( 0f, 0.12f )] public float Barrel { get; set; } = 0f;
+	[Property, Group( "Grade" ), Range( 0f, 1f )] public float Intensity { get; set; } = 1f;
+	[Property, Group( "Grade" ), Range( 0.6f, 2f )] public float Contrast { get; set; } = 1.06f;
+	[Property, Group( "Grade" ), Range( 0.4f, 2.2f )] public float Saturation { get; set; } = 1.12f;
+	[Property, Group( "Grade" ), Range( 0f, 1.2f )] public float Overbright { get; set; } = 0.12f;
+	[Property, Group( "Color" ), Range( 0f, 1f )] public float Split { get; set; } = 0.06f;
+	[Property, Group( "Color" )] public Color ShadowTint { get; set; } = new Color( 0.96f, 0.98f, 1f );
+	[Property, Group( "Color" )] public Color HighlightTint { get; set; } = new Color( 1f, 0.97f, 0.92f );
+	[Property, Group( "CRT" ), Range( 0f, 0.2f )] public float Dither { get; set; } = 0f;
+	[Property, Group( "CRT" ), Range( 0f, 96f )] public float Quantize { get; set; } = 0f;
+	[Property, Group( "CRT" ), Range( 0f, 0.4f )] public float Scanlines { get; set; } = 0f;
+	[Property, Group( "CRT" ), Range( 0f, 2f )] public float Chromatic { get; set; } = 0.18f;
+	[Property, Group( "CRT" ), Range( 0f, 1f )] public float Vignette { get; set; } = 0.16f;
+	[Property, Group( "CRT" ), Range( 0f, 1f )] public float Sharpen { get; set; } = 0.12f;
+	[Property, Group( "CRT" ), Range( 0f, 0.12f )] public float Barrel { get; set; } = 0f;
 
 	static Material material;
 

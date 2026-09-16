@@ -4,7 +4,7 @@ namespace LoopedLoaded;
 public class CityConfig : GameResource
 {
 	[Property] public int MinOffers { get; set; } = 2;
-	[Property] public int MaxOffers { get; set; } = 3;
+	[Property] public int MaxOffers { get; set; } = 5;
 	[Property] public BuildingStats Infirmary { get; set; } = new() { FirstCost = 3, MaxLevel = 3 };
 	[Property] public BuildingStats Anvil { get; set; } = new() { FirstCost = 4, MaxLevel = 3 };
 	[Property] public BuildingStats Booster { get; set; } = new() { FirstCost = 3, MaxLevel = 2 };

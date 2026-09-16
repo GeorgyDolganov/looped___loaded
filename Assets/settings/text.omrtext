@@ -114,6 +114,12 @@
     "Key1": "1",
     "Key2": "2",
     "Key3": "3",
+    "Key4": "4",
+    "Key5": "5",
+    "Key6": "6",
+    "Key7": "7",
+    "Key8": "8",
+    "Key9": "9",
     "KeyE": "E",
     "KeySpace": "SPACE"
   },
@@ -127,8 +133,7 @@
     "DecideLap": "CLICK  ·  1 CITY  ·  2 STAY  ·  ESC PAUSE",
     "DecideRingNext": "CLICK  ·  1 ALTAR  ·  2 NEXT RING  ·  ESC PAUSE",
     "DecideRing": "CLICK  ·  1 ALTAR  ·  ESC PAUSE",
-    "ShopThree": "CLICK A CARD  ·  1 / 2 / 3 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE",
-    "ShopTwo": "CLICK A CARD  ·  1 / 2 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE",
+    "Shop": "CLICK A CARD  ·  1-{0} BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE",
     "Dead": "CLICK CITY  ·  R ALTAR  ·  ESC MENU",
     "Extracted": "SPACE CONTINUE",
     "Won": "CLICK  ·  SPACE PLAY AGAIN  ·  ESC MENU",
@@ -210,7 +215,7 @@
     "BonusDmg": "DMG+{0}",
     "BonusDash": "DASH",
     "BonusSlow": "SLOW",
-    "BonusCards": "3 CARDS"
+    "BonusCards": "{0} CARDS"
   },
   "Traits": {
     "Rarity": {

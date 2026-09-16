@@ -2,7 +2,7 @@ namespace LoopedLoaded;
 
 public static class RoundCombat
 {
-	public static void Blast( GameLoop loop, Vector2 origin, float radius, int damage, RoundProjectile source, Color tint )
+	public static void Blast( GameLoop loop, Vector2 origin, float radius, int damage, RoundProjectile source, Color tint, bool hurtPlayer = false )
 	{
 		if ( loop is null || radius <= 1f || damage <= 0 )
 			return;
@@ -21,44 +21,12 @@ public static class RoundCombat
 
 			enemy.Damage( damage, source );
 		}
-	}
 
-	public static void Lightning( GameLoop loop, Vector2 origin, int jumps, int damage, RoundProjectile source, HashSet<Enemy> ignore )
-	{
-		if ( loop is null || jumps <= 0 )
+		if ( !hurtPlayer || !loop.Runner.IsValid() )
 			return;
 
-		var taken = ignore ?? new HashSet<Enemy>();
-		var from = origin;
-
-		for ( var i = 0; i < jumps; i++ )
-		{
-			Enemy best = null;
-			var bestDist = GameSettings.Traits.ElectricRange;
-
-			foreach ( var enemy in loop.Enemies )
-			{
-				if ( !enemy.IsValid() || !enemy.Alive || taken.Contains( enemy ) )
-					continue;
-
-				var dist = (enemy.Flat - from).Length;
-				if ( dist >= bestDist )
-					continue;
-
-				bestDist = dist;
-				best = enemy;
-			}
-
-			if ( best is null )
-				return;
-
-			taken.Add( best );
-			best.Damage( damage, source );
-			var world = loop.Geometry.ToPlayWorld( best.Flat );
-			ArenaSounds.Crack( world );
-			ImpactFlash.Spawn( loop.Scene, world, new Color( 0.55f, 0.9f, 1f ), 0.85f );
-			from = best.Flat;
-		}
+		if ( (loop.Runner.Flat - origin).Length <= radius + loop.Runner.PlayerRadius )
+			loop.TryHurt();
 	}
 
 	public static float PointSegment( Vector2 point, Vector2 a, Vector2 b )

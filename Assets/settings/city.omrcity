@@ -1,6 +1,6 @@
 {
   "MinOffers": 2,
-  "MaxOffers": 3,
+  "MaxOffers": 5,
   "Infirmary": {
     "FirstCost": 3,
     "MaxLevel": 3

@@ -32,19 +32,6 @@ public sealed class DroppedRound : Component
 	{
 		var pulse = 0.6f + 0.4f * MathF.Sin( Time.Now * 7f );
 
-		if ( loop.IsValid() && !loop.IsFrozen && loop.Inventory.IsValid() && loop.Geometry is not null )
-		{
-			var speed = loop.Inventory.Loadout.ReelSpeed;
-			if ( speed > 1f )
-			{
-				var radius = loop.Geometry.TrackRadius;
-				var angle = ArenaGeometry.ToAngle( Flat );
-				angle -= speed / MathF.Max( 1f, radius ) * Time.Delta;
-				Flat = ArenaGeometry.FromAngle( angle ) * radius;
-				WorldPosition = loop.Geometry.ToPlayWorld( Flat );
-			}
-		}
-
 		if ( shell.IsValid() )
 			shell.WorldPosition = WorldPosition + Vector3.Up * (14f * pulse);
 

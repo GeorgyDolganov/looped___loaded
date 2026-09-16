@@ -55,9 +55,9 @@ PS
 	float g_flContrast < Attribute( "contrast" ); Default( 1.06f ); >;
 	float g_flSaturation < Attribute( "saturate" ); Default( 1.12f ); >;
 	float g_flOverbright < Attribute( "overbright" ); Default( 0.12f ); >;
-	float g_flSplit < Attribute( "split" ); Default( 0.1f ); >;
-	float3 g_vShadowTint < Attribute( "shadowTint" ); Default3( 0.78f, 0.9f, 1.0f ); >;
-	float3 g_vHighlightTint < Attribute( "highlightTint" ); Default3( 1.0f, 0.9f, 0.78f ); >;
+	float g_flSplit < Attribute( "split" ); Default( 0.06f ); >;
+	float3 g_vShadowTint < Attribute( "shadowTint" ); Default3( 0.96f, 0.98f, 1.0f ); >;
+	float3 g_vHighlightTint < Attribute( "highlightTint" ); Default3( 1.0f, 0.97f, 0.92f ); >;
 	float g_flDither < Attribute( "dither" ); Default( 0.0f ); >;
 	float g_flQuantize < Attribute( "quantize" ); Default( 0.0f ); >;
 	float g_flScanlines < Attribute( "scanlines" ); Default( 0.0f ); >;
@@ -117,10 +117,10 @@ PS
 		graded = lerp( lum.xxx, graded, g_flSaturation );
 		graded *= 1.0f + g_flOverbright * 0.45f;
 
-		float shadowMask = saturate( 1.0f - smoothstep( 0.14f, 0.5f, lum ) );
-		float highlightMask = saturate( smoothstep( 0.5f, 0.94f, lum ) );
-		graded = lerp( graded, graded * lerp( 1.0f, g_vShadowTint, 0.4f ), shadowMask * g_flSplit );
-		graded = lerp( graded, graded * lerp( 1.0f, g_vHighlightTint, 0.28f ), highlightMask * g_flSplit );
+		float shadowMask = saturate( 1.0f - smoothstep( 0.05f, 0.28f, lum ) );
+		float highlightMask = saturate( smoothstep( 0.62f, 0.96f, lum ) );
+		graded = lerp( graded, graded * g_vShadowTint, shadowMask * g_flSplit );
+		graded = lerp( graded, graded * g_vHighlightTint, highlightMask * g_flSplit );
 		return graded;
 	}
 

@@ -62,46 +62,12 @@ public class TextConfig : GameResource
 		var pack = Traits ??= new();
 		return trait switch
 		{
-			RoundTrait.Pierce => pack.Pierce ??= new(),
-			RoundTrait.Bounce => pack.Bounce ??= new(),
-			RoundTrait.Magnetic => pack.Magnetic ??= new(),
-			RoundTrait.Freeze => pack.Freeze ??= new(),
-			RoundTrait.Explosive => pack.Explosive ??= new(),
-			RoundTrait.Heavy => pack.Heavy ??= new(),
-			RoundTrait.Accel => pack.Accel ??= new(),
-			RoundTrait.Electric => pack.Electric ??= new(),
-			RoundTrait.Blood => pack.Blood ??= new(),
-			RoundTrait.Homing => pack.Homing ??= new(),
-			RoundTrait.Skim => pack.Skim ??= new(),
-			RoundTrait.Kick => pack.Kick ??= new(),
-			RoundTrait.Stick => pack.Stick ??= new(),
-			RoundTrait.Cushion => pack.Cushion ??= new(),
-			RoundTrait.Cue => pack.Cue ??= new(),
-			RoundTrait.Corner => pack.Corner ??= new(),
-			RoundTrait.Incurve => pack.Incurve ??= new(),
-			RoundTrait.Clockwise => pack.Clockwise ??= new(),
-			RoundTrait.Stutter => pack.Stutter ??= new(),
-			RoundTrait.Breach => pack.Breach ??= new(),
-			RoundTrait.Boomerang => pack.Boomerang ??= new(),
-			RoundTrait.Reel => pack.Reel ??= new(),
-			RoundTrait.Swipe => pack.Swipe ??= new(),
-			RoundTrait.Backstop => pack.Backstop ??= new(),
-			RoundTrait.Link => pack.Link ??= new(),
-			RoundTrait.Fuse => pack.Fuse ??= new(),
-			RoundTrait.Snap => pack.Snap ??= new(),
-			RoundTrait.LateMag => pack.LateMag ??= new(),
-			RoundTrait.Rim => pack.Rim ??= new(),
-			RoundTrait.SecondWind => pack.SecondWind ??= new(),
-			RoundTrait.Shred => pack.Shred ??= new(),
-			RoundTrait.Hook => pack.Hook ??= new(),
-			RoundTrait.Mark => pack.Mark ??= new(),
-			RoundTrait.Pinball => pack.Pinball ??= new(),
-			RoundTrait.Ribbon => pack.Ribbon ??= new(),
-			RoundTrait.Graze => pack.Graze ??= new(),
-			RoundTrait.Rehit => pack.Rehit ??= new(),
-			RoundTrait.Step => pack.Step ??= new(),
-			RoundTrait.Echo => pack.Echo ??= new(),
-			_ => pack.Redirect ??= new()
+			RoundTrait.Buck => pack.Buck ??= new(),
+			RoundTrait.Bore => pack.Bore ??= new(),
+			RoundTrait.Drum => pack.Drum ??= new(),
+			RoundTrait.Warhead => pack.Warhead ??= new(),
+			RoundTrait.Lash => pack.Lash ??= new(),
+			_ => pack.Pin ??= new()
 		};
 	}
 
@@ -114,10 +80,9 @@ public class TextConfig : GameResource
 		var rarity = (Traits ??= new()).Rarity ??= new();
 		return pack switch
 		{
-			TraitPack.Starter => Or( rarity.Common, "COMMON" ),
-			TraitPack.Geometry or TraitPack.Return => Or( rarity.Uncommon, "UNCOMMON" ),
-			TraitPack.Chaos or TraitPack.Body => Or( rarity.Rare, "RARE" ),
-			_ => Or( rarity.Epic, "EPIC" )
+			TraitPack.Rifle or TraitPack.Shotgun => Or( rarity.Common, "COMMON" ),
+			TraitPack.Nailgun => Or( rarity.Uncommon, "UNCOMMON" ),
+			_ => Or( rarity.Rare, "RARE" )
 		};
 	}
 
@@ -225,46 +190,12 @@ public class RarityCopy
 public class TraitsCopy
 {
 	[Property] public RarityCopy Rarity { get; set; } = new();
-	[Property] public TraitCopy Pierce { get; set; } = new() { Code = "PRC", Title = "PIERCE", Blurb = "Pass through enemies instead of bouncing off them." };
-	[Property] public TraitCopy Bounce { get; set; } = new() { Code = "RCH", Title = "RICOCHET", Blurb = "More wall bounces and a longer flight." };
-	[Property] public TraitCopy Magnetic { get; set; } = new() { Code = "MAG", Title = "MAGNET", Blurb = "Steer home near you. Wider catch zone." };
-	[Property] public TraitCopy Freeze { get; set; } = new() { Code = "FRZ", Title = "FREEZE", Blurb = "Slow whatever you hit." };
-	[Property] public TraitCopy Explosive { get; set; } = new() { Code = "XPL", Title = "EXPLOSIVE", Blurb = "Blast on a kill or the last bounce." };
-	[Property] public TraitCopy Heavy { get; set; } = new() { Code = "HVY", Title = "HEAVY", Blurb = "Harder hits and shove. Slower flight." };
-	[Property] public TraitCopy Accel { get; set; } = new() { Code = "ACL", Title = "ACCEL", Blurb = "Speed up after a bounce or a kill." };
-	[Property] public TraitCopy Electric { get; set; } = new() { Code = "ELC", Title = "ELECTRIC", Blurb = "Jump lightning to nearby enemies. Course stays." };
-	[Property] public TraitCopy Blood { get; set; } = new() { Code = "BLD", Title = "BLOOD", Blurb = "A kill streak on one shot grants a shield." };
-	[Property] public TraitCopy Homing { get; set; } = new() { Code = "HOM", Title = "HOMING", Blurb = "After a kill or last bounce, turn home earlier." };
-	[Property] public TraitCopy Skim { get; set; } = new() { Code = "SKM", Title = "SKIM", Blurb = "Glancing panel hits keep the bounce charge." };
-	[Property] public TraitCopy Kick { get; set; } = new() { Code = "KCK", Title = "KICK", Blurb = "Player shots twist inner panels harder." };
-	[Property] public TraitCopy Stick { get; set; } = new() { Code = "STK", Title = "STICK", Blurb = "Cling to a panel, then launch along it." };
-	[Property] public TraitCopy Cushion { get; set; } = new() { Code = "CSH", Title = "CUSHION", Blurb = "The first bounce hugs the wall." };
-	[Property] public TraitCopy Cue { get; set; } = new() { Code = "CUE", Title = "CUE", Blurb = "True-face banks. Preview matches the shot." };
-	[Property] public TraitCopy Corner { get; set; } = new() { Code = "CNR", Title = "CORNER", Blurb = "Pull toward panel ends for bank shots." };
-	[Property] public TraitCopy Incurve { get; set; } = new() { Code = "INC", Title = "INCURVE", Blurb = "Curve toward the core." };
-	[Property] public TraitCopy Clockwise { get; set; } = new() { Code = "CLK", Title = "CLOCKWISE", Blurb = "Curve with your run around the ring." };
-	[Property] public TraitCopy Stutter { get; set; } = new() { Code = "STT", Title = "STUTTER", Blurb = "Pause on each wall bounce." };
-	[Property] public TraitCopy Breach { get; set; } = new() { Code = "BRH", Title = "BREACH", Blurb = "Punch through inner panels." };
-	[Property] public TraitCopy Boomerang { get; set; } = new() { Code = "BMG", Title = "BOOMERANG", Blurb = "When spent, retrace your path home." };
-	[Property] public TraitCopy Reel { get; set; } = new() { Code = "REL", Title = "REEL", Blurb = "Lost rounds crawl the ring toward you." };
-	[Property] public TraitCopy Swipe { get; set; } = new() { Code = "SWP", Title = "SWIPE", Blurb = "Dash through your round to chamber it." };
-	[Property] public TraitCopy Backstop { get; set; } = new() { Code = "BCK", Title = "BACKSTOP", Blurb = "Catch zone behind you too." };
-	[Property] public TraitCopy Link { get; set; } = new() { Code = "LNK", Title = "LINK", Blurb = "A flying round picks up a dropped one." };
-	[Property] public TraitCopy Fuse { get; set; } = new() { Code = "FUS", Title = "FUSE", Blurb = "Missed catch explodes where it drops." };
-	[Property] public TraitCopy Snap { get; set; } = new() { Code = "SNP", Title = "SNAP", Blurb = "A catch primes a faster, longer-preview shot." };
-	[Property] public TraitCopy LateMag { get; set; } = new() { Code = "LTM", Title = "LATE MAG", Blurb = "Magnet waits until the last bounce or a kill." };
-	[Property] public TraitCopy Rim { get; set; } = new() { Code = "RIM", Title = "RIM", Blurb = "Drops always land ahead on the outer ring." };
-	[Property] public TraitCopy SecondWind { get; set; } = new() { Code = "2ND", Title = "SECOND WIND", Blurb = "First stall kicks toward the ring instead." };
-	[Property] public TraitCopy Shred { get; set; } = new() { Code = "SHD", Title = "SHRED", Blurb = "First shield hit counts as a rear shot." };
-	[Property] public TraitCopy Hook { get; set; } = new() { Code = "HOK", Title = "HOOK", Blurb = "Hits drag the enemy along the shot." };
-	[Property] public TraitCopy Mark { get; set; } = new() { Code = "MRK", Title = "MARK", Blurb = "Tagged foes pull the next round in." };
-	[Property] public TraitCopy Pinball { get; set; } = new() { Code = "PNB", Title = "PINBALL", Blurb = "Bounce off bodies harder. Crowd becomes banks." };
-	[Property] public TraitCopy Ribbon { get; set; } = new() { Code = "RBN", Title = "RIBBON", Blurb = "Your trail cuts and slows enemies." };
-	[Property] public TraitCopy Graze { get; set; } = new() { Code = "GRZ", Title = "GRAZE", Blurb = "Near-misses still chip a hit." };
-	[Property] public TraitCopy Rehit { get; set; } = new() { Code = "RHT", Title = "REHIT", Blurb = "A wall bounce lets you hit the same foe again." };
-	[Property] public TraitCopy Step { get; set; } = new() { Code = "STP", Title = "STEP", Blurb = "A kill jumps the round forward." };
-	[Property] public TraitCopy Echo { get; set; } = new() { Code = "ECO", Title = "ECHO", Blurb = "A ghost retraces the line and hits again." };
-	[Property] public TraitCopy Redirect { get; set; } = new() { Code = "RDR", Title = "REDIRECT", Blurb = "A kill turns you toward the next body in cone." };
+	[Property] public TraitCopy Buck { get; set; } = new() { Code = "BUCK", Title = "BUCK", Blurb = "Five pellets. Damage dies at range. Shotgun DNA." };
+	[Property] public TraitCopy Bore { get; set; } = new() { Code = "BORE", Title = "BORE", Blurb = "Punch through bodies. Longer reload. Rail DNA." };
+	[Property] public TraitCopy Drum { get; set; } = new() { Code = "DRUM", Title = "DRUM", Blurb = "Hold for a burst. Dump costs a long reload. Rifle DNA." };
+	[Property] public TraitCopy Warhead { get; set; } = new() { Code = "WARHEAD", Title = "WARHEAD", Blurb = "Splash on hit. Slow shot. Hurts you. Rocket DNA." };
+	[Property] public TraitCopy Lash { get; set; } = new() { Code = "LASH", Title = "LASH", Blurb = "Hold a beam. Longer burn, longer wait. No bounce. Laser DNA." };
+	[Property] public TraitCopy Pin { get; set; } = new() { Code = "PIN", Title = "PIN", Blurb = "Thin nails. Extra banks. Stick and tick. Nailgun DNA." };
 }
 
 public class BuildingsCopy
@@ -316,8 +247,8 @@ public class ProgressCopy
 {
 	[Property] public ProgressStepCopy Catch { get; set; } = new()
 	{
-		Title = "CATCH IT BACK",
-		Blurb = "Fire a round. Catch it before it dies."
+		Title = "FIRE THE GUN",
+		Blurb = "LMB. Watch the reload. Kill something."
 	};
 	[Property] public ProgressStepCopy Lap { get; set; } = new()
 	{
@@ -404,17 +335,17 @@ public class HudCopy
 	[Property] public string Stash { get; set; } = "STASH";
 	[Property] public string Best { get; set; } = "BEST";
 	[Property] public string Kills { get; set; } = "KILLS";
-	[Property] public string Caught { get; set; } = "CAUGHT";
+	[Property] public string Caught { get; set; } = "SHOTS";
 	[Property] public string Dash { get; set; } = "DASH";
 	[Property] public string Slow { get; set; } = "SLOW";
 	[Property] public string HurtStamp { get; set; } = "-1";
 	[Property] public string Task { get; set; } = "NEXT";
 	[Property] public string FeedCount { get; set; } = "TOTAL BIOMASS {0} / {1}";
 	[Property] public string Objective { get; set; } = "NEXT OBJECTIVE";
-	[Property] public string Trinkets { get; set; } = "TRINKETS";
-	[Property] public string TrinketsNone { get; set; } = "NONE";
+	[Property] public string Trinkets { get; set; } = "GUN";
+	[Property] public string TrinketsNone { get; set; } = "PEA";
 	[Property] public string Health { get; set; } = "HEALTH";
-	[Property] public string Ammo { get; set; } = "AMMO";
+	[Property] public string Ammo { get; set; } = "RELOAD";
 	[Property] public string DashKey { get; set; } = "SPACE";
 	[Property] public string SlowKey { get; set; } = "RMB";
 	[Property] public string Fed { get; set; } = "TOTAL BIOMASS";
@@ -511,10 +442,10 @@ public class DecideCopy
 	[Property] public string LapClear { get; set; } = "LAP {0} CLEAR";
 	[Property] public string LapBlurb { get; set; } = "STASH {0}  ·  SCRAP {1}  ·  TAKE IT HOME OR RISK ANOTHER";
 	[Property] public string Extract { get; set; } = "EXTRACT";
-	[Property] public string ExtractBankOne { get; set; } = "Bank {0} round. Return to the city.";
-	[Property] public string ExtractBankMany { get; set; } = "Bank {0} rounds. Return to the city.";
+	[Property] public string ExtractBankOne { get; set; } = "Bank {0} biomass. Return to the city.";
+	[Property] public string ExtractBankMany { get; set; } = "Bank {0} biomass. Return to the city.";
 	[Property] public string OneMore { get; set; } = "ONE MORE LAP";
-	[Property] public string OneMoreBlurb { get; set; } = "Stay on the ring. It gets harder.";
+	[Property] public string OneMoreBlurb { get; set; } = "Chapel. Another DNA card. The board gets meaner.";
 	[Property] public string Fight { get; set; } = "FIGHT THE {0}";
 	[Property] public string RingClear { get; set; } = "RING CLEAR";
 	[Property] public string RingBlurb { get; set; } = "STASH {0}  ·  NEXT {1}  ·  {2}";
@@ -558,8 +489,28 @@ public class ShopCopy
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
 	[Property] public string Key3 { get; set; } = "3";
+	[Property] public string Key4 { get; set; } = "4";
+	[Property] public string Key5 { get; set; } = "5";
+	[Property] public string Key6 { get; set; } = "6";
+	[Property] public string Key7 { get; set; } = "7";
+	[Property] public string Key8 { get; set; } = "8";
+	[Property] public string Key9 { get; set; } = "9";
 	[Property] public string KeyE { get; set; } = "E";
 	[Property] public string KeySpace { get; set; } = "SPACE";
+
+	public string KeyOf( int index ) => index switch
+	{
+		0 => Key1,
+		1 => Key2,
+		2 => Key3,
+		3 => Key4,
+		4 => Key5,
+		5 => Key6,
+		6 => Key7,
+		7 => Key8,
+		8 => Key9,
+		_ => (index + 1).ToString()
+	};
 }
 
 public class HelpCopy
@@ -573,25 +524,24 @@ public class HelpCopy
 	[Property] public string DecideLap { get; set; } = "CLICK  ·  1 CITY  ·  2 STAY  ·  ESC PAUSE";
 	[Property] public string DecideRingNext { get; set; } = "CLICK  ·  1 CITY  ·  2 NEXT RING  ·  ESC PAUSE";
 	[Property] public string DecideRing { get; set; } = "CLICK  ·  1 CITY  ·  ESC PAUSE";
-	[Property] public string ShopThree { get; set; } = "CLICK A CARD  ·  1 / 2 / 3 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
-	[Property] public string ShopTwo { get; set; } = "CLICK A CARD  ·  1 / 2 BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
+	[Property] public string Shop { get; set; } = "CLICK A CARD  ·  1-{0} BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
 	[Property] public string Dead { get; set; } = "CLICK CITY  ·  R CITY  ·  ESC MENU";
 	[Property] public string Extracted { get; set; } = "SPACE CONTINUE";
 	[Property] public string Won { get; set; } = "CLICK  ·  SPACE PLAY AGAIN  ·  ESC MENU";
 	[Property] public string BossGlass { get; set; } = "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
 	[Property] public string BossYard { get; set; } = "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
 	[Property] public string PlayGlassSkip { get; set; } = "PANELS SHATTER  ·  E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
-	[Property] public string PlayGlass { get; set; } = "PANELS SHATTER  ·  LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE";
+	[Property] public string PlayGlass { get; set; } = "PANELS SHATTER  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
 	[Property] public string PlaySkip { get; set; } = "E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
-	[Property] public string Play { get; set; } = "MOUSE AIM · LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE";
+	[Property] public string Play { get; set; } = "MOUSE AIM · LMB FIRE · SPACE DASH · R RESTART  ·  ESC PAUSE";
 }
 
 public class AnnounceCopy
 {
-	[Property] public string AimFire { get; set; } = "AIM. FIRE. CATCH IT BACK.";
+	[Property] public string AimFire { get; set; } = "AIM. FIRE.";
 	[Property] public string SlotPicked { get; set; } = "SLOT {0}";
 	[Property] public string SlotDeleted { get; set; } = "SLOT {0} DELETED";
-	[Property] public string StartRun { get; set; } = "ONE LAP. ONE ROUND. CASH OUT OR GO AGAIN.";
+	[Property] public string StartRun { get; set; } = "ONE LAP. ONE GUN. CASH OUT OR GO AGAIN.";
 	[Property] public string TargetDown { get; set; } = "TARGET DOWN";
 	[Property] public string ScrapGain { get; set; } = "+{0} SCRAP  ·  {1}";
 	[Property] public string RoundChamberedShield { get; set; } = "ROUND {0} CHAMBERED  ·  SHIELD";
@@ -617,7 +567,7 @@ public class AnnounceCopy
 	[Property] public string CityDeposit { get; set; } = "CITY  ·  +{0} WAREHOUSE";
 	[Property] public string Won { get; set; } = "EKKE IS FULL";
 	[Property] public string City { get; set; } = "CITY";
-	[Property] public string ContinueRounds { get; set; } = "+{0} ROUND  ·  STASH {1}  ·  ×{2:0.00}";
+	[Property] public string ContinueRounds { get; set; } = "+{0} BIOMASS  ·  STASH {1}  ·  ×{2:0.00}";
 	[Property] public string StashMax { get; set; } = "STASH MAX  ·  ×{0:0.00}";
 	[Property] public string BossContinue { get; set; } = "{0}  ·  +{1}  ·  STASH {2}";
 	[Property] public string NeedScrap { get; set; } = "NEED {0} SCRAP";
@@ -660,5 +610,5 @@ public class CityCopy
 	[Property] public string BonusDmg { get; set; } = "DMG+{0}";
 	[Property] public string BonusDash { get; set; } = "DASH";
 	[Property] public string BonusSlow { get; set; } = "SLOW";
-	[Property] public string BonusCards { get; set; } = "3 CARDS";
+	[Property] public string BonusCards { get; set; } = "{0} CARDS";
 }

@@ -110,8 +110,7 @@ public sealed class PlayerAim : Component
 
 	void UpdatePreview()
 	{
-		var slot = Inventory.IsValid() ? Inventory.Selected : null;
-		var ready = slot is not null && slot.Status == RoundStatus.Chambered;
+		var ready = Inventory.IsValid() && Inventory.Ready;
 		var tint = ready ? ShotColors.Player : new Color( 0.4f, 0.5f, 0.6f );
 
 		if ( preview.IsValid() )
@@ -134,15 +133,24 @@ public sealed class PlayerAim : Component
 			return;
 		}
 
-		var bounces = 1;
-		if ( Inventory.IsValid() )
+		var recipe = Inventory.Loadout.Recipe();
+		if ( recipe.Beam )
 		{
-			bounces = Math.Max( bounces, Inventory.Loadout.CueBounces );
-			if ( Loop.IsValid() && Time.Now < Loop.SnapUntil )
-				bounces = Math.Max( bounces, Inventory.Loadout.SnapPreview );
+			var end = Muzzle + Direction * recipe.BeamRange;
+			if ( Arena.Geometry.TraceRay( Muzzle, Direction, recipe.BeamRange, out var hit ) )
+				end = hit.Position;
+
+			preview?.SetPoints( new List<Vector3>
+			{
+				Arena.Geometry.ToPlayWorld( Muzzle ),
+				Arena.Geometry.ToPlayWorld( end )
+			} );
+			return;
 		}
 
-		var flat = Arena.Geometry.PredictPath( Muzzle, Direction, RoundRadius, PreviewLength, PreviewBounceLength, bounces );
+		var bounces = Math.Max( 1, recipe.Bounces );
+		var radius = recipe.Radius > 1f ? recipe.Radius : RoundRadius;
+		var flat = Arena.Geometry.PredictPath( Muzzle, Direction, radius, PreviewLength, PreviewBounceLength, bounces );
 		var world = new List<Vector3>( flat.Count );
 
 		foreach ( var point in flat )

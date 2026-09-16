@@ -131,13 +131,13 @@ public sealed class Enemy : Component
 
 	float markUntil;
 
-	public bool BlocksFrom( Vector2 incoming, RoundProjectile source )
+	public bool BlocksFrom( Vector2 incoming, RoundProjectile source, bool asBounce = false, Vector2 from = default )
 	{
 		if ( Kind == EnemyKind.Core )
-			return source is null || source.Ricochets <= 0;
+			return !asBounce && (source is null || source.Ricochets <= 0);
 
 		if ( Kind == EnemyKind.Lens )
-			return BlocksLens( incoming, source );
+			return BlocksLens( incoming, source, from );
 
 		if ( Kind != EnemyKind.Shield && Kind != EnemyKind.Shardguard )
 			return false;
@@ -165,13 +165,15 @@ public sealed class Enemy : Component
 		return false;
 	}
 
-	bool BlocksLens( Vector2 incoming, RoundProjectile source )
+	bool BlocksLens( Vector2 incoming, RoundProjectile source, Vector2 fromHint )
 	{
 		var lens = GetComponent<ArenaLens>();
 		if ( lens is not null && !lens.Open )
 			return true;
 
-		var fromCenter = source is not null && source.Flat.Length > 1f ? source.Flat : incoming;
+		var fromCenter = fromHint.Length > 1f
+			? fromHint
+			: source is not null && source.Flat.Length > 1f ? source.Flat : incoming;
 		var radial = fromCenter.Length > 1f ? fromCenter.Normal : Vector2.Right;
 		return MathF.Abs( ArenaGeometry.Dot( incoming.Normal, radial ) ) > GameSettings.Boss.LensBlock;
 	}
@@ -810,16 +812,7 @@ public sealed class Enemy : Component
 		if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
 			return false;
 
-		foreach ( var slot in Loop.Inventory.Slots )
-		{
-			if ( slot.Status != RoundStatus.InFlight || !slot.Flying.IsValid() )
-				continue;
-
-			if ( (slot.Flying.Flat - Flat).Length <= GameSettings.Enemies.GlimmerReveal )
-				return true;
-		}
-
-		return false;
+		return Loop.Inventory.Reveals( Flat, GameSettings.Enemies.GlimmerReveal );
 	}
 
 	static Color HealthTint( float ratio )

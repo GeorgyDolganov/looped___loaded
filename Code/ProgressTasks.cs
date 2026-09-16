@@ -2,7 +2,7 @@ namespace LoopedLoaded;
 
 public enum ProgressGoal
 {
-	CatchRound,
+	FireShot,
 	FinishLap,
 	Extract,
 	PlaceFrame,
@@ -26,7 +26,7 @@ public sealed class ProgressTrack
 {
 	static readonly ProgressStep[] Route =
 	{
-		new() { Id = "catch", Goal = ProgressGoal.CatchRound },
+		new() { Id = "catch", Goal = ProgressGoal.FireShot },
 		new() { Id = "lap", Goal = ProgressGoal.FinishLap },
 		new() { Id = "extract", Goal = ProgressGoal.Extract },
 		new() { Id = "grow", Goal = ProgressGoal.PlaceFrame },

@@ -6,218 +6,276 @@ public sealed class RoundInventory : Component
 	[Property] public RingRunner Runner { get; set; }
 	[Property] public PlayerAim Aim { get; set; }
 	[Property] public GameLoop Loop { get; set; }
-	[Property] public float CatchRadius { get; set; } = 105f;
-	[Property] public float CatchOffset { get; set; } = 82f;
-	[Property] public float PickupRadius { get; set; } = 145f;
 
 	public RunLoadout Loadout { get; } = new();
-	public List<RoundSlot> Slots { get; } = new();
-	public int SelectedIndex { get; private set; }
-	public RoundSlot Selected => Slots.Count == 0 ? null : Slots[Math.Clamp( SelectedIndex, 0, Slots.Count - 1 )];
+	public List<RoundProjectile> Live { get; } = new();
+	public float ReloadLeft { get; private set; }
+	public float ReloadFor { get; private set; }
+	public int BurstLeft { get; private set; }
+	public bool Beaming { get; private set; }
+	public float BeamHeld { get; private set; }
+	public bool Ready => ReloadLeft <= 0.001f && !Beaming;
+	public float Reload01
+	{
+		get
+		{
+			if ( Beaming )
+			{
+				var cap = MathF.Max( 0.01f, Loadout.Recipe().BeamMaxHold );
+				return Math.Clamp( BeamHeld / cap, 0f, 1f );
+			}
 
-	public Vector2 CatchPoint => Runner.IsValid() && Aim.IsValid()
-		? Runner.Flat + Aim.Direction * CatchOffset
-		: Vector2.Zero;
+			if ( ReloadFor <= 0.01f )
+				return Ready ? 1f : 0f;
 
-	public Vector2 BackCatchPoint => Runner.IsValid() && Aim.IsValid()
-		? Runner.Flat - Aim.Direction * CatchOffset
-		: Vector2.Zero;
+			return 1f - Math.Clamp( ReloadLeft / ReloadFor, 0f, 1f );
+		}
+	}
 
-	PolyLine catchRing;
-	PolyLine backRing;
-	GameObject chamberedMarker;
+	float cycleLeft;
+	LaserBeam beam;
+	GameObject readyMarker;
 
 	public void ResetLoadout()
 	{
-		foreach ( var slot in Slots )
-			slot.ResetCombat();
-
-		Slots.Clear();
+		ClearShots();
 		Loadout.Clear();
-		GrantSlot();
-		SelectedIndex = 0;
+		ReloadLeft = 0f;
+		ReloadFor = 0f;
+		BurstLeft = 0;
+		cycleLeft = 0f;
 	}
 
 	public void ChamberAll()
 	{
-		foreach ( var slot in Slots )
-			slot.ResetCombat();
-
-		if ( Slots.Count > 0 )
-			TrySelect( SelectedIndex );
+		ClearShots();
+		ReloadLeft = 0f;
+		ReloadFor = 0f;
+		BurstLeft = 0;
+		cycleLeft = 0f;
 	}
 
-	public RoundSlot GrantSlot()
+	public void ClearShots()
 	{
-		if ( Slots.Count >= Progression.MaxSlots )
-			return null;
-
-		var slot = new RoundSlot
+		StopBeam();
+		foreach ( var shot in Live )
 		{
-			Index = Slots.Count,
-			Tint = ShotColors.Player,
-			Status = RoundStatus.Chambered
-		};
-
-		Slots.Add( slot );
-		return slot;
-	}
-
-	public bool TrySelect( int index )
-	{
-		if ( index < 0 || index >= Slots.Count )
-			return false;
-
-		if ( Slots[index].Status != RoundStatus.Chambered )
-			return false;
-
-		SelectedIndex = index;
-		return true;
-	}
-
-	public void SelectNextChambered( int direction = 1 )
-	{
-		if ( Slots.Count == 0 )
-			return;
-
-		for ( var step = 1; step <= Slots.Count; step++ )
-		{
-			var index = (SelectedIndex + direction * step + Slots.Count * 8) % Slots.Count;
-			if ( Slots[index].Status == RoundStatus.Chambered )
-			{
-				SelectedIndex = index;
-				return;
-			}
+			if ( shot.IsValid() )
+				shot.GameObject.Destroy();
 		}
+
+		Live.Clear();
 	}
 
-	public void AfterFired( RoundSlot slot )
+	public bool Reveals( Vector2 flat, float radius )
 	{
-		SelectNextChambered( 1 );
-
-		if ( Selected is null || Selected.Status != RoundStatus.Chambered )
-			SelectedIndex = slot.Index;
-	}
-
-	public bool InCatchZone( Vector2 flat, float radius, float catchBonus )
-	{
-		var reach = CatchRadius + catchBonus + radius;
-		if ( (flat - CatchPoint).Length <= reach )
+		if ( Beaming && beam.IsValid() && beam.Near( flat, radius ) )
 			return true;
 
-		var back = Loadout.BackstopScale;
-		if ( back <= 0.01f )
-			return false;
+		foreach ( var shot in Live )
+		{
+			if ( shot.IsValid() && (shot.Flat - flat).Length <= radius )
+				return true;
+		}
 
-		return (flat - BackCatchPoint).Length <= CatchRadius * back + catchBonus * back + radius;
+		return false;
 	}
 
-	public float ArcTo( Vector2 flat )
+	public void TickGun()
 	{
-		if ( !Runner.IsValid() || !Loop.IsValid() )
-			return 0f;
+		Prune();
 
-		var angle = flat.Length < 1f ? Runner.Angle : ArenaGeometry.ToAngle( flat );
-		return Wrap( Runner.Angle - angle ) * Loop.Geometry.TrackRadius;
+		if ( !Loop.IsValid() || Loop.IsFrozen )
+			return;
+
+		ReloadLeft = MathF.Max( 0f, ReloadLeft - Time.Delta );
+		cycleLeft = MathF.Max( 0f, cycleLeft - Time.Delta );
+
+		if ( Loop.BlocksShot )
+			return;
+
+		var recipe = Loadout.Recipe();
+		var down = Input.Down( "Attack1" );
+		var pressed = Input.Pressed( "Attack1" );
+
+		if ( Beaming )
+		{
+			if ( !down )
+			{
+				EndBeam( recipe );
+				return;
+			}
+
+			BeamHeld = MathF.Min( recipe.BeamMaxHold, BeamHeld + Time.Delta );
+			if ( Aim.IsValid() )
+				beam?.Aim( Aim.Muzzle, Aim.Direction, recipe );
+			return;
+		}
+
+		if ( recipe.Beam )
+		{
+			if ( pressed && Ready )
+				BeginBeam( recipe );
+			else if ( pressed )
+				ArenaSounds.Deny();
+			return;
+		}
+
+		if ( recipe.Auto )
+		{
+			if ( down && Ready && cycleLeft <= 0.001f )
+			{
+				if ( BurstLeft <= 0 )
+					BurstLeft = recipe.Burst;
+
+				FireVolley( recipe );
+				BurstLeft--;
+				cycleLeft = recipe.Cycle;
+				if ( BurstLeft <= 0 )
+					BeginReload( recipe.Reload );
+			}
+			else if ( !down && BurstLeft > 0 && BurstLeft < recipe.Burst )
+			{
+				BurstLeft = 0;
+				BeginReload( recipe.Reload );
+			}
+
+			return;
+		}
+
+		if ( !pressed )
+			return;
+
+		if ( !Ready )
+		{
+			ArenaSounds.Deny();
+			return;
+		}
+
+		FireVolley( recipe );
+		BeginReload( recipe.Reload );
 	}
 
-	static float Wrap( float radians )
+	void BeginReload( float duration )
 	{
-		radians %= MathF.Tau;
-		return radians < 0f ? radians + MathF.Tau : radians;
+		ReloadFor = MathF.Max( GameSettings.Traits.ReloadMin, duration );
+		ReloadLeft = ReloadFor;
+		BurstLeft = 0;
+	}
+
+	void BeginBeam( GunRecipe recipe )
+	{
+		Beaming = true;
+		BeamHeld = 0f;
+		var go = Loop.Scene.CreateObject();
+		go.Name = "Laser Beam";
+		beam = go.AddComponent<LaserBeam>();
+		beam.Arm( Loop, recipe );
+		if ( Aim.IsValid() )
+			beam.Aim( Aim.Muzzle, Aim.Direction, recipe );
+		Loop.NoteShot();
+		ArenaSounds.Fire( Aim.IsValid() ? Aim.MuzzleWorld : Vector3.Zero );
+	}
+
+	void EndBeam( GunRecipe recipe )
+	{
+		var held = BeamHeld;
+		StopBeam();
+		BeginReload( recipe.BeamPad + recipe.BeamPerSecond * held + recipe.BoreWait );
+	}
+
+	void StopBeam()
+	{
+		Beaming = false;
+		BeamHeld = 0f;
+		if ( beam.IsValid() )
+			beam.GameObject.Destroy();
+		beam = null;
+	}
+
+	void FireVolley( GunRecipe recipe )
+	{
+		if ( !Loop.IsValid() || !Aim.IsValid() )
+			return;
+
+		var count = Math.Max( 1, recipe.Count );
+		var cone = recipe.Cone;
+		for ( var i = 0; i < count; i++ )
+		{
+			var yaw = 0f;
+			if ( count > 1 && cone > 0.01f )
+				yaw = -cone * 0.5f + cone * i / (count - 1);
+
+			var go = Loop.Scene.CreateObject();
+			go.Name = "Shot";
+			var projectile = go.AddComponent<RoundProjectile>();
+			projectile.Radius = recipe.Radius;
+			projectile.Launch( Loop, ToFlight( recipe ), Aim.Muzzle, Turn( Aim.Direction, yaw ) );
+			Live.Add( projectile );
+		}
+
+		Loop.NoteShot();
+		ArenaSounds.Fire( Aim.MuzzleWorld );
+		ImpactFlash.Spawn( Loop.Scene, Aim.MuzzleWorld, ShotColors.Player, recipe.Nail ? 0.55f : 0.8f );
+	}
+
+	static RoundFlight ToFlight( GunRecipe recipe ) => new()
+	{
+		Tint = ShotColors.Player,
+		Damage = recipe.Damage,
+		PierceCharges = recipe.Pierce,
+		MaxBounces = recipe.Bounces,
+		Energy = recipe.Energy,
+		SpeedScale = recipe.SpeedScale,
+		ExplosiveRadius = recipe.Splash,
+		FriendlySplash = recipe.FriendlySplash,
+		Falloff = recipe.Falloff,
+		StickTime = recipe.StickTime,
+		Nail = recipe.Nail
+	};
+
+	static Vector2 Turn( Vector2 dir, float degrees )
+	{
+		if ( MathF.Abs( degrees ) < 0.01f )
+			return dir.Normal;
+
+		var ang = MathX.DegreeToRadian( degrees );
+		var c = MathF.Cos( ang );
+		var s = MathF.Sin( ang );
+		return new Vector2( dir.x * c - dir.y * s, dir.x * s + dir.y * c ).Normal;
+	}
+
+	void Prune()
+	{
+		for ( var i = Live.Count - 1; i >= 0; i-- )
+		{
+			if ( !Live[i].IsValid() )
+				Live.RemoveAt( i );
+		}
 	}
 
 	protected override void OnStart()
 	{
-		var ringObject = Scene.CreateObject();
-		ringObject.Name = "Catch Ring";
-		ringObject.Parent = GameObject;
-
-		catchRing = ringObject.AddComponent<PolyLine>();
-		catchRing.HeadWidth = 4f;
-		catchRing.TailWidth = 4f;
-		catchRing.Apply();
-
-		var backObject = Scene.CreateObject();
-		backObject.Name = "Back Catch Ring";
-		backObject.Parent = GameObject;
-		backRing = backObject.AddComponent<PolyLine>();
-		backRing.HeadWidth = 3f;
-		backRing.TailWidth = 3f;
-		backRing.Apply();
-
-		chamberedMarker = Blocks.SpawnSphere( GameObject, "Chambered", Vector3.Zero, 20f, ShotColors.Player );
+		readyMarker = Blocks.SpawnSphere( GameObject, "Ready", Vector3.Zero, 20f, ShotColors.Player );
 	}
 
 	protected override void OnUpdate()
 	{
 		if ( Loop.IsValid() && (Loop.InCity || Loop.InMenu) )
 		{
-			if ( catchRing.IsValid() )
-				catchRing.Clear();
-			if ( backRing.IsValid() )
-				backRing.Clear();
-			if ( chamberedMarker.IsValid() )
-				chamberedMarker.Enabled = false;
+			if ( readyMarker.IsValid() )
+				readyMarker.Enabled = false;
 			return;
 		}
 
-		if ( !Arena.IsValid() || !Runner.IsValid() || !Aim.IsValid() )
+		if ( !Arena.IsValid() || !Runner.IsValid() || !readyMarker.IsValid() )
 			return;
 
-		var slot = Selected;
-		var ready = slot is not null && slot.Status == RoundStatus.Chambered;
-		var tint = slot is not null && ready ? slot.Tint : new Color( 0.35f, 0.45f, 0.55f );
-
-		var bonus = Loadout.CatchBonus;
-		if ( catchRing.IsValid() )
-		{
-			catchRing.HeadTint = tint;
-			catchRing.TailTint = tint;
-			catchRing.Apply();
-			catchRing.SetPoints( BuildRing( CatchPoint, CatchRadius + bonus ) );
-		}
-
-		if ( backRing.IsValid() )
-		{
-			var back = Loadout.BackstopScale;
-			if ( back <= 0.01f )
-			{
-				backRing.Clear();
-			}
-			else
-			{
-				backRing.HeadTint = tint * 0.7f;
-				backRing.TailTint = tint * 0.7f;
-				backRing.Apply();
-				backRing.SetPoints( BuildRing( BackCatchPoint, (CatchRadius + bonus) * back ) );
-			}
-		}
-
-		if ( chamberedMarker.IsValid() )
-		{
-			chamberedMarker.Enabled = ready;
-			chamberedMarker.WorldPosition = Arena.Geometry.ToPlayWorld( Runner.Flat ) + Vector3.Up * 140f;
-
-			var renderer = chamberedMarker.GetComponent<ModelRenderer>();
-			if ( renderer.IsValid() && slot is not null )
-				renderer.Tint = slot.Tint;
-		}
-	}
-
-	List<Vector3> BuildRing( Vector2 center, float span )
-	{
-		const int segments = 24;
-		span = MathF.Max( 8f, span );
-		var points = new List<Vector3>( segments + 1 );
-
-		for ( var i = 0; i <= segments; i++ )
-		{
-			var angle = MathF.Tau * i / segments;
-			var offset = ArenaGeometry.FromAngle( angle ) * span;
-			points.Add( Arena.Geometry.ToWorld( center + offset, 12f ) );
-		}
-
-		return points;
+		var lit = Ready;
+		readyMarker.Enabled = lit;
+		readyMarker.WorldPosition = Arena.Geometry.ToPlayWorld( Runner.Flat ) + Vector3.Up * 140f;
+		var renderer = readyMarker.GetComponent<ModelRenderer>();
+		if ( renderer.IsValid() )
+			renderer.Tint = lit ? ShotColors.Player : new Color( 0.35f, 0.45f, 0.55f );
 	}
 }
