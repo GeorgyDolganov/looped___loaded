@@ -8,6 +8,7 @@ public sealed class LaserBeam : Component
 	readonly List<PolyLine> lines = new();
 	readonly List<(Vector2 A, Vector2 B)> rays = new();
 	readonly Dictionary<Enemy, float> nextHit = new();
+	float nextSplash;
 
 	public void Arm( GameLoop host, GunRecipe gun )
 	{
@@ -73,6 +74,11 @@ public sealed class LaserBeam : Component
 	void Strike()
 	{
 		var width = MathF.Max( 8f, recipe.BeamWidth );
+		var tick = MathF.Max( 0.05f, recipe.BeamTick );
+		Enemy nearest = null;
+		var nearestDist = float.MaxValue;
+		Vector2 nearestAt = default;
+
 		foreach ( var enemy in loop.Enemies )
 		{
 			if ( !enemy.IsValid() || !enemy.Alive )
@@ -106,17 +112,28 @@ public sealed class LaserBeam : Component
 				continue;
 			}
 
+			var dist = (hitAt - origin).Length;
+			if ( dist < nearestDist )
+			{
+				nearestDist = dist;
+				nearest = enemy;
+				nearestAt = hitAt;
+			}
+
 			if ( nextHit.TryGetValue( enemy, out var due ) && Time.Now < due )
 				continue;
 
-			nextHit[enemy] = Time.Now + MathF.Max( 0.05f, recipe.BeamTick );
+			nextHit[enemy] = Time.Now + tick;
 			enemy.Damage( recipe.Damage, 0f, 1f );
 
 			if ( recipe.StickTime > 0.01f )
 				PinLinger.Hang( enemy, 1, recipe.StickTime );
+		}
 
-			if ( recipe.Splash > 1f )
-				RoundCombat.Blast( loop, enemy.Flat, recipe.Splash, 1, null, ShotColors.Player, recipe.FriendlySplash );
+		if ( recipe.Splash > 1f && nearest.IsValid() && Time.Now >= nextSplash )
+		{
+			nextSplash = Time.Now + tick;
+			RoundCombat.Blast( loop, nearestAt, recipe.Splash, 1, null, ShotColors.Player, recipe.FriendlySplash );
 		}
 	}
 
@@ -185,6 +202,12 @@ public sealed class PinLinger : Component
 	{
 		if ( !enemy.IsValid() || amount <= 0 || delay <= 0.01f )
 			return;
+
+		foreach ( var child in enemy.GameObject.Children )
+		{
+			if ( child.GetComponent<PinLinger>().IsValid() )
+				return;
+		}
 
 		var go = enemy.Scene.CreateObject();
 		go.Name = "Pin";

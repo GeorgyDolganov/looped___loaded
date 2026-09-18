@@ -222,7 +222,126 @@
       "Common": "COMMON",
       "Uncommon": "UNCOMMON",
       "Rare": "RARE",
-      "Epic": "EPIC"
+      "Epic": "EPIC",
+      "Entry": "ENTRY",
+      "Junior": "JUNIOR",
+      "Warrior": "WARRIOR",
+      "Abomination": "ABOMINATION"
+    },
+    "Buck": {
+      "Code": "BUCK",
+      "Title": "BUCK",
+      "Blurb": "A couple of pellets. Full spread at rank 3. Shotgun DNA."
+    },
+    "Bore": {
+      "Code": "BORE",
+      "Title": "BORE",
+      "Blurb": "One punch-through. Rail at rank 3. Longer reload."
+    },
+    "Drum": {
+      "Code": "DRUM",
+      "Title": "DRUM",
+      "Blurb": "A short burst. Rifle dump at rank 3. Long reload."
+    },
+    "Warhead": {
+      "Code": "WARHEAD",
+      "Title": "WARHEAD",
+      "Blurb": "A small clap. Slow rocket. Hurts you."
+    },
+    "Lash": {
+      "Code": "LASH",
+      "Title": "LASH",
+      "Blurb": "A thin beam. Burns faster at rank 3. No bounce."
+    },
+    "Pin": {
+      "Code": "PIN",
+      "Title": "PIN",
+      "Blurb": "A couple of nails. Full spray at rank 3. Stick and tick."
+    },
+    "Spin": {
+      "Code": "SPIN",
+      "Title": "SPIN",
+      "Blurb": "Shots sweep harder against the clock. Longer reload."
+    },
+    "Rush": {
+      "Code": "RUSH",
+      "Title": "RUSH",
+      "Blurb": "Shots fly faster. Longer reload."
+    },
+    "Split": {
+      "Code": "SPLIT",
+      "Title": "SPLIT",
+      "Blurb": "+1 pellet. Shot becomes 2."
+    },
+    "Fan": {
+      "Code": "FAN",
+      "Title": "FAN",
+      "Blurb": "Pellets spread 14°."
+    },
+    "Pump": {
+      "Code": "PUMP",
+      "Title": "PUMP",
+      "Blurb": "+1 pellet. Reload +0.25s."
+    },
+    "Load": {
+      "Code": "LOAD",
+      "Title": "LOAD",
+      "Blurb": "+2 pellets. Reload +0.15s."
+    },
+    "Choke": {
+      "Code": "CHOKE",
+      "Title": "CHOKE",
+      "Blurb": "Cone -10°. Floor 6°."
+    },
+    "Meat": {
+      "Code": "MEAT",
+      "Title": "MEAT",
+      "Blurb": "+1 dmg inside 140. Zero after 280."
+    },
+    "Rico": {
+      "Code": "RICO",
+      "Title": "RICO",
+      "Blurb": "Pellets bounce +1."
+    },
+    "Gape": {
+      "Code": "GAPE",
+      "Title": "GAPE",
+      "Blurb": "Cone +14°."
+    },
+    "Double": {
+      "Code": "DOUBLE",
+      "Title": "DOUBLE",
+      "Blurb": "Two fans, 0.12s apart. Reload +0.55s. One mag."
+    },
+    "Kick": {
+      "Code": "KICK",
+      "Title": "KICK",
+      "Blurb": "Shove 110 inside 180."
+    },
+    "Stun": {
+      "Code": "STUN",
+      "Title": "STUN",
+      "Blurb": "0.45s stagger inside 160. No bosses."
+    },
+    "Heap": {
+      "Code": "HEAP",
+      "Title": "HEAP",
+      "Blurb": "+3 pellets. Reload +0.40s."
+    },
+    "Waste": {
+      "Code": "WASTE",
+      "Title": "WASTE",
+      "Blurb": "+1 dmg inside 80. Zero after 150."
+    },
+    "Breach": {
+      "Code": "BREACH",
+      "Title": "BREACH",
+      "Blurb": "Pellets punch 1 body."
+    },
+    "Slug": {
+      "Code": "SLUG",
+      "Title": "SLUG",
+      "Blurb": "One fat slug. Radius 22. +2 dmg. No fan."
     },
     "Pierce": {
       "Code": "PRC",

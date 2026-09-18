@@ -6,15 +6,21 @@ public sealed class RoundInventory : Component
 	[Property] public RingRunner Runner { get; set; }
 	[Property] public PlayerAim Aim { get; set; }
 	[Property] public GameLoop Loop { get; set; }
+	[Property] public float PickupRadius { get; set; } = 145f;
 
 	public RunLoadout Loadout { get; } = new();
 	public List<RoundProjectile> Live { get; } = new();
+	public List<DroppedRound> Dropped { get; } = new();
+	public int MagCap { get; private set; } = 1;
+	public int MagLoaded { get; private set; } = 1;
+	public int MagDropped => Dropped.Count;
+	public int MagFlight => Math.Max( 0, MagCap - MagLoaded - MagDropped );
 	public float ReloadLeft { get; private set; }
 	public float ReloadFor { get; private set; }
 	public int BurstLeft { get; private set; }
 	public bool Beaming { get; private set; }
 	public float BeamHeld { get; private set; }
-	public bool Ready => ReloadLeft <= 0.001f && !Beaming;
+	public bool Ready => ReloadLeft <= 0.001f && !Beaming && MagLoaded > 0 && doubleLeft <= 0.001f;
 	public float Reload01
 	{
 		get
@@ -35,28 +41,56 @@ public sealed class RoundInventory : Component
 	float cycleLeft;
 	LaserBeam beam;
 	GameObject readyMarker;
+	bool recovering;
+	float doubleLeft;
+	GunRecipe doubleRecipe;
+	ShotVolley doubleVolley;
 
 	public void ResetLoadout()
 	{
 		ClearShots();
+		ClearDropped();
 		Loadout.Clear();
+		MagCap = 1;
+		MagLoaded = 1;
 		ReloadLeft = 0f;
 		ReloadFor = 0f;
 		BurstLeft = 0;
 		cycleLeft = 0f;
+		doubleLeft = 0f;
+		doubleVolley = null;
+	}
+
+	public void GrowMag( int amount )
+	{
+		var room = Progression.MaxSlots - MagCap;
+		if ( room <= 0 || amount <= 0 )
+			return;
+
+		var add = Math.Min( amount, room );
+		MagCap += add;
+		MagLoaded = Math.Min( MagCap, MagLoaded + add );
 	}
 
 	public void ChamberAll()
 	{
+		recovering = true;
 		ClearShots();
+		ClearDropped();
+		MagLoaded = MagCap;
 		ReloadLeft = 0f;
 		ReloadFor = 0f;
 		BurstLeft = 0;
 		cycleLeft = 0f;
+		doubleLeft = 0f;
+		doubleVolley = null;
+		recovering = false;
 	}
 
 	public void ClearShots()
 	{
+		doubleLeft = 0f;
+		doubleVolley = null;
 		StopBeam();
 		foreach ( var shot in Live )
 		{
@@ -65,6 +99,17 @@ public sealed class RoundInventory : Component
 		}
 
 		Live.Clear();
+	}
+
+	void ClearDropped()
+	{
+		foreach ( var drop in Dropped )
+		{
+			if ( drop.IsValid() )
+				drop.GameObject.Destroy();
+		}
+
+		Dropped.Clear();
 	}
 
 	public bool Reveals( Vector2 flat, float radius )
@@ -90,6 +135,20 @@ public sealed class RoundInventory : Component
 
 		ReloadLeft = MathF.Max( 0f, ReloadLeft - Time.Delta );
 		cycleLeft = MathF.Max( 0f, cycleLeft - Time.Delta );
+
+		if ( doubleLeft > 0.001f )
+		{
+			doubleLeft = MathF.Max( 0f, doubleLeft - Time.Delta );
+			if ( doubleLeft <= 0.001f && doubleVolley is not null )
+			{
+				doubleVolley.Hold = false;
+				FireVolley( doubleRecipe, false, doubleVolley );
+				doubleVolley = null;
+				BeginReload( doubleRecipe.Reload );
+			}
+
+			return;
+		}
 
 		if ( Loop.BlocksShot )
 			return;
@@ -131,10 +190,10 @@ public sealed class RoundInventory : Component
 				FireVolley( recipe );
 				BurstLeft--;
 				cycleLeft = recipe.Cycle;
-				if ( BurstLeft <= 0 )
+				if ( BurstLeft <= 0 || MagLoaded <= 0 )
 					BeginReload( recipe.Reload );
 			}
-			else if ( !down && BurstLeft > 0 && BurstLeft < recipe.Burst )
+			else if ( BurstLeft > 0 && BurstLeft < recipe.Burst && (!down || MagLoaded <= 0) )
 			{
 				BurstLeft = 0;
 				BeginReload( recipe.Reload );
@@ -153,7 +212,78 @@ public sealed class RoundInventory : Component
 		}
 
 		FireVolley( recipe );
+		if ( recipe.DoublePump )
+		{
+			doubleRecipe = recipe;
+			doubleVolley = Live.Count > 0 ? Live[^1].Flight.Volley : null;
+			if ( doubleVolley is not null )
+				doubleVolley.Hold = true;
+			doubleLeft = MathF.Max( 0.05f, GameSettings.Traits.DoubleGap );
+			return;
+		}
+
 		BeginReload( recipe.Reload );
+	}
+
+	public void TryPickup()
+	{
+		if ( !Loop.IsValid() || !Runner.IsValid() || Loop.IsFrozen )
+			return;
+
+		PruneDropped();
+		var reach = PickupRadius;
+		var flat = Runner.Flat;
+		for ( var i = Dropped.Count - 1; i >= 0; i-- )
+		{
+			var drop = Dropped[i];
+			if ( !drop.IsValid() )
+			{
+				Dropped.RemoveAt( i );
+				continue;
+			}
+
+			if ( (drop.Flat - flat).Length > reach )
+				continue;
+
+			if ( MagLoaded >= MagCap )
+				break;
+
+			MagLoaded++;
+			Loop.NoteCatch();
+			ArenaSounds.Pickup();
+			drop.GameObject.Destroy();
+			Dropped.RemoveAt( i );
+		}
+	}
+
+	public void DropSpent( Vector2 from )
+	{
+		if ( recovering || !Loop.IsValid() )
+			return;
+
+		if ( MagLoaded + Dropped.Count >= MagCap )
+			return;
+
+		var go = Loop.Scene.CreateObject();
+		go.Name = "Dropped Round";
+		var drop = go.AddComponent<DroppedRound>();
+		drop.Place( Loop, Loop.SnapToTrack( from ), 0 );
+		Dropped.Add( drop );
+	}
+
+	public void NudgeDropped()
+	{
+		if ( !Arena.IsValid() )
+			return;
+
+		foreach ( var drop in Dropped )
+		{
+			if ( !drop.IsValid() )
+				continue;
+
+			var ang = MathF.Atan2( drop.Flat.y, drop.Flat.x );
+			drop.SetFlat( Arena.Geometry.TrackPoint( ang ) );
+		}
 	}
 
 	void BeginReload( float duration )
@@ -165,6 +295,10 @@ public sealed class RoundInventory : Component
 
 	void BeginBeam( GunRecipe recipe )
 	{
+		if ( MagLoaded <= 0 )
+			return;
+
+		MagLoaded--;
 		Beaming = true;
 		BeamHeld = 0f;
 		var go = Loop.Scene.CreateObject();
@@ -180,7 +314,9 @@ public sealed class RoundInventory : Component
 	void EndBeam( GunRecipe recipe )
 	{
 		var held = BeamHeld;
+		var origin = Runner.IsValid() ? Runner.Flat : Vector2.Zero;
 		StopBeam();
+		DropSpent( origin );
 		BeginReload( recipe.BeamPad + recipe.BeamPerSecond * held + recipe.BoreWait );
 	}
 
@@ -193,13 +329,25 @@ public sealed class RoundInventory : Component
 		beam = null;
 	}
 
-	void FireVolley( GunRecipe recipe )
+	void FireVolley( GunRecipe recipe, bool spendMag = true, ShotVolley volley = null )
 	{
 		if ( !Loop.IsValid() || !Aim.IsValid() )
 			return;
 
+		if ( spendMag )
+		{
+			if ( MagLoaded <= 0 )
+				return;
+
+			MagLoaded--;
+		}
+
 		var count = Math.Max( 1, recipe.Count );
 		var cone = recipe.Cone;
+		volley ??= new ShotVolley { Alive = count };
+		if ( !spendMag )
+			volley.Alive += count;
+
 		for ( var i = 0; i < count; i++ )
 		{
 			var yaw = 0f;
@@ -210,7 +358,7 @@ public sealed class RoundInventory : Component
 			go.Name = "Shot";
 			var projectile = go.AddComponent<RoundProjectile>();
 			projectile.Radius = recipe.Radius;
-			projectile.Launch( Loop, ToFlight( recipe ), Aim.Muzzle, Turn( Aim.Direction, yaw ) );
+			projectile.Launch( Loop, ToFlight( recipe, volley ), Aim.Muzzle, Turn( Aim.Direction, yaw ) );
 			Live.Add( projectile );
 		}
 
@@ -219,7 +367,7 @@ public sealed class RoundInventory : Component
 		ImpactFlash.Spawn( Loop.Scene, Aim.MuzzleWorld, ShotColors.Player, recipe.Nail ? 0.55f : 0.8f );
 	}
 
-	static RoundFlight ToFlight( GunRecipe recipe ) => new()
+	static RoundFlight ToFlight( GunRecipe recipe, ShotVolley volley ) => new()
 	{
 		Tint = ShotColors.Player,
 		Damage = recipe.Damage,
@@ -227,11 +375,19 @@ public sealed class RoundInventory : Component
 		MaxBounces = recipe.Bounces,
 		Energy = recipe.Energy,
 		SpeedScale = recipe.SpeedScale,
+		SpinSpeed = recipe.SpinSpeed,
 		ExplosiveRadius = recipe.Splash,
 		FriendlySplash = recipe.FriendlySplash,
 		Falloff = recipe.Falloff,
+		MeatRange = recipe.MeatRange,
+		MeatBonus = recipe.MeatBonus,
+		KickForce = recipe.KickForce,
+		KickRange = recipe.KickRange,
+		StunTime = recipe.StunTime,
+		StunRange = recipe.StunRange,
 		StickTime = recipe.StickTime,
-		Nail = recipe.Nail
+		Nail = recipe.Nail,
+		Volley = volley
 	};
 
 	static Vector2 Turn( Vector2 dir, float degrees )
@@ -251,6 +407,17 @@ public sealed class RoundInventory : Component
 		{
 			if ( !Live[i].IsValid() )
 				Live.RemoveAt( i );
+		}
+
+		PruneDropped();
+	}
+
+	void PruneDropped()
+	{
+		for ( var i = Dropped.Count - 1; i >= 0; i-- )
+		{
+			if ( !Dropped[i].IsValid() )
+				Dropped.RemoveAt( i );
 		}
 	}
 

@@ -186,6 +186,18 @@ public sealed class Enemy : Component
 		markUntil = MathF.Max( markUntil, Time.Now + duration );
 	}
 
+	public void Stun( float duration )
+	{
+		if ( !Alive || Locations.IsBoss( Kind ) || duration <= 0.01f )
+			return;
+
+		freezeUntil = MathF.Max( freezeUntil, Time.Now + duration );
+		freezeScale = MathF.Min( freezeScale, 0.3f );
+		shotAt = MathF.Max( shotAt, Time.Now + duration );
+		telegraphUntil = 0f;
+		attackUntil = MathF.Max( attackUntil, Time.Now + duration );
+	}
+
 	public void Shove( Vector2 delta )
 	{
 		if ( !Alive || Locations.IsBoss( Kind ) || delta.Length < 0.01f || !Arena.IsValid() )

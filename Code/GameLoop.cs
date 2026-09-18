@@ -7,6 +7,7 @@ public sealed class GameLoop : Component
 	[Property] public PlayerAim Aim { get; set; }
 	[Property] public RoundInventory Inventory { get; set; }
 	[Property] public CityBoard City { get; set; }
+	[Property] public float LostRoundMinArc { get; set; } = 460f;
 	[Property] public float NoticeDuration { get; set; } = 1.6f;
 	[Property] public int MaxHealth { get; set; } = 3;
 	public RunPhase Phase { get; private set; } = RunPhase.Menu;
@@ -774,6 +775,33 @@ public sealed class GameLoop : Component
 		NoteProgress( ProgressGoal.FireShot );
 	}
 
+	public void NoteCatch()
+	{
+		Catches++;
+	}
+
+	public Vector2 SnapToTrack( Vector2 from )
+	{
+		if ( !Arena.IsValid() )
+			return from;
+
+		var track = Geometry.TrackRadius;
+		var ang = from.LengthSquared > 1f ? MathF.Atan2( from.y, from.x ) : Runner.IsValid() ? Runner.Angle : 0f;
+		if ( Runner.IsValid() )
+		{
+			var minAng = LostRoundMinArc / MathF.Max( 1f, track );
+			var delta = ang - Runner.Angle;
+			while ( delta < 0f )
+				delta += MathF.Tau;
+			while ( delta >= MathF.Tau )
+				delta -= MathF.Tau;
+			if ( delta < minAng )
+				ang = Runner.Angle + minAng;
+		}
+
+		return ArenaGeometry.FromAngle( ang ) * track;
+	}
+
 	protected override void OnStart()
 	{
 		runStartedAt = Time.Now;
@@ -936,6 +964,7 @@ public sealed class GameLoop : Component
 		}
 
 		HandleFire();
+		Inventory?.TryPickup();
 
 		if ( Input.Pressed( "Jump" ) && Runner.TryDash() )
 			ArenaSounds.Jump( Runner.WorldPosition );
@@ -1013,6 +1042,7 @@ public sealed class GameLoop : Component
 
 		ArenaSounds.Death( Runner.WorldPosition );
 		VacuumBones();
+		Inventory?.ChamberAll();
 		InBossFight = false;
 		Phase = RunPhase.Dead;
 		BurnedRounds = Stash;
@@ -1056,6 +1086,8 @@ public sealed class GameLoop : Component
 			Geometry.CoreSolid = true;
 			Geometry.ClearBossWalls();
 		}
+
+		Inventory?.ChamberAll();
 
 		if ( LocationIndex > BestLine )
 			BestLine = LocationIndex;
@@ -1305,6 +1337,7 @@ public sealed class GameLoop : Component
 	int GrantContinueRounds()
 	{
 		var want = Progression.RoundsGranted( Lap );
+		Inventory?.GrowMag( want );
 		var room = Progression.MaxSlots - Stash;
 		if ( room <= 0 )
 			return 0;
@@ -1322,7 +1355,7 @@ public sealed class GameLoop : Component
 		foreach ( var trait in RoundTraits.All )
 		{
 			var level = loadout.TraitLevel( trait );
-			if ( level >= GameSettings.Traits.MaxLevel )
+			if ( level >= RoundTraits.MaxLevel( trait ) )
 				continue;
 
 			if ( level > 0 )
@@ -1596,14 +1629,18 @@ public sealed class GameLoop : Component
 
 		void Add( EnemyKind kind, float angle, float radius, int hp )
 		{
-			var go = Scene.CreateObject();
-			go.Name = kind.ToString();
+			var copies = Progression.WaveCopies;
+			for ( var n = 0; n < copies; n++ )
+			{
+				var go = Scene.CreateObject();
+				go.Name = kind.ToString();
 
-			var enemy = go.AddComponent<Enemy>();
-			enemy.Arena = Arena;
-			enemy.Loop = this;
-			enemy.Setup( kind, ArenaGeometry.FromAngle( angle ) * radius, Progression.EnemyHealth( hp, lap, LocationIndex ) );
-			Enemies.Add( enemy );
+				var enemy = go.AddComponent<Enemy>();
+				enemy.Arena = Arena;
+				enemy.Loop = this;
+				enemy.Setup( kind, ArenaGeometry.FromAngle( angle + n * wave.ExtraAngle ) * radius, Progression.EnemyHealth( hp, lap, LocationIndex ) );
+				Enemies.Add( enemy );
+			}
 		}
 
 		if ( Location == RunLocation.Glass )
@@ -1612,50 +1649,51 @@ public sealed class GameLoop : Component
 			return;
 		}
 
+		var hp = WaveBodyHp( lap );
 		switch ( lap )
 		{
 			case 1:
-				Add( EnemyKind.Chaser, offset, hunt, 1 );
+				Add( EnemyKind.Chaser, offset, hunt, hp );
 				break;
 			case 2:
-				Add( EnemyKind.Chaser, offset - 0.7f, hunt, 1 );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.7f, hunt + 40f, 1 );
+				Add( EnemyKind.Chaser, offset - 0.7f, hunt, hp );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.7f, hunt + 40f, hp );
 				break;
 			case 3:
-				Add( EnemyKind.Shield, offset, mid, 2 );
-				Add( EnemyKind.Chaser, offset + 1.6f, hunt, 2 );
-				Add( WaveCloak( EnemyKind.Chaser ), offset - 1.4f, inner, 2 );
+				Add( EnemyKind.Shield, offset, mid, hp );
+				Add( EnemyKind.Chaser, offset + 1.6f, hunt, hp );
+				Add( WaveCloak( EnemyKind.Chaser ), offset - 1.4f, inner, hp );
 				break;
 			case 4:
-				Add( EnemyKind.Shield, offset - 0.5f, mid, 2 );
-				Add( EnemyKind.Shooter, offset + 1.8f, mid, 2 );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 2.8f, hunt, 2 );
+				Add( EnemyKind.Shield, offset - 0.5f, mid, hp );
+				Add( EnemyKind.Shooter, offset + 1.8f, mid, hp );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 2.8f, hunt, hp );
 				break;
 			case 5:
-				Add( EnemyKind.Chaser, offset - 1.1f, hunt, 2 );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.4f, hunt, 2 );
-				Add( EnemyKind.Shooter, offset + 2.2f, mid, 2 );
-				Add( EnemyKind.Chaser, offset + 3.4f, inner, 2 );
+				Add( EnemyKind.Chaser, offset - 1.1f, hunt, hp );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.4f, hunt, hp );
+				Add( EnemyKind.Shooter, offset + 2.2f, mid, hp );
+				Add( EnemyKind.Chaser, offset + 3.4f, inner, hp );
 				break;
 			case 6:
-				Add( WaveCloak( EnemyKind.Chaser ), offset, hunt, 2 );
-				Add( EnemyKind.Shield, offset + 2.1f, mid, 2 );
-				Add( EnemyKind.Shooter, offset + 4.0f, mid, 2 );
-				Add( EnemyKind.Shooter, offset - 2.2f, mid, 2 );
+				Add( WaveCloak( EnemyKind.Chaser ), offset, hunt, hp );
+				Add( EnemyKind.Shield, offset + 2.1f, mid, hp );
+				Add( EnemyKind.Shooter, offset + 4.0f, mid, hp );
+				Add( EnemyKind.Shooter, offset - 2.2f, mid, hp );
 				break;
 			case 7:
-				Add( EnemyKind.Chaser, offset - 0.8f, hunt, 2 );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.8f, outer - 40f, 2 );
-				Add( EnemyKind.Shield, offset + 2.4f, mid, 2 );
-				Add( EnemyKind.Shooter, offset + 4.2f, mid, 2 );
+				Add( EnemyKind.Chaser, offset - 0.8f, hunt, hp );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.8f, outer - 40f, hp );
+				Add( EnemyKind.Shield, offset + 2.4f, mid, hp );
+				Add( EnemyKind.Shooter, offset + 4.2f, mid, hp );
 				break;
 			default:
-				Add( EnemyKind.Chaser, offset, hunt, 2 );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 3.1f, hunt, 2 );
-				Add( EnemyKind.Shield, offset + 1.5f, mid, 2 );
-				Add( EnemyKind.Shield, offset + 3.6f, mid, 2 );
-				Add( EnemyKind.Shooter, offset + 2.5f, mid, 2 );
-				Add( EnemyKind.Shooter, offset + 5.0f, mid, 2 );
+				Add( EnemyKind.Chaser, offset, hunt, hp );
+				Add( WaveCloak( EnemyKind.Chaser ), offset + 3.1f, hunt, hp );
+				Add( EnemyKind.Shield, offset + 1.5f, mid, hp );
+				Add( EnemyKind.Shield, offset + 3.6f, mid, hp );
+				Add( EnemyKind.Shooter, offset + 2.5f, mid, hp );
+				Add( EnemyKind.Shooter, offset + 5.0f, mid, hp );
 				break;
 		}
 
@@ -1664,37 +1702,38 @@ public sealed class GameLoop : Component
 
 	void SpawnGlassWave( int lap, float offset, float hunt, float mid, float inner, float outer, Action<EnemyKind, float, float, int> add )
 	{
+		var hp = WaveBodyHp( lap );
 		switch ( lap )
 		{
 			case 1:
-				add( EnemyKind.Splinter, offset, hunt, 1 );
+				add( EnemyKind.Splinter, offset, hunt, hp );
 				break;
 			case 2:
-				add( EnemyKind.Splinter, offset - 0.6f, hunt, 1 );
-				add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, 1 );
+				add( EnemyKind.Splinter, offset - 0.6f, hunt, hp );
+				add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, hp );
 				break;
 			case 3:
-				add( EnemyKind.Shardguard, offset, mid, 2 );
-				add( EnemyKind.Splinter, offset + 1.7f, hunt, 2 );
-				add( WaveCloak( EnemyKind.Splinter ), offset - 1.5f, inner, 2 );
+				add( EnemyKind.Shardguard, offset, mid, hp );
+				add( EnemyKind.Splinter, offset + 1.7f, hunt, hp );
+				add( WaveCloak( EnemyKind.Splinter ), offset - 1.5f, inner, hp );
 				break;
 			case 4:
-				add( EnemyKind.Shardguard, offset - 0.4f, mid, 2 );
-				add( WaveCloak( EnemyKind.Splinter ), offset + 1.9f, hunt, 2 );
-				add( EnemyKind.Shooter, offset + 3.2f, mid, 2 );
+				add( EnemyKind.Shardguard, offset - 0.4f, mid, hp );
+				add( WaveCloak( EnemyKind.Splinter ), offset + 1.9f, hunt, hp );
+				add( EnemyKind.Shooter, offset + 3.2f, mid, hp );
 				break;
 			case 5:
-				add( EnemyKind.Splinter, offset - 1.0f, hunt, 2 );
-				add( WaveCloak( EnemyKind.Splinter ), offset + 0.6f, hunt, 2 );
-				add( EnemyKind.Shardguard, offset + 2.3f, mid, 2 );
-				add( EnemyKind.Chaser, offset + 3.6f, inner, 2 );
+				add( EnemyKind.Splinter, offset - 1.0f, hunt, hp );
+				add( WaveCloak( EnemyKind.Splinter ), offset + 0.6f, hunt, hp );
+				add( EnemyKind.Shardguard, offset + 2.3f, mid, hp );
+				add( EnemyKind.Chaser, offset + 3.6f, inner, hp );
 				break;
 			default:
-				add( EnemyKind.Splinter, offset, hunt, 2 );
-				add( EnemyKind.Splinter, offset + 3.0f, hunt, 2 );
-				add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, 2 );
-				add( EnemyKind.Shardguard, offset + 3.8f, mid, 2 );
-				add( EnemyKind.Shooter, offset + 2.4f, mid, 2 );
+				add( EnemyKind.Splinter, offset, hunt, hp );
+				add( EnemyKind.Splinter, offset + 3.0f, hunt, hp );
+				add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, hp );
+				add( EnemyKind.Shardguard, offset + 3.8f, mid, hp );
+				add( EnemyKind.Shooter, offset + 2.4f, mid, hp );
 				break;
 		}
 
@@ -1713,9 +1752,22 @@ public sealed class GameLoop : Component
 				1 => mid,
 				_ => inner
 			};
-			add( WaveCloak( kind ), angle, ring, 1 );
+			add( WaveCloak( kind ), angle, ring, WaveExtraHp( lap ) );
 		}
 	}
+
+	static int WaveBodyHp( int lap )
+	{
+		if ( lap <= 1 )
+			return 1;
+		if ( lap == 2 )
+			return 3;
+		if ( lap <= 5 )
+			return 4;
+		return 5;
+	}
+
+	static int WaveExtraHp( int lap ) => lap <= 1 ? 1 : 3;
 
 	EnemyKind WaveCloak( EnemyKind fallback ) => Locations.IsLast( Location ) ? EnemyKind.Glimmer : fallback;
 
@@ -1775,6 +1827,8 @@ public sealed class GameLoop : Component
 
 		foreach ( var shot in Inventory.Live )
 			shot?.NudgeOut();
+
+		Inventory.NudgeDropped();
 	}
 
 	void ClearCombat()

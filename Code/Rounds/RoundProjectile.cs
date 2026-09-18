@@ -27,6 +27,11 @@ public sealed class RoundProjectile : Component
 	int pierceLeft;
 	bool lensInside;
 	float travelled;
+	Vector2 launchFlat;
+	Vector2 launchDir;
+	Vector2 prevFlat;
+	int dbgN;
+	int containN;
 
 	public void Launch( GameLoop loop, RoundFlight flight, Vector2 origin, Vector2 direction )
 	{
@@ -45,7 +50,15 @@ public sealed class RoundProjectile : Component
 		travelled = 0f;
 		struck.Clear();
 		trail.Clear();
+		launchFlat = origin;
+		launchDir = Direction;
+		prevFlat = origin;
+		dbgN = 0;
+		containN = 0;
 		WorldPosition = geometry.ToPlayWorld( Flat );
+		// #region agent log
+		AgentLog( "A", "RoundProjectile.Launch", "launch", $"{{\"spin\":{F(flight.SpinSpeed)},\"speed\":{F(Speed)},\"spinTrait\":{(loop.Inventory.IsValid() ? loop.Inventory.Loadout.TraitLevel( RoundTrait.Spin ) : -1)},\"loc\":\"{loop.Location}\",\"dirX\":{F(Direction.x)},\"dirY\":{F(Direction.y)},\"ox\":{F(origin.x)},\"oy\":{F(origin.y)}}}" );
+		// #endregion
 	}
 
 	public bool ConsumeShred() => false;
@@ -85,8 +98,23 @@ public sealed class RoundProjectile : Component
 				return;
 		}
 
+		Drift( Time.Delta );
+		Contain();
+		if ( HitTarget() )
+			return;
+
 		WorldPosition = geometry.ToPlayWorld( Flat );
 		PushTrail( WorldPosition );
+		// #region agent log
+		dbgN++;
+		if ( dbgN <= 4 || dbgN % 8 == 0 )
+		{
+			var fromLaunch = Flat - launchFlat;
+			var move = Flat - prevFlat;
+			AgentLog( "E", "RoundProjectile.OnUpdate", "flight", $"{{\"n\":{dbgN},\"spin\":{F(Flight.SpinSpeed)},\"bend\":{F(Ang(launchDir, fromLaunch))},\"headVsDir\":{F(Ang(Direction, move))},\"dirX\":{F(Direction.x)},\"dirY\":{F(Direction.y)},\"mx\":{F(move.x)},\"my\":{F(move.y)},\"fx\":{F(Flat.x)},\"fy\":{F(Flat.y)},\"travel\":{F(travelled)}}}" );
+		}
+		prevFlat = Flat;
+		// #endregion
 	}
 
 	public void NudgeOut()
@@ -104,7 +132,7 @@ public sealed class RoundProjectile : Component
 	{
 		if ( geometry.TraceRay( Flat, Direction, step + Radius, out var hit ) )
 		{
-			if ( !BounceWall( hit ) )
+			if ( !BounceWall( hit, Direction ) )
 				return false;
 		}
 		else
@@ -128,7 +156,26 @@ public sealed class RoundProjectile : Component
 		return true;
 	}
 
-	bool BounceWall( ArenaHit hit )
+	void Drift( float dt )
+	{
+		var spin = Flight.SpinSpeed;
+		if ( spin < 0.01f || dt <= 0f )
+			return;
+
+		var clock = ArenaGeometry.AgainstClock( Flat );
+		var dist = spin * dt;
+		var before = Flat;
+		if ( geometry.TraceRay( Flat, clock, dist + Radius, out var hit ) )
+			Flat = hit.Position + hit.Normal * Radius;
+		else
+			Flat += clock * dist;
+		// #region agent log
+		if ( dbgN <= 3 || dbgN % 8 == 0 )
+			AgentLog( "A", "RoundProjectile.Drift", "drift", $"{{\"spin\":{F(spin)},\"dt\":{F(dt)},\"dist\":{F(dist)},\"cx\":{F(clock.x)},\"cy\":{F(clock.y)},\"dx\":{F(Flat.x - before.x)},\"dy\":{F(Flat.y - before.y)},\"dirX\":{F(Direction.x)},\"dirY\":{F(Direction.y)}}}" );
+		// #endregion
+	}
+
+	bool BounceWall( ArenaHit hit, Vector2 incoming )
 	{
 		EnergyLeft -= MathF.Max( 0f, hit.Distance - Radius );
 		travelled += MathF.Max( 0f, hit.Distance );
@@ -136,7 +183,7 @@ public sealed class RoundProjectile : Component
 
 		var normal = hit.Normal;
 		Flat = hit.Position + normal * Radius;
-		Direction = ArenaGeometry.Reflect( Direction, normal ).Normal;
+		Direction = ArenaGeometry.Reflect( incoming, normal ).Normal;
 		Ricochets++;
 		BouncesLeft--;
 
@@ -166,6 +213,11 @@ public sealed class RoundProjectile : Component
 		if ( !geometry.Contain( ref flat, ref direction, Radius ) )
 			return;
 
+		containN++;
+		// #region agent log
+		if ( containN <= 4 )
+			AgentLog( "B", "RoundProjectile.Contain", "contain", $"{{\"n\":{containN},\"fromX\":{F(Direction.x)},\"fromY\":{F(Direction.y)},\"toX\":{F(direction.x)},\"toY\":{F(direction.y)},\"turn\":{F(Ang(Direction, direction))},\"fx\":{F(flat.x)},\"fy\":{F(flat.y)}}}" );
+		// #endregion
 		Flat = flat;
 		Direction = direction;
 	}
@@ -184,7 +236,11 @@ public sealed class RoundProjectile : Component
 			var ang = MathX.DegreeToRadian( 15f );
 			var c = MathF.Cos( -ang );
 			var s = MathF.Sin( -ang );
+			var before = Direction;
 			Direction = new Vector2( Direction.x * c - Direction.y * s, Direction.x * s + Direction.y * c ).Normal;
+			// #region agent log
+			AgentLog( "C", "RoundProjectile.BendLens", "lens", $"{{\"boss\":{Loop.InBossFight.ToString().ToLowerInvariant()},\"loc\":\"{Loop.Location}\",\"fromX\":{F(before.x)},\"fromY\":{F(before.y)},\"toX\":{F(Direction.x)},\"toY\":{F(Direction.y)}}}" );
+			// #endregion
 			ArenaSounds.Crack( geometry.ToPlayWorld( Flat ) );
 		}
 
@@ -209,23 +265,11 @@ public sealed class RoundProjectile : Component
 
 			if ( target.BlocksFrom( Direction, this ) )
 			{
-				Flat = target.Flat + normal * (reach + 1f);
-				Direction = ArenaGeometry.Reflect( Direction, normal ).Normal;
-				BouncesLeft--;
-				Ricochets++;
-
-				var world = geometry.ToPlayWorld( Flat );
-				ArenaSounds.Ricochet( world );
-				ImpactFlash.Spawn( Scene, world, ShotColors.Player, 0.9f );
-
 				if ( Locations.IsBoss( target.Kind ) )
 					Loop.NoteArmor();
 
-				if ( BouncesLeft < 0 )
-				{
-					Die();
+				if ( !BounceOff( target.Flat, normal, reach ) )
 					return true;
-				}
 
 				continue;
 			}
@@ -239,7 +283,21 @@ public sealed class RoundProjectile : Component
 			if ( Flight.StickTime > 0.01f )
 				PinLinger.Hang( target, 1, Flight.StickTime );
 
-			if ( Flight.ExplosiveRadius > 1f )
+			if ( Flight.Volley is { } crowd && crowd.TryCrowd( target ) )
+			{
+				if ( Flight.KickForce > 1f && travelled <= Flight.KickRange )
+				{
+					var away = Loop.Runner.IsValid() ? target.Flat - Loop.Runner.Flat : -Direction;
+					if ( away.Length < 0.01f )
+						away = normal;
+					target.Shove( away.Normal * Flight.KickForce );
+				}
+
+				if ( Flight.StunTime > 0.01f && travelled <= Flight.StunRange )
+					target.Stun( Flight.StunTime );
+			}
+
+			if ( Flight.ExplosiveRadius > 1f && (Flight.Volley is null || Flight.Volley.TrySplash()) )
 				RoundCombat.Blast( Loop, target.Flat, Flight.ExplosiveRadius, 1, this, ShotColors.Player, Flight.FriendlySplash );
 
 			if ( !target.Alive )
@@ -252,11 +310,32 @@ public sealed class RoundProjectile : Component
 				continue;
 			}
 
-			Die();
-			return true;
+			if ( !BounceOff( target.Flat, normal, reach ) )
+				return true;
 		}
 
 		return false;
+	}
+
+	bool BounceOff( Vector2 from, Vector2 normal, float reach )
+	{
+		var incoming = Direction;
+		Flat = from + normal * (reach + 1f);
+		Direction = ArenaGeometry.Reflect( incoming, normal ).Normal;
+		BouncesLeft--;
+		Ricochets++;
+
+		var world = geometry.ToPlayWorld( Flat );
+		ArenaSounds.Ricochet( world );
+		ImpactFlash.Spawn( Scene, world, ShotColors.Player, 0.9f );
+
+		if ( BouncesLeft < 0 )
+		{
+			Die();
+			return false;
+		}
+
+		return true;
 	}
 
 	int ShotDamage()
@@ -264,13 +343,29 @@ public sealed class RoundProjectile : Component
 		if ( Flight.Falloff > 1f && travelled > Flight.Falloff )
 			return 0;
 
-		return Flight.Damage > 0 ? Flight.Damage : 1;
+		var damage = Flight.Damage > 0 ? Flight.Damage : 1;
+		if ( Flight.MeatBonus > 0 && Flight.MeatRange > 1f && travelled <= Flight.MeatRange )
+			damage += Flight.MeatBonus;
+
+		return damage;
 	}
 
 	void Die( bool spent = false )
 	{
-		if ( spent && Flight.ExplosiveRadius > 1f )
+		if ( spent && Flight.ExplosiveRadius > 1f && (Flight.Volley is null || Flight.Volley.TrySplash()) )
 			RoundCombat.Blast( Loop, Flat, Flight.ExplosiveRadius, 1, this, ShotColors.Player, Flight.FriendlySplash );
+
+		if ( Flight.Volley is { } volley )
+		{
+			volley.LastFlat = Flat;
+			volley.Alive--;
+			if ( volley.Alive <= 0 && !volley.Closed && !volley.Hold )
+			{
+				volley.Closed = true;
+				if ( Loop.IsValid() )
+					Loop.Inventory?.DropSpent( Flat );
+			}
+		}
 
 		GameObject.Destroy();
 	}
@@ -284,4 +379,29 @@ public sealed class RoundProjectile : Component
 
 		trailLine?.SetPoints( trail );
 	}
+
+	// #region agent log
+	internal static void AgentLog( string hid, string loc, string msg, string data )
+	{
+		try
+		{
+			var ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+			var line = "{\"sessionId\":\"eedbea\",\"runId\":\"pre-fix\",\"hypothesisId\":\"" + hid + "\",\"location\":\"" + loc + "\",\"message\":\"" + msg + "\",\"data\":" + data + ",\"timestamp\":" + ts + "}\n";
+			System.IO.File.AppendAllText( @"I:\SboxProjects\looped___loaded\debug-eedbea.log", line );
+		}
+		catch
+		{
+		}
+	}
+
+	internal static string F( float v ) => v.ToString( "0.###", System.Globalization.CultureInfo.InvariantCulture );
+
+	static float Ang( Vector2 a, Vector2 b )
+	{
+		if ( a.Length < 0.001f || b.Length < 0.001f )
+			return 0f;
+
+		return MathX.RadianToDegree( MathF.Atan2( ArenaGeometry.Cross( a, b ), ArenaGeometry.Dot( a, b ) ) );
+	}
+	// #endregion
 }

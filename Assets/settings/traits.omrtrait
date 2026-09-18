@@ -1,272 +1,128 @@
 {
   "MaxLevel": 3,
   "BaseDamage": 1,
-  "MaxBouncesBase": 4,
-  "BounceStackSeed": 2,
+  "MaxBouncesBase": 1,
   "EnergyBase": 5500,
-  "AccelCap": 1.8,
-  "PinballNaturalKeep": 0.94,
-  "StickStutterScale": 0.7,
-  "Starter": {
-    "Price": 4,
-    "Weight": 6
+  "ReloadBase": 0.7,
+  "ReloadMin": 0.2,
+  "Rifle": {
+    "Price": 2,
+    "Weight": 5
   },
-  "Geometry": {
-    "Price": 8,
+  "Shotgun": {
+    "Price": 2,
+    "Weight": 5
+  },
+  "Nailgun": {
+    "Price": 2,
     "Weight": 4
   },
-  "Return": {
-    "Price": 10,
+  "Laser": {
+    "Price": 3,
     "Weight": 3
   },
-  "Chaos": {
-    "Price": 12,
+  "Rail": {
+    "Price": 3,
+    "Weight": 3
+  },
+  "Rocket": {
+    "Price": 3,
+    "Weight": 3
+  },
+  "Entry": {
+    "Price": 2,
+    "Weight": 6
+  },
+  "Junior": {
+    "Price": 3,
+    "Weight": 4
+  },
+  "Warrior": {
+    "Price": 5,
     "Weight": 2
   },
-  "Body": {
-    "Price": 14,
-    "Weight": 2
-  },
-  "HomingPack": {
-    "Price": 16,
+  "Abomination": {
+    "Price": 8,
     "Weight": 1
   },
-  "Strike": {
-    "Price": 18,
-    "Weight": 1
+  "BuckPellets": {
+    "Level1": 2,
+    "Level2": 3,
+    "Level3": 5
   },
-  "PierceCharges": {
+  "BuckCone": {
+    "Level1": 10,
+    "Level2": 16,
+    "Level3": 24
+  },
+  "BuckFalloff": {
+    "Level1": 260,
+    "Level2": 220,
+    "Level3": 180
+  },
+  "BorePierce": {
+    "Level1": 1,
+    "Level2": 1,
+    "Level3": 2
+  },
+  "BoreReload": 0.55,
+  "DrumBurst": {
+    "Level1": 3,
+    "Level2": 4,
+    "Level3": 6
+  },
+  "DrumCycle": 0.16,
+  "DrumReload": 0.7,
+  "WarheadRadius": {
+    "Level1": 48,
+    "Level2": 70,
+    "Level3": 96
+  },
+  "WarheadSpeed": {
+    "Level1": 0.78,
+    "Level2": 0.68,
+    "Level3": 0.58
+  },
+  "LashPad": 0.4,
+  "LashPerSecond": 0.5,
+  "LashMaxHold": 1.1,
+  "LashTick": {
+    "Level1": 0.28,
+    "Level2": 0.2,
+    "Level3": 0.14
+  },
+  "LashRange": 1600,
+  "LashWidth": 8,
+  "PinNails": {
+    "Level1": 2,
+    "Level2": 3,
+    "Level3": 5
+  },
+  "PinBounce": {
     "Level1": 1,
     "Level2": 2,
-    "Level3": 4
+    "Level3": 3
   },
-  "Magnetic": {
-    "Radius": 200,
-    "Pull": 1.4,
-    "CatchBonus": 24
+  "PinCone": {
+    "Level1": 8,
+    "Level2": 10,
+    "Level3": 12
   },
-  "Freeze": {
-    "Duration": 1.1,
-    "Scale": 0.55,
-    "ScaleFloor": 0.18
+  "PinRadius": 6,
+  "PinStick": 0.6,
+  "SpinBase": 220,
+  "SpinBoost": {
+    "Level1": 140,
+    "Level2": 260,
+    "Level3": 420
   },
-  "Heavy": {
-    "Speed": {
-      "Level1": 0.82,
-      "Level2": 0.72,
-      "Level3": 0.63
-    },
-    "Damage": {
-      "Level1": 1,
-      "Level2": 1,
-      "Level3": 2
-    },
-    "Push": 42
+  "SpinReload": 0.12,
+  "RushSpeed": {
+    "Level1": 1.2,
+    "Level2": 1.4,
+    "Level3": 1.65
   },
-  "Accel": {
-    "Level1": 1.12,
-    "Level2": 1.17,
-    "Level3": 1.24
-  },
-  "Explosive": {
-    "Level1": 90,
-    "Level2": 126,
-    "Level3": 176
-  },
-  "ElectricRange": 220,
-  "Blood": {
-    "Kills": 2,
-    "KillsAtMax": 1
-  },
-  "Homing": {
-    "Level1": 0.2,
-    "Level2": 0.28,
-    "Level3": 0.4
-  },
-  "Skim": {
-    "Degrees": {
-      "Level1": 18,
-      "Level2": 25,
-      "Level3": 35
-    },
-    "Boost": {
-      "Level1": 1.08,
-      "Level2": 1.12,
-      "Level3": 1.16
-    }
-  },
-  "Kick": {
-    "Extra": {
-      "Level1": 8,
-      "Level2": 11,
-      "Level3": 16
-    }
-  },
-  "Stick": {
-    "Time": {
-      "Level1": 0.1,
-      "Level2": 0.14,
-      "Level3": 0.2
-    },
-    "Speed": {
-      "Level1": 1,
-      "Level2": 1.1,
-      "Level3": 1.24
-    }
-  },
-  "Cushion": {
-    "Level1": 22,
-    "Level2": 31,
-    "Level3": 43
-  },
-  "Cue": {
-    "Degrees": {
-      "Level1": 12,
-      "Level2": 8,
-      "Level3": 4
-    },
-    "Bounces": 1,
-    "BouncesAtMax": 2
-  },
-  "Corner": {
-    "Radius": {
-      "Level1": 70,
-      "Level2": 98,
-      "Level3": 137
-    },
-    "Pull": {
-      "Level1": 0.7,
-      "Level2": 1,
-      "Level3": 1.4
-    }
-  },
-  "Curve": {
-    "Level1": 4,
-    "Level2": 6,
-    "Level3": 8
-  },
-  "Stutter": {
-    "Level1": 0.08,
-    "Level2": 0.11,
-    "Level3": 0.16
-  },
-  "Boomerang": {
-    "Level1": 0.5,
-    "Level2": 0.7,
-    "Level3": 1
-  },
-  "Reel": {
-    "Level1": 90,
-    "Level2": 126,
-    "Level3": 176
-  },
-  "Swipe": {
-    "Level1": 28,
-    "Level2": 40,
-    "Level3": 56
-  },
-  "Backstop": {
-    "Level1": 0.5,
-    "Level2": 0.7,
-    "Level3": 1
-  },
-  "Link": {
-    "Level1": 24,
-    "Level2": 34,
-    "Level3": 47
-  },
-  "Fuse": {
-    "Level1": 70,
-    "Level2": 98,
-    "Level3": 137
-  },
-  "Snap": {
-    "Speed": {
-      "Level1": 1.08,
-      "Level2": 1.12,
-      "Level3": 1.16
-    },
-    "Duration": 0.45
-  },
-  "LateMag": {
-    "Radius": {
-      "Level1": 140,
-      "Level2": 196,
-      "Level3": 274
-    },
-    "Pull": 1.4
-  },
-  "Rim": {
-    "Level1": 25,
-    "Level2": 18,
-    "Level3": 10
-  },
-  "SecondWind": {
-    "Level1": 0.4,
-    "Level2": 0.56,
-    "Level3": 0.78
-  },
-  "Hook": {
-    "Level1": 36,
-    "Level2": 50,
-    "Level3": 70
-  },
-  "Mark": {
-    "Degrees": {
-      "Level1": 8,
-      "Level2": 11,
-      "Level3": 16
-    },
-    "BonusAtMax": 1
-  },
-  "Pinball": {
-    "Keep": {
-      "Level1": 0.7,
-      "Level2": 0.8,
-      "Level3": 0.9
-    }
-  },
-  "Ribbon": {
-    "Width": {
-      "Level1": 18,
-      "Level2": 25,
-      "Level3": 35
-    },
-    "Slow": {
-      "Level1": 0.2,
-      "Level2": 0.28,
-      "Level3": 0.4
-    }
-  },
-  "Graze": {
-    "Level1": 10,
-    "Level2": 14,
-    "Level3": 20
-  },
-  "Step": {
-    "Level1": 80,
-    "Level2": 112,
-    "Level3": 157
-  },
-  "Echo": {
-    "Keep": {
-      "Level1": 0.4,
-      "Level2": 0.56,
-      "Level3": 0.78
-    }
-  },
-  "Redirect": {
-    "Cone": {
-      "Level1": 40,
-      "Level2": 56,
-      "Level3": 78
-    },
-    "Range": {
-      "Level1": 260,
-      "Level2": 364,
-      "Level3": 510
-    }
-  },
+  "RushReload": 0.18,
   "__references": [],
   "__version": 0
 }

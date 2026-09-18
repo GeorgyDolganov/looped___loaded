@@ -55,8 +55,7 @@
 							@foreach ( var trait in EquippedTraits )
 							{
 								<div class="trinket">
-									<img src="@RoundTraits.Icon( trait )" />
-									<label>@TraitLevel( trait )</label>
+									<label>@(RoundTraits.OneShot( trait ) ? RoundTraits.Code( trait ) : $"{RoundTraits.Code( trait )}{TraitLevel( trait )}")</label>
 								</div>
 							}
 						}
@@ -69,6 +68,8 @@
 				</div>
 			</div>
 
+			@if ( Loop.Phase != RunPhase.PickTrait )
+			{
 			<div class="run-right">
 				<div class="hud-panel stat-panel">
 					<div class="rivet a"></div>
@@ -100,6 +101,7 @@
 					</div>
 				</div>
 			</div>
+			}
 
 			<div class="run-tray">
 				<div class="tray">
@@ -117,6 +119,12 @@
 
 					<div class="tray-cell">
 						<label class="cell-key">@GameSettings.Text.Hud.Ammo</label>
+						<div class="round-row">
+							@for ( var i = 0; i < MagCap; i++ )
+							{
+								<div class="round @MagPip( i )"></div>
+							}
+						</div>
 						<div class="bar tray-bar">
 							<div class="bar-fill dash @(ReloadReady ? "ready" : "")" style="width: @(ReloadPercent)%"></div>
 						</div>
@@ -545,7 +553,7 @@
 
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.PickTrait )
 		{
-			<div class="overlay choose">
+			<div class="overlay choose shop">
 				<label class="overlay-title">@GameSettings.Text.Shop.Title</label>
 				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Shop.Blurb, Loop.Scrap)</label>
 				<div class="cards">
@@ -553,12 +561,16 @@
 					{
 						var offer = Loop.Offers[i];
 						var index = i;
-						<div class="card @OfferClass(offer.Trait, offer.Bought)" style="border-color: @TraitBorder(offer.Trait)" onclick="@(() => PickOffer(index))">
+						<div class="card @OfferClass(offer.Trait, offer.Bought)" style="border-color: @TraitBorder(offer.Trait)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
 							<label class="key">@GameSettings.Text.Shop.KeyOf(index)</label>
-							<img class="art" src="@RoundTraits.Icon(offer.Trait)" />
 							<label class="title">@RoundTraits.Title(offer.Trait)</label>
 							<label class="rarity">@RoundTraits.Rarity(offer.Trait)</label>
-							<label class="blurb">@OfferBlurb(offer.Trait, offer.Bought)</label>
+							<div class="stats">
+								@foreach ( var line in OfferStats( offer.Trait, offer.Bought ) )
+								{
+									<label class="stat @line.Class">@line.Text</label>
+								}
+							</div>
 							<label class="cost">@OfferCost(offer.Trait, offer.Bought)</label>
 						</div>
 					}
@@ -566,18 +578,45 @@
 				<div class="cards">
 					@if ( Loop.ShopHasBundle )
 					{
-						<div class="card @(Loop.ShopCanBuyAll ? "" : "poor")" onclick="@BuyAllOffers">
+						<div class="card @(Loop.ShopCanBuyAll ? "" : "poor")" onmouseover="@LeaveShop" onclick="@BuyAllOffers">
 							<label class="key">@GameSettings.Text.Shop.KeyE</label>
 							<label class="title">@GameSettings.Text.Shop.BuyAll</label>
 							<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Shop.BuyAllBlurb, Loop.ShopBuyAllCost)</label>
 							<label class="cost">@GameSettings.Text.F(GameSettings.Text.Shop.Cost, Loop.ShopBuyAllCost)</label>
 						</div>
 					}
-					<div class="card" onclick="@FinishShop">
+					<div class="card" onmouseover="@LeaveShop" onclick="@FinishShop">
 						<label class="key">@GameSettings.Text.Shop.KeySpace</label>
 						<label class="title">@GameSettings.Text.Shop.Go</label>
 						<label class="blurb">@GameSettings.Text.Shop.GoBlurb</label>
 					</div>
+				</div>
+				<div class="shop-sheet">
+					<label class="sheet-kicker">WEAPON</label>
+					@foreach ( var row in ShopWeapon )
+					{
+						<div class="sheet-row">
+							<label class="key">@row.Label</label>
+							<div class="vals">
+								<label class="now">@row.Now</label>
+								@if ( row.Next != "" )
+								{
+									<label class="arrow">→</label>
+									<label class="next @row.NextClass">@row.Next</label>
+								}
+							</div>
+						</div>
+					}
+					<label class="sheet-kicker">HERO</label>
+					@foreach ( var row in ShopHero )
+					{
+						<div class="sheet-row">
+							<label class="key">@row.Label</label>
+							<div class="vals">
+								<label class="now">@row.Now</label>
+							</div>
+						</div>
+					}
 				</div>
 			</div>
 		}
@@ -671,6 +710,9 @@
 
 		TickCursor();
 		TickHover();
+
+		if ( Loop.Phase != RunPhase.PickTrait )
+			shopHover = -1;
 	}
 
 	void Resume() => Loop?.Resume();
@@ -767,6 +809,8 @@
 	void PickOffer( int index ) => Loop?.ChooseUpgradeAt( index );
 	void BuyAllOffers() => Loop?.ChooseBuyAll();
 	void FinishShop() => Loop?.ChooseShopGo();
+	void HoverShop( int index ) => shopHover = index;
+	void LeaveShop() => shopHover = -1;
 	void GoCity()
 	{
 		Loop?.NoteUiClick();
@@ -787,6 +831,21 @@
 	int SlowPercent => Runner.IsValid() ? (int)(Runner.SlowCharge * 100f) : 0;
 	int ReloadPercent => Loop.IsValid() && Loop.Inventory.IsValid() ? (int)(Loop.Inventory.Reload01 * 100f) : 0;
 	bool ReloadReady => Loop.IsValid() && Loop.Inventory.IsValid() && Loop.Inventory.Ready;
+	int MagCap => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.MagCap : 0;
+	string MagPip( int index )
+	{
+		if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
+			return "";
+
+		var mag = Loop.Inventory;
+		if ( index < mag.MagLoaded )
+			return "chambered";
+		if ( index < mag.MagLoaded + mag.MagFlight )
+			return "inflight";
+		if ( index < mag.MagLoaded + mag.MagFlight + mag.MagDropped )
+			return "dropped";
+		return "";
+	}
 	bool DashReady => Runner.IsValid() && Runner.DashCharge >= 1f;
 	bool SlowUnlocked => Runner.IsValid() && Runner.SlowUnlocked;
 	bool Slowing => Runner.IsValid() && Runner.Slowing;
@@ -911,19 +970,30 @@
 		? GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankOne, stash )
 		: GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankMany, stash );
 
-	string OfferBlurb( RoundTrait trait, bool bought )
+	List<StatLine> OfferStats( RoundTrait trait, bool bought )
 	{
-		if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
-			return RoundTraits.Blurb( trait );
-
-		var level = Loop.Inventory.Loadout.TraitLevel( trait );
-		if ( bought )
-			return GameSettings.Text.F( GameSettings.Text.Shop.OfferBlurb, RoundTraits.Blurb( trait ), Math.Max( 1, level ) );
-
-		var next = level + 1;
-		if ( next > 3 ) next = 3;
-		return GameSettings.Text.F( GameSettings.Text.Shop.OfferBlurb, RoundTraits.Blurb( trait ), next );
+		var level = TraitLevel( trait );
+		var rank = bought ? Math.Max( 1, level ) : Math.Min( RoundTraits.MaxLevel( trait ), level + 1 );
+		return StatSheet.Effects( trait, rank );
 	}
+
+	RoundTrait? ShopPreview
+	{
+		get
+		{
+			if ( !Loop.IsValid() || Loop.Phase != RunPhase.PickTrait )
+				return null;
+
+			if ( shopHover < 0 || shopHover >= Loop.Offers.Count )
+				return null;
+
+			var offer = Loop.Offers[shopHover];
+			return offer.Bought ? null : offer.Trait;
+		}
+	}
+
+	List<SheetRow> ShopWeapon => StatSheet.Weapon( Loop, ShopPreview );
+	List<SheetRow> ShopHero => StatSheet.Hero( Loop );
 
 	string OfferCost( RoundTrait trait, bool bought )
 	{
@@ -960,6 +1030,7 @@
 	Sandbox.UI.Panel auraPanel;
 	Sandbox.UI.Panel trailPanel;
 	Sandbox.UI.Panel hotCard;
+	int shopHover = -1;
 
 	void TickCursor()
 	{
@@ -1104,7 +1175,11 @@
 			DashPercent,
 			Loop.IsValid() ? Loop.Stash : 0,
 			Loop.IsValid() && Loop.Inventory.IsValid() ? ReloadPercent : 0,
-			Loop.IsValid() && Loop.NoticeVisible );
+			System.HashCode.Combine(
+				Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.MagLoaded : 0,
+				Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.MagFlight : 0,
+				Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.MagDropped : 0,
+				Loop.IsValid() && Loop.NoticeVisible ) );
 
 		var b = System.HashCode.Combine(
 			Loop.IsValid() ? Loop.Notice : "",
@@ -1151,7 +1226,8 @@
 			Loop.IsValid() ? Loop.OfferStamp : 0,
 			Loop.IsValid() && Loop.ShopHasBundle,
 			Loop.IsValid() && Loop.ShopCanBuyAll,
-			Loop.IsValid() ? Loop.ShopBuyAllCost : 0 );
+			Loop.IsValid() ? Loop.ShopBuyAllCost : 0,
+			shopHover );
 
 		var g = System.HashCode.Combine(
 			Loop.IsValid() ? (int)Loop.Location : 0,
@@ -1356,17 +1432,6 @@
 		color: #8e8b86;
 		letter-spacing: 1px;
 		margin-right: 8px;
-	}
-
-	.card .art {
-		width: 232px;
-		height: 232px;
-		margin-top: 12px;
-		margin-bottom: 4px;
-		border-radius: 10px;
-		background-size: contain;
-		background-repeat: no-repeat;
-		background-position: center;
 	}
 
 	.meter {
@@ -2043,6 +2108,88 @@
 		margin-bottom: 12px;
 	}
 
+	.overlay.shop {
+		padding-right: 400px;
+		padding-left: 32px;
+	}
+
+	.shop-sheet {
+		position: absolute;
+		right: 24px;
+		top: 64px;
+		bottom: 64px;
+		width: 360px;
+		padding: 20px 22px;
+		border-radius: 10px;
+		background-color: rgba(10, 11, 13, 0.94);
+		border: 2px solid rgba(240, 180, 41, 0.35);
+		flex-direction: column;
+		align-items: stretch;
+		pointer-events: none;
+		overflow: scroll;
+	}
+
+	.sheet-kicker {
+		font-family: "Barlow Condensed";
+		font-size: 16px;
+		font-weight: 700;
+		letter-spacing: 4px;
+		color: #f0b429;
+		margin-top: 14px;
+		margin-bottom: 6px;
+	}
+
+	.shop-sheet .sheet-kicker:first-child {
+		margin-top: 0px;
+	}
+
+	.sheet-row {
+		flex-direction: row;
+		width: 100%;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: 3px;
+	}
+
+	.sheet-row .key {
+		font-family: "Barlow Condensed";
+		font-size: 18px;
+		color: #8e8b86;
+	}
+
+	.sheet-row .vals {
+		flex-direction: row;
+		align-items: baseline;
+	}
+
+	.sheet-row .now {
+		font-family: "Barlow Condensed";
+		font-size: 20px;
+		font-weight: 700;
+		color: #f4ece0;
+	}
+
+	.sheet-row .arrow {
+		font-size: 16px;
+		color: #7b746a;
+		margin-left: 8px;
+		margin-right: 8px;
+	}
+
+	.sheet-row .next {
+		font-family: "Barlow Condensed";
+		font-size: 20px;
+		font-weight: 700;
+	}
+
+	.sheet-row .next.up {
+		color: #4fe07a;
+	}
+
+	.sheet-row .next.down {
+		color: #e0453a;
+	}
+
 	.overlay .blurb {
 		font-size: 20px;
 		color: #8e8b86;
@@ -2258,6 +2405,32 @@
 		color: #8e8b86;
 		margin-top: 8px;
 		margin-bottom: 0px;
+	}
+
+	.card .stats {
+		flex-direction: column;
+		align-items: flex-start;
+		margin-top: 8px;
+	}
+
+	.card .stat {
+		font-family: "Barlow Condensed";
+		font-size: 18px;
+		font-weight: 700;
+		letter-spacing: 0.4px;
+		margin-top: 1px;
+	}
+
+	.card .stat.up {
+		color: #4fe07a;
+	}
+
+	.card .stat.down {
+		color: #e0453a;
+	}
+
+	.card .stat.note {
+		color: #d8c9a0;
 	}
 
 	.cursor-aura,
@@ -2502,16 +2675,7 @@
 		margin-right: 8px;
 	}
 
-	.trinket img {
-		width: 34px;
-		height: 34px;
-		background-size: contain;
-		background-repeat: no-repeat;
-		background-position: center;
-	}
-
 	.trinket label {
-		margin-left: 3px;
 		font-size: 18px;
 		font-weight: 600;
 		color: #f0b429;
@@ -2630,6 +2794,7 @@
 		margin-right: 5px;
 		border-radius: 7px;
 		border: 2px solid rgba(0, 0, 0, 0);
+		background-color: #4aa8e8;
 		opacity: 0.5;
 	}
 

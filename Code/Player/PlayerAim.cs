@@ -37,6 +37,7 @@ public sealed class PlayerAim : Component
 
 	PolyLine preview;
 	GameObject reticle;
+	float dbgPreviewAt;
 
 	protected override void OnStart()
 	{
@@ -151,6 +152,13 @@ public sealed class PlayerAim : Component
 		var bounces = Math.Max( 1, recipe.Bounces );
 		var radius = recipe.Radius > 1f ? recipe.Radius : RoundRadius;
 		var flat = Arena.Geometry.PredictPath( Muzzle, Direction, radius, PreviewLength, PreviewBounceLength, bounces );
+		// #region agent log
+		if ( Time.Now - dbgPreviewAt > 0.6f )
+		{
+			dbgPreviewAt = Time.Now;
+			RoundProjectile.AgentLog( "D", "PlayerAim.UpdatePreview", "preview", $"{{\"recipeSpin\":{RoundProjectile.F( recipe.SpinSpeed )},\"passedSpin\":0,\"spinTrait\":{Inventory.Loadout.TraitLevel( RoundTrait.Spin )},\"pts\":{flat.Count}}}" );
+		}
+		// #endregion
 		var world = new List<Vector3>( flat.Count );
 
 		foreach ( var point in flat )

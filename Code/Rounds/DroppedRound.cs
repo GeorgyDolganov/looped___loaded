@@ -19,6 +19,13 @@ public sealed class DroppedRound : Component
 		WorldPosition = host.Geometry.ToPlayWorld( Flat );
 	}
 
+	public void SetFlat( Vector2 flat )
+	{
+		Flat = flat;
+		if ( loop.IsValid() )
+			WorldPosition = loop.Geometry.ToPlayWorld( Flat );
+	}
+
 	protected override void OnStart()
 	{
 		shell = Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, 30f, ShotColors.Player );
@@ -30,6 +37,21 @@ public sealed class DroppedRound : Component
 
 	protected override void OnUpdate()
 	{
+		if ( loop.IsValid() && !loop.IsFrozen && loop.Arena.IsValid() )
+		{
+			var spin = GameSettings.Traits.SpinBase;
+			if ( loop.Inventory.IsValid() )
+				spin = loop.Inventory.Loadout.Recipe().SpinSpeed;
+
+			if ( spin > 0.01f )
+			{
+				var track = loop.Geometry.TrackRadius;
+				var ang = MathF.Atan2( Flat.y, Flat.x );
+				ang += spin / MathF.Max( 1f, track ) * Time.Delta;
+				SetFlat( ArenaGeometry.FromAngle( ang ) * track );
+			}
+		}
+
 		var pulse = 0.6f + 0.4f * MathF.Sin( Time.Now * 7f );
 
 		if ( shell.IsValid() )

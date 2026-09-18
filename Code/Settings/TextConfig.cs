@@ -67,7 +67,24 @@ public class TextConfig : GameResource
 			RoundTrait.Drum => pack.Drum ??= new(),
 			RoundTrait.Warhead => pack.Warhead ??= new(),
 			RoundTrait.Lash => pack.Lash ??= new(),
-			_ => pack.Pin ??= new()
+			RoundTrait.Pin => pack.Pin ??= new(),
+			RoundTrait.Spin => pack.Spin ??= new(),
+			RoundTrait.Rush => pack.Rush ??= new(),
+			RoundTrait.Split => pack.Split ??= new(),
+			RoundTrait.Fan => pack.Fan ??= new(),
+			RoundTrait.Pump => pack.Pump ??= new(),
+			RoundTrait.Load => pack.Load ??= new(),
+			RoundTrait.Choke => pack.Choke ??= new(),
+			RoundTrait.Meat => pack.Meat ??= new(),
+			RoundTrait.Rico => pack.Rico ??= new(),
+			RoundTrait.Gape => pack.Gape ??= new(),
+			RoundTrait.Double => pack.Double ??= new(),
+			RoundTrait.Kick => pack.Kick ??= new(),
+			RoundTrait.Stun => pack.Stun ??= new(),
+			RoundTrait.Heap => pack.Heap ??= new(),
+			RoundTrait.Waste => pack.Waste ??= new(),
+			RoundTrait.Breach => pack.Breach ??= new(),
+			_ => pack.Slug ??= new()
 		};
 	}
 
@@ -80,6 +97,10 @@ public class TextConfig : GameResource
 		var rarity = (Traits ??= new()).Rarity ??= new();
 		return pack switch
 		{
+			TraitPack.Entry => Or( rarity.Entry, "ENTRY" ),
+			TraitPack.Junior => Or( rarity.Junior, "JUNIOR" ),
+			TraitPack.Warrior => Or( rarity.Warrior, "WARRIOR" ),
+			TraitPack.Abomination => Or( rarity.Abomination, "ABOMINATION" ),
 			TraitPack.Rifle or TraitPack.Shotgun => Or( rarity.Common, "COMMON" ),
 			TraitPack.Nailgun => Or( rarity.Uncommon, "UNCOMMON" ),
 			_ => Or( rarity.Rare, "RARE" )
@@ -185,17 +206,38 @@ public class RarityCopy
 	[Property] public string Uncommon { get; set; } = "UNCOMMON";
 	[Property] public string Rare { get; set; } = "RARE";
 	[Property] public string Epic { get; set; } = "EPIC";
+	[Property] public string Entry { get; set; } = "ENTRY";
+	[Property] public string Junior { get; set; } = "JUNIOR";
+	[Property] public string Warrior { get; set; } = "WARRIOR";
+	[Property] public string Abomination { get; set; } = "ABOMINATION";
 }
 
 public class TraitsCopy
 {
 	[Property] public RarityCopy Rarity { get; set; } = new();
-	[Property] public TraitCopy Buck { get; set; } = new() { Code = "BUCK", Title = "BUCK", Blurb = "Five pellets. Damage dies at range. Shotgun DNA." };
-	[Property] public TraitCopy Bore { get; set; } = new() { Code = "BORE", Title = "BORE", Blurb = "Punch through bodies. Longer reload. Rail DNA." };
-	[Property] public TraitCopy Drum { get; set; } = new() { Code = "DRUM", Title = "DRUM", Blurb = "Hold for a burst. Dump costs a long reload. Rifle DNA." };
-	[Property] public TraitCopy Warhead { get; set; } = new() { Code = "WARHEAD", Title = "WARHEAD", Blurb = "Splash on hit. Slow shot. Hurts you. Rocket DNA." };
-	[Property] public TraitCopy Lash { get; set; } = new() { Code = "LASH", Title = "LASH", Blurb = "Hold a beam. Longer burn, longer wait. No bounce. Laser DNA." };
-	[Property] public TraitCopy Pin { get; set; } = new() { Code = "PIN", Title = "PIN", Blurb = "Thin nails. Extra banks. Stick and tick. Nailgun DNA." };
+	[Property] public TraitCopy Buck { get; set; } = new() { Code = "BUCK", Title = "BUCK", Blurb = "Old shotgun seed. Retired." };
+	[Property] public TraitCopy Bore { get; set; } = new() { Code = "BORE", Title = "BORE", Blurb = "One punch-through. Rail at rank 3. Longer reload." };
+	[Property] public TraitCopy Drum { get; set; } = new() { Code = "DRUM", Title = "DRUM", Blurb = "A short burst. Rifle dump at rank 3. Long reload." };
+	[Property] public TraitCopy Warhead { get; set; } = new() { Code = "WARHEAD", Title = "WARHEAD", Blurb = "A small clap. Slow rocket. Hurts you." };
+	[Property] public TraitCopy Lash { get; set; } = new() { Code = "LASH", Title = "LASH", Blurb = "A thin beam. Burns faster at rank 3. No bounce." };
+	[Property] public TraitCopy Pin { get; set; } = new() { Code = "PIN", Title = "PIN", Blurb = "A couple of nails. Full spray at rank 3. Stick and tick." };
+	[Property] public TraitCopy Spin { get; set; } = new() { Code = "SPIN", Title = "SPIN", Blurb = "Shots sweep harder against the clock. Longer reload." };
+	[Property] public TraitCopy Rush { get; set; } = new() { Code = "RUSH", Title = "RUSH", Blurb = "Shots fly faster. Longer reload." };
+	[Property] public TraitCopy Split { get; set; } = new() { Code = "SPLIT", Title = "SPLIT", Blurb = "+1 pellet. Shot becomes 2." };
+	[Property] public TraitCopy Fan { get; set; } = new() { Code = "FAN", Title = "FAN", Blurb = "Pellets spread 14°." };
+	[Property] public TraitCopy Pump { get; set; } = new() { Code = "PUMP", Title = "PUMP", Blurb = "+1 pellet. Reload +0.25s." };
+	[Property] public TraitCopy Load { get; set; } = new() { Code = "LOAD", Title = "LOAD", Blurb = "+2 pellets. Reload +0.15s." };
+	[Property] public TraitCopy Choke { get; set; } = new() { Code = "CHOKE", Title = "CHOKE", Blurb = "Cone −10°. Floor 6°." };
+	[Property] public TraitCopy Meat { get; set; } = new() { Code = "MEAT", Title = "MEAT", Blurb = "+1 dmg inside 140. Zero after 280." };
+	[Property] public TraitCopy Rico { get; set; } = new() { Code = "RICO", Title = "RICO", Blurb = "Pellets bounce +1." };
+	[Property] public TraitCopy Gape { get; set; } = new() { Code = "GAPE", Title = "GAPE", Blurb = "Cone +14°." };
+	[Property] public TraitCopy Double { get; set; } = new() { Code = "DOUBLE", Title = "DOUBLE", Blurb = "Two fans, 0.12s apart. Reload +0.55s. One mag." };
+	[Property] public TraitCopy Kick { get; set; } = new() { Code = "KICK", Title = "KICK", Blurb = "Shove 110 inside 180." };
+	[Property] public TraitCopy Stun { get; set; } = new() { Code = "STUN", Title = "STUN", Blurb = "0.45s stagger inside 160. No bosses." };
+	[Property] public TraitCopy Heap { get; set; } = new() { Code = "HEAP", Title = "HEAP", Blurb = "+3 pellets. Reload +0.40s." };
+	[Property] public TraitCopy Waste { get; set; } = new() { Code = "WASTE", Title = "WASTE", Blurb = "+1 dmg inside 80. Zero after 150." };
+	[Property] public TraitCopy Breach { get; set; } = new() { Code = "BREACH", Title = "BREACH", Blurb = "Pellets punch 1 body." };
+	[Property] public TraitCopy Slug { get; set; } = new() { Code = "SLUG", Title = "SLUG", Blurb = "One fat slug. Radius 22. +2 dmg. No fan." };
 }
 
 public class BuildingsCopy

@@ -39,6 +39,8 @@ public static class Progression
 	public static int ExtraBodies( int lap, int location = 0 )
 		=> Math.Clamp( (int)MathF.Round( ( Swarm( lap, location ) - 1f ) * C.ExtraBodiesScale ) - C.ExtraBodiesOffset, 0, C.ExtraBodiesMax );
 
+	public static int WaveCopies => Math.Max( 1, C.WaveCopies );
+
 	public static int RoundsGranted( int arrivingLap )
 		=> Math.Clamp( Whole( MathF.Pow( RoundRatio, Math.Max( 0, arrivingLap - 2 ) ) ), C.RoundsGrantedMin, C.RoundsGrantedMax );
 
@@ -59,7 +61,7 @@ public static class Progression
 		if ( seed <= 0 )
 			return 0;
 
-		return Whole( seed * Threat( lap, location ) );
+		return Whole( seed * Threat( lap, location ) * C.KillScrapScale );
 	}
 
 	public static float DashScale( int boost )

@@ -45,6 +45,26 @@ public sealed class ArenaGeometry
 
 	public static Vector2 Reflect( Vector2 direction, Vector2 normal ) => direction - normal * (2f * Dot( direction, normal ));
 
+	public static Vector2 AgainstClock( Vector2 pos )
+	{
+		var len = pos.Length;
+		if ( len < 0.01f )
+			return new Vector2( -1f, 0f );
+
+		return new Vector2( -pos.y / len, pos.x / len );
+	}
+
+	public static Vector2 DriftHeading( Vector2 pos, Vector2 direction, float flightSpeed, float spinSpeed )
+	{
+		var dir = direction.Length > 0.01f ? direction.Normal : Vector2.Right;
+		var v = dir * MathF.Max( 0.2f, flightSpeed );
+		if ( spinSpeed > 0.01f )
+			v += AgainstClock( pos ) * spinSpeed;
+
+		var mag = v.Length;
+		return mag < 0.001f ? dir : v / mag;
+	}
+
 	public Vector3 ToWorld( Vector2 flat, float height ) => new Vector3( flat.x, flat.y, height );
 
 	public Vector3 ToPlayWorld( Vector2 flat ) => new Vector3( flat.x, flat.y, PlayHeight );
@@ -705,7 +725,7 @@ public sealed class ArenaGeometry
 		return corrected;
 	}
 
-	public List<Vector2> PredictPath( Vector2 origin, Vector2 direction, float radius, float firstLegLimit, float bounceLegLength, int extraBounces = 1 )
+	public List<Vector2> PredictPath( Vector2 origin, Vector2 direction, float radius, float firstLegLimit, float bounceLegLength, int extraBounces = 1, float spinSpeed = 0f, float flightSpeed = 950f )
 	{
 		var path = new List<Vector2> { origin };
 		var dir = direction.Length > 0.01f ? direction.Normal : Vector2.Right;
@@ -713,24 +733,55 @@ public sealed class ArenaGeometry
 		var first = true;
 		var bounces = Math.Max( 0, extraBounces );
 
-		for ( var i = 0; i <= bounces; i++ )
+		if ( spinSpeed <= 1f )
 		{
-			var limit = first ? firstLegLimit : bounceLegLength;
-			if ( limit <= 1f )
-				break;
-
-			if ( !TraceRay( pos, dir, limit + radius, out var hit ) )
+			for ( var i = 0; i <= bounces; i++ )
 			{
-				path.Add( pos + dir * limit );
-				return path;
+				var limit = first ? firstLegLimit : bounceLegLength;
+				if ( limit <= 1f )
+					break;
+
+				if ( !TraceRay( pos, dir, limit + radius, out var hit ) )
+				{
+					path.Add( pos + dir * limit );
+					return path;
+				}
+
+				var contact = hit.Position + hit.Normal * radius;
+				path.Add( contact );
+				pos = contact;
+				dir = Reflect( dir, hit.Normal ).Normal;
+				first = false;
 			}
 
-			var contact = hit.Position + hit.Normal * radius;
-			path.Add( contact );
-			pos = contact;
-			dir = Reflect( dir, hit.Normal ).Normal;
-			first = false;
+			return path;
 		}
+
+		var left = firstLegLimit;
+		const float step = 22f;
+		while ( left > 1f && path.Count < 72 && bounces >= 0 )
+		{
+			var heading = DriftHeading( pos, dir, flightSpeed, spinSpeed );
+			var chunk = MathF.Min( step, left );
+			if ( TraceRay( pos, heading, chunk + radius, out var hit ) )
+			{
+				var contact = hit.Position + hit.Normal * radius;
+				path.Add( contact );
+				pos = contact;
+				dir = Reflect( heading, hit.Normal ).Normal;
+				bounces--;
+				left = bounceLegLength;
+				continue;
+			}
+
+			pos += heading * chunk;
+			left -= chunk;
+			if ( (pos - path[^1]).LengthSquared > 1600f )
+				path.Add( pos );
+		}
+
+		if ( (pos - path[^1]).LengthSquared > 1f )
+			path.Add( pos );
 
 		return path;
 	}
