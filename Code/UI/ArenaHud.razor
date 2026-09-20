@@ -128,7 +128,7 @@
 						<div class="bar tray-bar">
 							<div class="bar-fill dash @(ReloadReady ? "ready" : "")" style="width: @(ReloadPercent)%"></div>
 						</div>
-						<label class="cell-value">@(ReloadReady ? "RDY" : Loop.Inventory.Beaming ? "BEAM" : Loop.Inventory.ReloadLeft.ToString( "0.0" ))</label>
+						<label class="cell-value">@(ReloadReady ? "RDY" : Loop.Inventory.Beaming ? "BOLT" : Loop.Inventory.ReloadLeft.ToString( "0.0" ))</label>
 					</div>
 
 					<div class="cell-split"></div>
@@ -554,8 +554,14 @@
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.PickTrait )
 		{
 			<div class="overlay choose shop">
-				<label class="overlay-title">@GameSettings.Text.Shop.Title</label>
-				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Shop.Blurb, Loop.Scrap)</label>
+				<div class="shop-head">
+					<label class="overlay-title">@GameSettings.Text.Shop.Title</label>
+					<div class="shop-bones">
+						<label class="key">@GameSettings.Text.Hud.Scrap</label>
+						<label class="value">@Loop.Scrap</label>
+					</div>
+				</div>
+				<label class="blurb shop-line">@GameSettings.Text.F(GameSettings.Text.Shop.Blurb, Loop.Scrap)</label>
 				<div class="cards">
 					@for ( var i = 0; i < Loop.Offers.Count; i++ )
 					{
@@ -565,6 +571,7 @@
 							<label class="key">@GameSettings.Text.Shop.KeyOf(index)</label>
 							<label class="title">@RoundTraits.Title(offer.Trait)</label>
 							<label class="rarity">@RoundTraits.Rarity(offer.Trait)</label>
+							<label class="blurb">@OfferBlurb(offer.Trait, offer.Bought)</label>
 							<div class="stats">
 								@foreach ( var line in OfferStats( offer.Trait, offer.Bought ) )
 								{
@@ -592,6 +599,10 @@
 					</div>
 				</div>
 				<div class="shop-sheet">
+					<div class="sheet-lead">
+						<label class="key">@GameSettings.Text.Hud.Scrap</label>
+						<label class="value">@Loop.Scrap</label>
+					</div>
 					<label class="sheet-kicker">WEAPON</label>
 					@foreach ( var row in ShopWeapon )
 					{
@@ -977,6 +988,20 @@
 		return StatSheet.Effects( trait, rank );
 	}
 
+	string OfferBlurb( RoundTrait trait, bool bought )
+	{
+		var text = RoundTraits.Blurb( trait );
+		if ( string.IsNullOrWhiteSpace( text ) )
+			return "";
+
+		if ( RoundTraits.OneShot( trait ) )
+			return text;
+
+		var level = TraitLevel( trait );
+		var shown = bought ? Math.Max( 1, level ) : Math.Min( RoundTraits.MaxLevel( trait ), level + 1 );
+		return GameSettings.Text.F( GameSettings.Text.Shop.OfferBlurb, text, shown );
+	}
+
 	RoundTrait? ShopPreview
 	{
 		get
@@ -988,7 +1013,10 @@
 				return null;
 
 			var offer = Loop.Offers[shopHover];
-			return offer.Bought ? null : offer.Trait;
+			if ( offer.Bought || Loop.TraitLocked( offer.Trait ) )
+				return null;
+
+			return offer.Trait;
 		}
 	}
 
@@ -1000,6 +1028,9 @@
 		if ( bought )
 			return GameSettings.Text.Shop.Bought;
 
+		if ( Loop.IsValid() && Loop.TraitLocked( trait ) )
+			return GameSettings.Text.Shop.Locked;
+
 		if ( !Loop.IsValid() )
 			return "";
 
@@ -1010,6 +1041,9 @@
 	{
 		if ( bought )
 			return "upgrade bought";
+
+		if ( Loop.IsValid() && Loop.TraitLocked( trait ) )
+			return "upgrade poor locked";
 
 		if ( Loop.IsValid() && Loop.Scrap < Loop.PriceOf( trait ) )
 			return "upgrade poor";
@@ -2113,6 +2147,39 @@
 		padding-left: 32px;
 	}
 
+	.shop-head {
+		flex-direction: row;
+		align-items: baseline;
+		justify-content: center;
+		margin-bottom: 4px;
+	}
+
+	.shop-head .overlay-title {
+		margin-bottom: 0px;
+	}
+
+	.shop-bones {
+		flex-direction: row;
+		align-items: baseline;
+		margin-left: 28px;
+	}
+
+	.shop-bones .key {
+		font-family: "Barlow Condensed";
+		font-size: 22px;
+		font-weight: 700;
+		letter-spacing: 3px;
+		color: #f0b429;
+		margin-right: 12px;
+	}
+
+	.shop-bones .value {
+		font-family: Anton;
+		font-size: 52px;
+		letter-spacing: 2px;
+		color: #f0b429;
+	}
+
 	.shop-sheet {
 		position: absolute;
 		right: 24px;
@@ -2127,6 +2194,31 @@
 		align-items: stretch;
 		pointer-events: none;
 		overflow: scroll;
+	}
+
+	.sheet-lead {
+		flex-direction: row;
+		width: 100%;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: 12px;
+		padding-bottom: 10px;
+		border-bottom: 2px solid rgba(240, 180, 41, 0.28);
+	}
+
+	.sheet-lead .key {
+		font-family: "Barlow Condensed";
+		font-size: 20px;
+		font-weight: 700;
+		letter-spacing: 3px;
+		color: #f0b429;
+	}
+
+	.sheet-lead .value {
+		font-family: Anton;
+		font-size: 42px;
+		letter-spacing: 1px;
+		color: #f0b429;
 	}
 
 	.sheet-kicker {
@@ -2194,6 +2286,10 @@
 		font-size: 20px;
 		color: #8e8b86;
 		margin-bottom: 22px;
+	}
+
+	.overlay.shop .shop-line {
+		color: #d8c9a0;
 	}
 
 	.overlay.showcase {

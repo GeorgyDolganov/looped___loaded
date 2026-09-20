@@ -75,7 +75,7 @@ public sealed class GameLoop : Component
 		{
 			var hash = offers.Count;
 			foreach ( var offer in offers )
-				hash = System.HashCode.Combine( hash, (int)offer.Trait, offer.Bought );
+				hash = System.HashCode.Combine( hash, (int)offer.Trait, offer.Bought, TraitLocked( offer.Trait ) );
 
 			return hash;
 		}
@@ -1219,6 +1219,9 @@ public sealed class GameLoop : Component
 		return Progression.TraitPrice( trait, Inventory.Loadout.TraitLevel( trait ), Lap, LocationIndex );
 	}
 
+	public bool TraitLocked( RoundTrait trait )
+		=> Inventory.IsValid() && RoundTraits.Blocked( trait, Inventory.Loadout );
+
 	public void ChooseCity()
 	{
 		if ( Paused || (Phase != RunPhase.Dead && Phase != RunPhase.Extracted) )
@@ -1354,6 +1357,9 @@ public sealed class GameLoop : Component
 		var owned = new List<RoundTrait>();
 		foreach ( var trait in RoundTraits.All )
 		{
+			if ( RoundTraits.Blocked( trait, loadout ) )
+				continue;
+
 			var level = loadout.TraitLevel( trait );
 			if ( level >= RoundTraits.MaxLevel( trait ) )
 				continue;
@@ -1484,6 +1490,12 @@ public sealed class GameLoop : Component
 		}
 
 		var trait = offers[index].Trait;
+		if ( TraitLocked( trait ) )
+		{
+			ArenaSounds.Deny();
+			return;
+		}
+
 		var price = PriceOf( trait );
 		if ( Scrap < price )
 		{
@@ -1518,8 +1530,10 @@ public sealed class GameLoop : Component
 			if ( Phase != RunPhase.PickTrait )
 				return;
 
-			if ( !offers[i].Bought )
-				TryBuyOfferAt( i );
+			if ( offers[i].Bought || TraitLocked( offers[i].Trait ) )
+				continue;
+
+			TryBuyOfferAt( i );
 		}
 	}
 
@@ -1553,7 +1567,7 @@ public sealed class GameLoop : Component
 		var n = 0;
 		foreach ( var offer in offers )
 		{
-			if ( !offer.Bought )
+			if ( !offer.Bought && !TraitLocked( offer.Trait ) )
 				n++;
 		}
 
@@ -1563,10 +1577,24 @@ public sealed class GameLoop : Component
 	int RemainingOfferCost()
 	{
 		var sum = 0;
+		var hasLash = Inventory.IsValid() && Inventory.Loadout.Has( RoundTrait.Lash );
+		var hasBore = Inventory.IsValid() && Inventory.Loadout.Has( RoundTrait.Bore );
 		foreach ( var offer in offers )
 		{
-			if ( !offer.Bought )
-				sum += PriceOf( offer.Trait );
+			if ( offer.Bought )
+				continue;
+
+			if ( offer.Trait == RoundTrait.Lash && hasBore )
+				continue;
+
+			if ( offer.Trait == RoundTrait.Bore && hasLash )
+				continue;
+
+			sum += PriceOf( offer.Trait );
+			if ( offer.Trait == RoundTrait.Lash )
+				hasLash = true;
+			if ( offer.Trait == RoundTrait.Bore )
+				hasBore = true;
 		}
 
 		return sum;

@@ -2,7 +2,7 @@ namespace LoopedLoaded;
 
 public static class RoundCombat
 {
-	public static void Blast( GameLoop loop, Vector2 origin, float radius, int damage, RoundProjectile source, Color tint, bool hurtPlayer = false )
+	public static void Blast( GameLoop loop, Vector2 origin, float radius, int damage, RoundProjectile source, Color tint, bool hurtPlayer = false, float shove = 0f, float napalm = 0f )
 	{
 		if ( loop is null || radius <= 1f || damage <= 0 )
 			return;
@@ -20,6 +20,16 @@ public static class RoundCombat
 				continue;
 
 			enemy.Damage( damage, source );
+			if ( shove > 1f )
+			{
+				var away = enemy.Flat - origin;
+				if ( away.Length < 0.01f )
+					away = Vector2.Up;
+				enemy.Shove( away.Normal * shove );
+			}
+
+			if ( napalm > 0.01f )
+				PinLinger.Hang( enemy, 1, napalm );
 		}
 
 		if ( !hurtPlayer || !loop.Runner.IsValid() )

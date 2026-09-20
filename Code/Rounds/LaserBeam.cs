@@ -2,6 +2,9 @@ namespace LoopedLoaded;
 
 public sealed class LaserBeam : Component
 {
+	static readonly Color BoltCore = new Color( 0.82f, 0.94f, 1f );
+	static readonly Color BoltGlow = new Color( 0.38f, 0.52f, 1f );
+
 	GameLoop loop;
 	GunRecipe recipe;
 	Vector2 origin;
@@ -49,6 +52,9 @@ public sealed class LaserBeam : Component
 		var count = Math.Max( 1, recipe.Count );
 		var cone = recipe.Cone;
 		var geometry = loop.Geometry;
+		var rank = Math.Max( 1, recipe.BeamRank );
+		var seed = (int)(Time.Now * (9f + rank * 7f));
+		var bolts = new List<List<Vector2>>();
 
 		for ( var i = 0; i < count; i++ )
 		{
@@ -65,16 +71,24 @@ public sealed class LaserBeam : Component
 					loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, 0f, false );
 			}
 
-			rays.Add( (origin, end) );
+			foreach ( var bolt in LightningPath.Storm( origin, end, rank, seed + i * 31 ) )
+				bolts.Add( bolt );
 		}
 
-		Draw();
+		foreach ( var bolt in bolts )
+		{
+			for ( var i = 1; i < bolt.Count; i++ )
+				rays.Add( (bolt[i - 1], bolt[i]) );
+		}
+
+		Draw( bolts, rank );
 	}
 
 	void Strike()
 	{
 		var width = MathF.Max( 8f, recipe.BeamWidth );
 		var tick = MathF.Max( 0.05f, recipe.BeamTick );
+		var hit = Math.Max( 1, recipe.BeamHit );
 		Enemy nearest = null;
 		var nearestDist = float.MaxValue;
 		Vector2 nearestAt = default;
@@ -124,7 +138,7 @@ public sealed class LaserBeam : Component
 				continue;
 
 			nextHit[enemy] = Time.Now + tick;
-			enemy.Damage( recipe.Damage, 0f, 1f );
+			enemy.Damage( hit, 0f, 1f );
 
 			if ( recipe.StickTime > 0.01f )
 				PinLinger.Hang( enemy, 1, recipe.StickTime );
@@ -133,39 +147,49 @@ public sealed class LaserBeam : Component
 		if ( recipe.Splash > 1f && nearest.IsValid() && Time.Now >= nextSplash )
 		{
 			nextSplash = Time.Now + tick;
-			RoundCombat.Blast( loop, nearestAt, recipe.Splash, 1, null, ShotColors.Player, recipe.FriendlySplash );
+			RoundCombat.Blast( loop, nearestAt, recipe.Splash, Math.Max( 1, recipe.BlastDamage ), null, ShotColors.Player, recipe.FriendlySplash, recipe.BlastShove, recipe.NapalmTime );
 		}
 	}
 
-	void Draw()
+	void Draw( List<List<Vector2>> bolts, int rank )
 	{
-		while ( lines.Count < rays.Count )
+		var pulse = 0.62f + 0.38f * MathF.Abs( MathF.Sin( Time.Now * (18f + rank * 8f) ) );
+		var core = Color.Lerp( BoltGlow, BoltCore, pulse );
+		var glow = BoltGlow * (0.35f + pulse * 0.45f );
+		var width = rank >= 3 ? 9f : rank >= 2 ? 7f : 5f;
+
+		while ( lines.Count < bolts.Count )
 		{
 			var go = Scene.CreateObject();
-			go.Name = "Beam Ray";
+			go.Name = "Bolt Ray";
 			go.Parent = GameObject;
 			var line = go.AddComponent<PolyLine>();
-			line.HeadTint = new Color( 1f, 0.35f, 0.72f );
-			line.TailTint = new Color( 1f, 0.35f, 0.72f ) * 0.15f;
-			line.HeadWidth = recipe.BeamWidth;
-			line.TailWidth = 3f;
+			line.HeadTint = core;
+			line.TailTint = glow;
+			line.HeadWidth = width;
+			line.TailWidth = 2.5f;
 			line.Apply();
 			lines.Add( line );
 		}
 
 		for ( var i = 0; i < lines.Count; i++ )
 		{
-			if ( i >= rays.Count )
+			if ( i >= bolts.Count )
 			{
 				lines[i].Clear();
 				continue;
 			}
 
-			var a = loop.Geometry.ToPlayWorld( rays[i].A );
-			var b = loop.Geometry.ToPlayWorld( rays[i].B );
-			lines[i].HeadWidth = recipe.BeamWidth;
+			var world = new List<Vector3>( bolts[i].Count );
+			foreach ( var point in bolts[i] )
+				world.Add( loop.Geometry.ToPlayWorld( point ) );
+
+			lines[i].HeadTint = core;
+			lines[i].TailTint = glow;
+			lines[i].HeadWidth = width;
+			lines[i].TailWidth = rank >= 2 ? 3f : 2.2f;
 			lines[i].Apply();
-			lines[i].SetPoints( new List<Vector3> { a, b } );
+			lines[i].SetPoints( world );
 		}
 	}
 
@@ -189,6 +213,76 @@ public sealed class LaserBeam : Component
 		var c = MathF.Cos( ang );
 		var s = MathF.Sin( ang );
 		return new Vector2( dir.x * c - dir.y * s, dir.x * s + dir.y * c ).Normal;
+	}
+}
+
+public static class LightningPath
+{
+	public static List<List<Vector2>> Storm( Vector2 from, Vector2 to, int rank, int seed )
+	{
+		rank = Math.Clamp( rank, 1, 3 );
+		var bolts = new List<List<Vector2>>();
+		var steps = rank <= 1 ? 7 : rank == 2 ? 11 : 15;
+		var amp = rank <= 1 ? 18f : rank == 2 ? 32f : 48f;
+		var main = Jag( from, to, seed, steps, amp );
+		bolts.Add( main );
+
+		var forks = rank <= 1 ? 0 : rank == 2 ? 1 : 2;
+		for ( var f = 0; f < forks; f++ )
+		{
+			if ( main.Count < 4 )
+				break;
+
+			var at = 2 + Hash( seed, 40 + f ) % (main.Count - 3);
+			var origin = main[at];
+			var along = to - from;
+			if ( along.Length < 8f )
+				continue;
+
+			var dir = along.Normal;
+			var perp = new Vector2( -dir.y, dir.x );
+			var side = Hash( seed, 70 + f ) % 2 == 0 ? 1f : -1f;
+			var reach = 90f + Hash( seed, 90 + f ) % 90;
+			var tip = origin + dir * (reach * 0.4f) + perp * side * reach;
+			bolts.Add( Jag( origin, tip, seed + 17 * (f + 1), 4 + rank, 14f + rank * 6f ) );
+		}
+
+		return bolts;
+	}
+
+	public static List<Vector2> Jag( Vector2 from, Vector2 to, int seed, int steps, float amp )
+	{
+		steps = Math.Max( 3, steps );
+		var points = new List<Vector2>( steps );
+		var span = to - from;
+		var len = span.Length;
+		if ( len < 4f )
+		{
+			points.Add( from );
+			points.Add( to );
+			return points;
+		}
+
+		var dir = span / len;
+		var perp = new Vector2( -dir.y, dir.x );
+		points.Add( from );
+		for ( var i = 1; i < steps - 1; i++ )
+		{
+			var t = i / (float)(steps - 1);
+			var fall = 1f - MathF.Abs( t * 2f - 1f );
+			var unit = (Hash( seed, i ) % 1000) / 500f - 1f;
+			points.Add( from + dir * (len * t) + perp * (unit * amp * MathF.Max( 0.18f, fall )) );
+		}
+
+		points.Add( to );
+		return points;
+	}
+
+	static int Hash( int seed, int salt )
+	{
+		var n = seed * 16777619 ^ salt * 374761393;
+		n = (n ^ (n >> 13)) * 1274126177;
+		return n & 0x7fffffff;
 	}
 }
 

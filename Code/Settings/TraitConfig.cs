@@ -15,6 +15,10 @@ public class TraitConfig : GameResource
 	[Property] public TraitPackStats Laser { get; set; } = new() { Price = 3, Weight = 3 };
 	[Property] public TraitPackStats Rail { get; set; } = new() { Price = 3, Weight = 3 };
 	[Property] public TraitPackStats Rocket { get; set; } = new() { Price = 3, Weight = 3 };
+	[Property] public TraitPackStats Fuse { get; set; } = new() { Price = 2, Weight = 5 };
+	[Property] public TraitPackStats Shell { get; set; } = new() { Price = 3, Weight = 3 };
+	[Property] public TraitPackStats Payload { get; set; } = new() { Price = 5, Weight = 2 };
+	[Property] public TraitPackStats Silo { get; set; } = new() { Price = 8, Weight = 1 };
 	[Property] public TraitPackStats Entry { get; set; } = new() { Price = 2, Weight = 6 };
 	[Property] public TraitPackStats Junior { get; set; } = new() { Price = 3, Weight = 4 };
 	[Property] public TraitPackStats Warrior { get; set; } = new() { Price = 5, Weight = 2 };
@@ -57,10 +61,39 @@ public class TraitConfig : GameResource
 	[Property] public float DrumReload { get; set; } = 0.70f;
 	[Property] public TraitTiers WarheadRadius { get; set; } = new() { Level1 = 48f, Level2 = 70f, Level3 = 96f };
 	[Property] public TraitTiers WarheadSpeed { get; set; } = new() { Level1 = 0.78f, Level2 = 0.68f, Level3 = 0.58f };
+	[Property] public int SplashDamageBase { get; set; } = 1;
+	[Property] public float FuseSplash { get; set; } = 36f;
+	[Property] public float FuseSpeed { get; set; } = 0.90f;
+	[Property] public float FuseReload { get; set; } = 0.10f;
+	[Property] public float FatRadius { get; set; } = 22f;
+	[Property] public float FatSpeed { get; set; } = 0.90f;
+	[Property] public float EmberSplash { get; set; } = 18f;
+	[Property] public float EmberFalloff { get; set; } = 280f;
+	[Property] public float BlastSplash { get; set; } = 32f;
+	[Property] public float BlastReload { get; set; } = 0.18f;
+	[Property] public int CrackDamage { get; set; } = 1;
+	[Property] public float MineSplash { get; set; } = 22f;
+	[Property] public int ClusterPellets { get; set; } = 2;
+	[Property] public float ClusterCone { get; set; } = 14f;
+	[Property] public float ClusterSplashMul { get; set; } = 0.62f;
+	[Property] public float ClusterReload { get; set; } = 0.22f;
+	[Property] public float NapalmTime { get; set; } = 0.55f;
+	[Property] public float ShoveForce { get; set; } = 150f;
+	[Property] public float CoreSplash { get; set; } = 24f;
+	[Property] public int CoreDamage { get; set; } = 1;
+	[Property] public float CoreReload { get; set; } = 0.40f;
+	[Property] public float CoreSpeed { get; set; } = 0.85f;
+	[Property] public float SafeMul { get; set; } = 0.72f;
+	[Property] public float NukeSplash { get; set; } = 70f;
+	[Property] public int NukeDamage { get; set; } = 1;
+	[Property] public float NukeReload { get; set; } = 0.50f;
+	[Property] public float NukeSpeed { get; set; } = 0.58f;
+	[Property] public float NukeRadius { get; set; } = 26f;
 	[Property] public float LashPad { get; set; } = 0.40f;
 	[Property] public float LashPerSecond { get; set; } = 0.50f;
 	[Property] public float LashMaxHold { get; set; } = 1.1f;
-	[Property] public TraitTiers LashTick { get; set; } = new() { Level1 = 0.28f, Level2 = 0.20f, Level3 = 0.14f };
+	[Property] public int LashHit { get; set; } = 1;
+	[Property] public TraitTiers LashTick { get; set; } = new() { Level1 = 0.70f, Level2 = 0.55f, Level3 = 0.42f };
 	[Property] public float LashRange { get; set; } = 1600f;
 	[Property] public float LashWidth { get; set; } = 8f;
 	[Property] public TraitTiers PinNails { get; set; } = new() { Level1 = 2f, Level2 = 3f, Level3 = 5f };
@@ -85,6 +118,10 @@ public class TraitConfig : GameResource
 		TraitPack.Junior => Junior ??= new() { Price = 3, Weight = 4 },
 		TraitPack.Warrior => Warrior ??= new() { Price = 5, Weight = 2 },
 		TraitPack.Abomination => Abomination ??= new() { Price = 8, Weight = 1 },
+		TraitPack.Fuse => Fuse ??= new() { Price = 2, Weight = 5 },
+		TraitPack.Shell => Shell ??= new() { Price = 3, Weight = 3 },
+		TraitPack.Payload => Payload ??= new() { Price = 5, Weight = 2 },
+		TraitPack.Silo => Silo ??= new() { Price = 8, Weight = 1 },
 		_ => Rocket ??= new() { Price = 3, Weight = 3 }
 	};
 

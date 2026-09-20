@@ -29,6 +29,22 @@
     "Price": 3,
     "Weight": 3
   },
+  "Fuse": {
+    "Price": 2,
+    "Weight": 5
+  },
+  "Shell": {
+    "Price": 3,
+    "Weight": 3
+  },
+  "Payload": {
+    "Price": 5,
+    "Weight": 2
+  },
+  "Silo": {
+    "Price": 8,
+    "Weight": 1
+  },
   "Entry": {
     "Price": 2,
     "Weight": 6
@@ -83,13 +99,42 @@
     "Level2": 0.68,
     "Level3": 0.58
   },
+  "SplashDamageBase": 1,
+  "FuseSplash": 36,
+  "FuseSpeed": 0.9,
+  "FuseReload": 0.1,
+  "FatRadius": 22,
+  "FatSpeed": 0.9,
+  "EmberSplash": 18,
+  "EmberFalloff": 280,
+  "BlastSplash": 32,
+  "BlastReload": 0.18,
+  "CrackDamage": 1,
+  "MineSplash": 22,
+  "ClusterPellets": 2,
+  "ClusterCone": 14,
+  "ClusterSplashMul": 0.62,
+  "ClusterReload": 0.22,
+  "NapalmTime": 0.55,
+  "ShoveForce": 150,
+  "CoreSplash": 24,
+  "CoreDamage": 1,
+  "CoreReload": 0.4,
+  "CoreSpeed": 0.85,
+  "SafeMul": 0.72,
+  "NukeSplash": 70,
+  "NukeDamage": 1,
+  "NukeReload": 0.5,
+  "NukeSpeed": 0.58,
+  "NukeRadius": 26,
   "LashPad": 0.4,
   "LashPerSecond": 0.5,
   "LashMaxHold": 1.1,
+  "LashHit": 1,
   "LashTick": {
-    "Level1": 0.28,
-    "Level2": 0.2,
-    "Level3": 0.14
+    "Level1": 0.7,
+    "Level2": 0.55,
+    "Level3": 0.42
   },
   "LashRange": 1600,
   "LashWidth": 8,

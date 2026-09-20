@@ -110,6 +110,7 @@
     "Go": "GO",
     "GoBlurb": "Next round. Keep leftover bones.",
     "Bought": "BOUGHT",
+    "Locked": "LOCKED",
     "OfferBlurb": "{0}  LV{1}",
     "Key1": "1",
     "Key2": "2",
@@ -226,7 +227,11 @@
       "Entry": "ENTRY",
       "Junior": "JUNIOR",
       "Warrior": "WARRIOR",
-      "Abomination": "ABOMINATION"
+      "Abomination": "ABOMINATION",
+      "Fuse": "FUSE",
+      "Shell": "SHELL",
+      "Payload": "PAYLOAD",
+      "Silo": "SILO"
     },
     "Buck": {
       "Code": "BUCK",
@@ -236,7 +241,7 @@
     "Bore": {
       "Code": "BORE",
       "Title": "BORE",
-      "Blurb": "One punch-through. Rail at rank 3. Longer reload."
+      "Blurb": "One punch-through. Rail at rank 3. Locks out LASH."
     },
     "Drum": {
       "Code": "DRUM",
@@ -246,12 +251,72 @@
     "Warhead": {
       "Code": "WARHEAD",
       "Title": "WARHEAD",
-      "Blurb": "A small clap. Slow rocket. Hurts you."
+      "Blurb": "Rocket seed. Splash. Slow. You take it. Rank 3 is a fat boom."
+    },
+    "Fuse": {
+      "Code": "FUSE",
+      "Title": "FUSE",
+      "Blurb": "Start a rocket. +36 splash. Slow. You take it."
+    },
+    "Fat": {
+      "Code": "FAT",
+      "Title": "FAT",
+      "Blurb": "Fat body 22. Speed −10%."
+    },
+    "Ember": {
+      "Code": "EMBER",
+      "Title": "EMBER",
+      "Blurb": "+18 splash. Direct 0 after 280."
+    },
+    "Blast": {
+      "Code": "BLAST",
+      "Title": "BLAST",
+      "Blurb": "+32 splash. Reload +0.18s. You take it."
+    },
+    "Crack": {
+      "Code": "CRACK",
+      "Title": "CRACK",
+      "Blurb": "Splash damage +1."
+    },
+    "Mine": {
+      "Code": "MINE",
+      "Title": "MINE",
+      "Blurb": "+22 splash. Dies on first wall. No bounce."
+    },
+    "Cluster": {
+      "Code": "CLUSTER",
+      "Title": "CLUSTER",
+      "Blurb": "+2 rockets, 14° fan. Each splashes. Smaller boom."
+    },
+    "Napalm": {
+      "Code": "NAPALM",
+      "Title": "NAPALM",
+      "Blurb": "Splash victims burn 0.55s later."
+    },
+    "Shove": {
+      "Code": "SHOVE",
+      "Title": "SHOVE",
+      "Blurb": "Blast knocks 150."
+    },
+    "Core": {
+      "Code": "CORE",
+      "Title": "CORE",
+      "Blurb": "+24 splash, +1 splash dmg. Slow. Reload +0.40s."
+    },
+    "Safe": {
+      "Code": "SAFE",
+      "Title": "SAFE",
+      "Blurb": "You ignore splash. Radius −28%."
+    },
+    "Nuke": {
+      "Code": "NUKE",
+      "Title": "NUKE",
+      "Blurb": "+70 splash, +1 splash dmg. Crawl. Reload +0.50s. You take it."
     },
     "Lash": {
       "Code": "LASH",
       "Title": "LASH",
-      "Blurb": "A thin beam. Burns faster at rank 3. No bounce."
+      "Blurb": "Hold for lightning. Weak ticks. Locks out BORE."
     },
     "Pin": {
       "Code": "PIN",

@@ -37,7 +37,6 @@ public sealed class PlayerAim : Component
 
 	PolyLine preview;
 	GameObject reticle;
-	float dbgPreviewAt;
 
 	protected override void OnStart()
 	{
@@ -141,24 +140,29 @@ public sealed class PlayerAim : Component
 			if ( Arena.Geometry.TraceRay( Muzzle, Direction, recipe.BeamRange, out var hit ) )
 				end = hit.Position;
 
-			preview?.SetPoints( new List<Vector3>
+			var rank = Math.Max( 1, recipe.BeamRank );
+			var seed = (int)(Time.Now * 6f);
+			var bolt = LightningPath.Storm( Muzzle, end, rank, seed )[0];
+			var boltWorld = new List<Vector3>( bolt.Count );
+			foreach ( var point in bolt )
+				boltWorld.Add( Arena.Geometry.ToPlayWorld( point ) );
+
+			var pulse = 0.7f + 0.3f * MathF.Abs( MathF.Sin( Time.Now * 14f ) );
+			if ( preview.IsValid() )
 			{
-				Arena.Geometry.ToPlayWorld( Muzzle ),
-				Arena.Geometry.ToPlayWorld( end )
-			} );
+				preview.HeadTint = Color.Lerp( new Color( 0.38f, 0.52f, 1f ), new Color( 0.82f, 0.94f, 1f ), pulse );
+				preview.TailTint = new Color( 0.38f, 0.52f, 1f ) * 0.45f;
+				preview.HeadWidth = rank >= 2 ? 6f : 4f;
+				preview.TailWidth = 2.5f;
+				preview.Apply();
+				preview.SetPoints( boltWorld );
+			}
 			return;
 		}
 
 		var bounces = Math.Max( 1, recipe.Bounces );
 		var radius = recipe.Radius > 1f ? recipe.Radius : RoundRadius;
 		var flat = Arena.Geometry.PredictPath( Muzzle, Direction, radius, PreviewLength, PreviewBounceLength, bounces );
-		// #region agent log
-		if ( Time.Now - dbgPreviewAt > 0.6f )
-		{
-			dbgPreviewAt = Time.Now;
-			RoundProjectile.AgentLog( "D", "PlayerAim.UpdatePreview", "preview", $"{{\"recipeSpin\":{RoundProjectile.F( recipe.SpinSpeed )},\"passedSpin\":0,\"spinTrait\":{Inventory.Loadout.TraitLevel( RoundTrait.Spin )},\"pts\":{flat.Count}}}" );
-		}
-		// #endregion
 		var world = new List<Vector3>( flat.Count );
 
 		foreach ( var point in flat )
