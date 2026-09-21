@@ -361,7 +361,6 @@
             "go": "3dcce95a-1c52-5eba-8ffd-cdc74cb04142",
             "component_type": "RoundInventory"
           },
-          "LostRoundMinArc": 460,
           "MaxHealth": 3,
           "NoticeDuration": 1.6,
           "OnComponentDestroy": null,
@@ -485,8 +484,6 @@
             "go": "b85ad2cf-7618-567f-a70c-5623ec3b8b60",
             "component_type": "ArenaBuilder"
           },
-          "CatchOffset": 82,
-          "CatchRadius": 105,
           "Loop": {
             "_type": "component",
             "component_id": "06d37ac4-3205-5414-b634-5c05ec763628",
@@ -499,7 +496,6 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "PickupRadius": 145,
           "Runner": {
             "_type": "component",
             "component_id": "23173a28-345b-5daa-930e-92171f8cafd9",
