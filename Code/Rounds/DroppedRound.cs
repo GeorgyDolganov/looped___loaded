@@ -37,6 +37,8 @@ public sealed class DroppedRound : Component
 
 	protected override void OnUpdate()
 	{
+		Chase();
+
 		var pulse = 0.6f + 0.4f * MathF.Sin( Time.Now * 7f );
 
 		if ( shell.IsValid() )
@@ -44,5 +46,27 @@ public sealed class DroppedRound : Component
 
 		if ( glow.IsValid() )
 			glow.LightColor = ShotColors.Player * (2f + 4f * pulse);
+	}
+
+	void Chase()
+	{
+		if ( !loop.IsValid() || loop.IsFrozen || !loop.Runner.IsValid() || loop.Geometry is null )
+			return;
+
+		var track = loop.Geometry.TrackRadius;
+		if ( track < 1f )
+			return;
+
+		var ang = MathF.Atan2( Flat.y, Flat.x );
+		var gap = loop.Runner.Angle - ang;
+		gap %= MathF.Tau;
+		if ( gap < 0f )
+			gap += MathF.Tau;
+
+		if ( gap <= 0.02f )
+			return;
+
+		var step = 220f / track * Time.Delta;
+		SetFlat( ArenaGeometry.FromAngle( ang + MathF.Min( step, gap ) ) * track );
 	}
 }
