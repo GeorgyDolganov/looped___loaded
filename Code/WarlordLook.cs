@@ -3,15 +3,17 @@ namespace LoopedLoaded;
 public static class WarlordLook
 {
 	public const string ModelPath = "models/warlord.vmdl";
-	public const string WeaponPath = "models/bfg.vmdl";
+	const string OverlayName = "Warlord Overlay";
 
-	const float WeaponWorld = 125f;
-	const float WeaponGrip = 0f;
-	const float WeaponSide = 40f;
-	const float WeaponLift = 20f;
-	const float WeaponYaw = 180f;
-	const float WeaponPitch = 125f;
-	const float WeaponRoll = -20f;
+	static readonly string[] UpperBones =
+	{
+		"Spine1", "Spine2", "Neck", "Head",
+		"Shoulder_L", "UpperArm_L", "LowerArm_L", "Hand_L",
+		"Shoulder_R", "UpperArm_R", "LowerArm_R", "Hand_R",
+		"Gun"
+	};
+
+	static float shootUntil = -1f;
 
 	public static SkinnedModelRenderer Attach( GameObject parent )
 	{
@@ -29,75 +31,81 @@ public static class WarlordLook
 		go.LocalScale = Vector3.One * scale;
 		go.LocalPosition = Vector3.Up * ( -bounds.Mins.z * scale );
 
+		return Make( go, model, "rest", true );
+	}
+
+	static SkinnedModelRenderer Make( GameObject go, Model model, string sequence, bool looping )
+	{
 		var renderer = go.AddComponent<SkinnedModelRenderer>();
 		renderer.Model = model;
 		renderer.UseAnimGraph = false;
 		renderer.CreateBoneObjects = true;
-		renderer.Sequence.Name = "idle";
-		renderer.Sequence.Looping = true;
+		renderer.Sequence.Name = sequence;
+		renderer.Sequence.Looping = looping;
 		return renderer;
 	}
 
-	public static GameObject AttachWeapon( SkinnedModelRenderer skin )
+	static void Hide( SkinnedModelRenderer skin )
 	{
-		var go = skin.Scene.CreateObject();
-		go.Name = "BFG";
-		go.Parent = skin.GameObject.Parent ?? skin.GameObject;
+		if ( !skin.IsValid() || !skin.SceneObject.IsValid() )
+			return;
 
-		var renderer = go.AddComponent<ModelRenderer>();
-		renderer.Model = Model.Load( WeaponPath );
-		return go;
+		skin.SceneObject.RenderingEnabled = false;
 	}
 
-	public static void Hold( GameObject weapon, SkinnedModelRenderer skin, Vector3 look )
+	static SkinnedModelRenderer FindOverlay( SkinnedModelRenderer skin )
 	{
-		if ( !weapon.IsValid() || !skin.IsValid() )
-			return;
+		if ( !skin.IsValid() || !skin.GameObject.IsValid() || !skin.GameObject.Parent.IsValid() )
+			return null;
 
-		if ( !HandWorld( skin, out var right ) )
+		foreach ( var child in skin.GameObject.Parent.Children )
 		{
-			Place( weapon, skin.WorldPosition + skin.WorldRotation.Forward * 80f + Vector3.Up * 140f, skin.WorldRotation );
-			return;
+			if ( child.Name != OverlayName )
+				continue;
+
+			return child.GetComponent<SkinnedModelRenderer>();
 		}
 
-		var rot = right.Rotation * Rotation.From( WeaponPitch, WeaponYaw, WeaponRoll );
-		Place( weapon, right.Position + rot.Forward * WeaponGrip + rot.Right * WeaponSide + rot.Up * WeaponLift, rot );
+		return null;
 	}
 
-	static bool HandWorld( SkinnedModelRenderer skin, out Transform tx )
+	static SkinnedModelRenderer OverlayOf( SkinnedModelRenderer skin )
 	{
-		tx = default;
-		var bone = skin.Model?.Bones.GetBone( "hand_R" );
-		if ( bone is not null && skin.TryGetBoneTransformAnimation( bone, out tx ) )
-			return true;
+		var overlay = FindOverlay( skin );
+		if ( overlay.IsValid() )
+			return overlay;
 
-		return skin.TryGetBoneTransform( "hand_R", out tx );
+		if ( !skin.IsValid() || !skin.GameObject.IsValid() || !skin.GameObject.Parent.IsValid() )
+			return null;
+
+		var go = skin.GameObject.Parent.Scene.CreateObject();
+		go.Name = OverlayName;
+		go.Parent = skin.GameObject.Parent;
+		go.WorldTransform = skin.WorldTransform;
+		overlay = Make( go, skin.Model, "rest", false );
+		Hide( overlay );
+		return overlay;
 	}
 
-	static void Place( GameObject weapon, Vector3 position, Rotation rotation )
+	static void CopyUpper( SkinnedModelRenderer body, SkinnedModelRenderer overlay )
 	{
-		var renderer = weapon.GetComponent<ModelRenderer>();
-		var size = renderer.IsValid() ? renderer.Model?.Bounds.Size ?? Vector3.Zero : Vector3.Zero;
-		var length = MathF.Max( size.x, MathF.Max( size.y, size.z ) );
-		if ( length < 0.01f )
-			length = 1f;
+		if ( !body.IsValid() || !overlay.IsValid() )
+			return;
 
-		weapon.WorldRotation = rotation;
-		weapon.WorldPosition = position;
-		weapon.WorldScale = Vector3.One * (WeaponWorld / length);
-	}
+		Hide( overlay );
+		overlay.WorldTransform = body.WorldTransform;
 
-	public static bool TryMuzzle( GameObject weapon, out Vector3 world )
-	{
-		world = default;
-		if ( !weapon.IsValid() )
-			return false;
+		foreach ( var name in UpperBones )
+		{
+			var bone = overlay.Model?.Bones.GetBone( name );
+			if ( bone is null )
+				continue;
 
-		var renderer = weapon.GetComponent<ModelRenderer>();
-		var size = renderer.IsValid() ? renderer.Model?.Bounds.Size ?? Vector3.Zero : Vector3.Zero;
-		var length = MathF.Max( 0.2f, size.x * 0.5f ) * weapon.WorldScale.x;
-		world = weapon.WorldPosition + weapon.WorldRotation.Forward * length;
-		return true;
+			if ( !overlay.TryGetBoneTransformAnimation( bone, out var world ) )
+				continue;
+
+			body.SetBoneTransform( bone, body.WorldTransform.ToLocal( world ) );
+		}
 	}
 
 	const float SideEnter = 60f;
@@ -105,7 +113,7 @@ public static class WarlordLook
 	const float BackEnter = 130f;
 	const float BackExit = 115f;
 
-	public static void Drive( SkinnedModelRenderer skin, Vector3 velocity, Vector3 look, int holdType )
+	public static void Drive( SkinnedModelRenderer skin, Vector3 velocity, Vector3 look )
 	{
 		if ( !skin.IsValid() )
 			return;
@@ -118,7 +126,30 @@ public static class WarlordLook
 			skin.Sequence.Looping = true;
 		}
 
+		var overlay = FindOverlay( skin );
+		if ( overlay.IsValid() )
+			Hide( overlay );
+
 		Face( skin, velocity, look );
+		ApplyShoot( skin );
+	}
+
+	public static void PlayShoot( SkinnedModelRenderer skin )
+	{
+		if ( !skin.IsValid() )
+			return;
+
+		var overlay = OverlayOf( skin );
+		if ( !overlay.IsValid() )
+			return;
+
+		overlay.UseAnimGraph = false;
+		overlay.Sequence.Name = "shoot";
+		overlay.Sequence.Looping = false;
+		overlay.Sequence.Time = 0f;
+		Hide( overlay );
+		var duration = overlay.Sequence.Duration;
+		shootUntil = Time.Now + (duration > 0.05f ? duration : 13f / 25f);
 	}
 
 	public static void Face( SkinnedModelRenderer skin, Vector3 velocity, Vector3 look )
@@ -135,10 +166,25 @@ public static class WarlordLook
 			Aim( skin, face, look );
 	}
 
+	public static void ApplyShoot( SkinnedModelRenderer skin )
+	{
+		if ( !skin.IsValid() )
+			return;
+
+		var overlay = FindOverlay( skin );
+		if ( overlay.IsValid() )
+			Hide( overlay );
+
+		if ( shootUntil < 0f || Time.Now >= shootUntil )
+			return;
+
+		CopyUpper( skin, overlay );
+	}
+
 	static string Locomotion( string current, Vector3 velocity, Vector3 look )
 	{
 		if ( velocity.Length <= 40f )
-			return "idle";
+			return "rest";
 
 		look.z = 0f;
 		velocity.z = 0f;
@@ -152,15 +198,15 @@ public static class WarlordLook
 
 		var band = current switch
 		{
-			"run_s" => abs < BackExit ? (abs < SideExit ? "run" : "side") : "back",
-			"run_e" or "run_w" => abs >= BackEnter ? "back" : (abs < SideExit ? "run" : "side"),
+			"run_backwards" => abs < BackExit ? (abs < SideExit ? "run" : "side") : "back",
+			"run_sideways" => abs >= BackEnter ? "back" : (abs < SideExit ? "run" : "side"),
 			_ => abs >= BackEnter ? "back" : (abs >= SideEnter ? "side" : "run")
 		};
 
 		if ( band == "back" )
-			return "run_s";
+			return "run_backwards";
 		if ( band == "side" )
-			return yaw > 0f ? "run_w" : "run_e";
+			return "run_sideways";
 		return "run";
 	}
 
@@ -179,6 +225,7 @@ public static class WarlordLook
 			return;
 
 		Twist( skin, "spine_2", yaw );
+		Twist( skin, "Spine2", yaw );
 	}
 
 	static void Twist( SkinnedModelRenderer skin, string name, float degrees )

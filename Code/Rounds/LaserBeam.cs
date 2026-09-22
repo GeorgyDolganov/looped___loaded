@@ -11,6 +11,9 @@ public sealed class LaserBeam : Component
 	readonly List<PolyLine> lines = new();
 	readonly List<(Vector2 A, Vector2 B)> rays = new();
 	readonly Dictionary<Enemy, float> nextHit = new();
+	PolyLine splashRing;
+	Vector2 splashAt;
+	bool splashLive;
 	float nextSplash;
 
 	public void Arm( GameLoop host, GunRecipe gun )
@@ -55,20 +58,27 @@ public sealed class LaserBeam : Component
 		var rank = Math.Max( 1, recipe.BeamRank );
 		var seed = (int)(Time.Now * (9f + rank * 7f));
 		var bolts = new List<List<Vector2>>();
+		var range = recipe.BeamRange;
+		if ( recipe.PointAim && loop.Aim.IsValid() )
+			range = MathF.Min( range, (loop.Aim.Cursor - origin).Length );
+		splashLive = false;
 
 		for ( var i = 0; i < count; i++ )
 		{
-			var yaw = 0f;
-			if ( count > 1 && cone > 0.01f )
-				yaw = -cone * 0.5f + cone * i / (count - 1);
-
-			var heading = Turn( dir, yaw );
-			var end = origin + heading * recipe.BeamRange;
-			if ( geometry is not null && geometry.TraceRay( origin, heading, recipe.BeamRange, out var hit ) )
+			var yaw = ShotSpread.Yaw( i, count, cone );
+			var heading = ShotSpread.Turn( dir, yaw );
+			var end = origin + heading * range;
+			if ( geometry is not null && geometry.TraceRay( origin, heading, range, out var hit ) )
 			{
 				end = hit.Position;
 				if ( hit.Kind == WallKind.Panel && loop.Arena.IsValid() )
 					loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, 0f, false );
+			}
+
+			if ( i == count / 2 )
+			{
+				splashAt = end;
+				splashLive = recipe.Splash > 1f;
 			}
 
 			foreach ( var bolt in LightningPath.Storm( origin, end, rank, seed + i * 31 ) )
@@ -82,6 +92,7 @@ public sealed class LaserBeam : Component
 		}
 
 		Draw( bolts, rank );
+		PaintSplash();
 	}
 
 	void Strike()
@@ -147,7 +158,7 @@ public sealed class LaserBeam : Component
 		if ( recipe.Splash > 1f && nearest.IsValid() && Time.Now >= nextSplash )
 		{
 			nextSplash = Time.Now + tick;
-			RoundCombat.Blast( loop, nearestAt, recipe.Splash, Math.Max( 1, recipe.BlastDamage ), null, ShotColors.Player, recipe.FriendlySplash, recipe.BlastShove, recipe.NapalmTime );
+			RoundCombat.Blast( loop, nearestAt, recipe.Splash, Math.Max( 1, recipe.SplashDamage ), null, ShotColors.Player, recipe.FriendlySplash );
 		}
 	}
 
@@ -193,6 +204,31 @@ public sealed class LaserBeam : Component
 		}
 	}
 
+	void PaintSplash()
+	{
+		if ( !splashLive || loop?.Geometry is null )
+		{
+			splashRing?.Clear();
+			return;
+		}
+
+		if ( !splashRing.IsValid() )
+		{
+			var go = Scene.CreateObject();
+			go.Name = "Splash";
+			go.Parent = GameObject;
+			splashRing = go.AddComponent<PolyLine>();
+		}
+
+		var tint = RoundCombat.RingTint( recipe.FriendlySplash );
+		splashRing.HeadTint = tint;
+		splashRing.TailTint = tint * 0.35f;
+		splashRing.HeadWidth = 3.5f;
+		splashRing.TailWidth = 3.5f;
+		splashRing.Apply();
+		splashRing.SetPoints( RoundCombat.Circle( loop.Geometry, splashAt, recipe.Splash ) );
+	}
+
 	static Vector2 Closest( Vector2 point, Vector2 a, Vector2 b )
 	{
 		var span = b - a;
@@ -202,17 +238,6 @@ public sealed class LaserBeam : Component
 
 		var t = Math.Clamp( ArenaGeometry.Dot( point - a, span ) / (length * length), 0f, 1f );
 		return a + span * t;
-	}
-
-	static Vector2 Turn( Vector2 dir, float degrees )
-	{
-		if ( MathF.Abs( degrees ) < 0.01f )
-			return dir.Normal;
-
-		var ang = MathX.DegreeToRadian( degrees );
-		var c = MathF.Cos( ang );
-		var s = MathF.Sin( ang );
-		return new Vector2( dir.x * c - dir.y * s, dir.x * s + dir.y * c ).Normal;
 	}
 }
 

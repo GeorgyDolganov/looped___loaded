@@ -24,6 +24,7 @@ public sealed class RoundProjectile : Component
 	readonly HashSet<Enemy> struck = new();
 	ArenaGeometry geometry;
 	PolyLine trailLine;
+	PolyLine splashRing;
 	int pierceLeft;
 	bool lensInside;
 	float travelled;
@@ -52,7 +53,7 @@ public sealed class RoundProjectile : Component
 
 	protected override void OnStart()
 	{
-		var size = Flight.Nail ? 16f : MathF.Max( 26f, Radius * 1.35f );
+		var size = Flight.Nail ? 16f : 26f;
 		Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, size, ShotColors.Player );
 
 		var glow = GameObject.AddComponent<PointLight>();
@@ -73,25 +74,30 @@ public sealed class RoundProjectile : Component
 
 	protected override void OnUpdate()
 	{
-		if ( geometry is null || !Loop.IsValid() || Loop.IsFrozen )
+		if ( geometry is null || !Loop.IsValid() )
 			return;
 
-		var toTravel = Speed * Time.Delta;
-		while ( toTravel > 0.001f )
+		if ( !Loop.IsFrozen )
 		{
-			var step = MathF.Min( StepLength, toTravel );
-			toTravel -= step;
-			if ( !Step( step ) )
+			var toTravel = Speed * Time.Delta;
+			while ( toTravel > 0.001f )
+			{
+				var step = MathF.Min( StepLength, toTravel );
+				toTravel -= step;
+				if ( !Step( step ) )
+					return;
+			}
+
+			Drift( Time.Delta );
+			Contain();
+			if ( HitTarget() )
 				return;
+
+			WorldPosition = geometry.ToPlayWorld( Flat );
+			PushTrail( WorldPosition );
 		}
 
-		Drift( Time.Delta );
-		Contain();
-		if ( HitTarget() )
-			return;
-
-		WorldPosition = geometry.ToPlayWorld( Flat );
-		PushTrail( WorldPosition );
+		PaintSplash();
 	}
 
 	public void NudgeOut()
@@ -107,16 +113,33 @@ public sealed class RoundProjectile : Component
 
 	bool Step( float step )
 	{
-		if ( geometry.TraceRay( Flat, Direction, step + Radius, out var hit ) )
+		var travel = step;
+		var arrive = false;
+		if ( Flight.PointAim )
+		{
+			var along = ArenaGeometry.Dot( Flight.Mark - Flat, Direction );
+			if ( along <= step )
+			{
+				travel = MathF.Max( 0f, along );
+				arrive = true;
+			}
+		}
+
+		if ( geometry.TraceRay( Flat, Direction, travel + Radius, out var hit ) )
 		{
 			if ( !BounceWall( hit, Direction ) )
 				return false;
 		}
 		else
 		{
-			EnergyLeft -= step;
-			travelled += step;
-			Flat += Direction * step;
+			EnergyLeft -= travel;
+			travelled += travel;
+			Flat += Direction * travel;
+			if ( arrive )
+			{
+				Die( true );
+				return false;
+			}
 		}
 
 		BendLens();
@@ -260,8 +283,8 @@ public sealed class RoundProjectile : Component
 					target.Stun( Flight.StunTime );
 			}
 
-			if ( CanSplash() )
-				RoundCombat.Blast( Loop, target.Flat, Flight.ExplosiveRadius, Math.Max( 1, Flight.BlastDamage ), this, ShotColors.Player, Flight.FriendlySplash, Flight.BlastShove, Flight.NapalmTime );
+			if ( Flight.ExplosiveRadius > 1f && (Flight.Volley is null || Flight.Volley.TrySplash()) )
+				RoundCombat.Blast( Loop, target.Flat, Flight.ExplosiveRadius, SplashDamage(), this, ShotColors.Player, Flight.FriendlySplash );
 
 			if ( !target.Alive )
 				Kills++;
@@ -313,21 +336,12 @@ public sealed class RoundProjectile : Component
 		return damage;
 	}
 
-	bool CanSplash()
-	{
-		if ( Flight.ExplosiveRadius <= 1f )
-			return false;
-
-		if ( Flight.SplashEach || Flight.Volley is null )
-			return true;
-
-		return Flight.Volley.TrySplash();
-	}
+	int SplashDamage() => Math.Max( 1, Flight.SplashDamage );
 
 	void Die( bool spent = false )
 	{
-		if ( spent && CanSplash() )
-			RoundCombat.Blast( Loop, Flat, Flight.ExplosiveRadius, Math.Max( 1, Flight.BlastDamage ), this, ShotColors.Player, Flight.FriendlySplash, Flight.BlastShove, Flight.NapalmTime );
+		if ( spent && Flight.ExplosiveRadius > 1f && (Flight.Volley is null || Flight.Volley.TrySplash()) )
+			RoundCombat.Blast( Loop, Flat, Flight.ExplosiveRadius, SplashDamage(), this, ShotColors.Player, Flight.FriendlySplash );
 
 		if ( Flight.Volley is { } volley )
 		{
@@ -352,5 +366,30 @@ public sealed class RoundProjectile : Component
 			trail.RemoveAt( 0 );
 
 		trailLine?.SetPoints( trail );
+	}
+
+	void PaintSplash()
+	{
+		if ( Flight.ExplosiveRadius <= 1f || geometry is null )
+		{
+			splashRing?.Clear();
+			return;
+		}
+
+		if ( !splashRing.IsValid() )
+		{
+			var go = Scene.CreateObject();
+			go.Name = "Splash";
+			go.Parent = GameObject;
+			splashRing = go.AddComponent<PolyLine>();
+		}
+
+		var tint = RoundCombat.RingTint( Flight.FriendlySplash );
+		splashRing.HeadTint = tint;
+		splashRing.TailTint = tint * 0.35f;
+		splashRing.HeadWidth = 3.5f;
+		splashRing.TailWidth = 3.5f;
+		splashRing.Apply();
+		splashRing.SetPoints( RoundCombat.Circle( geometry, Flat, Flight.ExplosiveRadius ) );
 	}
 }

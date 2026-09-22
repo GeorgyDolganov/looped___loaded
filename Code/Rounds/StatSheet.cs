@@ -155,63 +155,43 @@ public static class StatSheet
 					Down( "You take splash damage" );
 				break;
 			}
-			case RoundTrait.Fuse:
-				Up( $"+{Fmt( t.FuseSplash )} Splash Radius" );
-				Down( $"{PctMul( t.FuseSpeed )} Projectile Speed" );
-				Down( $"+{Fmt( t.FuseReload )}s Reload" );
-				Down( "You take splash damage" );
+			case RoundTrait.Mirv:
+				Note( "Splash per pellet" );
+				Down( $"{PctDelta( t.MirvRadiusScale )} Splash Radius" );
+				Down( $"{PctDelta( t.MirvSpeed )} Projectile Speed" );
+				Down( "Locks out LANCE" );
 				break;
-			case RoundTrait.Fat:
-				Up( $"Body {Fmt( t.FatRadius )}" );
-				Down( $"{PctMul( t.FatSpeed )} Projectile Speed" );
+			case RoundTrait.Bloom:
+				Up( $"+{Fmt( t.BloomRadius )} Splash Radius" );
+				Down( $"+{Fmt( t.BloomReload )}s Reload" );
+				Down( "Locks out LANCE" );
 				break;
-			case RoundTrait.Ember:
-				Up( $"+{Fmt( t.EmberSplash )} Splash Radius" );
-				Down( $"0 Damage after {Fmt( t.EmberFalloff )}" );
+			case RoundTrait.Scorch:
+				Up( $"Splash Damage {t.ScorchDamage}" );
+				Down( $"{PctDelta( t.ScorchSpeed )} Projectile Speed" );
+				Down( $"+{Fmt( t.ScorchReload )}s Reload" );
+				Down( "Locks out LANCE" );
 				break;
-			case RoundTrait.Blast:
-				Up( $"+{Fmt( t.BlastSplash )} Splash Radius" );
-				Down( $"+{Fmt( t.BlastReload )}s Reload" );
-				Down( "You take splash damage" );
+			case RoundTrait.Lance:
+				Up( $"+{t.LanceDamage} Damage" );
+				Up( "Friendly splash off" );
+				Down( $"{PctDelta( t.LanceRadiusScale )} Splash Radius" );
+				Down( $"{PctDelta( t.LanceSpeed )} Projectile Speed" );
+				Down( $"+{Fmt( t.LanceReload )}s Reload" );
+				Down( "Bounces 0" );
+				Down( "Locks out CLUSTER" );
 				break;
-			case RoundTrait.Crack:
-				Up( $"+{t.CrackDamage} Splash Damage" );
+			case RoundTrait.Crater:
+				Up( $"+{Fmt( t.CraterSplash )} Splash Radius" );
+				Up( $"Body {Fmt( t.CraterBody )}" );
+				Down( $"{PctDelta( t.CraterSpeed )} Projectile Speed" );
+				Down( "Bounces 0" );
+				Down( "Locks out CLUSTER" );
 				break;
-			case RoundTrait.Mine:
-				Up( $"+{Fmt( t.MineSplash )} Splash Radius" );
-				Note( "Explodes on first wall" );
-				Down( "No bounce" );
-				break;
-			case RoundTrait.Cluster:
-				Up( $"+{t.ClusterPellets} Projectiles" );
-				Down( $"+{Fmt( t.ClusterCone )}° Spread" );
-				Down( $"{PctMul( t.ClusterSplashMul )} Splash Radius" );
-				Note( "Each rocket splashes" );
-				Down( $"+{Fmt( t.ClusterReload )}s Reload" );
-				break;
-			case RoundTrait.Napalm:
-				Up( $"+{Fmt( t.NapalmTime )}s Burn" );
-				Note( "Burn on splash victims" );
-				break;
-			case RoundTrait.Shove:
-				Up( $"+{Fmt( t.ShoveForce )} Blast Knockback" );
-				break;
-			case RoundTrait.Core:
-				Up( $"+{Fmt( t.CoreSplash )} Splash Radius" );
-				Up( $"+{t.CoreDamage} Splash Damage" );
-				Down( $"{PctMul( t.CoreSpeed )} Projectile Speed" );
-				Down( $"+{Fmt( t.CoreReload )}s Reload" );
-				break;
-			case RoundTrait.Safe:
-				Up( "You ignore splash" );
-				Down( $"{PctMul( t.SafeMul )} Splash Radius" );
-				break;
-			case RoundTrait.Nuke:
-				Up( $"+{Fmt( t.NukeSplash )} Splash Radius" );
-				Up( $"+{t.NukeDamage} Splash Damage" );
-				Down( $"{PctMul( t.NukeSpeed )} Projectile Speed" );
-				Down( $"+{Fmt( t.NukeReload )}s Reload" );
-				Down( "You take splash damage" );
+			case RoundTrait.Spot:
+				Note( "Aim at a point" );
+				Down( $"{PctDelta( t.SpotSpeed )} Projectile Speed" );
+				Down( "Bounces 0" );
 				break;
 			case RoundTrait.Lash:
 			{
@@ -292,8 +272,11 @@ public static class StatSheet
 		AddFloat( rows, "Meat Range", now.MeatRange, next.MeatRange, preview, true );
 		AddInt( rows, "Meat Damage", now.MeatBonus, next.MeatBonus, preview, true, false );
 		AddFloat( rows, "Splash", now.Splash, next.Splash, preview, true );
-		AddInt( rows, "Splash Dmg", now.BlastDamage, next.BlastDamage, preview, true, false );
-		AddFloat( rows, "Blast Knock", now.BlastShove, next.BlastShove, preview, true );
+		AddInt( rows, "Splash Dmg", now.SplashDamage, next.SplashDamage, preview, true, false );
+		if ( now.PerPelletSplash || next.PerPelletSplash )
+			AddText( rows, "Per Pellet", Flag( now.PerPelletSplash ), Flag( next.PerPelletSplash ), preview );
+		if ( now.PointAim || next.PointAim )
+			AddText( rows, "Aim", now.PointAim ? "Point" : "Direction", next.PointAim ? "Point" : "Direction", preview );
 		if ( now.Auto || next.Auto || now.Burst > 1 || next.Burst > 1 )
 		{
 			AddInt( rows, "Burst", now.Burst, next.Burst, preview, true, true );
@@ -397,10 +380,10 @@ public static class StatSheet
 
 	static string Mode( GunRecipe recipe )
 	{
+		if ( recipe.PointAim && !recipe.Beam )
+			return "Point";
 		if ( recipe.Beam )
 			return "Lightning";
-		if ( recipe.Splash > 1f )
-			return "Rocket";
 		if ( recipe.Auto )
 			return "Auto";
 		if ( recipe.DoublePump )
@@ -416,8 +399,6 @@ public static class StatSheet
 		var pct = (int)MathF.Round( (scale - 1f) * 100f );
 		return pct >= 0 ? $"+{pct}%" : $"{pct}%";
 	}
-
-	static string PctMul( float scale ) => PctDelta( scale );
 
 	static string Pct( float scale ) => $"{(int)MathF.Round( scale * 100f )}%";
 

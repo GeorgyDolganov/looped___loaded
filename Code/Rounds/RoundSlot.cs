@@ -3,7 +3,7 @@ namespace LoopedLoaded;
 public sealed class RunLoadout
 {
 	public int BonusDamage;
-	public readonly int[] Levels = new int[64];
+	public readonly int[] Levels = new int[32];
 
 	public int TraitLevel( RoundTrait trait )
 	{
@@ -78,12 +78,6 @@ public sealed class RunLoadout
 		if ( buck > 0 )
 			cone += t.BuckCone.At( buck );
 
-		if ( !slug && Has( RoundTrait.Cluster ) )
-		{
-			count += t.ClusterPellets;
-			cone += t.ClusterCone;
-		}
-
 		if ( slug )
 		{
 			count = 1;
@@ -102,7 +96,7 @@ public sealed class RunLoadout
 			bounces += t.RicoBounces;
 		if ( lash > 0 )
 			bounces = 0;
-		if ( Has( RoundTrait.Mine ) )
+		if ( Has( RoundTrait.Lance ) || Has( RoundTrait.Crater ) || Has( RoundTrait.Spot ) )
 			bounces = 0;
 
 		var pierce = bore <= 0 ? 0 : (int)t.BorePierce.At( bore );
@@ -130,31 +124,28 @@ public sealed class RunLoadout
 			reload += t.HeapReload;
 		if ( Has( RoundTrait.Double ) )
 			reload += t.DoubleReload;
-		if ( Has( RoundTrait.Fuse ) )
-			reload += t.FuseReload;
-		if ( Has( RoundTrait.Blast ) )
-			reload += t.BlastReload;
-		if ( Has( RoundTrait.Cluster ) )
-			reload += t.ClusterReload;
-		if ( Has( RoundTrait.Core ) )
-			reload += t.CoreReload;
-		if ( Has( RoundTrait.Nuke ) )
-			reload += t.NukeReload;
+		if ( Has( RoundTrait.Bloom ) )
+			reload += t.BloomReload;
+		if ( Has( RoundTrait.Scorch ) )
+			reload += t.ScorchReload;
+		if ( Has( RoundTrait.Lance ) )
+			reload += t.LanceReload;
 
 		var speed = 1f;
 		if ( warhead > 0 )
 			speed *= t.WarheadSpeed.At( warhead );
+		if ( Has( RoundTrait.Mirv ) )
+			speed *= t.MirvSpeed;
+		if ( Has( RoundTrait.Scorch ) )
+			speed *= t.ScorchSpeed;
+		if ( Has( RoundTrait.Lance ) )
+			speed *= t.LanceSpeed;
+		if ( Has( RoundTrait.Crater ) )
+			speed *= t.CraterSpeed;
+		if ( Has( RoundTrait.Spot ) )
+			speed *= t.SpotSpeed;
 		if ( rush > 0 && t.RushSpeed is not null )
 			speed *= t.RushSpeed.At( rush );
-		if ( Has( RoundTrait.Fuse ) )
-			speed *= t.FuseSpeed;
-		if ( Has( RoundTrait.Fat ) )
-			speed *= t.FatSpeed;
-		if ( Has( RoundTrait.Core ) )
-			speed *= t.CoreSpeed;
-		if ( Has( RoundTrait.Nuke ) )
-			speed *= t.NukeSpeed;
-		speed = MathF.Max( 0.35f, speed );
 
 		var sweep = t.SpinBase;
 		if ( spin > 0 && t.SpinBoost is not null )
@@ -183,53 +174,34 @@ public sealed class RunLoadout
 			falloff = falloff > 1f ? MathF.Min( falloff, cut ) : cut;
 		}
 
-		if ( Has( RoundTrait.Ember ) )
-			falloff = falloff > 1f ? MathF.Min( falloff, t.EmberFalloff ) : t.EmberFalloff;
-
 		if ( slug && falloff > 1f )
 			falloff += t.SlugFalloffPad;
 
 		var damage = Math.Max( 1, t.BaseDamage + BonusDamage );
 		if ( slug )
 			damage += t.SlugDamage;
+		if ( Has( RoundTrait.Lance ) )
+			damage += t.LanceDamage;
 
 		var radius = pin > 0 ? t.PinRadius : 13f;
 		if ( slug )
 			radius = MathF.Max( radius, t.SlugRadius );
-		if ( Has( RoundTrait.Fat ) )
-			radius = MathF.Max( radius, t.FatRadius );
-		if ( Has( RoundTrait.Nuke ) )
-			radius = MathF.Max( radius, t.NukeRadius );
+		if ( Has( RoundTrait.Crater ) )
+			radius = MathF.Max( radius, t.CraterBody );
 
-		var splash = 0f;
-		if ( warhead > 0 )
-			splash = t.WarheadRadius.At( warhead );
-		if ( Has( RoundTrait.Fuse ) )
-			splash += t.FuseSplash;
-		if ( Has( RoundTrait.Ember ) )
-			splash += t.EmberSplash;
-		if ( Has( RoundTrait.Blast ) )
-			splash += t.BlastSplash;
-		if ( Has( RoundTrait.Mine ) )
-			splash += t.MineSplash;
-		if ( Has( RoundTrait.Core ) )
-			splash += t.CoreSplash;
-		if ( Has( RoundTrait.Nuke ) )
-			splash += t.NukeSplash;
-		if ( Has( RoundTrait.Cluster ) && splash > 1f )
-			splash *= t.ClusterSplashMul;
-		if ( Has( RoundTrait.Safe ) && splash > 1f )
-			splash *= t.SafeMul;
+		var splash = t.WarheadRadius.At( warhead );
+		if ( Has( RoundTrait.Mirv ) )
+			splash *= t.MirvRadiusScale;
+		if ( Has( RoundTrait.Bloom ) )
+			splash += t.BloomRadius;
+		if ( Has( RoundTrait.Lance ) )
+			splash *= t.LanceRadiusScale;
+		if ( Has( RoundTrait.Crater ) )
+			splash += t.CraterSplash;
 
-		var blast = splash > 1f ? Math.Max( 1, t.SplashDamageBase ) : 0;
-		if ( Has( RoundTrait.Crack ) )
-			blast += t.CrackDamage;
-		if ( Has( RoundTrait.Core ) )
-			blast += t.CoreDamage;
-		if ( Has( RoundTrait.Nuke ) )
-			blast += t.NukeDamage;
-		if ( splash <= 1f )
-			blast = 0;
+		var splashDamage = splash > 1f ? 1 : 0;
+		if ( Has( RoundTrait.Scorch ) && splash > 1f )
+			splashDamage = Math.Max( splashDamage, t.ScorchDamage );
 
 		return new GunRecipe
 		{
@@ -246,12 +218,10 @@ public sealed class RunLoadout
 			SpinSpeed = sweep,
 			Radius = radius,
 			Splash = splash,
-			FriendlySplash = splash > 1f && !Has( RoundTrait.Safe ),
-			BlastDamage = blast,
-			SplashEach = Has( RoundTrait.Cluster ),
-			BlastShove = Has( RoundTrait.Shove ) ? t.ShoveForce : 0f,
-			NapalmTime = Has( RoundTrait.Napalm ) ? t.NapalmTime : 0f,
-			Mine = Has( RoundTrait.Mine ),
+			SplashDamage = splashDamage,
+			FriendlySplash = warhead > 0 && !Has( RoundTrait.Lance ),
+			PerPelletSplash = Has( RoundTrait.Mirv ),
+			PointAim = Has( RoundTrait.Spot ),
 			Nail = pin > 0 && !slug,
 			StickTime = pin > 0 && !slug ? t.PinStick : 0f,
 			Falloff = falloff,
@@ -292,12 +262,10 @@ public struct GunRecipe
 	public float SpinSpeed;
 	public float Radius;
 	public float Splash;
+	public int SplashDamage;
 	public bool FriendlySplash;
-	public int BlastDamage;
-	public bool SplashEach;
-	public float BlastShove;
-	public float NapalmTime;
-	public bool Mine;
+	public bool PerPelletSplash;
+	public bool PointAim;
 	public bool Nail;
 	public float StickTime;
 	public float Falloff;
@@ -331,12 +299,10 @@ public struct RoundFlight
 	public float SpeedScale;
 	public float SpinSpeed;
 	public float ExplosiveRadius;
+	public int SplashDamage;
 	public bool FriendlySplash;
-	public int BlastDamage;
-	public bool SplashEach;
-	public float BlastShove;
-	public float NapalmTime;
-	public bool Mine;
+	public bool PointAim;
+	public Vector2 Mark;
 	public float Falloff;
 	public float MeatRange;
 	public int MeatBonus;
@@ -355,6 +321,7 @@ public sealed class ShotVolley
 {
 	public int Alive;
 	public bool Splashed;
+	public bool PerPellet;
 	public bool Closed;
 	public bool Hold;
 	public Vector2 LastFlat;
@@ -362,6 +329,9 @@ public sealed class ShotVolley
 
 	public bool TrySplash()
 	{
+		if ( PerPellet )
+			return true;
+
 		if ( Splashed )
 			return false;
 

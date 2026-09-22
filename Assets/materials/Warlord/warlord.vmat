@@ -4,7 +4,7 @@ Layer0
 {
 	shader "materials/shaders/nearest.shader"
 
-	Texture_ps_0 "textures/warlord_color.jpg"
+	Texture_ps_0 "textures/warlord.png"
 
 	//---- Fog ----
 	g_bFogEnabled "1"

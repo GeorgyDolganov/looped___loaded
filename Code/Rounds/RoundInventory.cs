@@ -344,21 +344,29 @@ public sealed class RoundInventory : Component
 
 		var count = Math.Max( 1, recipe.Count );
 		var cone = recipe.Cone;
-		volley ??= new ShotVolley { Alive = count };
+		var reach = 0f;
+		if ( recipe.PointAim )
+			reach = (Aim.Cursor - Aim.Muzzle).Length;
+		volley ??= new ShotVolley { Alive = count, PerPellet = recipe.PerPelletSplash };
 		if ( !spendMag )
 			volley.Alive += count;
 
 		for ( var i = 0; i < count; i++ )
 		{
-			var yaw = 0f;
-			if ( count > 1 && cone > 0.01f )
-				yaw = -cone * 0.5f + cone * i / (count - 1);
+			var yaw = ShotSpread.Yaw( i, count, cone );
+			var heading = ShotSpread.Turn( Aim.Direction, yaw );
+			var flight = ToFlight( recipe, volley );
+			if ( recipe.PointAim )
+			{
+				flight.PointAim = true;
+				flight.Mark = Aim.Muzzle + heading * reach;
+			}
 
 			var go = Loop.Scene.CreateObject();
 			go.Name = "Shot";
 			var projectile = go.AddComponent<RoundProjectile>();
 			projectile.Radius = recipe.Radius;
-			projectile.Launch( Loop, ToFlight( recipe, volley ), Aim.Muzzle, Turn( Aim.Direction, yaw ) );
+			projectile.Launch( Loop, flight, Aim.Muzzle, heading );
 			Live.Add( projectile );
 		}
 
@@ -377,12 +385,8 @@ public sealed class RoundInventory : Component
 		SpeedScale = recipe.SpeedScale,
 		SpinSpeed = recipe.SpinSpeed,
 		ExplosiveRadius = recipe.Splash,
+		SplashDamage = recipe.SplashDamage,
 		FriendlySplash = recipe.FriendlySplash,
-		BlastDamage = recipe.BlastDamage,
-		SplashEach = recipe.SplashEach,
-		BlastShove = recipe.BlastShove,
-		NapalmTime = recipe.NapalmTime,
-		Mine = recipe.Mine,
 		Falloff = recipe.Falloff,
 		MeatRange = recipe.MeatRange,
 		MeatBonus = recipe.MeatBonus,
@@ -394,17 +398,6 @@ public sealed class RoundInventory : Component
 		Nail = recipe.Nail,
 		Volley = volley
 	};
-
-	static Vector2 Turn( Vector2 dir, float degrees )
-	{
-		if ( MathF.Abs( degrees ) < 0.01f )
-			return dir.Normal;
-
-		var ang = MathX.DegreeToRadian( degrees );
-		var c = MathF.Cos( ang );
-		var s = MathF.Sin( ang );
-		return new Vector2( dir.x * c - dir.y * s, dir.x * s + dir.y * c ).Normal;
-	}
 
 	void Prune()
 	{
@@ -449,5 +442,27 @@ public sealed class RoundInventory : Component
 		var renderer = readyMarker.GetComponent<ModelRenderer>();
 		if ( renderer.IsValid() )
 			renderer.Tint = lit ? ShotColors.Player : new Color( 0.35f, 0.45f, 0.55f );
+	}
+}
+
+public static class ShotSpread
+{
+	public static float Yaw( int index, int count, float cone )
+	{
+		if ( count <= 1 || cone <= 0.01f )
+			return 0f;
+
+		return -cone * 0.5f + cone * index / (count - 1);
+	}
+
+	public static Vector2 Turn( Vector2 dir, float degrees )
+	{
+		if ( MathF.Abs( degrees ) < 0.01f )
+			return dir.Normal;
+
+		var ang = MathX.DegreeToRadian( degrees );
+		var c = MathF.Cos( ang );
+		var s = MathF.Sin( ang );
+		return new Vector2( dir.x * c - dir.y * s, dir.x * s + dir.y * c ).Normal;
 	}
 }

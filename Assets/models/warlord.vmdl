@@ -55,7 +55,7 @@
 				[
 					{
 						_class = "AnimFile"
-						name = "idle"
+						name = "run"
 						activity_name = ""
 						activity_weight = 1
 						weight_list_name = ""
@@ -78,7 +78,7 @@
 					},
 					{
 						_class = "AnimFile"
-						name = "run"
+						name = "run_sideways"
 						activity_name = ""
 						activity_weight = 1
 						weight_list_name = ""
@@ -101,7 +101,7 @@
 					},
 					{
 						_class = "AnimFile"
-						name = "run_e"
+						name = "shoot"
 						activity_name = ""
 						activity_weight = 1
 						weight_list_name = ""
@@ -124,7 +124,7 @@
 					},
 					{
 						_class = "AnimFile"
-						name = "run_s"
+						name = "rest"
 						activity_name = ""
 						activity_weight = 1
 						weight_list_name = ""
@@ -147,7 +147,7 @@
 					},
 					{
 						_class = "AnimFile"
-						name = "run_w"
+						name = "run_backwards"
 						activity_name = ""
 						activity_weight = 1
 						weight_list_name = ""
@@ -165,7 +165,7 @@
 						start_frame = -1
 						end_frame = -1
 						framerate = -1.0
-						take = 5
+						take = 0
 						reverse = false
 					},
 				]

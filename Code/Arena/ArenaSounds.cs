@@ -74,7 +74,8 @@ public static class ArenaSounds
 		handle.DistanceAttenuation = false;
 		handle.Distance = 20000f;
 		handle.SpacialBlend = ui ? 0f : 0.2f;
-		handle.Volume = (key == "fire" ? 1.35f : 1f) * gain;
+		var loud = key == "fire" ? 1.35f : key == "explode" ? 1.6f : 1f;
+		handle.Volume = loud * gain;
 	}
 
 	static void Ensure()
@@ -601,20 +602,30 @@ public static class ArenaSounds
 	static float[] ClipExplode( int v )
 	{
 		var rng = new Random( 410 + v );
-		var n = Len( 0.7f );
+		var n = Len( 0.42f );
 		var buf = new float[n];
 		float lp = 0f;
-		var dBoom = Ms( 6f );
-		var dDebris = Ms( 18f );
+		float mid = 0f;
+		var thump = 124f + v * 14f;
+		var crack = 210f + v * 28f;
+		var dBody = Ms( 3f );
+		var dSlap = Ms( 11f );
 		for ( var i = 0; i < n; i++ )
 		{
 			var t = i / (float)Studio;
 			var noise = Noise( rng );
-			lp += (noise - lp) * (0.28f * MathF.Exp( -t * 2.6f ) + 0.035f);
-			Stamp( buf, i, lp * Env( t, 0.005f, 4.2f ) * 1.2f );
-			Stamp( buf, i + dBoom, Sine( (36f + v * 4f) * t ) * Env( t, 0.008f, 5.8f ) * 1.05f );
-			if ( rng.NextDouble() < 0.045f * MathF.Exp( -t * 5.5f ) )
-				Stamp( buf, i + dDebris, noise * 0.7f );
+			lp += (noise - lp) * 0.18f;
+			mid += (noise - mid) * 0.46f;
+			var hp = noise - mid;
+			Stamp( buf, i, hp * Env( t, 0.0008f, 38f ) * 1.75f
+				+ Square( crack * t ) * Env( t, 0.001f, 46f ) * 0.42f );
+			Stamp( buf, i + dBody, (mid - lp) * Env( t, 0.002f, 9.5f ) * 1.35f
+				+ Square( thump * t ) * Env( t, 0.0015f, 11f ) * 0.7f
+				+ Sine( thump * 0.5f * t ) * Env( t, 0.003f, 8f ) * 0.82f );
+			if ( t < 0.08f )
+				Stamp( buf, i + dSlap, Saw( (86f + v * 10f) * t ) * Env( t, 0.003f, 16f ) * 0.32f + hp * 0.35f );
+			if ( rng.NextDouble() < 0.07f * MathF.Exp( -t * 9f ) )
+				Stamp( buf, i + Ms( 7f ), noise * 0.58f );
 		}
 
 		return buf;

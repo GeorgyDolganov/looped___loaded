@@ -11,11 +11,7 @@ public enum TraitPack
 	Entry,
 	Junior,
 	Warrior,
-	Abomination,
-	Fuse,
-	Shell,
-	Payload,
-	Silo
+	Abomination
 }
 
 public enum RoundTrait
@@ -43,18 +39,12 @@ public enum RoundTrait
 	Waste,
 	Breach,
 	Slug,
-	Fuse,
-	Fat,
-	Ember,
-	Blast,
-	Crack,
-	Mine,
-	Cluster,
-	Napalm,
-	Shove,
-	Core,
-	Safe,
-	Nuke
+	Mirv,
+	Bloom,
+	Scorch,
+	Lance,
+	Crater,
+	Spot
 }
 
 public static class RoundTraits
@@ -65,12 +55,9 @@ public static class RoundTraits
 		RoundTrait.Load, RoundTrait.Choke, RoundTrait.Meat, RoundTrait.Rico,
 		RoundTrait.Gape, RoundTrait.Double, RoundTrait.Kick, RoundTrait.Stun,
 		RoundTrait.Heap, RoundTrait.Waste, RoundTrait.Breach, RoundTrait.Slug,
-		RoundTrait.Fuse, RoundTrait.Fat, RoundTrait.Ember,
-		RoundTrait.Blast, RoundTrait.Crack, RoundTrait.Mine,
-		RoundTrait.Cluster, RoundTrait.Napalm, RoundTrait.Shove,
-		RoundTrait.Core, RoundTrait.Safe, RoundTrait.Nuke,
 		RoundTrait.Buck, RoundTrait.Bore, RoundTrait.Drum, RoundTrait.Warhead, RoundTrait.Lash, RoundTrait.Pin,
-		RoundTrait.Spin, RoundTrait.Rush
+		RoundTrait.Spin, RoundTrait.Rush,
+		RoundTrait.Mirv, RoundTrait.Bloom, RoundTrait.Scorch, RoundTrait.Lance, RoundTrait.Crater, RoundTrait.Spot
 	};
 
 	public static TraitPack Pack( RoundTrait trait ) => trait switch
@@ -79,26 +66,44 @@ public static class RoundTraits
 		RoundTrait.Load or RoundTrait.Choke or RoundTrait.Meat or RoundTrait.Rico => TraitPack.Junior,
 		RoundTrait.Gape or RoundTrait.Double or RoundTrait.Kick or RoundTrait.Stun => TraitPack.Warrior,
 		RoundTrait.Heap or RoundTrait.Waste or RoundTrait.Breach or RoundTrait.Slug => TraitPack.Abomination,
-		RoundTrait.Fuse or RoundTrait.Fat or RoundTrait.Ember => TraitPack.Fuse,
-		RoundTrait.Blast or RoundTrait.Crack or RoundTrait.Mine => TraitPack.Shell,
-		RoundTrait.Cluster or RoundTrait.Napalm or RoundTrait.Shove => TraitPack.Payload,
-		RoundTrait.Core or RoundTrait.Safe or RoundTrait.Nuke => TraitPack.Silo,
 		RoundTrait.Buck => TraitPack.Shotgun,
 		RoundTrait.Bore => TraitPack.Rail,
 		RoundTrait.Drum or RoundTrait.Rush => TraitPack.Rifle,
-		RoundTrait.Warhead => TraitPack.Rocket,
+		RoundTrait.Warhead or RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch or RoundTrait.Lance or RoundTrait.Crater or RoundTrait.Spot => TraitPack.Rocket,
 		RoundTrait.Lash => TraitPack.Laser,
 		_ => TraitPack.Nailgun
 	};
 
-	public static bool OneShot( RoundTrait trait ) => Pack( trait ) is TraitPack.Entry or TraitPack.Junior or TraitPack.Warrior or TraitPack.Abomination or TraitPack.Fuse or TraitPack.Shell or TraitPack.Payload or TraitPack.Silo;
+	public static bool OneShot( RoundTrait trait ) => NeedsWarhead( trait ) || Pack( trait ) is TraitPack.Entry or TraitPack.Junior or TraitPack.Warrior or TraitPack.Abomination;
+
+	public static bool IsCluster( RoundTrait trait ) => trait is RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch;
+
+	public static bool IsLance( RoundTrait trait ) => trait is RoundTrait.Lance or RoundTrait.Crater;
+
+	public static bool NeedsWarhead( RoundTrait trait ) => IsCluster( trait ) || IsLance( trait ) || trait == RoundTrait.Spot;
+
+	public static bool OwnsCluster( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Mirv ) || loadout.Has( RoundTrait.Bloom ) || loadout.Has( RoundTrait.Scorch ));
+
+	public static bool OwnsLance( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Lance ) || loadout.Has( RoundTrait.Crater ));
 
 	public static bool Blocked( RoundTrait trait, RunLoadout loadout )
 	{
 		if ( loadout is null )
 			return false;
 
-		return Rival( trait ) is { } other && loadout.Has( other );
+		if ( NeedsWarhead( trait ) && !loadout.Has( RoundTrait.Warhead ) )
+			return true;
+
+		if ( Rival( trait ) is { } other && loadout.Has( other ) )
+			return true;
+
+		if ( IsCluster( trait ) && OwnsLance( loadout ) )
+			return true;
+
+		if ( IsLance( trait ) && OwnsCluster( loadout ) )
+			return true;
+
+		return false;
 	}
 
 	public static RoundTrait? Rival( RoundTrait trait ) => trait switch
@@ -120,10 +125,6 @@ public static class RoundTraits
 		TraitPack.Junior => new Color( 1f, 0.55f, 0.22f ),
 		TraitPack.Warrior => new Color( 0.95f, 0.28f, 0.16f ),
 		TraitPack.Abomination => new Color( 0.62f, 0.95f, 0.28f ),
-		TraitPack.Fuse => new Color( 1f, 0.52f, 0.22f ),
-		TraitPack.Shell => new Color( 1f, 0.38f, 0.14f ),
-		TraitPack.Payload => new Color( 0.95f, 0.22f, 0.10f ),
-		TraitPack.Silo => new Color( 0.72f, 0.08f, 0.06f ),
 		TraitPack.Rifle => new Color( 0.55f, 0.85f, 1f ),
 		TraitPack.Shotgun => new Color( 1f, 0.62f, 0.28f ),
 		TraitPack.Nailgun => new Color( 0.95f, 0.82f, 0.35f ),
@@ -156,19 +157,7 @@ public static class RoundTraits
 		RoundTrait.Buck => "ui/traits/heavy.png",
 		RoundTrait.Bore => "ui/traits/pierce.png",
 		RoundTrait.Drum => "ui/traits/accel.png",
-		RoundTrait.Warhead => "ui/traits/explosive.png",
-		RoundTrait.Fuse => "ui/traits/explosive.png",
-		RoundTrait.Fat => "ui/traits/heavy.png",
-		RoundTrait.Ember => "ui/traits/rim.png",
-		RoundTrait.Blast => "ui/traits/explosive.png",
-		RoundTrait.Crack => "ui/traits/hook.png",
-		RoundTrait.Mine => "ui/traits/pinball.png",
-		RoundTrait.Cluster => "ui/traits/shred.png",
-		RoundTrait.Napalm => "ui/traits/electric.png",
-		RoundTrait.Shove => "ui/traits/kick.png",
-		RoundTrait.Core => "ui/traits/heavy.png",
-		RoundTrait.Safe => "ui/traits/bounce.png",
-		RoundTrait.Nuke => "ui/traits/explosive.png",
+		RoundTrait.Warhead or RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch or RoundTrait.Lance or RoundTrait.Crater or RoundTrait.Spot => "ui/traits/explosive.png",
 		RoundTrait.Lash => "ui/traits/electric.png",
 		RoundTrait.Spin => "ui/traits/clockwise.png",
 		RoundTrait.Rush => "ui/traits/step.png",

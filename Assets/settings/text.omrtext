@@ -227,11 +227,7 @@
       "Entry": "ENTRY",
       "Junior": "JUNIOR",
       "Warrior": "WARRIOR",
-      "Abomination": "ABOMINATION",
-      "Fuse": "FUSE",
-      "Shell": "SHELL",
-      "Payload": "PAYLOAD",
-      "Silo": "SILO"
+      "Abomination": "ABOMINATION"
     },
     "Buck": {
       "Code": "BUCK",
@@ -251,67 +247,7 @@
     "Warhead": {
       "Code": "WARHEAD",
       "Title": "WARHEAD",
-      "Blurb": "Rocket seed. Splash. Slow. You take it. Rank 3 is a fat boom."
-    },
-    "Fuse": {
-      "Code": "FUSE",
-      "Title": "FUSE",
-      "Blurb": "Start a rocket. +36 splash. Slow. You take it."
-    },
-    "Fat": {
-      "Code": "FAT",
-      "Title": "FAT",
-      "Blurb": "Fat body 22. Speed −10%."
-    },
-    "Ember": {
-      "Code": "EMBER",
-      "Title": "EMBER",
-      "Blurb": "+18 splash. Direct 0 after 280."
-    },
-    "Blast": {
-      "Code": "BLAST",
-      "Title": "BLAST",
-      "Blurb": "+32 splash. Reload +0.18s. You take it."
-    },
-    "Crack": {
-      "Code": "CRACK",
-      "Title": "CRACK",
-      "Blurb": "Splash damage +1."
-    },
-    "Mine": {
-      "Code": "MINE",
-      "Title": "MINE",
-      "Blurb": "+22 splash. Dies on first wall. No bounce."
-    },
-    "Cluster": {
-      "Code": "CLUSTER",
-      "Title": "CLUSTER",
-      "Blurb": "+2 rockets, 14° fan. Each splashes. Smaller boom."
-    },
-    "Napalm": {
-      "Code": "NAPALM",
-      "Title": "NAPALM",
-      "Blurb": "Splash victims burn 0.55s later."
-    },
-    "Shove": {
-      "Code": "SHOVE",
-      "Title": "SHOVE",
-      "Blurb": "Blast knocks 150."
-    },
-    "Core": {
-      "Code": "CORE",
-      "Title": "CORE",
-      "Blurb": "+24 splash, +1 splash dmg. Slow. Reload +0.40s."
-    },
-    "Safe": {
-      "Code": "SAFE",
-      "Title": "SAFE",
-      "Blurb": "You ignore splash. Radius −28%."
-    },
-    "Nuke": {
-      "Code": "NUKE",
-      "Title": "NUKE",
-      "Blurb": "+70 splash, +1 splash dmg. Crawl. Reload +0.50s. You take it."
+      "Blurb": "A small clap. Slow rocket. Hurts you."
     },
     "Lash": {
       "Code": "LASH",
@@ -407,6 +343,36 @@
       "Code": "SLUG",
       "Title": "SLUG",
       "Blurb": "One fat slug. Radius 22. +2 dmg. No fan."
+    },
+    "Mirv": {
+      "Code": "MIRV",
+      "Title": "MIRV",
+      "Blurb": "Each pellet splashes. Radius ×0.55. Slower. Locks out LANCE."
+    },
+    "Bloom": {
+      "Code": "BLOOM",
+      "Title": "BLOOM",
+      "Blurb": "+40 splash radius. Reload +0.30s. Locks out LANCE."
+    },
+    "Scorch": {
+      "Code": "SCORCH",
+      "Title": "SCORCH",
+      "Blurb": "Splash damage 2. Slower. Reload +0.20s. Locks out LANCE."
+    },
+    "Lance": {
+      "Code": "LANCE",
+      "Title": "LANCE",
+      "Blurb": "No friendly splash. +2 direct hit. Smaller radius. No bounce. Locks out CLUSTER."
+    },
+    "Crater": {
+      "Code": "CRATER",
+      "Title": "CRATER",
+      "Blurb": "Fat body. +28 splash. No bounce. Slower. Locks out CLUSTER."
+    },
+    "Spot": {
+      "Code": "SPOT",
+      "Title": "SPOT",
+      "Blurb": "Shots fly to the cursor and burst there. No bounce. Slower."
     },
     "Pierce": {
       "Code": "PRC",

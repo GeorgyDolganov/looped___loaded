@@ -29,22 +29,6 @@
     "Price": 3,
     "Weight": 3
   },
-  "Fuse": {
-    "Price": 2,
-    "Weight": 5
-  },
-  "Shell": {
-    "Price": 3,
-    "Weight": 3
-  },
-  "Payload": {
-    "Price": 5,
-    "Weight": 2
-  },
-  "Silo": {
-    "Price": 8,
-    "Weight": 1
-  },
   "Entry": {
     "Price": 2,
     "Weight": 6
@@ -99,34 +83,21 @@
     "Level2": 0.68,
     "Level3": 0.58
   },
-  "SplashDamageBase": 1,
-  "FuseSplash": 36,
-  "FuseSpeed": 0.9,
-  "FuseReload": 0.1,
-  "FatRadius": 22,
-  "FatSpeed": 0.9,
-  "EmberSplash": 18,
-  "EmberFalloff": 280,
-  "BlastSplash": 32,
-  "BlastReload": 0.18,
-  "CrackDamage": 1,
-  "MineSplash": 22,
-  "ClusterPellets": 2,
-  "ClusterCone": 14,
-  "ClusterSplashMul": 0.62,
-  "ClusterReload": 0.22,
-  "NapalmTime": 0.55,
-  "ShoveForce": 150,
-  "CoreSplash": 24,
-  "CoreDamage": 1,
-  "CoreReload": 0.4,
-  "CoreSpeed": 0.85,
-  "SafeMul": 0.72,
-  "NukeSplash": 70,
-  "NukeDamage": 1,
-  "NukeReload": 0.5,
-  "NukeSpeed": 0.58,
-  "NukeRadius": 26,
+  "MirvRadiusScale": 0.55,
+  "MirvSpeed": 0.8,
+  "BloomRadius": 40,
+  "BloomReload": 0.3,
+  "ScorchDamage": 2,
+  "ScorchSpeed": 0.75,
+  "ScorchReload": 0.2,
+  "LanceDamage": 2,
+  "LanceRadiusScale": 0.7,
+  "LanceSpeed": 0.7,
+  "LanceReload": 0.45,
+  "CraterBody": 22,
+  "CraterSplash": 28,
+  "CraterSpeed": 0.65,
+  "SpotSpeed": 0.85,
   "LashPad": 0.4,
   "LashPerSecond": 0.5,
   "LashMaxHold": 1.1,

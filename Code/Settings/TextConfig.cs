@@ -66,18 +66,6 @@ public class TextConfig : GameResource
 			RoundTrait.Bore => pack.Bore ??= new(),
 			RoundTrait.Drum => pack.Drum ??= new(),
 			RoundTrait.Warhead => pack.Warhead ??= new(),
-			RoundTrait.Fuse => pack.Fuse ??= new(),
-			RoundTrait.Fat => pack.Fat ??= new(),
-			RoundTrait.Ember => pack.Ember ??= new(),
-			RoundTrait.Blast => pack.Blast ??= new(),
-			RoundTrait.Crack => pack.Crack ??= new(),
-			RoundTrait.Mine => pack.Mine ??= new(),
-			RoundTrait.Cluster => pack.Cluster ??= new(),
-			RoundTrait.Napalm => pack.Napalm ??= new(),
-			RoundTrait.Shove => pack.Shove ??= new(),
-			RoundTrait.Core => pack.Core ??= new(),
-			RoundTrait.Safe => pack.Safe ??= new(),
-			RoundTrait.Nuke => pack.Nuke ??= new(),
 			RoundTrait.Lash => pack.Lash ??= new(),
 			RoundTrait.Pin => pack.Pin ??= new(),
 			RoundTrait.Spin => pack.Spin ??= new(),
@@ -96,6 +84,13 @@ public class TextConfig : GameResource
 			RoundTrait.Heap => pack.Heap ??= new(),
 			RoundTrait.Waste => pack.Waste ??= new(),
 			RoundTrait.Breach => pack.Breach ??= new(),
+			RoundTrait.Slug => pack.Slug ??= new(),
+			RoundTrait.Mirv => pack.Mirv ??= new(),
+			RoundTrait.Bloom => pack.Bloom ??= new(),
+			RoundTrait.Scorch => pack.Scorch ??= new(),
+			RoundTrait.Lance => pack.Lance ??= new(),
+			RoundTrait.Crater => pack.Crater ??= new(),
+			RoundTrait.Spot => pack.Spot ??= new(),
 			_ => pack.Slug ??= new()
 		};
 	}
@@ -113,10 +108,6 @@ public class TextConfig : GameResource
 			TraitPack.Junior => Or( rarity.Junior, "JUNIOR" ),
 			TraitPack.Warrior => Or( rarity.Warrior, "WARRIOR" ),
 			TraitPack.Abomination => Or( rarity.Abomination, "ABOMINATION" ),
-			TraitPack.Fuse => Or( rarity.Fuse, "FUSE" ),
-			TraitPack.Shell => Or( rarity.Shell, "SHELL" ),
-			TraitPack.Payload => Or( rarity.Payload, "PAYLOAD" ),
-			TraitPack.Silo => Or( rarity.Silo, "SILO" ),
 			TraitPack.Rifle or TraitPack.Shotgun => Or( rarity.Common, "COMMON" ),
 			TraitPack.Nailgun => Or( rarity.Uncommon, "UNCOMMON" ),
 			_ => Or( rarity.Rare, "RARE" )
@@ -226,10 +217,6 @@ public class RarityCopy
 	[Property] public string Junior { get; set; } = "JUNIOR";
 	[Property] public string Warrior { get; set; } = "WARRIOR";
 	[Property] public string Abomination { get; set; } = "ABOMINATION";
-	[Property] public string Fuse { get; set; } = "FUSE";
-	[Property] public string Shell { get; set; } = "SHELL";
-	[Property] public string Payload { get; set; } = "PAYLOAD";
-	[Property] public string Silo { get; set; } = "SILO";
 }
 
 public class TraitsCopy
@@ -238,19 +225,7 @@ public class TraitsCopy
 	[Property] public TraitCopy Buck { get; set; } = new() { Code = "BUCK", Title = "BUCK", Blurb = "A couple of pellets. Full spread at rank 3. Shotgun DNA." };
 	[Property] public TraitCopy Bore { get; set; } = new() { Code = "BORE", Title = "BORE", Blurb = "One punch-through. Rail at rank 3. Locks out LASH." };
 	[Property] public TraitCopy Drum { get; set; } = new() { Code = "DRUM", Title = "DRUM", Blurb = "A short burst. Rifle dump at rank 3. Long reload." };
-	[Property] public TraitCopy Warhead { get; set; } = new() { Code = "WARHEAD", Title = "WARHEAD", Blurb = "Rocket seed. Splash. Slow. You take it. Rank 3 is a fat boom." };
-	[Property] public TraitCopy Fuse { get; set; } = new() { Code = "FUSE", Title = "FUSE", Blurb = "Start a rocket. +36 splash. Slow. You take it." };
-	[Property] public TraitCopy Fat { get; set; } = new() { Code = "FAT", Title = "FAT", Blurb = "Fat body 22. Speed −10%." };
-	[Property] public TraitCopy Ember { get; set; } = new() { Code = "EMBER", Title = "EMBER", Blurb = "+18 splash. Direct 0 after 280." };
-	[Property] public TraitCopy Blast { get; set; } = new() { Code = "BLAST", Title = "BLAST", Blurb = "+32 splash. Reload +0.18s. You take it." };
-	[Property] public TraitCopy Crack { get; set; } = new() { Code = "CRACK", Title = "CRACK", Blurb = "Splash damage +1." };
-	[Property] public TraitCopy Mine { get; set; } = new() { Code = "MINE", Title = "MINE", Blurb = "+22 splash. Dies on first wall. No bounce." };
-	[Property] public TraitCopy Cluster { get; set; } = new() { Code = "CLUSTER", Title = "CLUSTER", Blurb = "+2 rockets, 14° fan. Each splashes. Smaller boom." };
-	[Property] public TraitCopy Napalm { get; set; } = new() { Code = "NAPALM", Title = "NAPALM", Blurb = "Splash victims burn 0.55s later." };
-	[Property] public TraitCopy Shove { get; set; } = new() { Code = "SHOVE", Title = "SHOVE", Blurb = "Blast knocks 150." };
-	[Property] public TraitCopy Core { get; set; } = new() { Code = "CORE", Title = "CORE", Blurb = "+24 splash, +1 splash dmg. Slow. Reload +0.40s." };
-	[Property] public TraitCopy Safe { get; set; } = new() { Code = "SAFE", Title = "SAFE", Blurb = "You ignore splash. Radius −28%." };
-	[Property] public TraitCopy Nuke { get; set; } = new() { Code = "NUKE", Title = "NUKE", Blurb = "+70 splash, +1 splash dmg. Crawl. Reload +0.50s. You take it." };
+	[Property] public TraitCopy Warhead { get; set; } = new() { Code = "WARHEAD", Title = "WARHEAD", Blurb = "A small clap. Slow rocket. Hurts you." };
 	[Property] public TraitCopy Lash { get; set; } = new() { Code = "LASH", Title = "LASH", Blurb = "Hold for lightning. Weak ticks. Locks out BORE." };
 	[Property] public TraitCopy Pin { get; set; } = new() { Code = "PIN", Title = "PIN", Blurb = "A couple of nails. Full spray at rank 3. Stick and tick." };
 	[Property] public TraitCopy Spin { get; set; } = new() { Code = "SPIN", Title = "SPIN", Blurb = "Shots sweep harder against the clock. Longer reload." };
@@ -270,6 +245,12 @@ public class TraitsCopy
 	[Property] public TraitCopy Waste { get; set; } = new() { Code = "WASTE", Title = "WASTE", Blurb = "+1 dmg inside 80. Zero after 150." };
 	[Property] public TraitCopy Breach { get; set; } = new() { Code = "BREACH", Title = "BREACH", Blurb = "Pellets punch 1 body." };
 	[Property] public TraitCopy Slug { get; set; } = new() { Code = "SLUG", Title = "SLUG", Blurb = "One fat slug. Radius 22. +2 dmg. No fan." };
+	[Property] public TraitCopy Mirv { get; set; } = new() { Code = "MIRV", Title = "MIRV", Blurb = "Each pellet splashes. Radius ×0.55. Slower. Locks out LANCE." };
+	[Property] public TraitCopy Bloom { get; set; } = new() { Code = "BLOOM", Title = "BLOOM", Blurb = "+40 splash radius. Reload +0.30s. Locks out LANCE." };
+	[Property] public TraitCopy Scorch { get; set; } = new() { Code = "SCORCH", Title = "SCORCH", Blurb = "Splash damage 2. Slower. Reload +0.20s. Locks out LANCE." };
+	[Property] public TraitCopy Lance { get; set; } = new() { Code = "LANCE", Title = "LANCE", Blurb = "No friendly splash. +2 direct hit. Smaller radius. No bounce. Locks out CLUSTER." };
+	[Property] public TraitCopy Crater { get; set; } = new() { Code = "CRATER", Title = "CRATER", Blurb = "Fat body. +28 splash. No bounce. Slower. Locks out CLUSTER." };
+	[Property] public TraitCopy Spot { get; set; } = new() { Code = "SPOT", Title = "SPOT", Blurb = "Shots fly to the cursor and burst there. No bounce. Slower." };
 }
 
 public class BuildingsCopy

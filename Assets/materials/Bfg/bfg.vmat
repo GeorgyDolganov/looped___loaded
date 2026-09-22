@@ -1,9 +1,0 @@
-Layer0
-{
-	shader "materials/shaders/nearest.shader"
-
-	Texture_ps_0 "textures/BFG.jpg"
-
-	//---- Fog ----
-	g_bFogEnabled "1"
-}

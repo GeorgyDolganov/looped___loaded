@@ -1577,8 +1577,11 @@ public sealed class GameLoop : Component
 	int RemainingOfferCost()
 	{
 		var sum = 0;
-		var hasLash = Inventory.IsValid() && Inventory.Loadout.Has( RoundTrait.Lash );
-		var hasBore = Inventory.IsValid() && Inventory.Loadout.Has( RoundTrait.Bore );
+		var loadout = Inventory.IsValid() ? Inventory.Loadout : null;
+		var hasLash = loadout is not null && loadout.Has( RoundTrait.Lash );
+		var hasBore = loadout is not null && loadout.Has( RoundTrait.Bore );
+		var cluster = RoundTraits.OwnsCluster( loadout );
+		var lance = RoundTraits.OwnsLance( loadout );
 		foreach ( var offer in offers )
 		{
 			if ( offer.Bought )
@@ -1590,11 +1593,21 @@ public sealed class GameLoop : Component
 			if ( offer.Trait == RoundTrait.Bore && hasLash )
 				continue;
 
+			if ( RoundTraits.IsCluster( offer.Trait ) && lance )
+				continue;
+
+			if ( RoundTraits.IsLance( offer.Trait ) && cluster )
+				continue;
+
 			sum += PriceOf( offer.Trait );
 			if ( offer.Trait == RoundTrait.Lash )
 				hasLash = true;
 			if ( offer.Trait == RoundTrait.Bore )
 				hasBore = true;
+			if ( RoundTraits.IsCluster( offer.Trait ) )
+				cluster = true;
+			if ( RoundTraits.IsLance( offer.Trait ) )
+				lance = true;
 		}
 
 		return sum;

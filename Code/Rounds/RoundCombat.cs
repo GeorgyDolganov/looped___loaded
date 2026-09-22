@@ -2,7 +2,7 @@ namespace LoopedLoaded;
 
 public static class RoundCombat
 {
-	public static void Blast( GameLoop loop, Vector2 origin, float radius, int damage, RoundProjectile source, Color tint, bool hurtPlayer = false, float shove = 0f, float napalm = 0f )
+	public static void Blast( GameLoop loop, Vector2 origin, float radius, int damage, RoundProjectile source, Color tint, bool hurtPlayer = false )
 	{
 		if ( loop is null || radius <= 1f || damage <= 0 )
 			return;
@@ -20,16 +20,6 @@ public static class RoundCombat
 				continue;
 
 			enemy.Damage( damage, source );
-			if ( shove > 1f )
-			{
-				var away = enemy.Flat - origin;
-				if ( away.Length < 0.01f )
-					away = Vector2.Up;
-				enemy.Shove( away.Normal * shove );
-			}
-
-			if ( napalm > 0.01f )
-				PinLinger.Hang( enemy, 1, napalm );
 		}
 
 		if ( !hurtPlayer || !loop.Runner.IsValid() )
@@ -38,6 +28,22 @@ public static class RoundCombat
 		if ( (loop.Runner.Flat - origin).Length <= radius + loop.Runner.PlayerRadius )
 			loop.TryHurt();
 	}
+
+	public static List<Vector3> Circle( ArenaGeometry geometry, Vector2 flat, float radius )
+	{
+		const int segments = 20;
+		var points = new List<Vector3>( segments + 1 );
+		for ( var i = 0; i <= segments; i++ )
+		{
+			var angle = MathF.Tau * i / segments;
+			points.Add( geometry.ToPlayWorld( flat + ArenaGeometry.FromAngle( angle ) * radius ) );
+		}
+
+		return points;
+	}
+
+	public static Color RingTint( bool friendly )
+		=> friendly ? new Color( 1f, 0.42f, 0.18f ) : new Color( 0.45f, 0.86f, 1f );
 
 	public static float PointSegment( Vector2 point, Vector2 a, Vector2 b )
 	{
