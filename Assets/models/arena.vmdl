@@ -11,8 +11,26 @@
 				[
 					{
 						_class = "DefaultMaterialGroup"
-						remaps = [  ]
-						use_global_default = true
+						remaps = 
+						[
+							{
+								from = "center.vmat"
+								to = "materials/arena/arena center.vmat"
+							},
+							{
+								from = "material.001.vmat"
+								to = "materials/arena/arena.vmat"
+							},
+							{
+								from = "material.005.vmat"
+								to = "materials/arena/arena center.vmat"
+							},
+							{
+								from = "material.vmat"
+								to = "materials/arena/arena.vmat"
+							},
+						]
+						use_global_default = false
 						global_default_material = "materials/arena/arena.vmat"
 					},
 				]
