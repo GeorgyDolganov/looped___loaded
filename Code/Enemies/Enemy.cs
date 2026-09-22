@@ -134,7 +134,12 @@ public sealed class Enemy : Component
 	public bool BlocksFrom( Vector2 incoming, RoundProjectile source, bool asBounce = false, Vector2 from = default )
 	{
 		if ( Kind == EnemyKind.Core )
+		{
+			if ( source is not null && source.Flight.IgnoreArmor )
+				return false;
+
 			return !asBounce && (source is null || source.Ricochets <= 0);
+		}
 
 		if ( Kind == EnemyKind.Lens )
 			return BlocksLens( incoming, source, from );
@@ -143,6 +148,9 @@ public sealed class Enemy : Component
 			return false;
 
 		if ( source is not null && source.ConsumeShred() )
+			return false;
+
+		if ( source is not null && source.Flight.IgnoreArmor )
 			return false;
 
 		if ( !Loop.IsValid() || !Loop.Runner.IsValid() )

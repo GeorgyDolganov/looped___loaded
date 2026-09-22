@@ -1397,18 +1397,9 @@ public sealed class GameLoop : Component
 
 		var lineup = new List<RoundTrait>();
 		if ( loadout.Has( RoundTrait.Warhead ) )
-		{
-			foreach ( var trait in RoundTraits.RocketBranch )
-			{
-				if ( RoundTraits.Blocked( trait, loadout ) )
-					continue;
-
-				if ( loadout.TraitLevel( trait ) >= RoundTraits.MaxLevel( trait ) )
-					continue;
-
-				lineup.Add( trait );
-			}
-		}
+			CollectBranch( lineup, RoundTraits.RocketBranch, loadout );
+		if ( loadout.Has( RoundTrait.Bore ) )
+			CollectBranch( lineup, RoundTraits.RailBranch, loadout );
 
 		if ( lineup.Count == 0 )
 		{
@@ -1433,6 +1424,20 @@ public sealed class GameLoop : Component
 		}
 
 		offers[offers.Count - 1] = new ShopOffer { Trait = pick };
+	}
+
+	static void CollectBranch( List<RoundTrait> lineup, RoundTrait[] branch, RunLoadout loadout )
+	{
+		foreach ( var trait in branch )
+		{
+			if ( RoundTraits.Blocked( trait, loadout ) )
+				continue;
+
+			if ( loadout.TraitLevel( trait ) >= RoundTraits.MaxLevel( trait ) )
+				continue;
+
+			lineup.Add( trait );
+		}
 	}
 
 	bool TryTakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, RunLoadout loadout, int budget, List<RoundTrait> taken, out RoundTrait pick )
@@ -1633,6 +1638,8 @@ public sealed class GameLoop : Component
 		var hasBore = loadout is not null && loadout.Has( RoundTrait.Bore );
 		var cluster = RoundTraits.OwnsCluster( loadout );
 		var lance = RoundTraits.OwnsLance( loadout );
+		var deep = RoundTraits.OwnsDeep( loadout );
+		var mass = RoundTraits.OwnsMass( loadout );
 		foreach ( var offer in offers )
 		{
 			if ( offer.Bought )
@@ -1650,6 +1657,15 @@ public sealed class GameLoop : Component
 			if ( RoundTraits.IsLance( offer.Trait ) && cluster )
 				continue;
 
+			if ( RoundTraits.NeedsBore( offer.Trait ) && !hasBore )
+				continue;
+
+			if ( RoundTraits.IsDeep( offer.Trait ) && mass )
+				continue;
+
+			if ( RoundTraits.IsMass( offer.Trait ) && deep )
+				continue;
+
 			sum += PriceOf( offer.Trait );
 			if ( offer.Trait == RoundTrait.Lash )
 				hasLash = true;
@@ -1659,6 +1675,10 @@ public sealed class GameLoop : Component
 				cluster = true;
 			if ( RoundTraits.IsLance( offer.Trait ) )
 				lance = true;
+			if ( RoundTraits.IsDeep( offer.Trait ) )
+				deep = true;
+			if ( RoundTraits.IsMass( offer.Trait ) )
+				mass = true;
 		}
 
 		return sum;

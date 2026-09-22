@@ -91,6 +91,12 @@ public class TextConfig : GameResource
 			RoundTrait.Lance => pack.Lance ??= new(),
 			RoundTrait.Crater => pack.Crater ??= new(),
 			RoundTrait.Spot => pack.Spot ??= new(),
+			RoundTrait.Deep => pack.Deep ??= new(),
+			RoundTrait.Awl => pack.Awl ??= new(),
+			RoundTrait.Ram => pack.Ram ??= new(),
+			RoundTrait.Mass => pack.Mass ??= new(),
+			RoundTrait.Keel => pack.Keel ??= new(),
+			RoundTrait.Trace => pack.Trace ??= new(),
 			_ => pack.Slug ??= new()
 		};
 	}
@@ -251,6 +257,12 @@ public class TraitsCopy
 	[Property] public TraitCopy Lance { get; set; } = new() { Code = "LANCE", Title = "LANCE", Blurb = "No friendly splash. +2 direct hit. Smaller radius. No bounce. Locks out CLUSTER." };
 	[Property] public TraitCopy Crater { get; set; } = new() { Code = "CRATER", Title = "CRATER", Blurb = "Fat body. +28 splash. No bounce. Slower. Locks out CLUSTER." };
 	[Property] public TraitCopy Spot { get; set; } = new() { Code = "SPOT", Title = "SPOT", Blurb = "Shots fly to the cursor and burst there. No bounce. Slower." };
+	[Property] public TraitCopy Deep { get; set; } = new() { Code = "DEEP", Title = "DEEP", Blurb = "+2 pierce. Reload +0.40s. Locks out MASS." };
+	[Property] public TraitCopy Awl { get; set; } = new() { Code = "AWL", Title = "AWL", Blurb = "Ignores shields and the core face. Slower. Reload +0.20s. Locks out MASS." };
+	[Property] public TraitCopy Ram { get; set; } = new() { Code = "RAM", Title = "RAM", Blurb = "Each body you punch through hits the next harder. Slower. Locks out MASS." };
+	[Property] public TraitCopy Mass { get; set; } = new() { Code = "MASS", Title = "MASS", Blurb = "One shot. No fan. +3 damage. Slower. Reload +0.45s. Locks out DEEP." };
+	[Property] public TraitCopy Keel { get; set; } = new() { Code = "KEEL", Title = "KEEL", Blurb = "No bounce. +2 damage. Stops on the first wall. Slower. Locks out DEEP." };
+	[Property] public TraitCopy Trace { get; set; } = new() { Code = "TRACE", Title = "TRACE", Blurb = "Shots fly faster. Reload +0.25s." };
 }
 
 public class BuildingsCopy

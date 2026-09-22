@@ -3,7 +3,7 @@ namespace LoopedLoaded;
 public sealed class RunLoadout
 {
 	public int BonusDamage;
-	public readonly int[] Levels = new int[32];
+	public readonly int[] Levels = new int[40];
 
 	public int TraitLevel( RoundTrait trait )
 	{
@@ -88,6 +88,12 @@ public sealed class RunLoadout
 			cone = t.PinCone.At( pin );
 		}
 
+		if ( Has( RoundTrait.Mass ) )
+		{
+			count = 1;
+			cone = 0f;
+		}
+
 		var bounces = t.MaxBouncesBase;
 		if ( pin > 0 )
 			bounces += (int)t.PinBounce.At( pin );
@@ -95,10 +101,12 @@ public sealed class RunLoadout
 			bounces += t.RicoBounces;
 		if ( lash > 0 )
 			bounces = 0;
-		if ( Has( RoundTrait.Lance ) || Has( RoundTrait.Crater ) || Has( RoundTrait.Spot ) )
+		if ( Has( RoundTrait.Lance ) || Has( RoundTrait.Crater ) || Has( RoundTrait.Spot ) || Has( RoundTrait.Keel ) )
 			bounces = 0;
 
 		var pierce = bore <= 0 ? 0 : (int)t.BorePierce.At( bore );
+		if ( Has( RoundTrait.Deep ) )
+			pierce += t.DeepPierce;
 		if ( Has( RoundTrait.Breach ) )
 			pierce += t.BreachPierce;
 
@@ -127,6 +135,14 @@ public sealed class RunLoadout
 			reload += t.ScorchReload;
 		if ( Has( RoundTrait.Lance ) )
 			reload += t.LanceReload;
+		if ( Has( RoundTrait.Deep ) )
+			reload += t.DeepReload;
+		if ( Has( RoundTrait.Awl ) )
+			reload += t.AwlReload;
+		if ( Has( RoundTrait.Mass ) )
+			reload += t.MassReload;
+		if ( Has( RoundTrait.Trace ) )
+			reload += t.TraceReload;
 
 		var speed = 1f;
 		if ( warhead > 0 )
@@ -143,6 +159,16 @@ public sealed class RunLoadout
 			speed *= t.SpotSpeed;
 		if ( rush > 0 && t.RushSpeed is not null )
 			speed *= t.RushSpeed.At( rush );
+		if ( Has( RoundTrait.Awl ) )
+			speed *= t.AwlSpeed;
+		if ( Has( RoundTrait.Ram ) )
+			speed *= t.RamSpeed;
+		if ( Has( RoundTrait.Mass ) )
+			speed *= t.MassSpeed;
+		if ( Has( RoundTrait.Keel ) )
+			speed *= t.KeelSpeed;
+		if ( Has( RoundTrait.Trace ) )
+			speed *= t.TraceSpeed;
 
 		var falloff = 0f;
 		var meatRange = 0f;
@@ -175,6 +201,10 @@ public sealed class RunLoadout
 			damage += t.SlugDamage;
 		if ( Has( RoundTrait.Lance ) )
 			damage += t.LanceDamage;
+		if ( Has( RoundTrait.Mass ) )
+			damage += t.MassDamage;
+		if ( Has( RoundTrait.Keel ) )
+			damage += t.KeelDamage;
 
 		var radius = pin > 0 ? t.PinRadius : 13f;
 		if ( slug )
@@ -215,6 +245,8 @@ public sealed class RunLoadout
 			FriendlySplash = warhead > 0 && !Has( RoundTrait.Lance ),
 			PerPelletSplash = Has( RoundTrait.Mirv ),
 			PointAim = Has( RoundTrait.Spot ),
+			IgnoreArmor = Has( RoundTrait.Awl ),
+			RampPierce = Has( RoundTrait.Ram ),
 			Nail = pin > 0 && !slug,
 			StickTime = pin > 0 && !slug ? t.PinStick : 0f,
 			Falloff = falloff,
@@ -259,6 +291,8 @@ public struct GunRecipe
 	public bool FriendlySplash;
 	public bool PerPelletSplash;
 	public bool PointAim;
+	public bool IgnoreArmor;
+	public bool RampPierce;
 	public bool Nail;
 	public float StickTime;
 	public float Falloff;
@@ -295,6 +329,8 @@ public struct RoundFlight
 	public int SplashDamage;
 	public bool FriendlySplash;
 	public bool PointAim;
+	public bool IgnoreArmor;
+	public bool RampPierce;
 	public Vector2 Mark;
 	public float Falloff;
 	public float MeatRange;

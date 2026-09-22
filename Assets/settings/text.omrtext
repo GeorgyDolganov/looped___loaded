@@ -374,6 +374,36 @@
       "Title": "SPOT",
       "Blurb": "Shots fly to the cursor and burst there. No bounce. Slower."
     },
+    "Deep": {
+      "Code": "DEEP",
+      "Title": "DEEP",
+      "Blurb": "+2 pierce. Reload +0.40s. Locks out MASS."
+    },
+    "Awl": {
+      "Code": "AWL",
+      "Title": "AWL",
+      "Blurb": "Ignores shields and the core face. Slower. Reload +0.20s. Locks out MASS."
+    },
+    "Ram": {
+      "Code": "RAM",
+      "Title": "RAM",
+      "Blurb": "Each body you punch through hits the next harder. Slower. Locks out MASS."
+    },
+    "Mass": {
+      "Code": "MASS",
+      "Title": "MASS",
+      "Blurb": "One shot. No fan. +3 damage. Slower. Reload +0.45s. Locks out DEEP."
+    },
+    "Keel": {
+      "Code": "KEEL",
+      "Title": "KEEL",
+      "Blurb": "No bounce. +2 damage. Stops on the first wall. Slower. Locks out DEEP."
+    },
+    "Trace": {
+      "Code": "TRACE",
+      "Title": "TRACE",
+      "Blurb": "Shots fly faster. Reload +0.25s."
+    },
     "Pierce": {
       "Code": "PRC",
       "Title": "PIERCE",

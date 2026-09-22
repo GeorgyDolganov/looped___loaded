@@ -387,6 +387,8 @@ public sealed class RoundInventory : Component
 		ExplosiveRadius = recipe.Splash,
 		SplashDamage = recipe.SplashDamage,
 		FriendlySplash = recipe.FriendlySplash,
+		IgnoreArmor = recipe.IgnoreArmor,
+		RampPierce = recipe.RampPierce,
 		Falloff = recipe.Falloff,
 		MeatRange = recipe.MeatRange,
 		MeatBonus = recipe.MeatBonus,

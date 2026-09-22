@@ -26,6 +26,7 @@ public sealed class RoundProjectile : Component
 	PolyLine trailLine;
 	PolyLine splashRing;
 	int pierceLeft;
+	int bored;
 	bool lensInside;
 	float travelled;
 
@@ -40,6 +41,7 @@ public sealed class RoundProjectile : Component
 		BouncesLeft = flight.MaxBounces;
 		EnergyLeft = flight.Energy;
 		pierceLeft = flight.PierceCharges;
+		bored = 0;
 		Ricochets = 0;
 		TargetsHit = 0;
 		Kills = 0;
@@ -246,6 +248,8 @@ public sealed class RoundProjectile : Component
 			}
 
 			var damage = ShotDamage();
+			if ( damage > 0 && Flight.RampPierce && pierceLeft > 0 )
+				damage += bored;
 			struck.Add( target );
 			if ( damage > 0 )
 				target.Damage( damage, this );
@@ -277,6 +281,7 @@ public sealed class RoundProjectile : Component
 			if ( pierceLeft > 0 )
 			{
 				pierceLeft--;
+				bored++;
 				Flat = target.Flat + Direction * (reach + 4f);
 				continue;
 			}

@@ -193,6 +193,39 @@ public static class StatSheet
 				Down( $"{PctDelta( t.SpotSpeed )} Projectile Speed" );
 				Down( "Bounces 0" );
 				break;
+			case RoundTrait.Deep:
+				Up( $"+{t.DeepPierce} Pierce" );
+				Down( $"+{Fmt( t.DeepReload )}s Reload" );
+				Down( "Locks out MASS" );
+				break;
+			case RoundTrait.Awl:
+				Note( "Ignores armor" );
+				Down( $"{PctDelta( t.AwlSpeed )} Projectile Speed" );
+				Down( $"+{Fmt( t.AwlReload )}s Reload" );
+				Down( "Locks out MASS" );
+				break;
+			case RoundTrait.Ram:
+				Note( "+1 damage per body already pierced" );
+				Down( $"{PctDelta( t.RamSpeed )} Projectile Speed" );
+				Down( "Locks out MASS" );
+				break;
+			case RoundTrait.Mass:
+				Note( "One projectile" );
+				Up( $"+{t.MassDamage} Damage" );
+				Down( $"{PctDelta( t.MassSpeed )} Projectile Speed" );
+				Down( $"+{Fmt( t.MassReload )}s Reload" );
+				Down( "Locks out DEEP" );
+				break;
+			case RoundTrait.Keel:
+				Up( $"+{t.KeelDamage} Damage" );
+				Down( $"{PctDelta( t.KeelSpeed )} Projectile Speed" );
+				Down( "Bounces 0" );
+				Down( "Locks out DEEP" );
+				break;
+			case RoundTrait.Trace:
+				Up( $"{PctDelta( t.TraceSpeed )} Projectile Speed" );
+				Down( $"+{Fmt( t.TraceReload )}s Reload" );
+				break;
 			case RoundTrait.Lash:
 			{
 				if ( rank <= 1 )
@@ -255,6 +288,10 @@ public static class StatSheet
 		AddInt( rows, "Projectiles", now.Count, next.Count, preview, true, true );
 		AddFloat( rows, "Spread", now.Cone, next.Cone, preview, false, "°" );
 		AddInt( rows, "Pierce", now.Pierce, next.Pierce, preview, true, false );
+		if ( now.IgnoreArmor || next.IgnoreArmor )
+			AddText( rows, "Armor", now.IgnoreArmor ? "Ignored" : "Holds", next.IgnoreArmor ? "Ignored" : "Holds", preview );
+		if ( now.RampPierce || next.RampPierce )
+			AddText( rows, "Line", now.RampPierce ? "+1" : "Flat", next.RampPierce ? "+1" : "Flat", preview );
 		AddInt( rows, "Bounces", now.Bounces, next.Bounces, preview, true, false );
 		AddFloat( rows, "Reload", now.Reload, next.Reload, preview, false, "s", true );
 		AddPct( rows, "Proj. Speed", now.SpeedScale, next.SpeedScale, preview, true );
