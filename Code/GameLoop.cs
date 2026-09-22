@@ -140,6 +140,7 @@ public sealed class GameLoop : Component
 	float pauseStartedAt;
 	float uiClickUntil;
 	bool pendingBoss;
+	int featureTurn;
 	readonly List<ShopOffer> offers = new();
 	static readonly string[] OfferSlots = { "Slot1", "Slot2", "Slot3", "Slot4", "Slot5", "Slot6", "Slot7", "Slot8", "Slot9" };
 	bool bossWon;
@@ -707,6 +708,7 @@ public sealed class GameLoop : Component
 		}
 		Kills = 0;
 		Scrap = 0;
+		featureTurn = 0;
 		ShotsFired = 0;
 		Catches = 0;
 		Losses = 0;
@@ -1377,14 +1379,60 @@ public sealed class GameLoop : Component
 		var taken = new List<RoundTrait>();
 		for ( var i = 0; i < count; i++ )
 		{
-			if ( !TryTakeTrait( fresh, owned, loadout, i == 0 ? Scrap : 0, taken, out var trait ) )
+			if ( !TryTakeTrait( fresh, owned, loadout, Scrap, taken, out var trait ) )
 				break;
 
 			taken.Add( trait );
 			offers.Add( new ShopOffer { Trait = trait } );
 		}
 
+		FeatureOffer( loadout );
 		Phase = RunPhase.PickTrait;
+	}
+
+	void FeatureOffer( RunLoadout loadout )
+	{
+		if ( offers.Count == 0 || loadout is null )
+			return;
+
+		var lineup = new List<RoundTrait>();
+		if ( loadout.Has( RoundTrait.Warhead ) )
+		{
+			foreach ( var trait in RoundTraits.RocketBranch )
+			{
+				if ( RoundTraits.Blocked( trait, loadout ) )
+					continue;
+
+				if ( loadout.TraitLevel( trait ) >= RoundTraits.MaxLevel( trait ) )
+					continue;
+
+				lineup.Add( trait );
+			}
+		}
+
+		if ( lineup.Count == 0 )
+		{
+			foreach ( var trait in RoundTraits.Roots )
+			{
+				if ( loadout.TraitLevel( trait ) >= RoundTraits.MaxLevel( trait ) )
+					continue;
+
+				lineup.Add( trait );
+			}
+		}
+
+		if ( lineup.Count == 0 )
+			return;
+
+		var pick = lineup[featureTurn % lineup.Count];
+		featureTurn++;
+		foreach ( var offer in offers )
+		{
+			if ( offer.Trait == pick )
+				return;
+		}
+
+		offers[offers.Count - 1] = new ShopOffer { Trait = pick };
 	}
 
 	bool TryTakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, RunLoadout loadout, int budget, List<RoundTrait> taken, out RoundTrait pick )
@@ -1394,6 +1442,9 @@ public sealed class GameLoop : Component
 			foreach ( var skip in taken )
 			{
 				if ( skip == trait )
+					return true;
+
+				if ( RoundTraits.Pack( skip ) == TraitPack.Abomination && RoundTraits.Pack( trait ) == TraitPack.Abomination )
 					return true;
 			}
 

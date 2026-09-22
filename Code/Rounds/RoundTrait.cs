@@ -56,7 +56,17 @@ public static class RoundTraits
 		RoundTrait.Gape, RoundTrait.Double, RoundTrait.Kick, RoundTrait.Stun,
 		RoundTrait.Heap, RoundTrait.Waste, RoundTrait.Breach, RoundTrait.Slug,
 		RoundTrait.Buck, RoundTrait.Bore, RoundTrait.Drum, RoundTrait.Warhead, RoundTrait.Lash, RoundTrait.Pin,
-		RoundTrait.Spin, RoundTrait.Rush,
+		RoundTrait.Rush,
+		RoundTrait.Mirv, RoundTrait.Bloom, RoundTrait.Scorch, RoundTrait.Lance, RoundTrait.Crater, RoundTrait.Spot
+	};
+
+	public static readonly RoundTrait[] Roots =
+	{
+		RoundTrait.Buck, RoundTrait.Bore, RoundTrait.Drum, RoundTrait.Warhead, RoundTrait.Lash, RoundTrait.Pin
+	};
+
+	public static readonly RoundTrait[] RocketBranch =
+	{
 		RoundTrait.Mirv, RoundTrait.Bloom, RoundTrait.Scorch, RoundTrait.Lance, RoundTrait.Crater, RoundTrait.Spot
 	};
 

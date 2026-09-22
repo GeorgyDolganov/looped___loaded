@@ -361,6 +361,7 @@
             "go": "3dcce95a-1c52-5eba-8ffd-cdc74cb04142",
             "component_type": "RoundInventory"
           },
+          "LostRoundMinArc": 460,
           "MaxHealth": 3,
           "NoticeDuration": 1.6,
           "OnComponentDestroy": null,
@@ -496,6 +497,7 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
+          "PickupRadius": 145,
           "Runner": {
             "_type": "component",
             "component_id": "23173a28-345b-5daa-930e-92171f8cafd9",
@@ -622,7 +624,7 @@
               "Name": "Slab",
               "Position": "0,0,-695.025024",
               "Rotation": "0,0,0,1",
-              "Scale": "65.5199966,65.5199966,1.20000005",
+              "Scale": "115.113358,117.973366,1.20000005",
               "Tags": "",
               "Enabled": true,
               "NetworkMode": 2,

@@ -229,14 +229,6 @@ public static class StatSheet
 					Note( $"Stick {Fmt( t.PinStick )}s" );
 				break;
 			}
-			case RoundTrait.Spin:
-			{
-				var spin = Gain( t.SpinBoost, rank );
-				if ( spin > 0f )
-					Up( $"+{Fmt( spin )} Sweep Speed" );
-				Down( $"+{Fmt( ReloadGain( t.SpinReload, rank ) )}s Reload" );
-				break;
-			}
 			case RoundTrait.Rush:
 				Up( $"{PctDelta( SpeedAt( t.RushSpeed, rank ) )} Projectile Speed" );
 				Down( $"+{Fmt( ReloadGain( t.RushReload, rank ) )}s Reload" );
@@ -266,7 +258,6 @@ public static class StatSheet
 		AddInt( rows, "Bounces", now.Bounces, next.Bounces, preview, true, false );
 		AddFloat( rows, "Reload", now.Reload, next.Reload, preview, false, "s", true );
 		AddPct( rows, "Proj. Speed", now.SpeedScale, next.SpeedScale, preview, true );
-		AddFloat( rows, "Sweep", now.SpinSpeed, next.SpinSpeed, preview, true, "", true );
 		AddInt( rows, "Mag", mag, mag, preview, true, true );
 		AddFloat( rows, "Falloff", now.Falloff, next.Falloff, preview, true );
 		AddFloat( rows, "Meat Range", now.MeatRange, next.MeatRange, preview, true );

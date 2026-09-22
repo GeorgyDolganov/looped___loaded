@@ -88,7 +88,6 @@ public sealed class RoundProjectile : Component
 					return;
 			}
 
-			Drift( Time.Delta );
 			Contain();
 			if ( HitTarget() )
 				return;
@@ -154,20 +153,6 @@ public sealed class RoundProjectile : Component
 		}
 
 		return true;
-	}
-
-	void Drift( float dt )
-	{
-		var spin = Flight.SpinSpeed;
-		if ( spin < 0.01f || dt <= 0f )
-			return;
-
-		var clock = ArenaGeometry.AgainstClock( Flat );
-		var dist = spin * dt;
-		if ( geometry.TraceRay( Flat, clock, dist + Radius, out var hit ) )
-			Flat = hit.Position + hit.Normal * Radius;
-		else
-			Flat += clock * dist;
 	}
 
 	bool BounceWall( ArenaHit hit, Vector2 incoming )

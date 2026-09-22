@@ -52,7 +52,6 @@ public sealed class RunLoadout
 		var warhead = TraitLevel( RoundTrait.Warhead );
 		var lash = TraitLevel( RoundTrait.Lash );
 		var pin = TraitLevel( RoundTrait.Pin );
-		var spin = TraitLevel( RoundTrait.Spin );
 		var rush = TraitLevel( RoundTrait.Rush );
 		var slug = Has( RoundTrait.Slug );
 
@@ -112,8 +111,6 @@ public sealed class RunLoadout
 		}
 		if ( drum > 0 )
 			reload += t.DrumReload * Progression.TraitMul( drum );
-		if ( spin > 0 )
-			reload += t.SpinReload * Progression.TraitMul( spin );
 		if ( rush > 0 )
 			reload += t.RushReload * Progression.TraitMul( rush );
 		if ( Has( RoundTrait.Pump ) )
@@ -146,10 +143,6 @@ public sealed class RunLoadout
 			speed *= t.SpotSpeed;
 		if ( rush > 0 && t.RushSpeed is not null )
 			speed *= t.RushSpeed.At( rush );
-
-		var sweep = t.SpinBase;
-		if ( spin > 0 && t.SpinBoost is not null )
-			sweep += t.SpinBoost.At( spin );
 
 		var falloff = 0f;
 		var meatRange = 0f;
@@ -215,7 +208,7 @@ public sealed class RunLoadout
 			Bounces = bounces,
 			Energy = t.EnergyBase,
 			SpeedScale = speed,
-			SpinSpeed = sweep,
+			SpinSpeed = 0f,
 			Radius = radius,
 			Splash = splash,
 			SplashDamage = splashDamage,

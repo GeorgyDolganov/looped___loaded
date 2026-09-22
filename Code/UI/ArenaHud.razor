@@ -565,20 +565,21 @@
 				<div class="cards">
 					@for ( var i = 0; i < Loop.Offers.Count; i++ )
 					{
-						var offer = Loop.Offers[i];
 						var index = i;
-						<div class="card @OfferClass(offer.Trait, offer.Bought)" style="border-color: @TraitBorder(offer.Trait)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
+						var trait = Loop.Offers[index].Trait;
+						var bought = Loop.Offers[index].Bought;
+						<div class="card @OfferClass(trait, bought)" style="border-color: @TraitBorder(trait)" @key="@((int)trait)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
 							<label class="key">@GameSettings.Text.Shop.KeyOf(index)</label>
-							<label class="title">@RoundTraits.Title(offer.Trait)</label>
-							<label class="rarity">@RoundTraits.Rarity(offer.Trait)</label>
-							<label class="blurb">@OfferBlurb(offer.Trait, offer.Bought)</label>
+							<label class="title">@RoundTraits.Title(trait)</label>
+							<label class="rarity">@RoundTraits.Rarity(trait)</label>
+							<label class="blurb">@OfferBlurb(trait, bought)</label>
 							<div class="stats">
-								@foreach ( var line in OfferStats( offer.Trait, offer.Bought ) )
+								@foreach ( var line in OfferStats( trait, bought ) )
 								{
 									<label class="stat @line.Class">@line.Text</label>
 								}
 							</div>
-							<label class="cost">@OfferCost(offer.Trait, offer.Bought)</label>
+							<label class="cost">@OfferCost(trait, bought)</label>
 						</div>
 					}
 				</div>
