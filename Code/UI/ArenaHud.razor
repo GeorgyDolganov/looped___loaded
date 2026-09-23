@@ -20,50 +20,29 @@
 		{
 			<div class="run-left">
 				<div class="hud-panel lap-panel">
-					<div class="rivet a"></div>
-					<div class="rivet b"></div>
-					<div class="lap-row">
-						<div class="lap-head">
-							<label class="place">@(Loop.InBossFight ? Loop.BossName : Loop.LocationCode)</label>
-							<label class="lap-value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
-						</div>
-						<label class="lap-clock">@TimeText</label>
+					<img class="lap-back" src="ui/Arena UI/element_back_double.png" />
+					<div class="lap-face">
+						<label class="place">@(Loop.InBossFight ? Loop.BossName : "ROUND")</label>
+						<label class="lap-value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
 					</div>
-					<div class="bar">
-						<div class="bar-fill @(Loop.InBossFight ? "boss" : "lap")" style="width: @(Loop.InBossFight ? BossPercent : LapPercent)%"></div>
+					<div class="lap-side">
+						<label class="lap-clock">@TimeText</label>
 					</div>
 				</div>
 
 				<div class="hud-panel brief-panel">
-					@if ( Loop.HasTask )
-					{
-						<div class="brief-accent"></div>
-						<label class="brief-kicker">@GameSettings.Text.Hud.Objective</label>
-						<label class="brief-title">@Loop.TaskTitle</label>
-						<label class="brief-blurb">@Loop.TaskBlurb</label>
-						<div class="panel-split"></div>
-					}
-					<div class="trinkets">
-						<label class="trinket-key">@GameSettings.Text.Hud.Trinkets</label>
-						<label class="trinket-dash">—</label>
-						@if ( EquippedTraits.Count == 0 )
+					<img class="brief-back" src="ui/Arena UI/element_back_two_floors.png" />
+					<div class="brief-face">
+						@if ( Loop.HasTask )
 						{
-							<label class="trinket-none">@GameSettings.Text.Hud.TrinketsNone</label>
+							<label class="brief-kicker">@GameSettings.Text.Hud.Objective</label>
+							<label class="brief-title">@Loop.TaskTitle</label>
+							<label class="brief-blurb">@Loop.TaskBlurb</label>
 						}
-						else
-						{
-							@foreach ( var trait in EquippedTraits )
-							{
-								<div class="trinket">
-									<label>@(RoundTraits.OneShot( trait ) ? RoundTraits.Code( trait ) : $"{RoundTraits.Code( trait )}{TraitLevel( trait )}")</label>
-								</div>
-							}
-						}
-						@if ( Loop.BloodShields > 0 )
-						{
-							<label class="trinket-tag">@GameSettings.Text.F(GameSettings.Text.Hud.Shield, Loop.BloodShields)</label>
-						}
-						<label class="trinket-tag">@GameSettings.Text.F(GameSettings.Text.Hud.Threat, ThreatText)</label>
+					</div>
+					<div class="brief-floor">
+						<label class="key">@GameSettings.Text.Hud.Fed</label>
+						<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
 					</div>
 				</div>
 			</div>
@@ -72,32 +51,16 @@
 			{
 			<div class="run-right">
 				<div class="hud-panel stat-panel">
-					<div class="rivet a"></div>
-					<div class="rivet b"></div>
-					<div class="stat-row lead">
-						<label class="key">@GameSettings.Text.Hud.Scrap</label>
-						<label class="value">@Loop.Scrap</label>
-					</div>
-					<div class="stat-row lead">
-						<label class="key">@GameSettings.Text.Hud.Stash</label>
-						<label class="value">@Loop.Stash</label>
-					</div>
-					<div class="panel-split"></div>
-					<div class="stat-row">
-						<label class="key">@GameSettings.Text.Hud.Best</label>
-						<label class="value">@Loop.BestExtract</label>
-					</div>
-					<div class="stat-row">
-						<label class="key">@GameSettings.Text.Hud.Kills</label>
-						<label class="value">@Loop.Kills</label>
-					</div>
-					<div class="stat-row">
-						<label class="key">@GameSettings.Text.Hud.Caught</label>
-						<label class="value">@Loop.ShotsFired</label>
-					</div>
-					<div class="stat-row">
-						<label class="key">@GameSettings.Text.Hud.Fed</label>
-						<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+					<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
+					<div class="stat-face">
+						<div class="stat-row lead">
+							<label class="key">@GameSettings.Text.Hud.Scrap</label>
+							<label class="value">@Loop.Scrap</label>
+						</div>
+						<div class="stat-row lead">
+							<label class="key">@GameSettings.Text.Hud.Stash</label>
+							<label class="value">@Loop.Stash</label>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -921,8 +884,6 @@
 		Loop?.PlayAgain();
 	}
 
-	int LapPercent => Loop.IsValid() ? (int)(Loop.LapFraction * 100f) : 0;
-	int BossPercent => Loop.IsValid() && Loop.BossMaxHealth > 0 ? (int)(Loop.BossHealth / (float)Loop.BossMaxHealth * 100f) : 0;
 	int FeedPercent => Loop.IsValid() && Loop.WinNeed > 0 ? (int)(Math.Clamp( Loop.FedBiomass / (float)Loop.WinNeed, 0f, 1f ) * 100f) : 0;
 	int HurtPercent => Loop.IsValid() ? (int)(Loop.HurtAmount * 100f) : 0;
 	string HurtVeil => (Loop.IsValid() ? Loop.HurtAmount * 0.55f : 0f).ToString( "0.###" );
@@ -966,26 +927,7 @@
 		}
 	}
 
-	List<RoundTrait> EquippedTraits
-	{
-		get
-		{
-			var list = new List<RoundTrait>();
-			if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
-				return list;
-
-			foreach ( var trait in RoundTraits.All )
-			{
-				if ( Loop.Inventory.Loadout.TraitLevel( trait ) > 0 )
-					list.Add( trait );
-			}
-
-			return list;
-		}
-	}
-
 	int TraitLevel( RoundTrait trait ) => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Loadout.TraitLevel( trait ) : 0;
-	string ThreatText => Loop.IsValid() ? Loop.Threat.ToString( "0.00" ) : "1.00";
 
 	string HelpText
 	{
@@ -1378,7 +1320,6 @@
 			Loop.IsValid() ? Loop.Lap : 0,
 			Loop.IsValid() ? Loop.Health : 0,
 			Loop.IsValid() ? (int)Loop.Phase : 0,
-			LapPercent,
 			DashPercent,
 			Loop.IsValid() ? Loop.Stash : 0,
 			Loop.IsValid() && Loop.Inventory.IsValid() ? ReloadPercent : 0,
@@ -2799,18 +2740,47 @@
 		bottom: 9px;
 	}
 
-	.lap-row {
-		flex-direction: row;
-		align-items: baseline;
-		justify-content: space-between;
+	.lap-panel {
+		width: 100%;
+		aspect-ratio: 477 / 217;
+		padding: 0px;
+		border: 0px solid transparent;
+		border-radius: 0px;
+		background-color: transparent;
+		overflow: hidden;
 	}
 
-	.lap-head {
-		flex-direction: row;
-		align-items: baseline;
+	.lap-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
 	}
 
-	.lap-row .place {
+	.lap-face {
+		position: absolute;
+		left: 9%;
+		top: 17%;
+		width: 48%;
+		height: 65%;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.lap-side {
+		position: absolute;
+		left: 63%;
+		top: 17%;
+		width: 26%;
+		height: 65%;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.lap-face .place {
 		margin-right: 14px;
 		font-size: 24px;
 		font-weight: 600;
@@ -2818,14 +2788,14 @@
 		color: #cdc6ba;
 	}
 
-	.lap-row .lap-value {
+	.lap-face .lap-value {
 		font-size: 50px;
 		line-height: 44px;
 		font-weight: 700;
 		color: #f4ece0;
 	}
 
-	.lap-row .lap-clock {
+	.lap-side .lap-clock {
 		font-size: 24px;
 		font-weight: 600;
 		letter-spacing: 2px;
@@ -2873,17 +2843,42 @@
 	}
 
 	.brief-panel {
-		padding-left: 26px;
+		width: 100%;
+		aspect-ratio: 477 / 320;
+		padding: 0px;
+		border: 0px solid transparent;
+		border-radius: 0px;
+		background-color: transparent;
+		overflow: hidden;
 	}
 
-	.brief-accent {
+	.brief-back {
 		position: absolute;
-		left: 10px;
-		top: 16px;
-		width: 4px;
-		height: 88px;
-		border-radius: 2px;
-		background-color: #f0b429;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.brief-face {
+		position: absolute;
+		left: 12%;
+		top: 13%;
+		width: 76%;
+		height: 40%;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.brief-floor {
+		position: absolute;
+		left: 12%;
+		top: 67%;
+		width: 76%;
+		height: 18%;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
 	}
 
 	.brief-kicker {
@@ -2907,54 +2902,45 @@
 		color: #8e8b86;
 	}
 
-	.panel-split {
-		height: 2px;
-		margin-top: 12px;
-		margin-bottom: 10px;
-		background-color: rgba(200, 190, 170, 0.12);
-	}
-
-	.trinkets {
-		flex-direction: row;
-		align-items: center;
-		flex-wrap: wrap;
-	}
-
-	.trinket-key {
-		font-size: 17px;
-		letter-spacing: 4px;
-		color: #7b746a;
-	}
-
-	.trinket-dash {
-		margin: 0px 8px;
-		font-size: 17px;
-		color: #4f4a43;
-	}
-
-	.trinket-none {
-		font-size: 17px;
-		letter-spacing: 3px;
-		color: #7b746a;
-	}
-
-	.trinket {
-		flex-direction: row;
-		align-items: center;
-		margin-right: 8px;
-	}
-
-	.trinket label {
-		font-size: 18px;
+	.brief-floor .key {
+		font-size: 21px;
 		font-weight: 600;
-		color: #f0b429;
+		letter-spacing: 2px;
+		color: #a39c91;
 	}
 
-	.trinket-tag {
-		margin-left: 8px;
-		font-size: 17px;
-		letter-spacing: 2px;
-		color: #7b746a;
+	.brief-floor .value {
+		font-size: 30px;
+		font-weight: 700;
+		color: #f4ece0;
+	}
+
+	.stat-panel {
+		width: 100%;
+		aspect-ratio: 477 / 217;
+		padding: 0px;
+		border: 0px solid transparent;
+		border-radius: 0px;
+		background-color: transparent;
+		overflow: hidden;
+	}
+
+	.stat-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.stat-face {
+		position: absolute;
+		left: 12%;
+		top: 20%;
+		width: 76%;
+		height: 60%;
+		flex-direction: column;
+		justify-content: center;
 	}
 
 	.stat-row {
