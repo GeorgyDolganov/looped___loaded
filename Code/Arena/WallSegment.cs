@@ -30,7 +30,8 @@ public enum WallKind
 	Core,
 	Panel,
 	Boss,
-	Shard
+	Shard,
+	Spin
 }
 
 public enum GlassHit

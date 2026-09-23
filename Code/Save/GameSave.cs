@@ -41,6 +41,7 @@ public sealed class PlotSave
 	public int Level { get; set; }
 	public int Hits { get; set; }
 	public int Facing { get; set; }
+	public int Copy { get; set; }
 }
 
 public enum MenuPage

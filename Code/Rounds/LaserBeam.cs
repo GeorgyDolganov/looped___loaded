@@ -73,6 +73,8 @@ public sealed class LaserBeam : Component
 				end = hit.Position;
 				if ( hit.Kind == WallKind.Panel && loop.Arena.IsValid() )
 					loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, 0f, false );
+				else if ( hit.Kind == WallKind.Spin && loop.Arena.IsValid() )
+					loop.Arena.PushSpinner( hit.WallIndex, hit.Position, heading );
 			}
 
 			if ( i == count / 2 )

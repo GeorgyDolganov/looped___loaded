@@ -34,14 +34,22 @@ public static class Buildings
 		_ => new Color( 0.35f, 0.85f, 0.95f )
 	};
 
-	public static int[] Costs( BuildingKind kind )
+	public static int[] Costs( BuildingKind kind, int copy = 0 )
 	{
 		var max = MaxLevel( kind );
 		var first = FirstCost( kind );
 		var costs = new int[max];
 		for ( var i = 0; i < max; i++ )
 			costs[i] = Progression.Cost( first, i );
+		if ( costs.Length > 0 )
+			costs[0] += Math.Max( 0, copy );
 		return costs;
+	}
+
+	public static int FrameCost( BuildingKind kind, int copy )
+	{
+		var costs = Costs( kind, copy );
+		return costs.Length == 0 ? 0 : costs[0];
 	}
 
 	public static int FirstCost( BuildingKind kind ) => GameSettings.City.Of( kind ).FirstCost;
@@ -115,6 +123,7 @@ public sealed class CityPlot
 	public int Level;
 	public int Hits;
 	public int Facing;
+	public int Copy;
 	public GameObject Root;
 	public GameObject Body;
 
@@ -125,7 +134,7 @@ public sealed class CityPlot
 			if ( !Occupied )
 				return 0;
 
-			var costs = Buildings.Costs( Kind );
+			var costs = Buildings.Costs( Kind, Copy );
 			return Level >= costs.Length ? 0 : costs[Level];
 		}
 	}

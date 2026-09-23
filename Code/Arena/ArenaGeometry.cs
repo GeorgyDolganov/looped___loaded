@@ -34,6 +34,7 @@ public sealed class ArenaGeometry
 	readonly Dictionary<int, int> panelKicks = new();
 	readonly Dictionary<int, int> panelHits = new();
 	readonly Dictionary<int, float> shardUntil = new();
+	readonly List<Spinner> spinners = new();
 
 	public static Vector2 FromAngle( float radians ) => new Vector2( MathF.Cos( radians ), MathF.Sin( radians ) );
 
@@ -81,6 +82,7 @@ public sealed class ArenaGeometry
 		panelKicks.Clear();
 		panelHits.Clear();
 		shardUntil.Clear();
+		spinners.Clear();
 		GlassBroken = 0;
 
 		if ( walls is null || walls.Count == 0 )
@@ -110,13 +112,14 @@ public sealed class ArenaGeometry
 		for ( var i = Walls.Count - 1; i >= AuthoredCount; i-- )
 		{
 			var kind = Walls[i].Kind;
-			if ( kind == WallKind.Panel || kind == WallKind.Shard )
+			if ( kind == WallKind.Panel || kind == WallKind.Shard || kind == WallKind.Spin )
 				Walls.RemoveAt( i );
 		}
 
 		panelKicks.Clear();
 		panelHits.Clear();
 		shardUntil.Clear();
+		spinners.Clear();
 		GlassBroken = 0;
 	}
 
@@ -542,6 +545,7 @@ public sealed class ArenaGeometry
 	{
 		WallKind.Core => 36f,
 		WallKind.Boundary => 32f,
+		WallKind.Spin => 5f,
 		_ => 26f
 	};
 
@@ -785,6 +789,78 @@ public sealed class ArenaGeometry
 		return path;
 	}
 
+	public int AddSpinner( Vector2 center, float length, float angle )
+	{
+		var dir = FromAngle( angle );
+		var half = MathF.Max( 40f, length ) * 0.5f;
+		var facing = new Vector2( -dir.y, dir.x );
+		Walls.Add( new WallSegment( center - dir * half, center + dir * half, facing, WallKind.Spin ) );
+		var index = Walls.Count - 1;
+		spinners.Add( new Spinner { Index = index, Center = center, Length = half * 2f, Angle = angle } );
+		return index;
+	}
+
+	public void PushSpinner( int index, Vector2 hitPos, Vector2 incoming )
+	{
+		if ( incoming.Length < 0.01f )
+			return;
+
+		for ( var i = 0; i < spinners.Count; i++ )
+		{
+			var spin = spinners[i];
+			if ( spin.Index != index || spin.Index < 0 || spin.Index >= Walls.Count )
+				continue;
+
+			var wall = Walls[spin.Index];
+			var along = wall.Direction;
+			var face = new Vector2( -along.y, along.x );
+			var side = Dot( hitPos - wall.Center, along );
+			var push = Dot( incoming.Normal, face );
+			spin.Speed = Math.Clamp( spin.Speed + side * push * 1.5f, -240f, 240f );
+			spinners[i] = spin;
+			return;
+		}
+	}
+
+	public void AdvanceSpinners( float dt )
+	{
+		if ( dt <= 0f || spinners.Count == 0 )
+			return;
+
+		var drag = 36f * dt;
+		for ( var i = 0; i < spinners.Count; i++ )
+		{
+			var spin = spinners[i];
+			if ( spin.Index < 0 || spin.Index >= Walls.Count )
+				continue;
+
+			if ( MathF.Abs( spin.Speed ) <= drag )
+				spin.Speed = 0f;
+			else
+				spin.Speed -= MathF.Sign( spin.Speed ) * drag;
+
+			if ( MathF.Abs( spin.Speed ) < 0.01f )
+			{
+				spinners[i] = spin;
+				continue;
+			}
+
+			spin.Angle += MathX.DegreeToRadian( spin.Speed ) * dt;
+			var dir = FromAngle( spin.Angle );
+			var half = spin.Length * 0.5f;
+			var facing = new Vector2( -dir.y, dir.x );
+			Walls[spin.Index] = new WallSegment( spin.Center - dir * half, spin.Center + dir * half, facing, WallKind.Spin );
+			spinners[i] = spin;
+		}
+	}
+
+	public void CollectSpinners( List<int> indices )
+	{
+		indices.Clear();
+		foreach ( var spin in spinners )
+			indices.Add( spin.Index );
+	}
+
 	public void KickPanel( int index, Vector2 hitPos, Vector2 hitNormal, float extraDegrees = 0f, bool allowSecond = false )
 	{
 		if ( index < 0 || index >= Walls.Count )
@@ -847,5 +923,14 @@ public sealed class ArenaGeometry
 			if ( Walls[i].Kind == WallKind.Boss )
 				Walls.RemoveAt( i );
 		}
+	}
+
+	struct Spinner
+	{
+		public int Index;
+		public Vector2 Center;
+		public float Length;
+		public float Angle;
+		public float Speed;
 	}
 }

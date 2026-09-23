@@ -150,16 +150,21 @@ public sealed class RingRunner : Component
 		if ( Slowing )
 			arc *= SlowSpeedScale;
 
+		var dashArc = 0f;
 		if ( Dashing )
 		{
 			dashElapsed = MathF.Min( DashDuration, dashElapsed + Time.Delta );
 			var eased = 1f - MathF.Pow( 1f - dashElapsed / DashDuration, 3f );
 			var target = DashDistance * eased;
-			arc += target - dashSpent;
+			dashArc = target - dashSpent;
+			arc += dashArc;
 			dashSpent = target;
 		}
 
+		var angleBefore = Angle;
 		Advance( arc );
+		if ( Loop.IsValid() )
+			Loop.Inventory?.AdvanceDropped( angleBefore, arc, dashArc );
 		ApplyTransform();
 		EnsureWarlord();
 		DriveWarlord();

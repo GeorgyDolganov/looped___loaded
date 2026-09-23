@@ -49,7 +49,7 @@ public class TraitConfig : GameResource
 	[Property] public float SlugFalloffPad { get; set; } = 120f;
 	[Property] public TraitTiers BuckPellets { get; set; } = new() { Level1 = 2f, Level2 = 3f, Level3 = 5f };
 	[Property] public TraitTiers BuckCone { get; set; } = new() { Level1 = 10f, Level2 = 16f, Level3 = 24f };
-	[Property] public TraitTiers BuckFalloff { get; set; } = new() { Level1 = 260f, Level2 = 220f, Level3 = 180f };
+	[Property] public TraitTiers BuckFalloff { get; set; } = new() { Level1 = 1600f, Level2 = 1100f, Level3 = 800f };
 	[Property] public TraitTiers BorePierce { get; set; } = new() { Level1 = 1f, Level2 = 1f, Level3 = 2f };
 	[Property] public float BoreReload { get; set; } = 0.55f;
 	[Property] public TraitTiers DrumBurst { get; set; } = new() { Level1 = 3f, Level2 = 4f, Level3 = 6f };
@@ -98,7 +98,7 @@ public class TraitConfig : GameResource
 	[Property] public float LashPerSecond { get; set; } = 0.50f;
 	[Property] public float LashMaxHold { get; set; } = 1.1f;
 	[Property] public int LashHit { get; set; } = 1;
-	[Property] public TraitTiers LashTick { get; set; } = new() { Level1 = 0.70f, Level2 = 0.55f, Level3 = 0.42f };
+	[Property] public TraitTiers LashTick { get; set; } = new() { Level1 = 1.75f, Level2 = 1.40f, Level3 = 1.05f };
 	[Property] public float LashRange { get; set; } = 1600f;
 	[Property] public float LashWidth { get; set; } = 8f;
 	[Property] public TraitTiers PinNails { get; set; } = new() { Level1 = 2f, Level2 = 3f, Level3 = 5f };

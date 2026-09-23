@@ -174,6 +174,8 @@ public sealed class RoundProjectile : Component
 			Loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, 0f, false );
 			NudgeOut();
 		}
+		else if ( hit.Kind == WallKind.Spin && Loop.Arena.IsValid() )
+			Loop.Arena.PushSpinner( hit.WallIndex, hit.Position, incoming );
 
 		var world = geometry.ToPlayWorld( Flat );
 		ArenaSounds.Ricochet( world );
@@ -323,7 +325,7 @@ public sealed class RoundProjectile : Component
 		if ( Flight.Falloff > 1f && travelled > Flight.Falloff )
 			return 0;
 
-		var damage = Flight.Damage > 0 ? Flight.Damage : 1;
+		var damage = Math.Max( 0, Flight.Damage );
 		if ( Flight.MeatBonus > 0 && Flight.MeatRange > 1f && travelled <= Flight.MeatRange )
 			damage += Flight.MeatBonus;
 

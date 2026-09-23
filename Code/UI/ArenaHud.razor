@@ -143,7 +143,7 @@
 								<label class="title">@Buildings.Title(Loop.City.Selected)</label>
 								<label class="payoff">@Buildings.Promise(Loop.City.Selected)</label>
 								<label class="blurb">@Buildings.Blurb(Loop.City.Selected)</label>
-								<label class="cost">@GameSettings.Text.F(GameSettings.Text.City.FrameHits, Buildings.FirstCost(Loop.City.Selected))</label>
+								<label class="cost">@GameSettings.Text.F(GameSettings.Text.City.FrameHits, Buildings.FrameCost(Loop.City.Selected, Loop.City.Placed(Loop.City.Selected)))</label>
 							</div>
 							<div class="promise">
 								@if ( Loop.City.Selected == BuildingKind.Infirmary )
@@ -374,11 +374,12 @@
 						{
 							<div class="rail-row slider @(Loop.SettingCursor == row.Row ? "on" : "")" onmouseover="@(() => Loop.HighlightSetting( row.Row ))">
 								<label class="row-title">@row.Title</label>
-								<div class="ticks">
-									@for ( var i = 1; i <= 10; i++ )
+								<div class="ticks @TrackClass(row.Row)" onmousedown="@OnTrackDown">
+									<div class="tick-fill" style="width: @(row.Steps * 22)px"></div>
+									@for ( var n = 1; n < 10; n++ )
 									{
-										var step = i;
-										<div class="tick @(step <= row.Steps ? "lit" : "")" onclick="@(() => Loop.SetSetting( row.Row, step ))"></div>
+										var at = n * 22;
+										<div class="tick-mark" style="left: @(at)px"></div>
 									}
 								</div>
 								<label class="row-value">@row.Value</label>
@@ -670,6 +671,7 @@
 
 		TickCursor();
 		TickHover();
+		TickSettingDrag();
 		TickTraySize();
 
 		if ( Loop.Phase != RunPhase.PickTrait )
@@ -709,6 +711,105 @@
 	{
 		Loop?.NoteUiClick();
 		Loop?.CloseSettings();
+	}
+
+	SettingRow? trackScrub;
+
+	static string TrackClass( SettingRow row ) => row switch
+	{
+		SettingRow.Sfx => "track-sfx",
+		SettingRow.Shake => "track-shake",
+		_ => "track-music"
+	};
+
+	static bool TryRow( Sandbox.UI.Panel track, out SettingRow row )
+	{
+		row = SettingRow.Music;
+
+		if ( !track.IsValid() )
+			return false;
+
+		if ( track.HasClass( "track-sfx" ) )
+			row = SettingRow.Sfx;
+		else if ( track.HasClass( "track-shake" ) )
+			row = SettingRow.Shake;
+		else if ( !track.HasClass( "track-music" ) )
+			return false;
+
+		return true;
+	}
+
+	void OnTrackDown()
+	{
+		var track = HoveredTrack();
+		if ( !TryRow( track, out var row ) )
+			return;
+
+		trackScrub = row;
+		Loop?.NoteUiClick();
+		ApplyTrack( row, track );
+	}
+
+	Sandbox.UI.Panel HoveredTrack()
+	{
+		if ( Panel is null )
+			return null;
+
+		Sandbox.UI.Panel under = null;
+
+		foreach ( var child in Panel.Descendants )
+		{
+			if ( !child.HasClass( "ticks" ) )
+				continue;
+
+			if ( child.HasHovered )
+				return child;
+
+			if ( under is null && UnderCursor( child ) )
+				under = child;
+		}
+
+		return under;
+	}
+
+	static bool UnderCursor( Sandbox.UI.Panel panel )
+	{
+		var width = panel.Box.Rect.Width;
+		var height = panel.Box.Rect.Height;
+		if ( width < 1f || height < 1f )
+			return false;
+
+		var mouse = panel.MousePosition;
+		return mouse.x >= 0f && mouse.y >= 0f && mouse.x <= width && mouse.y <= height;
+	}
+
+	void TickSettingDrag()
+	{
+		if ( trackScrub is not SettingRow row )
+			return;
+
+		if ( !Loop.IsValid() || Loop.MenuView != MenuPage.Settings || !Input.Down( "Attack1" ) )
+		{
+			trackScrub = null;
+			return;
+		}
+
+		ApplyTrack( row, null );
+	}
+
+	void ApplyTrack( SettingRow row, Sandbox.UI.Panel track )
+	{
+		track ??= FindHud( TrackClass( row ) );
+		if ( !track.IsValid() || !Loop.IsValid() )
+			return;
+
+		var width = track.Box.Rect.Width;
+		if ( width < 1f )
+			return;
+
+		var across = Math.Clamp( track.MousePosition.x / width, 0f, 1f );
+		var steps = (int)MathF.Round( across * 10f );
+		Loop.SetSetting( row, steps );
 	}
 
 	List<(SettingRow Row, string Title, string Value, int Steps)> SettingRows
@@ -3293,27 +3394,38 @@
 		color: #f6e2b0;
 	}
 
-	.ticks {
-		flex-direction: row;
-		align-items: center;
+	.rail-row.slider .row-title,
+	.rail-row.slider .row-value {
+		pointer-events: none;
 	}
 
-	.tick {
-		width: 18px;
+	.ticks {
+		position: relative;
+		width: 220px;
 		height: 22px;
-		margin-right: 4px;
+		flex-direction: row;
+		align-items: stretch;
+		justify-content: flex-start;
 		background-color: rgba(200, 190, 170, 0.16);
 		pointer-events: all;
 		cursor: pointer;
-		transition: background-color 0.1s ease-out;
+		overflow: hidden;
 	}
 
-	.tick:hover {
-		background-color: rgba(240, 180, 41, 0.45);
-	}
-
-	.tick.lit {
+	.tick-fill {
+		height: 100%;
 		background-color: #f0b429;
+		pointer-events: none;
+	}
+
+	.tick-mark {
+		position: absolute;
+		top: 0px;
+		width: 2px;
+		height: 100%;
+		margin-left: -1px;
+		background-color: rgba(8, 8, 10, 0.55);
+		pointer-events: none;
 	}
 
 	.rail-row.slider .row-value {

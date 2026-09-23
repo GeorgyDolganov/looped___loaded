@@ -252,15 +252,94 @@ public sealed class RoundInventory : Component
 			if ( (drop.Flat - flat).Length > reach )
 				continue;
 
-			if ( MagLoaded >= MagCap )
+			if ( !Pocket( drop ) )
 				break;
 
-			MagLoaded++;
-			Loop.NoteCatch();
-			ArenaSounds.Pickup();
-			drop.GameObject.Destroy();
 			Dropped.RemoveAt( i );
 		}
+	}
+
+	public void AdvanceDropped( float playerBefore, float playerArc, float dashArc )
+	{
+		if ( !Loop.IsValid() || !Runner.IsValid() || Loop.IsFrozen || !Arena.IsValid() || Arena.Geometry is null )
+			return;
+
+		PruneDropped();
+		var track = Arena.Geometry.TrackRadius;
+		if ( track < 1f )
+			return;
+
+		if ( dashArc > 0.001f )
+			CatchDashed( playerBefore, playerArc, dashArc, track );
+
+		var player = Runner.Angle;
+		for ( var i = Dropped.Count - 1; i >= 0; i-- )
+		{
+			var drop = Dropped[i];
+			if ( !drop.IsValid() )
+			{
+				Dropped.RemoveAt( i );
+				continue;
+			}
+
+			drop.Roll( player, dashArc, track );
+		}
+	}
+
+	void CatchDashed( float playerBefore, float playerArc, float dashArc, float track )
+	{
+		while ( true )
+		{
+			var best = -1;
+			var bestGap = float.MaxValue;
+			for ( var i = 0; i < Dropped.Count; i++ )
+			{
+				var drop = Dropped[i];
+				if ( !drop.IsValid() )
+					continue;
+
+				var gap = drop.GapTo( playerBefore );
+				if ( gap >= bestGap || !drop.Crosses( gap, playerArc, dashArc, track ) )
+					continue;
+
+				best = i;
+				bestGap = gap;
+			}
+
+			if ( best < 0 )
+				return;
+
+			if ( !Pocket( Dropped[best] ) )
+			{
+				var hold = Runner.Angle;
+				for ( var i = 0; i < Dropped.Count; i++ )
+				{
+					var drop = Dropped[i];
+					if ( !drop.IsValid() )
+						continue;
+
+					var gap = drop.GapTo( playerBefore );
+					if ( drop.Crosses( gap, playerArc, dashArc, track ) )
+						drop.ParkShort( hold, track );
+				}
+
+				return;
+			}
+
+			Dropped.RemoveAt( best );
+		}
+	}
+
+	bool Pocket( DroppedRound drop )
+	{
+		if ( MagLoaded >= MagCap || !drop.IsValid() )
+			return false;
+
+		MagLoaded++;
+		Loop.NoteCatch();
+		ArenaSounds.Pickup();
+		drop.GameObject.Destroy();
+		return true;
 	}
 
 	public void DropSpent( Vector2 from )
@@ -390,6 +469,7 @@ public sealed class RoundInventory : Component
 			var yaw = ShotSpread.Yaw( i, count, cone );
 			var heading = ShotSpread.Turn( Aim.Direction, yaw );
 			var flight = ToFlight( recipe, volley );
+			flight.Damage = PelletShare( recipe.Damage, i, count );
 			flight.Bite = recipe.Bite;
 			flight.BurstId = BurstId;
 			flight.VolleyIndex = volleyIndex;
@@ -410,6 +490,19 @@ public sealed class RoundInventory : Component
 		Loop.NoteShot();
 		ArenaSounds.Fire( Aim.MuzzleWorld );
 		ImpactFlash.Spawn( Loop.Scene, Aim.MuzzleWorld, ShotColors.Player, recipe.Nail ? 0.55f : 0.8f );
+	}
+
+	static int PelletShare( int total, int index, int count )
+	{
+		if ( count <= 1 )
+			return Math.Max( 1, total );
+
+		if ( total < count )
+			return 1;
+
+		var share = total / count;
+		var extra = total % count;
+		return share + (index < extra ? 1 : 0);
 	}
 
 	static RoundFlight ToFlight( GunRecipe recipe, ShotVolley volley ) => new()

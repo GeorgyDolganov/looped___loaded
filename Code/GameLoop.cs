@@ -418,15 +418,15 @@ public sealed class GameLoop : Component
 			ArenaSounds.Deny();
 	}
 
-	public void SetSetting( SettingRow row, int steps )
+	public bool SetSetting( SettingRow row, int steps )
 	{
 		SettingCursor = row;
-		NoteUiClick();
 
-		if ( UserSettings.Set( row, steps * 0.1f ) )
-			ArenaSounds.MenuOk();
-		else
-			ArenaSounds.Deny();
+		if ( !UserSettings.Set( row, steps * 0.1f ) )
+			return false;
+
+		ArenaSounds.MenuOk();
+		return true;
 	}
 
 	void StepSettings( int delta )
@@ -1116,7 +1116,7 @@ public sealed class GameLoop : Component
 
 	void CheckLap()
 	{
-		if ( InBossFight )
+		if ( Phase != RunPhase.Playing || InBossFight )
 			return;
 
 		if ( CanSkipLap && !skipHinted )
@@ -1140,6 +1140,9 @@ public sealed class GameLoop : Component
 
 	void OpenLapClear()
 	{
+		if ( Phase != RunPhase.Playing )
+			return;
+
 		VacuumBones();
 		Inventory?.ChamberAll();
 		skipHinted = false;

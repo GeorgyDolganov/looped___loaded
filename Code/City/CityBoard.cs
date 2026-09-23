@@ -66,7 +66,8 @@ public sealed class CityBoard : Component
 				Kind = (int)plot.Kind,
 				Level = plot.Level,
 				Hits = plot.Hits,
-				Facing = plot.Facing
+				Facing = plot.Facing,
+				Copy = plot.Copy
 			} );
 		}
 
@@ -97,7 +98,17 @@ public sealed class CityBoard : Component
 			plot.Kind = (BuildingKind)row.Kind;
 			plot.Level = Math.Clamp( row.Level, 0, Buildings.MaxLevel( plot.Kind ) );
 			plot.Facing = row.Facing & 3;
-			plot.Hits = plot.Maxed ? 0 : Math.Clamp( row.Hits, 0, Math.Max( 0, plot.NextCost ) );
+			plot.Copy = Math.Max( 0, row.Copy );
+			plot.Hits = row.Hits;
+		}
+
+		RepairCopies();
+		foreach ( var plot in plots )
+		{
+			if ( !plot.Occupied )
+				continue;
+
+			plot.Hits = plot.Maxed ? 0 : Math.Clamp( plot.Hits, 0, Math.Max( 0, plot.NextCost ) );
 			RefreshPlot( plot );
 		}
 	}
@@ -107,6 +118,48 @@ public sealed class CityBoard : Component
 		EnsureBuilt();
 		Warehouse = 0;
 		WipePlots();
+	}
+
+	public int Placed( BuildingKind kind )
+	{
+		var count = 0;
+		foreach ( var plot in plots )
+		{
+			if ( plot.Occupied && plot.Kind == kind )
+				count++;
+		}
+
+		return count;
+	}
+
+	void RepairCopies()
+	{
+		foreach ( var kind in Buildings.All )
+		{
+			var same = new List<CityPlot>();
+			var stamped = false;
+			foreach ( var plot in plots )
+			{
+				if ( !plot.Occupied || plot.Kind != kind )
+					continue;
+
+				same.Add( plot );
+				if ( plot.Copy > 0 )
+					stamped = true;
+			}
+
+			if ( stamped || same.Count < 2 )
+				continue;
+
+			same.Sort( ( a, b ) =>
+			{
+				var y = a.Y.CompareTo( b.Y );
+				return y != 0 ? y : a.X.CompareTo( b.X );
+			} );
+
+			for ( var i = 0; i < same.Count; i++ )
+				same[i].Copy = i;
+		}
 	}
 
 	public int OccupiedPlots
@@ -155,6 +208,7 @@ public sealed class CityBoard : Component
 			plot.Level = 0;
 			plot.Hits = 0;
 			plot.Facing = 0;
+			plot.Copy = 0;
 			RefreshPlot( plot );
 		}
 	}
@@ -730,6 +784,7 @@ public sealed class CityBoard : Component
 			return;
 		}
 
+		Hovered.Copy = Placed( Selected );
 		Hovered.Occupied = true;
 		Hovered.Kind = Selected;
 		Hovered.Facing = PlacementFacing;
@@ -755,6 +810,7 @@ public sealed class CityBoard : Component
 		Hovered.Level = 0;
 		Hovered.Hits = 0;
 		Hovered.Facing = 0;
+		Hovered.Copy = 0;
 		RefreshPlot( Hovered );
 		ArenaSounds.MenuBack();
 		Loop?.Announce( GameSettings.Text.F( GameSettings.Text.City.Removed, title ) );

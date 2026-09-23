@@ -56,9 +56,9 @@
     "Level3": 24
   },
   "BuckFalloff": {
-    "Level1": 260,
-    "Level2": 220,
-    "Level3": 180
+    "Level1": 1600,
+    "Level2": 1100,
+    "Level3": 800
   },
   "BorePierce": {
     "Level1": 1,
@@ -125,9 +125,9 @@
   "LashMaxHold": 1.1,
   "LashHit": 1,
   "LashTick": {
-    "Level1": 0.7,
-    "Level2": 0.55,
-    "Level3": 0.42
+    "Level1": 1.75,
+    "Level2": 1.4,
+    "Level3": 1.05
   },
   "LashRange": 1600,
   "LashWidth": 8,
