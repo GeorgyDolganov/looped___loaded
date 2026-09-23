@@ -390,7 +390,7 @@ public class PlacesCopy
 		FightHint = "THE CORE  ·  RICOCHET TO BREAK IT",
 		Armor = "ARMOR  ·  RICOCHET FIRST",
 		BossKeep = "Ricochet the nucleus. Keep the stash. Extract or ride the next ring.",
-		BossLast = "Ricochet the nucleus. Win: stash ×2, then city."
+		BossLast = "Ricochet the nucleus. Win: stash ×2, then altar."
 	};
 	[Property] public PlaceCopy Glass { get; set; } = new()
 	{
@@ -402,7 +402,7 @@ public class PlacesCopy
 		FightHint = "THE LENS  ·  BREAK GLASS THEN HIT THE SIDE",
 		Armor = "ARMOR  ·  BREAK GLASS OR HIT THE SIDE",
 		BossKeep = "Shatter the glass, then hit the side. Keep the stash. Extract or ride the next ring.",
-		BossLast = "Shatter the glass, then hit the side. Win: stash ×2, then city."
+		BossLast = "Shatter the glass, then hit the side. Win: stash ×2, then altar."
 	};
 }
 
@@ -441,7 +441,7 @@ public class PauseCopy
 	[Property] public string Resume { get; set; } = "RESUME";
 	[Property] public string ResumeBlurb { get; set; } = "Back to the lap. Nothing moved.";
 	[Property] public string Menu { get; set; } = "MENU";
-	[Property] public string MenuBlurb { get; set; } = "Leave the run. City stays.";
+	[Property] public string MenuBlurb { get; set; } = "Leave the run. Altar stays.";
 	[Property] public string Quit { get; set; } = "QUIT";
 	[Property] public string QuitBlurb { get; set; } = "Close the game.";
 	[Property] public string Key1 { get; set; } = "1";
@@ -453,17 +453,17 @@ public class MenuCopy
 {
 	[Property] public string Kicker { get; set; } = "ONE MORE LAP";
 	[Property] public string Title { get; set; } = "Looped & Loaded";
-	[Property] public string Blurb { get; set; } = "Aim. Fire. Catch it back. Cash out to the city — or beat the core and ride the next ring.";
+	[Property] public string Blurb { get; set; } = "Aim. Fire. Catch it back. Cash out to the altar — or beat the core and ride the next ring.";
 	[Property] public string SlotLine { get; set; } = "SLOT {0}  ·  {1}";
 	[Property] public string SlotNew { get; set; } = "NEW";
 	[Property] public string Continue { get; set; } = "CONTINUE";
 	[Property] public string Play { get; set; } = "PLAY";
-	[Property] public string ContinueBlurb { get; set; } = "Run with this city's warehouse and buildings.";
+	[Property] public string ContinueBlurb { get; set; } = "Run with this altar's warehouse and buildings.";
 	[Property] public string PlayBlurb { get; set; } = "Start a run with one round. Extract or go again.";
-	[Property] public string City { get; set; } = "CITY";
+	[Property] public string City { get; set; } = "ALTAR";
 	[Property] public string CityBlurb { get; set; } = "Build frames and spend warehouse ammo.";
 	[Property] public string Saves { get; set; } = "SAVES";
-	[Property] public string SavesBlurb { get; set; } = "Autosave slots. Load or delete a city.";
+	[Property] public string SavesBlurb { get; set; } = "Autosave slots. Load or delete an altar.";
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
 	[Property] public string Key3 { get; set; } = "3";
@@ -499,16 +499,16 @@ public class SavesCopy
 {
 	[Property] public string Kicker { get; set; } = "AUTOSAVE";
 	[Property] public string Title { get; set; } = "SAVES";
-	[Property] public string Blurb { get; set; } = "City writes itself. Pick a slot, then load or delete.";
+	[Property] public string Blurb { get; set; } = "Altar writes itself. Pick a slot, then load or delete.";
 	[Property] public string Slot { get; set; } = "SLOT {0}";
 	[Property] public string Empty { get; set; } = "EMPTY";
 	[Property] public string WithLine { get; set; } = "WH {0}  ·  BEST {1}  ·  {2}";
 	[Property] public string WithBuildings { get; set; } = "WH {0}  ·  BEST {1}  ·  {2} BUILDINGS";
 	[Property] public string Load { get; set; } = "LOAD SLOT {0}";
-	[Property] public string LoadHas { get; set; } = "Use this city.";
-	[Property] public string LoadEmpty { get; set; } = "Empty slot. Fresh city.";
+	[Property] public string LoadHas { get; set; } = "Use this altar.";
+	[Property] public string LoadEmpty { get; set; } = "Empty slot. Fresh altar.";
 	[Property] public string Delete { get; set; } = "DELETE SLOT {0}";
-	[Property] public string DeleteBlurb { get; set; } = "Wipe this city. Cannot undo.";
+	[Property] public string DeleteBlurb { get; set; } = "Wipe this altar. Cannot undo.";
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
 	[Property] public string Key3 { get; set; } = "3";
@@ -521,8 +521,8 @@ public class DecideCopy
 	[Property] public string LapClear { get; set; } = "LAP {0} CLEAR";
 	[Property] public string LapBlurb { get; set; } = "STASH {0}  ·  SCRAP {1}  ·  TAKE IT HOME OR RISK ANOTHER";
 	[Property] public string Extract { get; set; } = "EXTRACT";
-	[Property] public string ExtractBankOne { get; set; } = "Bank {0} biomass. Return to the city.";
-	[Property] public string ExtractBankMany { get; set; } = "Bank {0} biomass. Return to the city.";
+	[Property] public string ExtractBankOne { get; set; } = "Bank {0} biomass. Return to the altar.";
+	[Property] public string ExtractBankMany { get; set; } = "Bank {0} biomass. Return to the altar.";
 	[Property] public string OneMore { get; set; } = "ONE MORE LAP";
 	[Property] public string OneMoreBlurb { get; set; } = "Chapel. Another DNA card. The board gets meaner.";
 	[Property] public string Fight { get; set; } = "FIGHT THE {0}";
@@ -547,7 +547,7 @@ public class DecideCopy
 	[Property] public string WonPlay { get; set; } = "PLAY AGAIN";
 	[Property] public string WonPlayBlurb { get; set; } = "A new body. Feed it again.";
 	[Property] public string WonKey { get; set; } = "SPACE";
-	[Property] public string City { get; set; } = "CITY";
+	[Property] public string City { get; set; } = "ALTAR";
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
 	[Property] public string Key3 { get; set; } = "3";
@@ -597,15 +597,15 @@ public class HelpCopy
 {
 	[Property] public string Paused { get; set; } = "1 RESUME  ·  2 MENU  ·  3 QUIT";
 	[Property] public string Saves { get; set; } = "1-3 SELECT  ·  SPACE LOAD  ·  R DELETE  ·  ESC BACK";
-	[Property] public string Menu { get; set; } = "1 PLAY  ·  2 CITY  ·  3 SAVES  ·  ESC QUIT";
+	[Property] public string Menu { get; set; } = "1 PLAY  ·  2 ALTAR  ·  3 SAVES  ·  ESC QUIT";
 	[Property] public string CityBuild { get; set; } = "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E SHOOT  ·  SPACE/R RUN  ·  ESC PAUSE";
 	[Property] public string CityShoot { get; set; } = "LMB FIRE  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
-	[Property] public string DecideLapBoss { get; set; } = "CLICK  ·  1 CITY  ·  2 STAY  ·  3 FIGHT THE {0}  ·  ESC PAUSE";
-	[Property] public string DecideLap { get; set; } = "CLICK  ·  1 CITY  ·  2 STAY  ·  ESC PAUSE";
-	[Property] public string DecideRingNext { get; set; } = "CLICK  ·  1 CITY  ·  2 NEXT RING  ·  ESC PAUSE";
-	[Property] public string DecideRing { get; set; } = "CLICK  ·  1 CITY  ·  ESC PAUSE";
+	[Property] public string DecideLapBoss { get; set; } = "CLICK  ·  1 ALTAR  ·  2 STAY  ·  3 FIGHT THE {0}  ·  ESC PAUSE";
+	[Property] public string DecideLap { get; set; } = "CLICK  ·  1 ALTAR  ·  2 STAY  ·  ESC PAUSE";
+	[Property] public string DecideRingNext { get; set; } = "CLICK  ·  1 ALTAR  ·  2 NEXT RING  ·  ESC PAUSE";
+	[Property] public string DecideRing { get; set; } = "CLICK  ·  1 ALTAR  ·  ESC PAUSE";
 	[Property] public string Shop { get; set; } = "CLICK A CARD  ·  1-{0} BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
-	[Property] public string Dead { get; set; } = "CLICK CITY  ·  R CITY  ·  ESC MENU";
+	[Property] public string Dead { get; set; } = "CLICK ALTAR  ·  R ALTAR  ·  ESC MENU";
 	[Property] public string Extracted { get; set; } = "SPACE CONTINUE";
 	[Property] public string Won { get; set; } = "CLICK  ·  SPACE PLAY AGAIN  ·  ESC MENU";
 	[Property] public string BossGlass { get; set; } = "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
@@ -644,9 +644,9 @@ public class AnnounceCopy
 	[Property] public string FinalBank { get; set; } = "NO MORE ROUNDS  ·  ×2  ·  +{0}";
 	[Property] public string ArenaSkip { get; set; } = "ARENA CLEAR  ·  E SKIP LAP";
 	[Property] public string LapClear { get; set; } = "LAP {0} CLEAR";
-	[Property] public string CityDeposit { get; set; } = "CITY  ·  +{0} WAREHOUSE";
+	[Property] public string CityDeposit { get; set; } = "ALTAR  ·  +{0} WAREHOUSE";
 	[Property] public string Won { get; set; } = "EKKE IS FULL";
-	[Property] public string City { get; set; } = "CITY";
+	[Property] public string City { get; set; } = "ALTAR";
 	[Property] public string ContinueRounds { get; set; } = "+{0} BIOMASS  ·  STASH {1}  ·  ×{2:0.00}";
 	[Property] public string StashMax { get; set; } = "STASH MAX  ·  ×{0:0.00}";
 	[Property] public string BossContinue { get; set; } = "{0}  ·  +{1}  ·  STASH {2}";

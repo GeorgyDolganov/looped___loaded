@@ -280,7 +280,7 @@ public sealed class RunLoadout
 			BeamPerSecond = t.LashPerSecond,
 			BeamMaxHold = t.LashMaxHold,
 			BeamHit = lash > 0 ? Math.Max( 1, t.LashHit ) : 0,
-			BeamTick = lash > 0 && t.LashTick is not null ? t.LashTick.At( lash ) : 1.75f,
+			BeamTick = lash > 0 && t.LashTick is not null ? t.LashTick.At( lash ) : 1f,
 			BeamRange = t.LashRange,
 			BeamWidth = t.LashWidth,
 			BeamRank = lash

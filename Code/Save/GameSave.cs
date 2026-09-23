@@ -8,6 +8,7 @@ public sealed class GameSave
 	public int FedBiomass { get; set; }
 	public int BestExtract { get; set; }
 	public int BestLine { get; set; } = -1;
+	public int Runs { get; set; }
 	public List<string> Tasks { get; set; } = new();
 	public List<PlotSave> Plots { get; set; } = new();
 
@@ -29,7 +30,7 @@ public sealed class GameSave
 		}
 	}
 
-	public bool HasProgress => Warehouse > 0 || FedBiomass > 0 || BestExtract > 0 || BuildingCount > 0 || BestLine >= 0 || (Tasks is not null && Tasks.Count > 0);
+	public bool HasProgress => Warehouse > 0 || FedBiomass > 0 || BestExtract > 0 || BuildingCount > 0 || BestLine >= 0 || Runs > 0 || (Tasks is not null && Tasks.Count > 0);
 }
 
 public sealed class PlotSave

@@ -93,7 +93,7 @@ public sealed class PlayerAim : Component
 				renderer.Tint = tint;
 		}
 
-		if ( !Inventory.IsValid() )
+		if ( !Inventory.IsValid() || Inventory.Beaming )
 		{
 			Hide( paths, 0 );
 			Hide( rings, 0 );

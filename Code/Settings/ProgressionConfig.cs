@@ -22,6 +22,7 @@ public class ProgressionConfig : GameResource
 	[Property] public float KillScrapScale { get; set; } = 0.5f;
 	[Property] public int RoundsGrantedMin { get; set; } = 1;
 	[Property] public int RoundsGrantedMax { get; set; } = 4;
+	[Property] public int SoftRuns { get; set; } = 3;
 	[Property] public float SlowDrainBase { get; set; } = 0.55f;
 	[Property] public float SlowDrainFloor { get; set; } = 0.22f;
 }

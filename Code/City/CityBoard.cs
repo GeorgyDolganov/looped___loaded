@@ -1081,17 +1081,6 @@ public sealed class CityBoard : Component
 
 			SpawnAccent( plot, tint, height );
 		}
-
-		if ( plot.NextCost > 0 )
-		{
-			var fill = (float)plot.Hits / plot.NextCost;
-			var barHeight = 10f + fill * 40f;
-			Blocks.SpawnBox( plot.Body, "Progress",
-				center + new Vector3( CellSize * 0.38f, 0f, 24f ),
-				Rotation.Identity,
-				new Vector3( 12f, 12f, barHeight ),
-				Color.Lerp( new Color( 0.3f, 0.35f, 0.4f ), tint, fill ), false );
-		}
 	}
 
 	void HideGhostModels()

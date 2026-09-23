@@ -125,9 +125,9 @@
   "LashMaxHold": 1.1,
   "LashHit": 1,
   "LashTick": {
-    "Level1": 1.75,
-    "Level2": 1.4,
-    "Level3": 1.05
+    "Level1": 1,
+    "Level2": 0.8,
+    "Level3": 0.6
   },
   "LashRange": 1600,
   "LashWidth": 8,
