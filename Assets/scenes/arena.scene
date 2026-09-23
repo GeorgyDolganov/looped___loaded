@@ -4452,7 +4452,10 @@
           "Health": 0,
           "IsStatic": false,
           "MaterialGroup": null,
-          "Model": "models/shrine.vmdl",
+          "Model": {
+            "Id": "b61eb03a-f281-4a46-9048-8fb3d0303961",
+            "Path": "models/shrine.vmdl"
+          },
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4476,7 +4479,10 @@
           "MaterialGroup": null,
           "MaterialOverride": null,
           "Materials": null,
-          "Model": "models/shrine.vmdl",
+          "Model": {
+            "Id": "b61eb03a-f281-4a46-9048-8fb3d0303961",
+            "Path": "models/shrine.vmdl"
+          },
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4501,7 +4507,10 @@
           "Elasticity": null,
           "Friction": null,
           "IsTrigger": false,
-          "Model": "models/shrine.vmdl",
+          "Model": {
+            "Id": "b61eb03a-f281-4a46-9048-8fb3d0303961",
+            "Path": "models/shrine.vmdl"
+          },
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5121,7 +5130,10 @@
           "Health": 0,
           "IsStatic": false,
           "MaterialGroup": null,
-          "Model": "models/arena.vmdl",
+          "Model": {
+            "Id": "d1ef8309-2a19-4c6a-b589-876396f6a6e7",
+            "Path": "models/arena.vmdl"
+          },
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5145,7 +5157,10 @@
           "MaterialGroup": null,
           "MaterialOverride": null,
           "Materials": null,
-          "Model": "models/arena.vmdl",
+          "Model": {
+            "Id": "d1ef8309-2a19-4c6a-b589-876396f6a6e7",
+            "Path": "models/arena.vmdl"
+          },
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5170,7 +5185,10 @@
           "Elasticity": null,
           "Friction": null,
           "IsTrigger": false,
-          "Model": "models/arena.vmdl",
+          "Model": {
+            "Id": "d1ef8309-2a19-4c6a-b589-876396f6a6e7",
+            "Path": "models/arena.vmdl"
+          },
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,

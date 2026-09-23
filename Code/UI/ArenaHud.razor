@@ -103,56 +103,41 @@
 			</div>
 			}
 
-			<div class="run-tray">
-				<div class="tray">
-					<div class="tray-cell">
-						<label class="cell-key">@GameSettings.Text.Hud.Health</label>
-						<div class="hp-row">
-							@for ( var i = 0; i < Loop.HeartMax; i++ )
-							{
-								<div class="hp @(i < Loop.Health ? "live" : "dead") @(i < Loop.Health && Loop.HurtAmount > 0.08f ? "sting" : "")"></div>
-							}
-						</div>
+			<div class="tray-frame">
+				<img class="tray-back" src="ui/Arena UI/back.png" />
+				<div class="health-slot">
+					<label class="health-key">@GameSettings.Text.Hud.Health</label>
+					<div class="hp-row">
+						@for ( var i = 0; i < Loop.HeartMax; i++ )
+						{
+							<img class="hp @(i < Loop.Health ? "live" : "dead") @(i < Loop.Health && Loop.HurtAmount > 0.08f ? "sting" : "")" src="@(i < Loop.Health ? "ui/Arena UI/health.png" : "ui/Arena UI/health_empty.png")" />
+						}
 					</div>
-
-					<div class="cell-split"></div>
-
-					<div class="tray-cell">
-						<label class="cell-key">@GameSettings.Text.Hud.Ammo</label>
-						<div class="round-row">
-							@for ( var i = 0; i < MagCap; i++ )
-							{
-								<div class="round @MagPip( i )"></div>
-							}
-						</div>
-						<div class="bar tray-bar">
-							<div class="bar-fill dash @(ReloadReady ? "ready" : "")" style="width: @(ReloadPercent)%"></div>
-						</div>
-						<label class="cell-value">@(ReloadReady ? "RDY" : Loop.Inventory.Beaming ? "BOLT" : Loop.Inventory.ReloadLeft.ToString( "0.0" ))</label>
-					</div>
-
-					<div class="cell-split"></div>
-
-					<div class="tray-cell">
-						<label class="cell-key">@GameSettings.Text.Hud.Dash</label>
-						<div class="bar tray-bar">
-							<div class="bar-fill dash @(DashReady ? "ready" : "")" style="width: @(DashPercent)%"></div>
-						</div>
-						<label class="chip">@GameSettings.Text.Hud.DashKey</label>
-					</div>
-
-					@if ( SlowUnlocked )
-					{
-						<div class="cell-split"></div>
-
-						<div class="tray-cell">
-							<label class="cell-key">@GameSettings.Text.Hud.Slow</label>
-							<div class="bar tray-bar">
-								<div class="bar-fill slow @(Slowing ? "on" : "")" style="width: @(SlowPercent)%"></div>
+				</div>
+				<div class="ammo-slot">
+					<label class="ammo-key">@GameSettings.Text.Hud.Ammo</label>
+					<img class="round" src="ui/Arena UI/ammo.png" />
+					<label class="ammo-count">@MagLoaded</label>
+				</div>
+				<div class="dash-slot">
+					<div class="meter-row">
+						<label class="meter-key">@GameSettings.Text.Hud.Dash</label>
+						<div class="charge-meter">
+							<img class="charge-layer" src="ui/Arena UI/dash_empty.png" />
+							<div class="charge-reveal" style="width: @(DashPercent)%">
+								<img class="charge-layer" src="ui/Arena UI/dash.png" />
 							</div>
-							<label class="chip">@GameSettings.Text.Hud.SlowKey</label>
 						</div>
-					}
+					</div>
+					<div class="meter-row">
+						<label class="meter-key">@GameSettings.Text.Hud.Slow</label>
+						<div class="charge-meter slow">
+							<img class="charge-layer" src="ui/Arena UI/slow_empty.png" />
+							<div class="charge-reveal" style="width: 100%">
+								<img class="charge-layer" src="ui/Arena UI/slow.png" />
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		}
@@ -724,6 +709,7 @@
 		TickCursor();
 		TickHover();
 		TickSettingDrag();
+		TickTraySize();
 
 		if ( Loop.Phase != RunPhase.PickTrait )
 			shopHover = -1;
@@ -943,22 +929,7 @@
 	int DashPercent => Runner.IsValid() ? (int)(Runner.DashCharge * 100f) : 0;
 	int SlowPercent => Runner.IsValid() ? (int)(Runner.SlowCharge * 100f) : 0;
 	int ReloadPercent => Loop.IsValid() && Loop.Inventory.IsValid() ? (int)(Loop.Inventory.Reload01 * 100f) : 0;
-	bool ReloadReady => Loop.IsValid() && Loop.Inventory.IsValid() && Loop.Inventory.Ready;
-	int MagCap => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.MagCap : 0;
-	string MagPip( int index )
-	{
-		if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
-			return "";
-
-		var mag = Loop.Inventory;
-		if ( index < mag.MagLoaded )
-			return "chambered";
-		if ( index < mag.MagLoaded + mag.MagFlight )
-			return "inflight";
-		if ( index < mag.MagLoaded + mag.MagFlight + mag.MagDropped )
-			return "dropped";
-		return "";
-	}
+	int MagLoaded => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.MagLoaded : 0;
 	bool DashReady => Runner.IsValid() && Runner.DashCharge >= 1f;
 	bool SlowUnlocked => Runner.IsValid() && Runner.SlowUnlocked;
 	bool Slowing => Runner.IsValid() && Runner.Slowing;
@@ -1165,8 +1136,108 @@
 	float trailY;
 	Sandbox.UI.Panel auraPanel;
 	Sandbox.UI.Panel trailPanel;
+	Sandbox.UI.Panel trayPanel;
+	Sandbox.UI.Panel healthPanel;
+	Sandbox.UI.Panel dashSlot;
 	Sandbox.UI.Panel hotCard;
 	int shopHover = -1;
+	const float TrayArtWidth = 2544f;
+	const float TrayArtHeight = 286f;
+	const float ChargeMeterWidth = 131f;
+	const float ChargeMeterHeight = 24f;
+
+	void TickTraySize()
+	{
+		if ( Panel is null )
+			return;
+
+		PlaceHealthIcons();
+		PlaceChargeMeters();
+
+		if ( !trayPanel.IsValid() )
+			trayPanel = FindHud( "tray-back" );
+
+		if ( !trayPanel.IsValid() )
+			return;
+
+		var width = Panel.Box.Rect.Width;
+		var screenH = Panel.Box.Rect.Height;
+		if ( width <= 1f || screenH <= 1f )
+			return;
+
+		var height = width * (TrayArtHeight / TrayArtWidth);
+		trayPanel.Style.Position = Sandbox.UI.PositionMode.Absolute;
+		trayPanel.Style.Left = Sandbox.UI.Length.Pixels( 0 );
+		trayPanel.Style.Top = Sandbox.UI.Length.Auto;
+		trayPanel.Style.Bottom = Sandbox.UI.Length.Pixels( 0 );
+		trayPanel.Style.Width = Sandbox.UI.Length.Pixels( width );
+		trayPanel.Style.Height = Sandbox.UI.Length.Pixels( height );
+		trayPanel.Style.Dirty();
+	}
+
+	void PlaceHealthIcons()
+	{
+		if ( !healthPanel.IsValid() )
+			healthPanel = FindHud( "health-slot" );
+
+		if ( !healthPanel.IsValid() )
+			return;
+
+		var slotH = healthPanel.Box.Rect.Height;
+		if ( slotH <= 1f )
+			return;
+
+		var iconH = MathF.Max( 8f, (slotH * 0.9f - 4f) / 2f );
+		var iconW = iconH * (30f / 39f);
+		foreach ( var child in healthPanel.Descendants )
+		{
+			if ( !child.HasClass( "hp" ) )
+				continue;
+
+			child.Style.Width = Sandbox.UI.Length.Pixels( iconW );
+			child.Style.Height = Sandbox.UI.Length.Pixels( iconH );
+			child.Style.Dirty();
+		}
+	}
+
+	void PlaceChargeMeters()
+	{
+		if ( !dashSlot.IsValid() )
+			dashSlot = FindHud( "dash-slot" );
+
+		if ( !dashSlot.IsValid() )
+			return;
+
+		foreach ( var meter in dashSlot.Descendants )
+		{
+			if ( !meter.HasClass( "charge-meter" ) )
+				continue;
+
+			var fraction = meter.HasClass( "slow" ) ? 1f : Math.Clamp( DashPercent / 100f, 0f, 1f );
+			var revealW = fraction >= 0.999f ? ChargeMeterWidth : ChargeMeterWidth * fraction;
+
+			foreach ( var layer in meter.Descendants )
+			{
+				if ( layer.HasClass( "charge-layer" ) )
+				{
+					layer.Style.Width = Sandbox.UI.Length.Pixels( ChargeMeterWidth );
+					layer.Style.Height = Sandbox.UI.Length.Pixels( ChargeMeterHeight );
+					layer.Style.Left = Sandbox.UI.Length.Pixels( 0 );
+					layer.Style.Top = Sandbox.UI.Length.Pixels( 0 );
+					layer.Style.Dirty();
+				}
+
+				if ( layer.HasClass( "charge-reveal" ) )
+				{
+					layer.Style.Left = Sandbox.UI.Length.Pixels( 0 );
+					layer.Style.Top = Sandbox.UI.Length.Pixels( 0 );
+					layer.Style.Width = Sandbox.UI.Length.Pixels( revealW );
+					layer.Style.Height = Sandbox.UI.Length.Pixels( ChargeMeterHeight );
+					layer.Style.Dirty();
+				}
+			}
+		}
+	}
 
 	void TickCursor()
 	{
@@ -2917,21 +2988,125 @@
 		color: #f4ece0;
 	}
 
+	.tray-frame {
+		position: absolute;
+		left: 0px;
+		bottom: 0px;
+		width: 100%;
+		aspect-ratio: 2544 / 286;
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	.tray-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.health-slot {
+		position: absolute;
+		left: 25.63%;
+		bottom: 15.38%;
+		width: 28.54%;
+		height: 35.66%;
+		flex-direction: row;
+		align-items: center;
+		padding: 0px 28px;
+		pointer-events: none;
+	}
+
+	.health-key,
+	.ammo-key {
+		margin-right: 18px;
+		font-size: 32px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #e6d3a1;
+		flex-shrink: 0;
+	}
+
+	.ammo-slot {
+		position: absolute;
+		left: 57.47%;
+		bottom: 15.38%;
+		width: 11.71%;
+		height: 35.66%;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	.dash-slot {
+		position: absolute;
+		left: 72.64%;
+		bottom: 15.38%;
+		width: 15.17%;
+		height: 35.66%;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	.meter-row {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 4px;
+	}
+
+	.meter-key {
+		width: 62px;
+		margin-right: 8px;
+		font-size: 18px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #e6d3a1;
+		flex-shrink: 0;
+	}
+
+	.charge-meter {
+		position: relative;
+		width: 131px;
+		height: 24px;
+		flex-shrink: 0;
+	}
+
+	.charge-layer {
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		width: 131px;
+		height: 24px;
+	}
+
+	.charge-reveal {
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		height: 24px;
+		overflow: hidden;
+	}
+
 	.run-tray {
 		position: absolute;
-		bottom: 34px;
+		left: 0px;
+		bottom: 0px;
 		width: 100%;
 		justify-content: center;
+		align-items: center;
 		font-family: "Barlow Condensed";
+		z-index: 2;
 	}
 
 	.tray {
 		flex-direction: row;
 		align-items: center;
 		padding: 12px 24px;
-		border-radius: 12px;
-		background-color: rgba(14, 15, 17, 0.88);
-		border: 2px solid rgba(240, 180, 41, 0.16);
 	}
 
 	.tray-cell {
@@ -2962,55 +3137,36 @@
 
 	.hp-row {
 		flex-direction: row;
+		flex-wrap: wrap;
 		align-items: center;
+		align-content: center;
+		justify-content: flex-start;
+		flex-grow: 1;
+		height: 100%;
 	}
 
 	.hp {
-		width: 20px;
-		height: 20px;
+		width: 30px;
+		height: 39px;
 		margin-right: 6px;
-		border-radius: 4px;
-		background-color: rgba(200, 190, 170, 0.16);
+		margin-bottom: 4px;
+		flex-shrink: 0;
 	}
 
-	.hp.live {
-		background-color: #e0453a;
-	}
-
-	.hp.live.sting {
-		background-color: #ffffff;
-	}
-
-	.round-row {
-		flex-direction: row;
-		align-items: center;
+	.hp.sting {
+		opacity: 0.45;
 	}
 
 	.round {
-		width: 14px;
-		height: 26px;
-		margin-right: 5px;
-		border-radius: 7px;
-		border: 2px solid rgba(0, 0, 0, 0);
-		background-color: #4aa8e8;
-		opacity: 0.5;
+		width: 18px;
+		height: 42px;
+		margin-right: 8px;
 	}
 
-	.round.chambered {
-		opacity: 1;
-	}
-
-	.round.inflight {
-		opacity: 0.8;
-	}
-
-	.round.dropped {
-		opacity: 0.35;
-	}
-
-	.round.picked {
-		opacity: 1;
-		border-color: #f4ece0;
+	.ammo-count {
+		font-size: 32px;
+		font-weight: 700;
+		color: #f4ece0;
 	}
 
 	.tray-bar {
