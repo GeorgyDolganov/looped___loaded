@@ -11,7 +11,8 @@
     "Slow": "SLOW",
     "HurtStamp": "-1",
     "Task": "NEXT",
-    "FeedCount": "TOTAL BIOMASS {0} / {1}"
+    "FeedCount": "TOTAL BIOMASS {0} / {1}",
+    "Ammo": "AMMO"
   },
   "Pause": {
     "Button": "PAUSE",

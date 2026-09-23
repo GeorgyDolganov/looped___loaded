@@ -412,7 +412,7 @@ public class HudCopy
 	[Property] public string Trinkets { get; set; } = "GUN";
 	[Property] public string TrinketsNone { get; set; } = "PEA";
 	[Property] public string Health { get; set; } = "HEALTH";
-	[Property] public string Ammo { get; set; } = "RELOAD";
+	[Property] public string Ammo { get; set; } = "AMMO";
 	[Property] public string DashKey { get; set; } = "SPACE";
 	[Property] public string SlowKey { get; set; } = "RMB";
 	[Property] public string Fed { get; set; } = "TOTAL BIOMASS";
