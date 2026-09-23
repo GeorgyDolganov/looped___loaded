@@ -93,6 +93,9 @@ public sealed class EnemyShot : Component
 
 		if ( geometry.TraceRay( Flat, Direction, step + Radius, out var hit ) )
 		{
+			if ( hit.Kind == WallKind.Spin && Loop.IsValid() && Loop.Arena.IsValid() )
+				Loop.Arena.PushSpinner( hit.WallIndex, hit.Position, Direction );
+
 			ImpactFlash.Spawn( Scene, geometry.ToPlayWorld( hit.Position ), ShotColors.Enemy, 0.5f );
 			DestroyShot();
 			return;

@@ -390,6 +390,7 @@ public sealed class RoundInventory : Component
 			var yaw = ShotSpread.Yaw( i, count, cone );
 			var heading = ShotSpread.Turn( Aim.Direction, yaw );
 			var flight = ToFlight( recipe, volley );
+			flight.Damage = PelletShare( recipe.Damage, i, count );
 			flight.Bite = recipe.Bite;
 			flight.BurstId = BurstId;
 			flight.VolleyIndex = volleyIndex;
@@ -410,6 +411,19 @@ public sealed class RoundInventory : Component
 		Loop.NoteShot();
 		ArenaSounds.Fire( Aim.MuzzleWorld );
 		ImpactFlash.Spawn( Loop.Scene, Aim.MuzzleWorld, ShotColors.Player, recipe.Nail ? 0.55f : 0.8f );
+	}
+
+	static int PelletShare( int total, int index, int count )
+	{
+		if ( count <= 1 )
+			return Math.Max( 1, total );
+
+		if ( total < count )
+			return 1;
+
+		var share = total / count;
+		var extra = total % count;
+		return share + (index < extra ? 1 : 0);
 	}
 
 	static RoundFlight ToFlight( GunRecipe recipe, ShotVolley volley ) => new()

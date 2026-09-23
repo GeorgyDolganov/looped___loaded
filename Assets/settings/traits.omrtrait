@@ -56,9 +56,9 @@
     "Level3": 24
   },
   "BuckFalloff": {
-    "Level1": 260,
-    "Level2": 220,
-    "Level3": 180
+    "Level1": 1600,
+    "Level2": 1100,
+    "Level3": 800
   },
   "BorePierce": {
     "Level1": 1,

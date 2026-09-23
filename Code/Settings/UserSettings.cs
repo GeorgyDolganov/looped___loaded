@@ -4,7 +4,7 @@ public sealed class UserOptions
 {
 	public int Version { get; set; } = 1;
 	public float Music { get; set; } = 1f;
-	public float Sfx { get; set; } = 1f;
+	public float Sfx { get; set; } = 0.5f;
 	public float Shake { get; set; } = 1f;
 }
 

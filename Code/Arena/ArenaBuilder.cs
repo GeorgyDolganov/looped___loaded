@@ -25,6 +25,7 @@ public sealed class ArenaBuilder : Component
 	public static readonly Color GlassPanelTint = new Color( 0.78f, 0.92f, 0.98f );
 	public static readonly Color GlassCrackTint = new Color( 0.94f, 0.98f, 1f );
 	public static readonly Color GlassShardTint = new Color( 0.88f, 0.96f, 1f );
+	const float SpinnerScale = 0.5f;
 	static readonly Color GlassPane = new Color( 0.56f, 0.67f, 0.62f );
 	static readonly Color GlassPaneBright = new Color( 0.77f, 0.87f, 0.86f );
 
@@ -52,6 +53,8 @@ public sealed class ArenaBuilder : Component
 	GameObject beamOuter;
 	GameLoop loop;
 	readonly Dictionary<int, GameObject> panelVisuals = new();
+	readonly Dictionary<int, GameObject> spinnerRotors = new();
+	readonly List<int> spinnerIds = new();
 	readonly Dictionary<int, GameObject> authoredVisuals = new();
 	readonly Dictionary<int, GameObject> shardVisuals = new();
 	readonly List<(ModelRenderer Renderer, Color Tint, float Pulse)> finishMarks = new();
@@ -108,7 +111,10 @@ public sealed class ArenaBuilder : Component
 		Geometry.GlassRules = Location == RunLocation.Glass;
 		Geometry.ClearBossWalls();
 		Geometry.GeneratePanels( lap, seed );
+		if ( lap == 1 )
+			PlaceTestSpinner( seed );
 		RebuildPanels();
+		RebuildSpinners();
 		ClearShards();
 	}
 
@@ -155,6 +161,7 @@ public sealed class ArenaBuilder : Component
 		PulseFinish();
 		TickShards();
 		TickGlass();
+		TickSpinners();
 	}
 
 	void CollectFinish()
@@ -515,6 +522,7 @@ public sealed class ArenaBuilder : Component
 		}
 
 		panelVisuals.Clear();
+		spinnerRotors.Clear();
 
 		if ( !panelRoot.IsValid() )
 			return;
@@ -551,6 +559,124 @@ public sealed class ArenaBuilder : Component
 
 			panelVisuals[i] = SpawnWall( panelRoot, wall, i, false );
 		}
+	}
+
+	void PlaceTestSpinner( int seed )
+	{
+		var model = Blocks.SpinWall;
+		var length = (model.IsValid() && model.Bounds.Size.x > 1f ? model.Bounds.Size.x : 830f) * SpinnerScale;
+		var half = length * 0.5f;
+		var inner = Geometry.CoreRadius + 110f + half;
+		var outer = Geometry.TrackInner - 95f - half;
+		if ( outer < inner )
+		{
+			var mid = (inner + outer) * 0.5f;
+			inner = mid;
+			outer = mid;
+		}
+
+		var rng = new Random( unchecked( seed * 48611 + 7919 * 17 ) );
+		var center = Vector2.Zero;
+		var face = 0f;
+		for ( var n = 0; n < 8; n++ )
+		{
+			var angle = (float)rng.NextDouble() * MathF.Tau;
+			var radius = inner + ( outer - inner ) * (float)rng.NextDouble();
+			face = angle + MathF.PI * 0.5f + MathX.DegreeToRadian( ( (float)rng.NextDouble() - 0.5f ) * 72f );
+			center = ArenaGeometry.FromAngle( angle ) * radius;
+			var along = ArenaGeometry.FromAngle( face );
+			var min = Geometry.CoreRadius + 70f;
+			var max = Geometry.TrackInner - 70f;
+			var a = (center - along * half).Length;
+			var b = (center + along * half).Length;
+			if ( a >= min && a <= max && b >= min && b <= max )
+				break;
+		}
+
+		Geometry.AddSpinner( center, length, face );
+	}
+
+	void RebuildSpinners()
+	{
+		Geometry.CollectSpinners( spinnerIds );
+		if ( spinnerIds.Count == 0 )
+			return;
+
+		if ( !panelRoot.IsValid() )
+		{
+			panelRoot = FindChild( GameObject, "Panels" );
+			if ( !panelRoot.IsValid() )
+			{
+				panelRoot = Scene.CreateObject();
+				panelRoot.Name = "Panels";
+				panelRoot.Parent = GameObject;
+			}
+		}
+
+		foreach ( var index in spinnerIds )
+		{
+			if ( index < 0 || index >= Geometry.Walls.Count )
+				continue;
+
+			spinnerRotors[index] = SpawnSpinner( panelRoot, Geometry.Walls[index] );
+		}
+	}
+
+	GameObject SpawnSpinner( GameObject parent, WallSegment wall )
+	{
+		var root = Scene.CreateObject();
+		root.Name = "Spin Wall";
+		root.Parent = parent;
+		root.WorldPosition = new Vector3( wall.Center.x, wall.Center.y, 0f );
+		root.WorldRotation = Rotation.Identity;
+		root.LocalScale = Vector3.One * SpinnerScale;
+
+		var stand = Scene.CreateObject();
+		stand.Name = "Stand";
+		stand.Parent = root;
+		stand.LocalPosition = Vector3.Zero;
+		stand.LocalRotation = Rotation.Identity;
+		stand.LocalScale = Vector3.One;
+		var standRenderer = stand.AddComponent<ModelRenderer>();
+		standRenderer.Model = Blocks.SpinStand;
+		standRenderer.MaterialOverride = Blocks.WallReflect;
+		standRenderer.Tint = Color.White;
+
+		var rotor = Scene.CreateObject();
+		rotor.Name = "Rotor";
+		rotor.Parent = root;
+		rotor.LocalPosition = Vector3.Zero;
+		rotor.LocalScale = Vector3.One;
+		rotor.WorldRotation = Blocks.FlatFacing( wall.Direction );
+		var renderer = rotor.AddComponent<ModelRenderer>();
+		renderer.Model = Blocks.SpinWall;
+		renderer.MaterialOverride = Blocks.WallReflect;
+		renderer.Tint = Color.White;
+		return rotor;
+	}
+
+	void TickSpinners()
+	{
+		if ( spinnerRotors.Count == 0 )
+			return;
+
+		loop ??= Scene.GetAllComponents<GameLoop>().FirstOrDefault();
+		if ( loop.IsValid() && loop.Paused )
+			return;
+
+		Geometry.AdvanceSpinners( Time.Delta );
+		foreach ( var pair in spinnerRotors )
+		{
+			if ( !pair.Value.IsValid() || pair.Key < 0 || pair.Key >= Geometry.Walls.Count )
+				continue;
+
+			pair.Value.WorldRotation = Blocks.FlatFacing( Geometry.Walls[pair.Key].Direction );
+		}
+	}
+
+	public void PushSpinner( int index, Vector2 hitPos, Vector2 incoming )
+	{
+		Geometry.PushSpinner( index, hitPos, incoming );
 	}
 
 	public void KickPanel( int index, Vector2 hitPos, Vector2 hitNormal, float extraDegrees = 0f, bool allowSecond = false )

@@ -49,7 +49,7 @@ public class TraitConfig : GameResource
 	[Property] public float SlugFalloffPad { get; set; } = 120f;
 	[Property] public TraitTiers BuckPellets { get; set; } = new() { Level1 = 2f, Level2 = 3f, Level3 = 5f };
 	[Property] public TraitTiers BuckCone { get; set; } = new() { Level1 = 10f, Level2 = 16f, Level3 = 24f };
-	[Property] public TraitTiers BuckFalloff { get; set; } = new() { Level1 = 260f, Level2 = 220f, Level3 = 180f };
+	[Property] public TraitTiers BuckFalloff { get; set; } = new() { Level1 = 1600f, Level2 = 1100f, Level3 = 800f };
 	[Property] public TraitTiers BorePierce { get; set; } = new() { Level1 = 1f, Level2 = 1f, Level3 = 2f };
 	[Property] public float BoreReload { get; set; } = 0.55f;
 	[Property] public TraitTiers DrumBurst { get; set; } = new() { Level1 = 3f, Level2 = 4f, Level3 = 6f };
