@@ -3,6 +3,7 @@ namespace LoopedLoaded;
 public static class SaveStore
 {
 	public const int Slots = 3;
+	public const int CurrentVersion = 2;
 
 	const string Folder = "saves";
 	const string LastFile = "saves/last.txt";
@@ -49,7 +50,7 @@ public static class SaveStore
 		try
 		{
 			EnsureFolder();
-			save.Version = 1;
+			save.Version = CurrentVersion;
 			save.SavedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 			FileSystem.Data.WriteJson( FilePath( slot ), save );
 			SetLastSlot( slot );

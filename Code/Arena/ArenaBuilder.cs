@@ -110,9 +110,7 @@ public sealed class ArenaBuilder : Component
 
 		Geometry.GlassRules = Location == RunLocation.Glass;
 		Geometry.ClearBossWalls();
-		Geometry.GeneratePanels( lap, seed );
-		if ( lap == 1 )
-			PlaceTestSpinner( seed );
+		Geometry.GeneratePanels( lap, seed, SpinWallLength() );
 		RebuildPanels();
 		RebuildSpinners();
 		ClearShards();
@@ -561,39 +559,10 @@ public sealed class ArenaBuilder : Component
 		}
 	}
 
-	void PlaceTestSpinner( int seed )
+	float SpinWallLength()
 	{
 		var model = Blocks.SpinWall;
-		var length = (model.IsValid() && model.Bounds.Size.x > 1f ? model.Bounds.Size.x : 830f) * SpinnerScale;
-		var half = length * 0.5f;
-		var inner = Geometry.CoreRadius + 110f + half;
-		var outer = Geometry.TrackInner - 95f - half;
-		if ( outer < inner )
-		{
-			var mid = (inner + outer) * 0.5f;
-			inner = mid;
-			outer = mid;
-		}
-
-		var rng = new Random( unchecked( seed * 48611 + 7919 * 17 ) );
-		var center = Vector2.Zero;
-		var face = 0f;
-		for ( var n = 0; n < 8; n++ )
-		{
-			var angle = (float)rng.NextDouble() * MathF.Tau;
-			var radius = inner + ( outer - inner ) * (float)rng.NextDouble();
-			face = angle + MathF.PI * 0.5f + MathX.DegreeToRadian( ( (float)rng.NextDouble() - 0.5f ) * 72f );
-			center = ArenaGeometry.FromAngle( angle ) * radius;
-			var along = ArenaGeometry.FromAngle( face );
-			var min = Geometry.CoreRadius + 70f;
-			var max = Geometry.TrackInner - 70f;
-			var a = (center - along * half).Length;
-			var b = (center + along * half).Length;
-			if ( a >= min && a <= max && b >= min && b <= max )
-				break;
-		}
-
-		Geometry.AddSpinner( center, length, face );
+		return (model.IsValid() && model.Bounds.Size.x > 1f ? model.Bounds.Size.x : 830f) * SpinnerScale;
 	}
 
 	void RebuildSpinners()

@@ -14,6 +14,7 @@ public static class Progression
 	public static float RoundRatio => C.RoundRatio;
 	public static int MaxSlots => C.MaxSlots;
 	public static int BossBaseHealth => C.BossBaseHealth;
+	public static int SoftRuns => Math.Max( 0, C.SoftRuns );
 
 	public static float LocationMul( int location ) => MathF.Pow( ThreatRatio, Math.Max( 0, location ) );
 

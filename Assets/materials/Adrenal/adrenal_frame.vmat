@@ -1,0 +1,10 @@
+Layer0
+{
+	shader "shaders/organ_frame.shader"
+
+	//---- Color ----
+	TextureColor "textures/adrenal.jpg"
+
+	//---- Fog ----
+	g_bFogEnabled "1"
+}

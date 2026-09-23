@@ -395,6 +395,8 @@ public sealed class RoundInventory : Component
 			beam.Aim( Aim.Muzzle, Aim.Direction, recipe );
 		Loop.NoteShot();
 		ArenaSounds.Fire( Aim.IsValid() ? Aim.MuzzleWorld : Vector3.Zero );
+		if ( Runner.IsValid() )
+			Runner.PlayShoot();
 	}
 
 	void EndBeam( GunRecipe recipe )
@@ -490,6 +492,8 @@ public sealed class RoundInventory : Component
 		Loop.NoteShot();
 		ArenaSounds.Fire( Aim.MuzzleWorld );
 		ImpactFlash.Spawn( Loop.Scene, Aim.MuzzleWorld, ShotColors.Player, recipe.Nail ? 0.55f : 0.8f );
+		if ( Runner.IsValid() )
+			Runner.PlayShoot();
 	}
 
 	static int PelletShare( int total, int index, int count )

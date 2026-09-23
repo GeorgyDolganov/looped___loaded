@@ -123,39 +123,116 @@ public sealed class ArenaGeometry
 		GlassBroken = 0;
 	}
 
-	public void GeneratePanels( int lap, int seed )
+	public void GeneratePanels( int lap, int seed, float spinLength )
 	{
 		ClearGeneratedPanels();
 
 		var rng = new Random( unchecked( seed * 48611 + Math.Max( 1, lap ) * 7919 ) );
 		var count = Math.Clamp( 1 + Math.Max( 1, lap ), 2, 6 );
+		if ( (count & 1) == 1 )
+			count = Math.Min( 6, count + 1 );
+		if ( (count & 1) == 1 )
+			count--;
+
+		var each = count / 2;
 		var origin = (float)rng.NextDouble() * MathF.Tau;
-		var inner = CoreRadius + 110f;
-		var outer = TrackInner - 95f;
 		var slice = MathF.Tau / count;
+		var spinTurn = rng.NextDouble() < 0.5;
+		var glass = 0;
+		var spin = 0;
 
 		for ( var i = 0; i < count; i++ )
 		{
 			var angle = origin + slice * i + ( (float)rng.NextDouble() - 0.5f ) * slice * 0.42f;
-			var radial = lap >= 2 && rng.NextDouble() < 0.22 + lap * 0.05;
+			var wantSpin = ((i & 1) == 0) == spinTurn;
+			if ( wantSpin && spin < each && TryAddSpin( rng, angle, spinLength ) )
+				spin++;
+			else if ( !wantSpin && glass < each && TryAddGlass( rng, angle, lap, count ) )
+				glass++;
+		}
 
-			if ( radial )
-			{
-				var start = inner + 16f + (float)rng.NextDouble() * 50f;
-				var end = outer - 12f - (float)rng.NextDouble() * 40f;
-				if ( end - start < 150f )
-					end = start + 150f;
+		var guard = 0;
+		while ( (glass < each || spin < each) && guard++ < 24 )
+		{
+			var angle = (float)rng.NextDouble() * MathF.Tau;
+			if ( glass < each && TryAddGlass( rng, angle, lap, count ) )
+				glass++;
+			if ( spin < each && TryAddSpin( rng, angle, spinLength ) )
+				spin++;
+		}
+	}
 
-				AddRadial( angle, start, MathF.Min( end, outer ) );
-				continue;
-			}
+	bool TryAddGlass( Random rng, float angle, int lap, int count )
+	{
+		var inner = CoreRadius + 110f;
+		var outer = TrackInner - 95f;
+		var before = Walls.Count;
+		var radial = lap >= 2 && rng.NextDouble() < 0.22 + lap * 0.05;
 
+		if ( radial )
+		{
+			var start = inner + 16f + (float)rng.NextDouble() * 50f;
+			var end = outer - 12f - (float)rng.NextDouble() * 40f;
+			if ( end - start < 150f )
+				end = start + 150f;
+
+			AddRadial( angle, start, MathF.Min( end, outer ) );
+		}
+		else
+		{
 			var radius = inner + ( outer - inner ) * ( 0.18f + (float)rng.NextDouble() * 0.64f );
 			var tilt = ( (float)rng.NextDouble() - 0.5f ) * 72f;
 			var length = MathX.Lerp( 340f, 210f, ( count - 2 ) / 4f );
 			length += ( (float)rng.NextDouble() - 0.5f ) * 48f;
 			AddPanel( angle, radius, tilt, length );
 		}
+
+		return Walls.Count > before;
+	}
+
+	bool TryAddSpin( Random rng, float angle, float length )
+	{
+		var half = MathF.Max( 40f, length ) * 0.5f;
+		var min = CoreRadius + 70f;
+		var max = TrackInner - 70f;
+		var bandIn = CoreRadius + 110f + half;
+		var bandOut = TrackInner - 95f - half;
+		if ( bandOut < bandIn )
+		{
+			var mid = (CoreRadius + 110f + TrackInner - 95f) * 0.5f;
+			bandIn = mid;
+			bandOut = mid;
+		}
+
+		for ( var n = 0; n < 6; n++ )
+		{
+			var useAngle = angle + (n == 0 ? 0f : ( (float)rng.NextDouble() - 0.5f ) * 0.35f);
+			var radius = bandIn + ( bandOut - bandIn ) * (float)rng.NextDouble();
+			var tilt = ( (float)rng.NextDouble() - 0.5f ) * (n == 0 ? 72f : 20f);
+			var face = useAngle + MathF.PI * 0.5f + MathX.DegreeToRadian( tilt );
+			var center = FromAngle( useAngle ) * radius;
+			if ( !SpinFits( center, face, half, min, max ) )
+				continue;
+
+			AddSpinner( center, length, face );
+			return true;
+		}
+
+		var fallbackFace = angle + MathF.PI * 0.5f;
+		var fallbackCenter = FromAngle( angle ) * ( (bandIn + bandOut) * 0.5f );
+		if ( !SpinFits( fallbackCenter, fallbackFace, half, min, max ) )
+			return false;
+
+		AddSpinner( fallbackCenter, length, fallbackFace );
+		return true;
+	}
+
+	static bool SpinFits( Vector2 center, float face, float half, float min, float max )
+	{
+		var along = FromAngle( face );
+		var a = (center - along * half).Length;
+		var b = (center + along * half).Length;
+		return a >= min && a <= max && b >= min && b <= max;
 	}
 
 	void AddRadial( float angle, float inner, float outer )

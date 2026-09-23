@@ -64,6 +64,8 @@ public sealed class GameLoop : Component
 	public int ExtractedRounds { get; private set; }
 	public int BurnedRounds { get; private set; }
 	public int BestExtract { get; private set; }
+	public int Runs { get; private set; }
+	bool softEnemies;
 	public int FedBiomass { get; private set; }
 	public int WinNeed => Math.Max( 1, GameSettings.Run.WinBiomass );
 	public float RunTime => Time.Now - runStartedAt;
@@ -204,6 +206,7 @@ public sealed class GameLoop : Component
 
 		var save = City.Capture( BestExtract, BestLine );
 		save.FedBiomass = FedBiomass;
+		save.Runs = Runs;
 		save.Tasks = progress.Capture();
 		if ( !save.HasProgress && !SaveStore.Exists( ActiveSlot ) )
 			return;
@@ -272,6 +275,7 @@ public sealed class GameLoop : Component
 
 		BestExtract = save.BestExtract;
 		BestLine = save.BestLine;
+		Runs = save.Version >= SaveStore.CurrentVersion ? Math.Max( 0, save.Runs ) : Progression.SoftRuns;
 		City?.Apply( save );
 		FedBiomass = Math.Max( save.FedBiomass, City.IsValid() ? City.Warehouse : save.Warehouse );
 		progress.Apply( save.Tasks, City, BestLine, BestExtract );
@@ -285,7 +289,7 @@ public sealed class GameLoop : Component
 
 	public void Announce( string text )
 	{
-		Notice = text;
+		Notice = TextConfig.Shown( text );
 		noticeAt = Time.Now;
 	}
 
@@ -672,6 +676,8 @@ public sealed class GameLoop : Component
 
 	public void Restart()
 	{
+		softEnemies = Runs < Progression.SoftRuns;
+		Runs++;
 		Autosave();
 
 		City?.ClearShots();
@@ -1249,6 +1255,8 @@ public sealed class GameLoop : Component
 	{
 		BestExtract = 0;
 		BestLine = -1;
+		Runs = 0;
+		softEnemies = false;
 		FedBiomass = 0;
 		ExtractedRounds = 0;
 		progress.Clear();
@@ -1773,7 +1781,7 @@ public sealed class GameLoop : Component
 				var enemy = go.AddComponent<Enemy>();
 				enemy.Arena = Arena;
 				enemy.Loop = this;
-				enemy.Setup( kind, ArenaGeometry.FromAngle( angle + n * wave.ExtraAngle ) * radius, Progression.EnemyHealth( hp, lap, LocationIndex ) );
+				enemy.Setup( kind, ArenaGeometry.FromAngle( angle + n * wave.ExtraAngle ) * radius, hp );
 				Enemies.Add( enemy );
 			}
 		}
@@ -1784,7 +1792,7 @@ public sealed class GameLoop : Component
 			return;
 		}
 
-		var hp = WaveBodyHp( lap );
+		var hp = BodyHealth( lap );
 		switch ( lap )
 		{
 			case 1:
@@ -1837,7 +1845,7 @@ public sealed class GameLoop : Component
 
 	void SpawnGlassWave( int lap, float offset, float hunt, float mid, float inner, float outer, Action<EnemyKind, float, float, int> add )
 	{
-		var hp = WaveBodyHp( lap );
+		var hp = BodyHealth( lap );
 		switch ( lap )
 		{
 			case 1:
@@ -1887,8 +1895,39 @@ public sealed class GameLoop : Component
 				1 => mid,
 				_ => inner
 			};
-			add( WaveCloak( kind ), angle, ring, WaveExtraHp( lap ) );
+			add( WaveCloak( kind ), angle, ring, ExtraHealth( lap ) );
 		}
+	}
+
+	int BodyHealth( int lap )
+	{
+		if ( softEnemies )
+			return SoftHealth( lap );
+
+		return Progression.EnemyHealth( WaveBodyHp( lap ), lap, LocationIndex );
+	}
+
+	int ExtraHealth( int lap )
+	{
+		if ( softEnemies )
+			return SoftHealth( lap );
+
+		return Progression.EnemyHealth( WaveExtraHp( lap ), lap, LocationIndex );
+	}
+
+	int SoftHealth( int lap )
+	{
+		var hp = 5;
+		if ( lap <= 2 )
+			hp = 1;
+		else if ( lap == 3 )
+			hp = 2;
+		else if ( lap == 4 )
+			hp = 3;
+		else if ( lap == 5 )
+			hp = 4;
+
+		return Math.Max( 1, Progression.Whole( hp * Progression.LocationMul( LocationIndex ) ) );
 	}
 
 	static int WaveBodyHp( int lap )

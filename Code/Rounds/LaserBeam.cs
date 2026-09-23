@@ -166,10 +166,11 @@ public sealed class LaserBeam : Component
 
 	void Draw( List<List<Vector2>> bolts, int rank )
 	{
-		var pulse = 0.62f + 0.38f * MathF.Abs( MathF.Sin( Time.Now * (18f + rank * 8f) ) );
+		var wave = MathF.Abs( MathF.Sin( Time.Now * (14f + rank * 5f) ) );
+		var pulse = 0.2f + 0.8f * wave;
 		var core = Color.Lerp( BoltGlow, BoltCore, pulse );
-		var glow = BoltGlow * (0.35f + pulse * 0.45f );
-		var width = rank >= 3 ? 9f : rank >= 2 ? 7f : 5f;
+		var glow = BoltGlow * (0.15f + pulse * 0.85f );
+		var width = (rank >= 3 ? 9f : rank >= 2 ? 7f : 5f) * (0.45f + wave);
 
 		while ( lines.Count < bolts.Count )
 		{
@@ -200,7 +201,7 @@ public sealed class LaserBeam : Component
 			lines[i].HeadTint = core;
 			lines[i].TailTint = glow;
 			lines[i].HeadWidth = width;
-			lines[i].TailWidth = rank >= 2 ? 3f : 2.2f;
+			lines[i].TailWidth = (rank >= 2 ? 3f : 2.2f) * (0.45f + wave);
 			lines[i].Apply();
 			lines[i].SetPoints( world );
 		}
@@ -250,7 +251,7 @@ public static class LightningPath
 		rank = Math.Clamp( rank, 1, 3 );
 		var bolts = new List<List<Vector2>>();
 		var steps = rank <= 1 ? 7 : rank == 2 ? 11 : 15;
-		var amp = rank <= 1 ? 18f : rank == 2 ? 32f : 48f;
+		var amp = rank <= 1 ? 52f : rank == 2 ? 92f : 140f;
 		var main = Jag( from, to, seed, steps, amp );
 		bolts.Add( main );
 
@@ -271,7 +272,7 @@ public static class LightningPath
 			var side = Hash( seed, 70 + f ) % 2 == 0 ? 1f : -1f;
 			var reach = 90f + Hash( seed, 90 + f ) % 90;
 			var tip = origin + dir * (reach * 0.4f) + perp * side * reach;
-			bolts.Add( Jag( origin, tip, seed + 17 * (f + 1), 4 + rank, 14f + rank * 6f ) );
+			bolts.Add( Jag( origin, tip, seed + 17 * (f + 1), 4 + rank, 40f + rank * 16f ) );
 		}
 
 		return bolts;

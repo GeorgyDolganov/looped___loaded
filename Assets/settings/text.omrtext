@@ -39,7 +39,7 @@
     "Play": "PLAY",
     "ContinueBlurb": "Not enough... I should keep pushing...",
     "PlayBlurb": "IT want's to feed on the dwellers, FEED IT.",
-    "City": "UPGRADE",
+    "City": "ALTAR",
     "CityBlurb": "Use the salvaged biomass to enchance yourself",
     "Saves": "SAVES",
     "SavesBlurb": "Autosave slots. Load or delete your biomass.",
@@ -131,12 +131,12 @@
     "Menu": "1 PLAY  ·  2 ALTAR  ·  3 SAVES  ·  ESC QUIT",
     "CityBuild": "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E SHOOT  ·  SPACE/R RUN  ·  ESC PAUSE",
     "CityShoot": "LMB FIRE  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE",
-    "DecideLapBoss": "CLICK  ·  1 CITY  ·  2 STAY  ·  3 FIGHT THE {0}  ·  ESC PAUSE",
-    "DecideLap": "CLICK  ·  1 CITY  ·  2 STAY  ·  ESC PAUSE",
+    "DecideLapBoss": "CLICK  ·  1 ALTAR  ·  2 STAY  ·  3 FIGHT THE {0}  ·  ESC PAUSE",
+    "DecideLap": "CLICK  ·  1 ALTAR  ·  2 STAY  ·  ESC PAUSE",
     "DecideRingNext": "CLICK  ·  1 ALTAR  ·  2 NEXT RING  ·  ESC PAUSE",
     "DecideRing": "CLICK  ·  1 ALTAR  ·  ESC PAUSE",
     "Shop": "CLICK A CARD  ·  1-{0} BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE",
-    "Dead": "CLICK CITY  ·  R ALTAR  ·  ESC MENU",
+    "Dead": "CLICK ALTAR  ·  R ALTAR  ·  ESC MENU",
     "Extracted": "SPACE CONTINUE",
     "Won": "CLICK  ·  SPACE PLAY AGAIN  ·  ESC MENU",
     "BossGlass": "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE",
@@ -206,6 +206,7 @@
     "Removed": "{0} REMOVED",
     "WarehouseEmpty": "WAREHOUSE EMPTY",
     "FrameHits": "FRAME  ·  {0} HITS TO WORK",
+    "ShootToCraft": "SHOOT\nTO CRAFT",
     "HpTag": "+1 HP",
     "DmgTag": "+1 DMG",
     "Now": "NOW",
@@ -490,7 +491,7 @@
       "Title": "SKIM",
       "Blurb": "Glancing panel hits keep the bounce charge."
     },
-    "Kick": {
+    "PanelKick": {
       "Code": "KCK",
       "Title": "KICK",
       "Blurb": "Player shots twist inner panels harder."
@@ -530,7 +531,7 @@
       "Title": "STUTTER",
       "Blurb": "Pause on each wall bounce."
     },
-    "Breach": {
+    "PanelBreach": {
       "Code": "BRH",
       "Title": "BREACH",
       "Blurb": "Punch through inner panels."
@@ -555,7 +556,7 @@
       "Title": "BACKSTOP",
       "Blurb": "Catch zone behind you too."
     },
-    "Link": {
+    "PanelLink": {
       "Code": "LNK",
       "Title": "LINK",
       "Blurb": "A flying round picks up a dropped one."
@@ -662,10 +663,10 @@
       "Blurb": "Unlocks slow. Higher rank drains slower."
     },
     "Showcase": {
-      "Title": null,
-      "Payoff": null,
-      "Promise": null,
-      "Blurb": null
+      "Title": "LIVER",
+      "Payoff": "+CARD",
+      "Promise": "+1 UPGRADE CARD AFTER EACH LAP",
+      "Blurb": "One extra upgrade card after every lap."
     }
   },
   "Places": {
@@ -680,7 +681,7 @@
       "FightHint": "THE CORE  ·  RICOCHET TO BREAK IT",
       "Armor": "ARMOR  ·  RICOCHET FIRST",
       "BossKeep": "Ricochet the nucleus. Keep the stash. Extract or ride the next ring.",
-      "BossLast": "Ricochet the nucleus. Win: stash ×2, then city."
+      "BossLast": "Ricochet the nucleus. Win: stash ×2, then altar."
     },
     "Glass": {
       "Code": "GLASS",
@@ -691,7 +692,7 @@
       "FightHint": "THE LENS  ·  BREAK GLASS THEN HIT THE SIDE",
       "Armor": "ARMOR  ·  BREAK GLASS OR HIT THE SIDE",
       "BossKeep": "Shatter the glass, then hit the side. Keep the stash. Extract or ride the next ring.",
-      "BossLast": "Shatter the glass, then hit the side. Win: stash ×2, then city."
+      "BossLast": "Shatter the glass, then hit the side. Win: stash ×2, then altar."
     }
   },
   "Progress": {
