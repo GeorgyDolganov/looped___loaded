@@ -452,7 +452,6 @@ def main():
                         "__guid": rig_id,
                         "Pitch": 68,
                         "Yaw": 90,
-                        "Distance": 4000,
                         "FrameMargin": 1.24,
                         "FollowBias": 0.14,
                         "FollowSmoothing": 6,

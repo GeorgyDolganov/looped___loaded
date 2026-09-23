@@ -182,31 +182,25 @@ public sealed class RunLoadout
 		if ( Has( RoundTrait.Bite ) )
 			speed *= t.BiteSpeed;
 
-		var falloff = 0f;
+		var rangeCut = 0f;
 		var meatRange = 0f;
 		var meatBonus = 0;
 		if ( Has( RoundTrait.Meat ) )
 		{
 			meatRange = MathF.Max( meatRange, t.MeatRange );
 			meatBonus += t.MeatBonus;
-			falloff = falloff > 1f ? MathF.Min( falloff, t.MeatFalloff ) : t.MeatFalloff;
+			rangeCut += t.MeatRangeCut;
 		}
 
 		if ( Has( RoundTrait.Waste ) )
 		{
 			meatRange = MathF.Max( meatRange, t.WasteRange );
 			meatBonus += t.WasteBonus;
-			falloff = falloff > 1f ? MathF.Min( falloff, t.WasteFalloff ) : t.WasteFalloff;
+			rangeCut += t.WasteRangeCut;
 		}
 
 		if ( buck > 0 )
-		{
-			var cut = t.BuckFalloff.At( buck );
-			falloff = falloff > 1f ? MathF.Min( falloff, cut ) : cut;
-		}
-
-		if ( slug && falloff > 1f )
-			falloff += t.SlugFalloffPad;
+			rangeCut += t.BuckRangeCut.At( buck );
 
 		var damage = Math.Max( 1, t.BaseDamage + BonusDamage );
 		if ( slug )
@@ -261,7 +255,9 @@ public sealed class RunLoadout
 			RampPierce = Has( RoundTrait.Ram ),
 			Nail = pin > 0 && !slug,
 			StickTime = pin > 0 && !slug ? t.PinStick : 0f,
-			Falloff = falloff,
+			RangeCut = MathF.Max( 0f, rangeCut ),
+			RangePad = slug ? t.SlugFalloffPad : 0f,
+			Falloff = 0f,
 			MeatRange = meatRange,
 			MeatBonus = meatBonus,
 			KickForce = Has( RoundTrait.Kick ) ? t.KickForce : 0f,
@@ -329,6 +325,8 @@ public struct GunRecipe
 	public bool RampPierce;
 	public bool Nail;
 	public float StickTime;
+	public float RangeCut;
+	public float RangePad;
 	public float Falloff;
 	public float MeatRange;
 	public int MeatBonus;
@@ -415,6 +413,53 @@ public sealed class ShotVolley
 			return false;
 
 		return crowd.Add( enemy );
+	}
+}
+
+public static class ShotRange
+{
+	public static void Apply( ref GunRecipe recipe, GameLoop loop )
+	{
+		if ( recipe.RangeCut <= 0.0001f || recipe.Falloff > 1f )
+			return;
+
+		var range = recipe.Energy - recipe.RangeCut * Span( loop );
+		range = MathF.Max( range, Floor( loop ) );
+		range += MathF.Max( 0f, recipe.RangePad );
+		recipe.Falloff = range;
+		recipe.Energy = MathF.Min( recipe.Energy, range );
+	}
+
+	public static float Span( GameLoop loop )
+	{
+		var radius = loop.IsValid() && loop.Geometry is not null ? loop.Geometry.BoundaryRadius : 1170f;
+		return radius * 4f;
+	}
+
+	public static float Floor( GameLoop loop )
+	{
+		if ( !loop.IsValid() || !loop.Runner.IsValid() )
+			return 770f;
+
+		var from = loop.Runner.Flat;
+		var nearest = float.MaxValue;
+		var found = false;
+		foreach ( var enemy in loop.Enemies )
+		{
+			if ( !enemy.IsValid() || !enemy.Alive || !Locations.IsBoss( enemy.Kind ) )
+				continue;
+
+			found = true;
+			var gap = (enemy.Flat - from).Length - enemy.Radius;
+			if ( gap < nearest )
+				nearest = gap;
+		}
+
+		if ( found )
+			return MathF.Max( 0f, nearest );
+
+		var core = loop.Geometry is not null ? loop.Geometry.CoreRadius : 230f;
+		return MathF.Max( 0f, from.Length - core );
 	}
 }
 

@@ -9,7 +9,7 @@ public static class RoundCombat
 
 		var world = loop.Geometry.ToPlayWorld( origin );
 		ArenaSounds.Explode( world );
-		ImpactFlash.Spawn( loop.Scene, world, tint, MathF.Max( 1.4f, radius / 70f ) );
+		BlastBurst.Spawn( loop.Scene, world, radius, tint );
 
 		foreach ( var enemy in loop.Enemies )
 		{

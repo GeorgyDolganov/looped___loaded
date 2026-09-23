@@ -101,6 +101,7 @@ public sealed class PlayerAim : Component
 		}
 
 		var recipe = Inventory.Loadout.Recipe();
+		ShotRange.Apply( ref recipe, Loop );
 		var count = Math.Max( 1, recipe.Count );
 		var reach = recipe.PointAim ? (Cursor - Muzzle).Length : 0f;
 		var bounces = Math.Max( 0, recipe.Bounces );
@@ -116,15 +117,20 @@ public sealed class PlayerAim : Component
 				var range = recipe.BeamRange;
 				if ( recipe.PointAim )
 					range = MathF.Min( range, reach );
-				flat = new List<Vector2> { Muzzle, Clip( Muzzle, heading, range ) };
+				var end = LaserBeam.Reach( Loop, Arena.Geometry, Muzzle, heading, range, MathF.Max( 8f, recipe.BeamWidth ) );
+				flat = new List<Vector2> { Muzzle, end };
 			}
 			else if ( recipe.PointAim )
 			{
-				flat = new List<Vector2> { Muzzle, Clip( Muzzle, heading, reach ) };
+				var leg = recipe.Falloff > 1f ? MathF.Min( reach, recipe.Falloff ) : reach;
+				flat = new List<Vector2> { Muzzle, Clip( Muzzle, heading, leg ) };
 			}
 			else
 			{
-				flat = Arena.Geometry.PredictPath( Muzzle, heading, body, PreviewLength, PreviewBounceLength, bounces );
+				var budget = recipe.Falloff > 1f ? recipe.Falloff : PreviewLength;
+				var first = MathF.Min( PreviewLength, budget );
+				var bounceLeg = recipe.Falloff > 1f ? MathF.Min( PreviewBounceLength, MathF.Max( 0f, budget - first ) ) : PreviewBounceLength;
+				flat = Arena.Geometry.PredictPath( Muzzle, heading, body, first, bounceLeg, bounces );
 			}
 
 			PaintPath( Take( paths, i, "Aim Path" ), flat, recipe.Beam ? bolt : tint, recipe.Beam ? 4f : 3f );

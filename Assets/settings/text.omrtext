@@ -299,7 +299,7 @@
     "Meat": {
       "Code": "MEAT",
       "Title": "MEAT",
-      "Blurb": "+1 dmg inside 140. Zero after 280."
+      "Blurb": "+1 dmg inside 140. -100% range."
     },
     "Rico": {
       "Code": "RICO",
@@ -334,7 +334,7 @@
     "Waste": {
       "Code": "WASTE",
       "Title": "WASTE",
-      "Blurb": "+1 dmg inside 80. Zero after 150."
+      "Blurb": "+1 dmg inside 80. -100% range."
     },
     "Breach": {
       "Code": "BREACH",
@@ -354,7 +354,7 @@
     "Bloom": {
       "Code": "BLOOM",
       "Title": "BLOOM",
-      "Blurb": "+40 splash radius. Reload +0.30s. Locks out LANCE."
+      "Blurb": "+80 splash radius. Reload +0.30s. Locks out LANCE."
     },
     "Scorch": {
       "Code": "SCORCH",
@@ -369,7 +369,7 @@
     "Crater": {
       "Code": "CRATER",
       "Title": "CRATER",
-      "Blurb": "Fat body. +28 splash. No bounce. Slower. Locks out CLUSTER."
+      "Blurb": "Fat body. +56 splash. No bounce. Slower. Locks out CLUSTER."
     },
     "Spot": {
       "Code": "SPOT",

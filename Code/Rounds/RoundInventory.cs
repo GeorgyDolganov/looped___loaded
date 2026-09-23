@@ -445,6 +445,8 @@ public sealed class RoundInventory : Component
 		if ( !Loop.IsValid() || !Aim.IsValid() )
 			return;
 
+		ShotRange.Apply( ref recipe, Loop );
+
 		if ( spendMag )
 		{
 			if ( MagLoaded <= 0 )

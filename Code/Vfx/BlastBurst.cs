@@ -40,7 +40,7 @@ public sealed class BlastBurst : Component
 		born = Time.Now;
 		origin = WorldPosition + Vector3.Up * 6f;
 
-		var bulk = Math.Clamp( Radius / 52f, 0.9f, 2.4f );
+		var bulk = Math.Clamp( Radius / 40f, 1.2f, 3.2f );
 		shockWidth = 16f * bulk;
 		edgeWidth = 7f * bulk;
 		heartWidth = 20f * bulk;
@@ -68,7 +68,7 @@ public sealed class BlastBurst : Component
 
 		var grow = 1f - MathF.Pow( 1f - Math.Clamp( t / 0.4f, 0f, 1f ), 3f );
 		var fade = t < 0.42f ? 1f : 1f - (t - 0.42f) / 0.58f;
-		var shockRadius = MathF.Max( 10f, Radius * MathF.Max( 0.12f, grow ) );
+		var shockRadius = MathF.Max( 10f, Radius * (0.22f + 1.35f * grow) );
 		var heartRadius = MathF.Max( 8f, Radius * (0.34f * (1f - t) + 0.06f) );
 
 		var shockTint = Color.Lerp( Hot, Tint, Math.Clamp( t * 1.4f, 0f, 1f ) );
