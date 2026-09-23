@@ -3,7 +3,7 @@ namespace LoopedLoaded;
 public sealed class RunLoadout
 {
 	public int BonusDamage;
-	public readonly int[] Levels = new int[40];
+	public readonly int[] Levels = new int[48];
 
 	public int TraitLevel( RoundTrait trait )
 	{
@@ -143,6 +143,14 @@ public sealed class RunLoadout
 			reload += t.MassReload;
 		if ( Has( RoundTrait.Trace ) )
 			reload += t.TraceReload;
+		if ( Has( RoundTrait.Belt ) )
+			reload += t.BeltReload;
+		if ( Has( RoundTrait.Walk ) )
+			reload += t.WalkReload;
+		if ( Has( RoundTrait.Spool ) )
+			reload += t.SpoolReload;
+		if ( Has( RoundTrait.Link ) )
+			reload += t.LinkReload;
 
 		var speed = 1f;
 		if ( warhead > 0 )
@@ -169,6 +177,10 @@ public sealed class RunLoadout
 			speed *= t.KeelSpeed;
 		if ( Has( RoundTrait.Trace ) )
 			speed *= t.TraceSpeed;
+		if ( Has( RoundTrait.Sight ) )
+			speed *= t.SightSpeed;
+		if ( Has( RoundTrait.Bite ) )
+			speed *= t.BiteSpeed;
 
 		var falloff = 0f;
 		var meatRange = 0f;
@@ -256,8 +268,12 @@ public sealed class RunLoadout
 			KickRange = t.KickRange,
 			StunTime = Has( RoundTrait.Stun ) ? t.StunTime : 0f,
 			StunRange = t.StunRange,
-			Cycle = t.DrumCycle,
-			Burst = drum <= 0 ? 1 : Math.Max( 1, (int)t.DrumBurst.At( drum ) ),
+			Cycle = CycleOf( t ),
+			Burst = BurstOf( t, drum ),
+			WalkStep = Has( RoundTrait.Walk ) ? t.WalkCone : 0f,
+			Sight = Has( RoundTrait.Sight ),
+			Bite = Has( RoundTrait.Bite ),
+			CommitBurst = Has( RoundTrait.Link ),
 			Reload = MathF.Max( t.ReloadMin, reload ),
 			BoreWait = boreWait,
 			BeamPad = t.LashPad,
@@ -269,6 +285,24 @@ public sealed class RunLoadout
 			BeamWidth = t.LashWidth,
 			BeamRank = lash
 		};
+	}
+
+	float CycleOf( TraitConfig t )
+	{
+		var cycle = t.DrumCycle;
+		if ( Has( RoundTrait.Spool ) )
+			cycle *= t.SpoolCycle;
+		if ( Has( RoundTrait.Link ) )
+			cycle *= t.LinkCycle;
+		return cycle;
+	}
+
+	int BurstOf( TraitConfig t, int drum )
+	{
+		var burst = drum <= 0 ? 1 : Math.Max( 1, (int)t.DrumBurst.At( drum ) );
+		if ( drum > 0 && Has( RoundTrait.Belt ) )
+			burst += t.BeltBurst;
+		return burst;
 	}
 }
 
@@ -304,6 +338,10 @@ public struct GunRecipe
 	public float StunRange;
 	public float Cycle;
 	public int Burst;
+	public float WalkStep;
+	public bool Sight;
+	public bool Bite;
+	public bool CommitBurst;
 	public float Reload;
 	public float BoreWait;
 	public float BeamPad;
@@ -331,6 +369,9 @@ public struct RoundFlight
 	public bool PointAim;
 	public bool IgnoreArmor;
 	public bool RampPierce;
+	public bool Bite;
+	public int BurstId;
+	public int VolleyIndex;
 	public Vector2 Mark;
 	public float Falloff;
 	public float MeatRange;

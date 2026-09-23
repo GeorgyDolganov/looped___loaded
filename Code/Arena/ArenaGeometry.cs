@@ -256,7 +256,6 @@ public sealed class ArenaGeometry
 			return GlassHit.Shatter;
 		}
 
-		KickPanel( index, hitPos, hitNormal, extraDegrees, allowSecond );
 		return GlassHit.Crack;
 	}
 

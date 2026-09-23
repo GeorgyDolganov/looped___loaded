@@ -1400,6 +1400,8 @@ public sealed class GameLoop : Component
 			CollectBranch( lineup, RoundTraits.RocketBranch, loadout );
 		if ( loadout.Has( RoundTrait.Bore ) )
 			CollectBranch( lineup, RoundTraits.RailBranch, loadout );
+		if ( loadout.Has( RoundTrait.Drum ) )
+			CollectBranch( lineup, RoundTraits.RifleBranch, loadout );
 
 		if ( lineup.Count == 0 )
 		{
@@ -1640,6 +1642,9 @@ public sealed class GameLoop : Component
 		var lance = RoundTraits.OwnsLance( loadout );
 		var deep = RoundTraits.OwnsDeep( loadout );
 		var mass = RoundTraits.OwnsMass( loadout );
+		var hasDrum = loadout is not null && loadout.Has( RoundTrait.Drum );
+		var sweep = RoundTraits.OwnsSweep( loadout );
+		var track = RoundTraits.OwnsTrack( loadout );
 		foreach ( var offer in offers )
 		{
 			if ( offer.Bought )
@@ -1666,6 +1671,15 @@ public sealed class GameLoop : Component
 			if ( RoundTraits.IsMass( offer.Trait ) && deep )
 				continue;
 
+			if ( RoundTraits.NeedsDrum( offer.Trait ) && !hasDrum )
+				continue;
+
+			if ( RoundTraits.IsSweep( offer.Trait ) && track )
+				continue;
+
+			if ( RoundTraits.IsTrack( offer.Trait ) && sweep )
+				continue;
+
 			sum += PriceOf( offer.Trait );
 			if ( offer.Trait == RoundTrait.Lash )
 				hasLash = true;
@@ -1679,6 +1693,12 @@ public sealed class GameLoop : Component
 				deep = true;
 			if ( RoundTraits.IsMass( offer.Trait ) )
 				mass = true;
+			if ( offer.Trait == RoundTrait.Drum )
+				hasDrum = true;
+			if ( RoundTraits.IsSweep( offer.Trait ) )
+				sweep = true;
+			if ( RoundTraits.IsTrack( offer.Trait ) )
+				track = true;
 		}
 
 		return sum;

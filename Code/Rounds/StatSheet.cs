@@ -226,6 +226,36 @@ public static class StatSheet
 				Up( $"{PctDelta( t.TraceSpeed )} Projectile Speed" );
 				Down( $"+{Fmt( t.TraceReload )}s Reload" );
 				break;
+			case RoundTrait.Belt:
+				Up( $"+{t.BeltBurst} Burst" );
+				Down( $"+{Fmt( t.BeltReload )}s Reload" );
+				Down( "Locks out TRACK" );
+				break;
+			case RoundTrait.Walk:
+				Note( $"+{Fmt( t.WalkCone )}° spread per later volley" );
+				Down( $"+{Fmt( t.WalkReload )}s Reload" );
+				Down( "Locks out TRACK" );
+				break;
+			case RoundTrait.Spool:
+				Up( $"Cycle ×{Fmt( t.SpoolCycle )}" );
+				Down( $"+{Fmt( t.SpoolReload )}s Reload" );
+				Down( "Locks out SWEEP" );
+				break;
+			case RoundTrait.Sight:
+				Note( "Later volleys use half spread" );
+				Down( $"{PctDelta( t.SightSpeed )} Projectile Speed" );
+				Down( "Locks out SWEEP" );
+				break;
+			case RoundTrait.Bite:
+				Note( "+1 damage on a body this burst already hit" );
+				Down( $"{PctDelta( t.BiteSpeed )} Projectile Speed" );
+				Down( "Locks out SWEEP" );
+				break;
+			case RoundTrait.Link:
+				Note( "Burst finishes on release" );
+				Down( $"{PctDelta( t.LinkCycle )} Cycle" );
+				Down( $"+{Fmt( t.LinkReload )}s Reload" );
+				break;
 			case RoundTrait.Lash:
 			{
 				if ( rank <= 1 )
@@ -310,6 +340,14 @@ public static class StatSheet
 			AddInt( rows, "Burst", now.Burst, next.Burst, preview, true, true );
 			AddFloat( rows, "Cycle", now.Cycle, next.Cycle, preview, false, "s", true );
 		}
+		if ( now.WalkStep > 0f || next.WalkStep > 0f )
+			AddFloat( rows, "Walk", now.WalkStep, next.WalkStep, preview, true, "°" );
+		if ( now.Sight || next.Sight )
+			AddText( rows, "Sight", now.Sight ? "Half" : "Full", next.Sight ? "Half" : "Full", preview );
+		if ( now.Bite || next.Bite )
+			AddText( rows, "Bite", now.Bite ? "+1" : "Flat", next.Bite ? "+1" : "Flat", preview );
+		if ( now.CommitBurst || next.CommitBurst )
+			AddText( rows, "Queue", now.CommitBurst ? "Finish" : "Hold", next.CommitBurst ? "Finish" : "Hold", preview );
 		if ( now.Beam || next.Beam )
 		{
 			AddInt( rows, "Bolt Dmg", now.BeamHit, next.BeamHit, preview, true, true );
