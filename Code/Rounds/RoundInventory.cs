@@ -252,15 +252,94 @@ public sealed class RoundInventory : Component
 			if ( (drop.Flat - flat).Length > reach )
 				continue;
 
-			if ( MagLoaded >= MagCap )
+			if ( !Pocket( drop ) )
 				break;
 
-			MagLoaded++;
-			Loop.NoteCatch();
-			ArenaSounds.Pickup();
-			drop.GameObject.Destroy();
 			Dropped.RemoveAt( i );
 		}
+	}
+
+	public void AdvanceDropped( float playerBefore, float playerArc, float dashArc )
+	{
+		if ( !Loop.IsValid() || !Runner.IsValid() || Loop.IsFrozen || !Arena.IsValid() || Arena.Geometry is null )
+			return;
+
+		PruneDropped();
+		var track = Arena.Geometry.TrackRadius;
+		if ( track < 1f )
+			return;
+
+		if ( dashArc > 0.001f )
+			CatchDashed( playerBefore, playerArc, dashArc, track );
+
+		var player = Runner.Angle;
+		for ( var i = Dropped.Count - 1; i >= 0; i-- )
+		{
+			var drop = Dropped[i];
+			if ( !drop.IsValid() )
+			{
+				Dropped.RemoveAt( i );
+				continue;
+			}
+
+			drop.Roll( player, dashArc, track );
+		}
+	}
+
+	void CatchDashed( float playerBefore, float playerArc, float dashArc, float track )
+	{
+		while ( true )
+		{
+			var best = -1;
+			var bestGap = float.MaxValue;
+			for ( var i = 0; i < Dropped.Count; i++ )
+			{
+				var drop = Dropped[i];
+				if ( !drop.IsValid() )
+					continue;
+
+				var gap = drop.GapTo( playerBefore );
+				if ( gap >= bestGap || !drop.Crosses( gap, playerArc, dashArc, track ) )
+					continue;
+
+				best = i;
+				bestGap = gap;
+			}
+
+			if ( best < 0 )
+				return;
+
+			if ( !Pocket( Dropped[best] ) )
+			{
+				var hold = Runner.Angle;
+				for ( var i = 0; i < Dropped.Count; i++ )
+				{
+					var drop = Dropped[i];
+					if ( !drop.IsValid() )
+						continue;
+
+					var gap = drop.GapTo( playerBefore );
+					if ( drop.Crosses( gap, playerArc, dashArc, track ) )
+						drop.ParkShort( hold, track );
+				}
+
+				return;
+			}
+
+			Dropped.RemoveAt( best );
+		}
+	}
+
+	bool Pocket( DroppedRound drop )
+	{
+		if ( MagLoaded >= MagCap || !drop.IsValid() )
+			return false;
+
+		MagLoaded++;
+		Loop.NoteCatch();
+		ArenaSounds.Pickup();
+		drop.GameObject.Destroy();
+		return true;
 	}
 
 	public void DropSpent( Vector2 from )

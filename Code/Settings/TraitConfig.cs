@@ -98,7 +98,7 @@ public class TraitConfig : GameResource
 	[Property] public float LashPerSecond { get; set; } = 0.50f;
 	[Property] public float LashMaxHold { get; set; } = 1.1f;
 	[Property] public int LashHit { get; set; } = 1;
-	[Property] public TraitTiers LashTick { get; set; } = new() { Level1 = 0.70f, Level2 = 0.55f, Level3 = 0.42f };
+	[Property] public TraitTiers LashTick { get; set; } = new() { Level1 = 1.75f, Level2 = 1.40f, Level3 = 1.05f };
 	[Property] public float LashRange { get; set; } = 1600f;
 	[Property] public float LashWidth { get; set; } = 8f;
 	[Property] public TraitTiers PinNails { get; set; } = new() { Level1 = 2f, Level2 = 3f, Level3 = 5f };

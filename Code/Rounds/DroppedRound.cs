@@ -2,6 +2,9 @@ namespace LoopedLoaded;
 
 public sealed class DroppedRound : Component
 {
+	const float ChaseSpeed = 220f;
+	const float StopGap = 0.02f;
+
 	[Property] public Color Tint { get; set; } = ShotColors.Player;
 
 	public int SlotIndex { get; private set; }
@@ -35,10 +38,48 @@ public sealed class DroppedRound : Component
 		glow.Radius = 340f;
 	}
 
+	public float GapTo( float playerAngle )
+	{
+		var gap = playerAngle - MathF.Atan2( Flat.y, Flat.x );
+		gap %= MathF.Tau;
+		if ( gap < 0f )
+			gap += MathF.Tau;
+		return gap;
+	}
+
+	public bool Crosses( float gap, float playerArc, float dashArc, float track )
+	{
+		if ( track < 1f || dashArc <= 0.001f )
+			return false;
+
+		if ( gap <= StopGap )
+			return playerArc > 0.001f;
+
+		var closing = (playerArc + ChaseSpeed * Time.Delta + dashArc) / track;
+		return closing >= gap;
+	}
+
+	public void Roll( float playerAngle, float dashArc, float track )
+	{
+		if ( track < 1f )
+			return;
+
+		var gap = GapTo( playerAngle );
+		if ( gap <= StopGap )
+			return;
+
+		var ang = MathF.Atan2( Flat.y, Flat.x );
+		var step = (ChaseSpeed * Time.Delta + MathF.Max( 0f, dashArc )) / track;
+		SetFlat( ArenaGeometry.FromAngle( ang + MathF.Min( step, gap - StopGap ) ) * track );
+	}
+
+	public void ParkShort( float playerAngle, float track )
+	{
+		SetFlat( ArenaGeometry.FromAngle( playerAngle - StopGap ) * track );
+	}
+
 	protected override void OnUpdate()
 	{
-		Chase();
-
 		var pulse = 0.6f + 0.4f * MathF.Sin( Time.Now * 7f );
 
 		if ( shell.IsValid() )
@@ -46,27 +87,5 @@ public sealed class DroppedRound : Component
 
 		if ( glow.IsValid() )
 			glow.LightColor = ShotColors.Player * (2f + 4f * pulse);
-	}
-
-	void Chase()
-	{
-		if ( !loop.IsValid() || loop.IsFrozen || !loop.Runner.IsValid() || loop.Geometry is null )
-			return;
-
-		var track = loop.Geometry.TrackRadius;
-		if ( track < 1f )
-			return;
-
-		var ang = MathF.Atan2( Flat.y, Flat.x );
-		var gap = loop.Runner.Angle - ang;
-		gap %= MathF.Tau;
-		if ( gap < 0f )
-			gap += MathF.Tau;
-
-		if ( gap <= 0.02f )
-			return;
-
-		var step = 220f / track * Time.Delta;
-		SetFlat( ArenaGeometry.FromAngle( ang + MathF.Min( step, gap ) ) * track );
 	}
 }

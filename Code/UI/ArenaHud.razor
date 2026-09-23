@@ -180,7 +180,7 @@
 								<label class="title">@Buildings.Title(Loop.City.Selected)</label>
 								<label class="payoff">@Buildings.Promise(Loop.City.Selected)</label>
 								<label class="blurb">@Buildings.Blurb(Loop.City.Selected)</label>
-								<label class="cost">@GameSettings.Text.F(GameSettings.Text.City.FrameHits, Buildings.FirstCost(Loop.City.Selected))</label>
+								<label class="cost">@GameSettings.Text.F(GameSettings.Text.City.FrameHits, Buildings.FrameCost(Loop.City.Selected, Loop.City.Placed(Loop.City.Selected)))</label>
 							</div>
 							<div class="promise">
 								@if ( Loop.City.Selected == BuildingKind.Infirmary )

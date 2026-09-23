@@ -1116,7 +1116,7 @@ public sealed class GameLoop : Component
 
 	void CheckLap()
 	{
-		if ( InBossFight )
+		if ( Phase != RunPhase.Playing || InBossFight )
 			return;
 
 		if ( CanSkipLap && !skipHinted )
@@ -1140,6 +1140,9 @@ public sealed class GameLoop : Component
 
 	void OpenLapClear()
 	{
+		if ( Phase != RunPhase.Playing )
+			return;
+
 		VacuumBones();
 		Inventory?.ChamberAll();
 		skipHinted = false;
