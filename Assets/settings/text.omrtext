@@ -206,6 +206,7 @@
     "Removed": "{0} REMOVED",
     "WarehouseEmpty": "WAREHOUSE EMPTY",
     "FrameHits": "FRAME  ·  {0} HITS TO WORK",
+    "ShootToCraft": "SHOOT\nTO CRAFT",
     "HpTag": "+1 HP",
     "DmgTag": "+1 DMG",
     "Now": "NOW",
@@ -490,7 +491,7 @@
       "Title": "SKIM",
       "Blurb": "Glancing panel hits keep the bounce charge."
     },
-    "Kick": {
+    "PanelKick": {
       "Code": "KCK",
       "Title": "KICK",
       "Blurb": "Player shots twist inner panels harder."
@@ -530,7 +531,7 @@
       "Title": "STUTTER",
       "Blurb": "Pause on each wall bounce."
     },
-    "Breach": {
+    "PanelBreach": {
       "Code": "BRH",
       "Title": "BREACH",
       "Blurb": "Punch through inner panels."
@@ -555,7 +556,7 @@
       "Title": "BACKSTOP",
       "Blurb": "Catch zone behind you too."
     },
-    "Link": {
+    "PanelLink": {
       "Code": "LNK",
       "Title": "LINK",
       "Blurb": "A flying round picks up a dropped one."
@@ -662,10 +663,10 @@
       "Blurb": "Unlocks slow. Higher rank drains slower."
     },
     "Showcase": {
-      "Title": null,
-      "Payoff": null,
-      "Promise": null,
-      "Blurb": null
+      "Title": "LIVER",
+      "Payoff": "+CARD",
+      "Promise": "+1 UPGRADE CARD AFTER EACH LAP",
+      "Blurb": "One extra upgrade card after every lap."
     }
   },
   "Places": {

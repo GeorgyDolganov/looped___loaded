@@ -134,10 +134,11 @@
 					@if ( Loop.City.Building )
 					{
 						<div class="blueprint">
-							<div class="glyph @KindClass(Loop.City.Selected)">
-								<div class="a"></div>
-								<div class="b"></div>
-								<div class="c"></div>
+							<div class="organ lg @KindClass(Loop.City.Selected)">
+								<div class="p a"></div>
+								<div class="p b"></div>
+								<div class="p c"></div>
+								<div class="p d"></div>
 							</div>
 							<div class="copy">
 								<label class="title">@Buildings.Title(Loop.City.Selected)</label>
@@ -210,11 +211,12 @@
 					<div class="slots">
 						@foreach ( var kind in Buildings.All )
 						{
-							<div class="slot @(kind == Loop.City.Selected ? "selected chambered" : "") @(Loop.City.Building ? "" : "idle")">
-								<div class="glyph @KindClass(kind)">
-									<div class="a"></div>
-									<div class="b"></div>
-									<div class="c"></div>
+							<div class="slot @KindClass(kind) @(kind == Loop.City.Selected ? "selected chambered" : "") @(Loop.City.Building ? "" : "idle")">
+								<div class="organ @KindClass(kind)">
+									<div class="p a"></div>
+									<div class="p b"></div>
+									<div class="p c"></div>
+									<div class="p d"></div>
 								</div>
 								<div class="text">
 									<label class="name">@((int)kind + 1)  @Buildings.Title(kind)</label>
@@ -701,7 +703,7 @@
 			return new()
 			{
 				(MenuChoice.Continue, Loop.IsValid() && Loop.HasActiveSave ? copy.Continue : copy.Play, copy.Key1),
-				(MenuChoice.Upgrades, copy.City, copy.Key2),
+				(MenuChoice.Upgrades, "ALTAR", copy.Key2),
 				(MenuChoice.Saves, copy.Saves, copy.Key3)
 			};
 		}
@@ -1813,134 +1815,208 @@
 		margin-top: 2px;
 	}
 
-	.glyph {
+	.organ {
 		position: relative;
-		width: 36px;
-		height: 36px;
+		width: 44px;
+		height: 44px;
 		margin-right: 10px;
+		flex-shrink: 0;
 	}
 
-	.glyph .a,
-	.glyph .b,
-	.glyph .c {
+	.organ .p {
 		position: absolute;
-		border-radius: 3px;
 	}
 
-	.glyph.infirmary .a {
-		left: 13px;
-		top: 3px;
-		width: 10px;
-		height: 30px;
-		background-color: #f25160;
-	}
-
-	.glyph.infirmary .b {
-		left: 3px;
-		top: 13px;
-		width: 30px;
-		height: 10px;
-		background-color: #f25160;
-	}
-
-	.glyph.infirmary .c {
-		width: 0px;
-		height: 0px;
-	}
-
-	.glyph.anvil .a {
-		left: 4px;
-		top: 24px;
-		width: 28px;
-		height: 8px;
-		background-color: #d9b259;
-	}
-
-	.glyph.anvil .b {
-		left: 7px;
-		top: 14px;
-		width: 22px;
-		height: 8px;
-		background-color: #d9b259;
-	}
-
-	.glyph.anvil .c {
-		left: 10px;
-		top: 4px;
-		width: 16px;
-		height: 8px;
-		background-color: #d9b259;
-	}
-
-	.glyph.booster .a {
-		left: 4px;
-		top: 22px;
-		width: 28px;
-		height: 8px;
-		background-color: #ff8c33;
-	}
-
-	.glyph.booster .b {
-		left: 9px;
-		top: 12px;
-		width: 18px;
-		height: 8px;
-		background-color: #ff8c33;
-	}
-
-	.glyph.booster .c {
-		left: 14px;
-		top: 3px;
-		width: 8px;
-		height: 8px;
-		background-color: #ff8c33;
-	}
-
-	.glyph.brake .a {
-		left: 4px;
-		top: 4px;
-		width: 8px;
-		height: 28px;
-		background-color: #8c73ff;
-	}
-
-	.glyph.brake .b {
-		left: 4px;
-		top: 24px;
-		width: 28px;
-		height: 8px;
-		background-color: #8c73ff;
-	}
-
-	.glyph.brake .c {
-		left: 24px;
-		top: 4px;
-		width: 8px;
-		height: 28px;
-		background-color: #8c73ff;
-	}
-
-	.glyph.showcase .a {
+	.organ.infirmary .a {
 		left: 4px;
 		top: 6px;
 		width: 18px;
-		height: 24px;
-		background-color: #59d9f2;
-		border-radius: 4px;
+		height: 18px;
+		border-radius: 9px;
+		background-color: #d43342;
 	}
 
-	.glyph.showcase .b {
-		left: 14px;
-		top: 10px;
+	.organ.infirmary .b {
+		left: 22px;
+		top: 6px;
 		width: 18px;
-		height: 24px;
-		background-color: #3aa8c0;
-		border-radius: 4px;
+		height: 18px;
+		border-radius: 9px;
+		background-color: #ef4d5c;
 	}
 
-	.glyph.showcase .c {
+	.organ.infirmary .c {
+		left: 12px;
+		top: 18px;
+		width: 20px;
+		height: 20px;
+		border-radius: 10px;
+		background-color: #c42a38;
+	}
+
+	.organ.infirmary .d {
+		left: 18px;
+		top: 14px;
+		width: 8px;
+		height: 8px;
+		border-radius: 4px;
+		background-color: #ff8b96;
+	}
+
+	.organ.anvil .a {
+		left: 12px;
+		top: 4px;
+		width: 20px;
+		height: 36px;
+		border-radius: 10px;
+		background-color: #c73b3b;
+	}
+
+	.organ.anvil .b {
+		left: 15px;
+		top: 13px;
+		width: 14px;
+		height: 3px;
+		border-radius: 2px;
+		background-color: #7d1e24;
+	}
+
+	.organ.anvil .c {
+		left: 15px;
+		top: 21px;
+		width: 14px;
+		height: 3px;
+		border-radius: 2px;
+		background-color: #7d1e24;
+	}
+
+	.organ.anvil .d {
+		left: 15px;
+		top: 29px;
+		width: 14px;
+		height: 3px;
+		border-radius: 2px;
+		background-color: #7d1e24;
+	}
+
+	.organ.booster .a {
+		left: 10px;
+		top: 16px;
+		width: 24px;
+		height: 18px;
+		border-radius: 10px;
+		background-color: #e86a1c;
+	}
+
+	.organ.booster .b {
+		left: 16px;
+		top: 8px;
+		width: 14px;
+		height: 12px;
+		border-radius: 7px;
+		background-color: #ffb15a;
+	}
+
+	.organ.booster .c {
+		left: 16px;
+		top: 22px;
+		width: 8px;
+		height: 6px;
+		border-radius: 3px;
+		background-color: #ffd7a8;
+	}
+
+	.organ.booster .d {
 		width: 0px;
 		height: 0px;
+	}
+
+	.organ.brake .a {
+		left: 3px;
+		top: 14px;
+		width: 16px;
+		height: 26px;
+		border-radius: 8px;
+		background-color: #e07a88;
+	}
+
+	.organ.brake .b {
+		left: 25px;
+		top: 12px;
+		width: 16px;
+		height: 28px;
+		border-radius: 8px;
+		background-color: #f3a0a8;
+	}
+
+	.organ.brake .c {
+		left: 19px;
+		top: 2px;
+		width: 6px;
+		height: 14px;
+		border-radius: 3px;
+		background-color: #c45d6a;
+	}
+
+	.organ.brake .d {
+		left: 16px;
+		top: 12px;
+		width: 12px;
+		height: 4px;
+		border-radius: 2px;
+		background-color: #c45d6a;
+	}
+
+	.organ.showcase .a {
+		left: 14px;
+		top: 8px;
+		width: 26px;
+		height: 26px;
+		border-radius: 13px;
+		background-color: #8f2432;
+	}
+
+	.organ.showcase .b {
+		left: 3px;
+		top: 16px;
+		width: 16px;
+		height: 18px;
+		border-radius: 9px;
+		background-color: #c44b58;
+	}
+
+	.organ.showcase .c {
+		left: 22px;
+		top: 14px;
+		width: 8px;
+		height: 8px;
+		border-radius: 4px;
+		background-color: #e07a84;
+	}
+
+	.organ.showcase .d {
+		width: 0px;
+		height: 0px;
+	}
+
+	.slot.infirmary {
+		border-color: rgba(212, 51, 66, 0.45);
+	}
+
+	.slot.anvil {
+		border-color: rgba(199, 59, 59, 0.45);
+	}
+
+	.slot.booster {
+		border-color: rgba(232, 106, 28, 0.5);
+	}
+
+	.slot.brake {
+		border-color: rgba(224, 122, 136, 0.5);
+	}
+
+	.slot.showcase {
+		border-color: rgba(143, 36, 50, 0.5);
 	}
 
 	.blueprint {
@@ -1953,107 +2029,18 @@
 		border: 2px solid rgba(240, 180, 41, 0.45);
 	}
 
-	.blueprint .glyph {
-		width: 48px;
-		height: 48px;
-		margin-right: 16px;
+	.blueprint .organ.lg {
+		margin-right: 20px;
+		transform: scale(1.45);
 	}
 
-	.blueprint .glyph .a,
-	.blueprint .glyph .b,
-	.blueprint .glyph .c {
-		border-radius: 4px;
+	.slot.selected {
+		background-color: rgba(20, 20, 22, 0.9);
+		border-color: #f4ece0;
 	}
 
-	.blueprint .glyph.infirmary .a {
-		left: 18px;
-		top: 4px;
-		width: 12px;
-		height: 40px;
-	}
-
-	.blueprint .glyph.infirmary .b {
-		left: 4px;
-		top: 18px;
-		width: 40px;
-		height: 12px;
-	}
-
-	.blueprint .glyph.anvil .a {
-		left: 4px;
-		top: 32px;
-		width: 40px;
-		height: 10px;
-	}
-
-	.blueprint .glyph.anvil .b {
-		left: 8px;
-		top: 18px;
-		width: 32px;
-		height: 10px;
-	}
-
-	.blueprint .glyph.anvil .c {
-		left: 14px;
-		top: 4px;
-		width: 20px;
-		height: 10px;
-	}
-
-	.blueprint .glyph.booster .a {
-		left: 4px;
-		top: 30px;
-		width: 40px;
-		height: 10px;
-	}
-
-	.blueprint .glyph.booster .b {
-		left: 12px;
-		top: 16px;
-		width: 24px;
-		height: 10px;
-	}
-
-	.blueprint .glyph.booster .c {
-		left: 18px;
-		top: 4px;
-		width: 12px;
-		height: 10px;
-	}
-
-	.blueprint .glyph.brake .a {
-		left: 4px;
-		top: 4px;
-		width: 10px;
-		height: 40px;
-	}
-
-	.blueprint .glyph.brake .b {
-		left: 4px;
-		top: 34px;
-		width: 40px;
-		height: 10px;
-	}
-
-	.blueprint .glyph.brake .c {
-		left: 34px;
-		top: 4px;
-		width: 10px;
-		height: 40px;
-	}
-
-	.blueprint .glyph.showcase .a {
-		left: 4px;
-		top: 8px;
-		width: 24px;
-		height: 32px;
-	}
-
-	.blueprint .glyph.showcase .b {
-		left: 18px;
-		top: 14px;
-		width: 24px;
-		height: 32px;
+	.slot.chambered {
+		border-color: rgba(240, 180, 41, 0.75);
 	}
 
 	.blueprint .copy {

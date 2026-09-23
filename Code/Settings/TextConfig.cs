@@ -188,6 +188,14 @@ public class TextConfig : GameResource
 		return mode == CityMode.Build ? Or( City.ModeBuild, "BUILD" ) : Or( City.ModeShoot, "SHOOT" );
 	}
 
+	public static string Shown( string value )
+	{
+		if ( string.IsNullOrEmpty( value ) )
+			return value;
+
+		return value.Replace( "CITY", "ALTAR" ).Replace( "City", "Altar" ).Replace( "city", "altar" );
+	}
+
 	static string Or( string value, string fallback ) => string.IsNullOrWhiteSpace( value ) ? fallback : value;
 }
 
@@ -281,35 +289,35 @@ public class BuildingsCopy
 {
 	[Property] public BuildingCopy Infirmary { get; set; } = new()
 	{
-		Title = "INFIRMARY",
+		Title = "HEART",
 		Payoff = "+HP",
 		Promise = "+{0} HP AT RANK 1",
 		Blurb = "Raises max hearts. Same neighbor adds a rank."
 	};
 	[Property] public BuildingCopy Anvil { get; set; } = new()
 	{
-		Title = "ANVIL",
+		Title = "MUSCLE",
 		Payoff = "+DMG",
 		Promise = "+{0} DAMAGE AT RANK 1",
 		Blurb = "Rounds hit harder. Same neighbor adds a rank."
 	};
 	[Property] public BuildingCopy Booster { get; set; } = new()
 	{
-		Title = "BOOSTER",
+		Title = "ADRENAL",
 		Payoff = "DASH",
 		Promise = "SHORTER DASH COOLDOWN",
 		Blurb = "Dash returns faster each working rank."
 	};
 	[Property] public BuildingCopy Brake { get; set; } = new()
 	{
-		Title = "BRAKE",
+		Title = "LUNGS",
 		Payoff = "SLOW",
 		Promise = "UNLOCKS THE SLOW METER",
 		Blurb = "Unlocks slow. Higher rank drains slower."
 	};
 	[Property] public BuildingCopy Showcase { get; set; } = new()
 	{
-		Title = "SHOWCASE",
+		Title = "LIVER",
 		Payoff = "+CARD",
 		Promise = "+1 UPGRADE CARD AFTER EACH LAP",
 		Blurb = "One extra upgrade card after every lap."
@@ -679,6 +687,7 @@ public class CityCopy
 	[Property] public string Removed { get; set; } = "{0} REMOVED";
 	[Property] public string WarehouseEmpty { get; set; } = "WAREHOUSE EMPTY";
 	[Property] public string FrameHits { get; set; } = "FRAME  ·  {0} HITS TO WORK";
+	[Property] public string ShootToCraft { get; set; } = "SHOOT\nTO CRAFT";
 	[Property] public string HpTag { get; set; } = "+1 HP";
 	[Property] public string DmgTag { get; set; } = "+1 DMG";
 	[Property] public string Now { get; set; } = "NOW";

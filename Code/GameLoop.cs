@@ -289,7 +289,7 @@ public sealed class GameLoop : Component
 
 	public void Announce( string text )
 	{
-		Notice = text;
+		Notice = TextConfig.Shown( text );
 		noticeAt = Time.Now;
 	}
 
