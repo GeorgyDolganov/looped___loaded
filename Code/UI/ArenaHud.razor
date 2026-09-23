@@ -4,6 +4,11 @@
 <root>
 	<div class="hud">
 
+		@if ( !Loop.Paused && (Loop.Phase == RunPhase.DecideLap || Loop.Phase == RunPhase.DecideRing || Loop.Phase == RunPhase.PickTrait) )
+		{
+			<div class="scene-dim"></div>
+		}
+
 		<div class="notice @(Loop.NoticeVisible && !Loop.InMenu ? "on" : "off") @(Loop.HurtAmount > 0.2f ? "hurt" : "")">
 			<label>@Loop.Notice</label>
 		</div>
@@ -451,35 +456,41 @@
 
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.DecideLap )
 		{
-			<div class="overlay choose">
-				<label class="overlay-title">@GameSettings.Text.F(GameSettings.Text.Decide.LapClear, Loop.Lap)</label>
-				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.LapBlurb, Loop.Stash, Loop.Scrap)</label>
-				<div class="cards">
-					<div class="card" onclick="@ChooseExtract">
-						<label class="key">@GameSettings.Text.Decide.Key1</label>
-						<label class="title">@GameSettings.Text.Decide.Extract</label>
-						<label class="blurb">@ExtractBank(Loop.Stash)</label>
+			<div class="overlay choose over-hud">
+				<div class="choice-plate">
+					<img class="choice-back" src="ui/Arena UI/element_back_buttons.png" />
+					<div class="choice-copy">
+						<label class="choice-title">@GameSettings.Text.F(GameSettings.Text.Decide.LapClear, Loop.Lap)</label>
+						<label class="choice-line">@GameSettings.Text.Decide.LapBlurb</label>
 					</div>
-					<div class="card" onclick="@ChooseContinue">
-						<label class="key">@GameSettings.Text.Decide.Key2</label>
-						<label class="title">@GameSettings.Text.Decide.OneMore</label>
-						<label class="blurb">@GameSettings.Text.Decide.OneMoreBlurb</label>
-					</div>
-					@if ( Loop.HasBossOffer )
-					{
-						<div class="card" onclick="@ChooseBoss">
-							<label class="key">@GameSettings.Text.Decide.Key3</label>
-							<label class="title">@GameSettings.Text.F(GameSettings.Text.Decide.Fight, Loop.BossName)</label>
-							<label class="blurb">@Locations.BossBlurb( Loop.Location, !Loop.HasNextRing )</label>
+					<div class="choice-hit left" onclick="@ChooseExtract">
+						<img class="choice-btn" src="ui/Arena UI/buttons_left.png" />
+						<div class="choice-label">
+							<label class="choice-key">@GameSettings.Text.Decide.Key1</label>
+							<label class="choice-name">@GameSettings.Text.Decide.Extract</label>
 						</div>
-					}
+					</div>
+					<div class="choice-hit right" onclick="@ChooseContinue">
+						<img class="choice-btn" src="ui/Arena UI/buttons_right.png" />
+						<div class="choice-label">
+							<label class="choice-key">@GameSettings.Text.Decide.Key2</label>
+							<label class="choice-name">@GameSettings.Text.Decide.OneMore</label>
+						</div>
+					</div>
 				</div>
+				@if ( Loop.HasBossOffer )
+				{
+					<div class="card choice-boss" onclick="@ChooseBoss">
+						<label class="key">@GameSettings.Text.Decide.Key3</label>
+						<label class="title">@GameSettings.Text.F(GameSettings.Text.Decide.Fight, Loop.BossName)</label>
+					</div>
+				}
 			</div>
 		}
 
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.DecideRing )
 		{
-			<div class="overlay choose">
+			<div class="overlay choose over-hud">
 				<label class="overlay-title">@GameSettings.Text.Decide.RingClear</label>
 				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.RingBlurb, Loop.Stash, Loop.NextRingCode, Loop.NextRingRule)</label>
 				<div class="cards">
@@ -502,15 +513,10 @@
 
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.PickTrait )
 		{
-			<div class="overlay choose shop">
+			<div class="overlay choose shop over-hud">
 				<div class="shop-head">
 					<label class="overlay-title">@GameSettings.Text.Shop.Title</label>
-					<div class="shop-bones">
-						<label class="key">@GameSettings.Text.Hud.Scrap</label>
-						<label class="value">@Loop.Scrap</label>
-					</div>
 				</div>
-				<label class="blurb shop-line">@GameSettings.Text.F(GameSettings.Text.Shop.Blurb, Loop.Scrap)</label>
 				<div class="cards">
 					@for ( var i = 0; i < Loop.Offers.Count; i++ )
 					{
@@ -2208,6 +2214,16 @@
 		color: #f0b429;
 	}
 
+	.scene-dim {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(5, 5, 7, 0.55);
+		pointer-events: none;
+	}
+
 	.overlay {
 		position: absolute;
 		width: 100%;
@@ -2216,6 +2232,112 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+	}
+
+	.overlay.over-hud {
+		background-color: transparent;
+	}
+
+	.choice-plate {
+		position: relative;
+		width: 920px;
+		aspect-ratio: 735 / 452;
+	}
+
+	.choice-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.choice-copy {
+		position: absolute;
+		left: 8%;
+		top: 13%;
+		width: 84%;
+		height: 40%;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.choice-title {
+		font-family: Anton;
+		font-size: 52px;
+		letter-spacing: 2px;
+		color: #f4ece0;
+	}
+
+	.choice-line {
+		margin-top: 8px;
+		font-size: 24px;
+		font-weight: 600;
+		letter-spacing: 2px;
+		color: #cdc6ba;
+	}
+
+	.choice-hit {
+		position: absolute;
+		cursor: pointer;
+		pointer-events: all;
+	}
+
+	.choice-hit.left {
+		left: 10.1%;
+		top: 64.6%;
+		width: 37%;
+		height: 25.6%;
+	}
+
+	.choice-hit.right {
+		left: 51.7%;
+		top: 64.6%;
+		width: 37%;
+		height: 25.6%;
+	}
+
+	.choice-btn {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.choice-label {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 16px 28px;
+		z-index: 1;
+	}
+
+	.choice-key {
+		font-size: 20px;
+		font-weight: 700;
+		color: #e6d3a1;
+		margin-bottom: 2px;
+	}
+
+	.choice-name {
+		width: 100%;
+		text-align: center;
+		white-space: normal;
+		font-size: 22px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #f4ece0;
+	}
+
+	.choice-boss {
+		margin-top: 16px;
 	}
 
 	.overlay.menu {
@@ -2270,28 +2392,6 @@
 
 	.shop-head .overlay-title {
 		margin-bottom: 0px;
-	}
-
-	.shop-bones {
-		flex-direction: row;
-		align-items: baseline;
-		margin-left: 28px;
-	}
-
-	.shop-bones .key {
-		font-family: "Barlow Condensed";
-		font-size: 22px;
-		font-weight: 700;
-		letter-spacing: 3px;
-		color: #f0b429;
-		margin-right: 12px;
-	}
-
-	.shop-bones .value {
-		font-family: Anton;
-		font-size: 52px;
-		letter-spacing: 2px;
-		color: #f0b429;
 	}
 
 	.shop-sheet {
@@ -2400,10 +2500,6 @@
 		font-size: 20px;
 		color: #8e8b86;
 		margin-bottom: 22px;
-	}
-
-	.overlay.shop .shop-line {
-		color: #d8c9a0;
 	}
 
 	.overlay.showcase {

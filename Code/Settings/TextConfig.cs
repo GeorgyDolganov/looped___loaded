@@ -518,12 +518,12 @@ public class SavesCopy
 
 public class DecideCopy
 {
-	[Property] public string LapClear { get; set; } = "LAP {0} CLEAR";
-	[Property] public string LapBlurb { get; set; } = "STASH {0}  ·  SCRAP {1}  ·  TAKE IT HOME OR RISK ANOTHER";
+	[Property] public string LapClear { get; set; } = "ROUND {0} CLEAR";
+	[Property] public string LapBlurb { get; set; } = "TAKE IT HOME OR RISK ANOTHER";
 	[Property] public string Extract { get; set; } = "EXTRACT";
 	[Property] public string ExtractBankOne { get; set; } = "Bank {0} biomass. Return to the city.";
 	[Property] public string ExtractBankMany { get; set; } = "Bank {0} biomass. Return to the city.";
-	[Property] public string OneMore { get; set; } = "ONE MORE LAP";
+	[Property] public string OneMore { get; set; } = "ONE MORE ROUND";
 	[Property] public string OneMoreBlurb { get; set; } = "Chapel. Another DNA card. The board gets meaner.";
 	[Property] public string Fight { get; set; } = "FIGHT THE {0}";
 	[Property] public string RingClear { get; set; } = "RING CLEAR";
@@ -643,7 +643,7 @@ public class AnnounceCopy
 	[Property] public string RingClearNext { get; set; } = "RING CLEAR  ·  {0}  ·  {1}";
 	[Property] public string FinalBank { get; set; } = "NO MORE ROUNDS  ·  ×2  ·  +{0}";
 	[Property] public string ArenaSkip { get; set; } = "ARENA CLEAR  ·  E SKIP LAP";
-	[Property] public string LapClear { get; set; } = "LAP {0} CLEAR";
+	[Property] public string LapClear { get; set; } = "ROUND {0} CLEAR";
 	[Property] public string CityDeposit { get; set; } = "CITY  ·  +{0} WAREHOUSE";
 	[Property] public string Won { get; set; } = "EKKE IS FULL";
 	[Property] public string City { get; set; } = "CITY";
