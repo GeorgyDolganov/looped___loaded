@@ -4,11 +4,17 @@ public static class Blocks
 {
 	static Model boxModel;
 	static Model sphereModel;
+	static Model wallModel;
 	static Material flatMaterial;
+	static Material wallMaterial;
+	static Material wallDamagedMaterial;
 
 	public static Model Box => boxModel ??= Model.Load( "models/dev/box.vmdl" );
 	public static Model Sphere => sphereModel ??= Model.Load( "models/dev/sphere.vmdl" );
+	public static Model Wall => wallModel ??= Model.Load( "models/wall_mirror.vmdl" );
 	public static Material Flat => flatMaterial ??= Material.Load( "materials/default.vmat" );
+	public static Material WallGlass => wallMaterial ??= Material.Load( "materials/arena/glass_wall.vmat" );
+	public static Material WallDamaged => wallDamagedMaterial ??= Material.Load( "materials/arena/glass_wall_damaged.vmat" );
 
 	public static GameObject Spawn( GameObject parent, string name, Model model, Vector3 position, Rotation rotation, Vector3 size, Color tint, bool shadows = true )
 	{

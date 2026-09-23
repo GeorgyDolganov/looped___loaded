@@ -250,6 +250,10 @@ public sealed class RoundProjectile : Component
 			var damage = ShotDamage();
 			if ( damage > 0 && Flight.RampPierce && pierceLeft > 0 )
 				damage += bored;
+			if ( damage > 0 && Flight.Bite && Loop.Inventory.IsValid() && Loop.Inventory.BiteReady( target, Flight.BurstId, Flight.VolleyIndex ) )
+				damage += 1;
+			if ( Loop.Inventory.IsValid() )
+				Loop.Inventory.NoteBite( target, Flight.BurstId, Flight.VolleyIndex );
 			struck.Add( target );
 			if ( damage > 0 )
 				target.Damage( damage, this );

@@ -97,6 +97,12 @@ public class TextConfig : GameResource
 			RoundTrait.Mass => pack.Mass ??= new(),
 			RoundTrait.Keel => pack.Keel ??= new(),
 			RoundTrait.Trace => pack.Trace ??= new(),
+			RoundTrait.Belt => pack.Belt ??= new(),
+			RoundTrait.Walk => pack.Walk ??= new(),
+			RoundTrait.Spool => pack.Spool ??= new(),
+			RoundTrait.Sight => pack.Sight ??= new(),
+			RoundTrait.Bite => pack.Bite ??= new(),
+			RoundTrait.Link => pack.Link ??= new(),
 			_ => pack.Slug ??= new()
 		};
 	}
@@ -263,6 +269,12 @@ public class TraitsCopy
 	[Property] public TraitCopy Mass { get; set; } = new() { Code = "MASS", Title = "MASS", Blurb = "One shot. No fan. +3 damage. Slower. Reload +0.45s. Locks out DEEP." };
 	[Property] public TraitCopy Keel { get; set; } = new() { Code = "KEEL", Title = "KEEL", Blurb = "No bounce. +2 damage. Stops on the first wall. Slower. Locks out DEEP." };
 	[Property] public TraitCopy Trace { get; set; } = new() { Code = "TRACE", Title = "TRACE", Blurb = "Shots fly faster. Reload +0.25s." };
+	[Property] public TraitCopy Belt { get; set; } = new() { Code = "BELT", Title = "BELT", Blurb = "+3 burst. Reload +0.45s. Locks out TRACK." };
+	[Property] public TraitCopy Walk { get; set; } = new() { Code = "WALK", Title = "WALK", Blurb = "Later volleys spread +3° each. Reload +0.20s. Locks out TRACK." };
+	[Property] public TraitCopy Spool { get; set; } = new() { Code = "SPOOL", Title = "SPOOL", Blurb = "Cycle ×0.65. Reload +0.25s. Locks out SWEEP." };
+	[Property] public TraitCopy Sight { get; set; } = new() { Code = "SIGHT", Title = "SIGHT", Blurb = "Later volleys use half spread. Slower. Locks out SWEEP." };
+	[Property] public TraitCopy Bite { get; set; } = new() { Code = "BITE", Title = "BITE", Blurb = "+1 damage on a body this burst already hit. Slower. Locks out SWEEP." };
+	[Property] public TraitCopy Link { get; set; } = new() { Code = "LINK", Title = "LINK", Blurb = "The burst finishes if you release. Cycle ×1.10. Reload +0.20s." };
 }
 
 public class BuildingsCopy

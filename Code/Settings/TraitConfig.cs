@@ -84,6 +84,16 @@ public class TraitConfig : GameResource
 	[Property] public float KeelSpeed { get; set; } = 0.80f;
 	[Property] public float TraceSpeed { get; set; } = 1.60f;
 	[Property] public float TraceReload { get; set; } = 0.25f;
+	[Property] public int BeltBurst { get; set; } = 3;
+	[Property] public float BeltReload { get; set; } = 0.45f;
+	[Property] public float WalkCone { get; set; } = 3f;
+	[Property] public float WalkReload { get; set; } = 0.20f;
+	[Property] public float SpoolCycle { get; set; } = 0.65f;
+	[Property] public float SpoolReload { get; set; } = 0.25f;
+	[Property] public float SightSpeed { get; set; } = 0.90f;
+	[Property] public float BiteSpeed { get; set; } = 0.80f;
+	[Property] public float LinkCycle { get; set; } = 1.10f;
+	[Property] public float LinkReload { get; set; } = 0.20f;
 	[Property] public float LashPad { get; set; } = 0.40f;
 	[Property] public float LashPerSecond { get; set; } = 0.50f;
 	[Property] public float LashMaxHold { get; set; } = 1.1f;

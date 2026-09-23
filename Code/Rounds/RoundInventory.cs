@@ -18,6 +18,8 @@ public sealed class RoundInventory : Component
 	public float ReloadLeft { get; private set; }
 	public float ReloadFor { get; private set; }
 	public int BurstLeft { get; private set; }
+	public int BurstId { get; private set; }
+	readonly Dictionary<Enemy, int> burstHits = new();
 	public bool Beaming { get; private set; }
 	public float BeamHeld { get; private set; }
 	public bool Ready => ReloadLeft <= 0.001f && !Beaming && MagLoaded > 0 && doubleLeft <= 0.001f;
@@ -182,18 +184,23 @@ public sealed class RoundInventory : Component
 
 		if ( recipe.Auto )
 		{
-			if ( down && Ready && cycleLeft <= 0.001f )
+			var finishing = recipe.CommitBurst && BurstLeft > 0 && BurstLeft < recipe.Burst && MagLoaded > 0;
+			if ( (down || finishing) && Ready && cycleLeft <= 0.001f )
 			{
 				if ( BurstLeft <= 0 )
+				{
 					BurstLeft = recipe.Burst;
+					OpenBurst();
+				}
 
-				FireVolley( recipe );
+				var index = recipe.Burst - BurstLeft;
+				FireVolley( recipe, volleyIndex: index );
 				BurstLeft--;
 				cycleLeft = recipe.Cycle;
 				if ( BurstLeft <= 0 || MagLoaded <= 0 )
 					BeginReload( recipe.Reload );
 			}
-			else if ( BurstLeft > 0 && BurstLeft < recipe.Burst && (!down || MagLoaded <= 0) )
+			else if ( BurstLeft > 0 && BurstLeft < recipe.Burst && ((!down && !recipe.CommitBurst) || MagLoaded <= 0) )
 			{
 				BurstLeft = 0;
 				BeginReload( recipe.Reload );
@@ -329,7 +336,30 @@ public sealed class RoundInventory : Component
 		beam = null;
 	}
 
-	void FireVolley( GunRecipe recipe, bool spendMag = true, ShotVolley volley = null )
+	void OpenBurst()
+	{
+		BurstId++;
+		burstHits.Clear();
+	}
+
+	public bool BiteReady( Enemy enemy, int burstId, int volleyIndex )
+	{
+		if ( burstId != BurstId || enemy is null )
+			return false;
+
+		return burstHits.TryGetValue( enemy, out var seen ) && seen < volleyIndex;
+	}
+
+	public void NoteBite( Enemy enemy, int burstId, int volleyIndex )
+	{
+		if ( burstId != BurstId || enemy is null )
+			return;
+
+		if ( !burstHits.TryGetValue( enemy, out var seen ) || volleyIndex > seen )
+			burstHits[enemy] = volleyIndex;
+	}
+
+	void FireVolley( GunRecipe recipe, bool spendMag = true, ShotVolley volley = null, int volleyIndex = 0 )
 	{
 		if ( !Loop.IsValid() || !Aim.IsValid() )
 			return;
@@ -344,6 +374,10 @@ public sealed class RoundInventory : Component
 
 		var count = Math.Max( 1, recipe.Count );
 		var cone = recipe.Cone;
+		if ( volleyIndex > 0 && recipe.Sight )
+			cone *= 0.5f;
+		if ( recipe.WalkStep > 0f )
+			cone += volleyIndex * recipe.WalkStep;
 		var reach = 0f;
 		if ( recipe.PointAim )
 			reach = (Aim.Cursor - Aim.Muzzle).Length;
@@ -356,6 +390,9 @@ public sealed class RoundInventory : Component
 			var yaw = ShotSpread.Yaw( i, count, cone );
 			var heading = ShotSpread.Turn( Aim.Direction, yaw );
 			var flight = ToFlight( recipe, volley );
+			flight.Bite = recipe.Bite;
+			flight.BurstId = BurstId;
+			flight.VolleyIndex = volleyIndex;
 			if ( recipe.PointAim )
 			{
 				flight.PointAim = true;

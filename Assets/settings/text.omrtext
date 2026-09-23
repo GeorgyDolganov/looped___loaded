@@ -404,6 +404,36 @@
       "Title": "TRACE",
       "Blurb": "Shots fly faster. Reload +0.25s."
     },
+    "Belt": {
+      "Code": "BELT",
+      "Title": "BELT",
+      "Blurb": "+3 burst. Reload +0.45s. Locks out TRACK."
+    },
+    "Walk": {
+      "Code": "WALK",
+      "Title": "WALK",
+      "Blurb": "Later volleys spread +3° each. Reload +0.20s. Locks out TRACK."
+    },
+    "Spool": {
+      "Code": "SPOOL",
+      "Title": "SPOOL",
+      "Blurb": "Cycle ×0.65. Reload +0.25s. Locks out SWEEP."
+    },
+    "Sight": {
+      "Code": "SIGHT",
+      "Title": "SIGHT",
+      "Blurb": "Later volleys use half spread. Slower. Locks out SWEEP."
+    },
+    "Bite": {
+      "Code": "BITE",
+      "Title": "BITE",
+      "Blurb": "+1 damage on a body this burst already hit. Slower. Locks out SWEEP."
+    },
+    "Link": {
+      "Code": "LINK",
+      "Title": "LINK",
+      "Blurb": "The burst finishes if you release. Cycle ×1.10. Reload +0.20s."
+    },
     "Pierce": {
       "Code": "PRC",
       "Title": "PIERCE",
