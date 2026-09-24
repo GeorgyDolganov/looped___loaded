@@ -354,12 +354,8 @@ public sealed class CityBoard : Component
 
 		for ( var i = 0; i < Buildings.All.Length; i++ )
 		{
-			if ( !Input.Pressed( $"Slot{i + 1}" ) )
-				continue;
-
-			Selected = Buildings.All[i];
-			if ( Mode != CityMode.Build )
-				SetMode( CityMode.Build );
+			if ( Input.Pressed( $"Slot{i + 1}" ) )
+				Choose( Buildings.All[i] );
 		}
 
 		if ( Input.Pressed( "Use" ) || Input.Pressed( "Score" ) )
@@ -375,6 +371,13 @@ public sealed class CityBoard : Component
 
 		if ( Input.Pressed( "Attack1" ) && !(Loop.IsValid() && Loop.BlocksShot) )
 			TryFire();
+	}
+
+	public void Choose( BuildingKind kind )
+	{
+		Selected = kind;
+		if ( Mode != CityMode.Build )
+			SetMode( CityMode.Build );
 	}
 
 	void SetMode( CityMode mode )
