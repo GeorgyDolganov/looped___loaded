@@ -112,28 +112,26 @@
 		{
 			<div class="city">
 				<div class="top-left">
-					<div class="lap-chip">
-						<label class="key">@Loop.City.ModeLabel</label>
-						<label class="value">@GameSettings.Text.F(GameSettings.Text.City.WarehouseHud, Loop.City.Warehouse)</label>
-					</div>
-					<div class="feed">
-						<label class="feed-line">@GameSettings.Text.F(GameSettings.Text.Hud.FeedCount, Loop.FedBiomass, Loop.WinNeed)</label>
-						<div class="meter">
-							<div class="fill feed" style="width: @(FeedPercent)%"></div>
+					<div class="hud-panel brief-panel">
+						<img class="brief-back" src="ui/Arena UI/element_back_two_floors.png" />
+						<div class="brief-face">
+							@if ( Loop.HasTask )
+							{
+								<label class="brief-kicker">@GameSettings.Text.Hud.Objective</label>
+								<label class="brief-title">@Loop.TaskTitle</label>
+								<label class="brief-blurb">@Loop.TaskBlurb</label>
+							}
+						</div>
+						<div class="brief-floor">
+							<label class="key">@GameSettings.Text.Hud.Fed</label>
+							<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
 						</div>
 					</div>
-					<label class="mods">@Loop.City.HoverText()</label>
-					<label class="clock">@CityBonuses</label>
-					@if ( Loop.HasTask )
-					{
-						<div class="task">
-							<label class="key">@GameSettings.Text.Hud.Task</label>
-							<label class="title">@Loop.TaskTitle</label>
-							<label class="blurb">@Loop.TaskBlurb</label>
-						</div>
-					}
 				</div>
-				<div class="bottom">
+				<div class="altar-tray">
+					<img class="altar-back" src="ui/Arena UI/altar_back.png" />
+				</div>
+				<div class="bottom" style="bottom: @(OrganLift)px">
 					@if ( Loop.City.Building )
 					{
 						<div class="blueprint">
@@ -211,23 +209,45 @@
 							</div>
 						</div>
 					}
-					<div class="slots">
-						@foreach ( var kind in Buildings.All )
-						{
+				</div>
+				<div class="altar-notches">
+					@foreach ( var kind in Buildings.All )
+					{
+						<div class="altar-notch" onclick="@(() => PickOrgan( kind ))">
+							<img class="notch-lamp" src="ui/Arena UI/selection_lamp_empty.png" />
+							@if ( kind == Loop.City.Selected )
+							{
+								<img class="notch-lamp" src="ui/Arena UI/selection_lamp.png" />
+							}
 							<div class="slot @KindClass(kind) @(kind == Loop.City.Selected ? "selected chambered" : "") @(Loop.City.Building ? "" : "idle")">
-								<div class="organ @KindClass(kind)">
-									<div class="p a"></div>
-									<div class="p b"></div>
-									<div class="p c"></div>
-									<div class="p d"></div>
-								</div>
+								<img class="organ-art @KindClass(kind)" src="@OrganArt(kind)" />
 								<div class="text">
-									<label class="name">@((int)kind + 1)  @Buildings.Title(kind)</label>
+									<label class="name">@Buildings.Title(kind)</label>
 									<label class="idx">@Buildings.Payoff(kind)</label>
 								</div>
 							</div>
-						}
+						</div>
+					}
+				</div>
+				<div class="city-side">
+					<div class="hud-panel stat-panel">
+						<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
+						<div class="stat-face">
+							<div class="stat-row lead city-biomass">
+								<label class="key">@GameSettings.Text.City.WarehouseHud.Replace( "{0}", "" ).Trim()</label>
+								<label class="value">@Loop.City.Warehouse</label>
+							</div>
+						</div>
 					</div>
+					@if ( CityBonusLines.Count > 0 )
+					{
+						<div class="city-stats">
+							@foreach ( var line in CityBonusLines )
+							{
+								<label>@line</label>
+							}
+						</div>
+					}
 				</div>
 			</div>
 		}
@@ -867,6 +887,15 @@
 	void FinishShop() => Loop?.ChooseShopGo();
 	void HoverShop( int index ) => shopHover = index;
 	void LeaveShop() => shopHover = -1;
+	void PickOrgan( BuildingKind kind )
+	{
+		if ( !Loop.IsValid() || !Loop.City.IsValid() )
+			return;
+
+		Loop.NoteUiClick();
+		Loop.City.Choose( kind );
+	}
+
 	void GoCity()
 	{
 		Loop?.NoteUiClick();
@@ -963,25 +992,34 @@
 		}
 	}
 
-	string CityBonuses
+	List<string> CityBonusLines
 	{
 		get
 		{
+			var parts = new List<string>();
 			if ( !Loop.IsValid() || !Loop.City.IsValid() )
-				return GameSettings.Text.City.NoBonuses;
+				return parts;
 
 			var stats = Loop.City.Stats();
-			var parts = new List<string>();
 			if ( stats.BonusHealth > 0 ) parts.Add( GameSettings.Text.F( GameSettings.Text.City.BonusHp, stats.BonusHealth ) );
 			if ( stats.BonusDamage > 0 ) parts.Add( GameSettings.Text.F( GameSettings.Text.City.BonusDmg, stats.BonusDamage ) );
 			if ( stats.DashCooldownScale < 0.99f ) parts.Add( GameSettings.Text.City.BonusDash );
 			if ( stats.SlowUnlocked ) parts.Add( GameSettings.Text.City.BonusSlow );
 			if ( stats.OfferCount > GameSettings.City.MinOffers ) parts.Add( GameSettings.Text.F( GameSettings.Text.City.BonusCards, stats.OfferCount ) );
-			return parts.Count == 0 ? GameSettings.Text.City.NoBonuses : string.Join( "  ", parts );
+			return parts;
 		}
 	}
 
 	string KindClass( BuildingKind kind ) => kind.ToString().ToLowerInvariant();
+
+	string OrganArt( BuildingKind kind ) => kind switch
+	{
+		BuildingKind.Infirmary => "ui/Arena UI/heart.png",
+		BuildingKind.Anvil => "ui/Arena UI/muscle.png",
+		BuildingKind.Booster => "ui/Arena UI/adrenal.png",
+		BuildingKind.Brake => "ui/Arena UI/lungs.png",
+		_ => "ui/Arena UI/liver.png"
+	};
 
 	string ExtractBank( int stash ) => stash == 1
 		? GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankOne, stash )
@@ -1086,6 +1124,18 @@
 	const float TrayArtHeight = 286f;
 	const float ChargeMeterWidth = 131f;
 	const float ChargeMeterHeight = 24f;
+
+	float OrganLift
+	{
+		get
+		{
+			var width = Panel?.Box.Rect.Width ?? 0f;
+			if ( width <= 1f )
+				width = 1920f;
+
+			return width * (198f / 2544f) + 48f;
+		}
+	}
 
 	void TickTraySize()
 	{
@@ -1350,10 +1400,9 @@
 		var c = System.HashCode.Combine(
 			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.Warehouse : 0,
 			Loop.IsValid() && Loop.City.IsValid() ? (int)Loop.City.Selected : 0,
-			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.HoverText() : "",
 			Loop.IsValid() ? Loop.Offers.Count : 0,
 			Loop.IsValid() ? Loop.HeartMax : 0,
-			CityBonuses,
+			string.Join( " ", CityBonusLines ),
 			HurtPercent,
 			Loop.IsValid() && Loop.InBossFight );
 
@@ -1383,7 +1432,8 @@
 			Loop.IsValid() && Loop.ShopHasBundle,
 			Loop.IsValid() && Loop.ShopCanBuyAll,
 			Loop.IsValid() ? Loop.ShopBuyAllCost : 0,
-			shopHover );
+			shopHover,
+			(int)OrganLift );
 
 		var g = System.HashCode.Combine(
 			Loop.IsValid() ? (int)Loop.Location : 0,
@@ -1428,10 +1478,11 @@
 
 	.top-left {
 		position: absolute;
-		left: 34px;
-		top: 28px;
+		left: 26px;
+		top: 24px;
+		width: 400px;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: stretch;
 	}
 
 	.lap-chip {
@@ -1717,10 +1768,83 @@
 
 	.bottom {
 		position: absolute;
-		bottom: 54px;
+		left: 0px;
 		width: 100%;
 		flex-direction: column;
 		align-items: center;
+	}
+
+	.altar-tray {
+		position: absolute;
+		left: 0px;
+		bottom: 0px;
+		width: 100%;
+		aspect-ratio: 2544 / 198;
+		pointer-events: none;
+	}
+
+	.altar-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.altar-notches {
+		position: absolute;
+		left: 0px;
+		bottom: 0px;
+		width: 100%;
+		aspect-ratio: 2544 / 198;
+		pointer-events: none;
+		z-index: 3;
+	}
+
+	.altar-notch {
+		position: absolute;
+		top: 26.26%;
+		height: 51.52%;
+		pointer-events: all;
+		background-color: rgba(240, 180, 41, 0);
+	}
+
+	.altar-notch:hover {
+		background-color: rgba(240, 180, 41, 0.22);
+	}
+
+	.notch-lamp {
+		position: absolute;
+		left: 6px;
+		top: 6px;
+		width: 41px;
+		height: 40px;
+		pointer-events: none;
+	}
+
+	.altar-notch:nth-child(1) {
+		left: 13.29%;
+		width: 13.21%;
+	}
+
+	.altar-notch:nth-child(2) {
+		left: 28.77%;
+		width: 13.29%;
+	}
+
+	.altar-notch:nth-child(3) {
+		left: 44.26%;
+		width: 13.36%;
+	}
+
+	.altar-notch:nth-child(4) {
+		left: 59.67%;
+		width: 13.21%;
+	}
+
+	.altar-notch:nth-child(5) {
+		left: 74.92%;
+		width: 13.21%;
 	}
 
 	.slots {
@@ -1801,6 +1925,33 @@
 		position: absolute;
 		width: 100%;
 		height: 100%;
+	}
+
+	.city-side {
+		position: absolute;
+		right: 26px;
+		top: 108px;
+		width: 360px;
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.city-stats {
+		flex-direction: column;
+		align-items: flex-end;
+		margin-top: 10px;
+		padding: 14px 18px;
+		border-radius: 10px;
+		background-color: rgba(14, 15, 17, 0.7);
+		border: 2px solid rgba(200, 190, 170, 0.2);
+	}
+
+	.city-stats label {
+		font-size: 20px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #f4ece0;
+		margin-bottom: 4px;
 	}
 
 	.slot .text {
@@ -2029,7 +2180,7 @@
 		flex-direction: row;
 		align-items: center;
 		padding: 14px 18px;
-		margin-bottom: 10px;
+		margin-bottom: 0px;
 		border-radius: 12px;
 		background-color: rgba(14, 15, 17, 0.92);
 		border: 2px solid rgba(240, 180, 41, 0.45);
@@ -2047,6 +2198,69 @@
 
 	.slot.chambered {
 		border-color: rgba(240, 180, 41, 0.75);
+	}
+
+	.altar-notch .slot,
+	.altar-notch .slot.selected,
+	.altar-notch .slot.chambered,
+	.altar-notch .slot.idle,
+	.altar-notch .slot.infirmary,
+	.altar-notch .slot.anvil,
+	.altar-notch .slot.booster,
+	.altar-notch .slot.brake,
+	.altar-notch .slot.showcase {
+		position: absolute;
+		left: 54px;
+		top: 0px;
+		right: 6px;
+		height: 100%;
+		margin: 0px;
+		padding: 0px;
+		opacity: 1;
+		background-color: transparent;
+		border: 0px solid transparent;
+		border-radius: 0px;
+		pointer-events: none;
+	}
+
+	.altar-notch .organ-art {
+		margin-right: 8px;
+		flex-shrink: 0;
+	}
+
+	.altar-notch .organ-art.infirmary {
+		width: 40px;
+		height: 58px;
+	}
+
+	.altar-notch .organ-art.anvil {
+		width: 72px;
+		height: 33px;
+	}
+
+	.altar-notch .organ-art.booster {
+		width: 64px;
+		height: 51px;
+	}
+
+	.altar-notch .organ-art.brake {
+		width: 52px;
+		height: 58px;
+	}
+
+	.altar-notch .organ-art.showcase {
+		width: 68px;
+		height: 46px;
+	}
+
+	.altar-notch .slot .name {
+		font-size: 26px;
+		line-height: 26px;
+	}
+
+	.altar-notch .slot .idx {
+		font-size: 18px;
+		margin-top: 4px;
 	}
 
 	.blueprint .copy {
@@ -3127,6 +3341,14 @@
 	.stat-row.lead .value {
 		font-size: 30px;
 		font-weight: 700;
+		color: #f4ece0;
+	}
+
+	.city .city-biomass .key,
+	.city .city-biomass .value {
+		font-size: 46px;
+		font-weight: 700;
+		letter-spacing: 0px;
 		color: #f4ece0;
 	}
 
