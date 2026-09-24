@@ -127,12 +127,28 @@
   "LashMaxHold": 1.1,
   "LashHit": 1,
   "LashTick": {
-    "Level1": 1,
-    "Level2": 0.8,
-    "Level3": 0.6
+    "Level1": 0.6,
+    "Level2": 0.4,
+    "Level3": 0.2
   },
+  "LashTicks": {
+    "Level1": 4,
+    "Level2": 6,
+    "Level3": 8
+  },
+  "LashReload": 0.3,
   "LashRange": 1600,
   "LashWidth": 8,
+  "SearReload": 0.15,
+  "KilnTick": 0.75,
+  "KilnWidth": 0.75,
+  "KilnReload": 0.1,
+  "ArcRange": 220,
+  "ArcTick": 1.15,
+  "ForkReload": 0.12,
+  "ShuntTick": 1.25,
+  "ShuntWidth": 0.85,
+  "LingerReload": 0.2,
   "PinNails": {
     "Level1": 2,
     "Level2": 3,

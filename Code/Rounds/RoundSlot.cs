@@ -3,7 +3,7 @@ namespace LoopedLoaded;
 public sealed class RunLoadout
 {
 	public int BonusDamage;
-	public readonly int[] Levels = new int[48];
+	public readonly int[] Levels = new int[56];
 
 	public int TraitLevel( RoundTrait trait )
 	{
@@ -161,6 +161,19 @@ public sealed class RunLoadout
 		if ( Has( RoundTrait.Link ) )
 			reload += t.LinkReload;
 
+		if ( lash > 0 )
+		{
+			reload = t.LashReload;
+			if ( Has( RoundTrait.Sear ) )
+				reload += t.SearReload;
+			if ( Has( RoundTrait.Kiln ) )
+				reload += t.KilnReload;
+			if ( Has( RoundTrait.Fork ) )
+				reload += t.ForkReload;
+			if ( Has( RoundTrait.Linger ) )
+				reload += t.LingerReload;
+		}
+
 		reload *= ReloadScale();
 
 		var speed = 1f;
@@ -287,10 +300,17 @@ public sealed class RunLoadout
 			BeamPerSecond = t.LashPerSecond,
 			BeamMaxHold = t.LashMaxHold,
 			BeamHit = lash > 0 ? Math.Max( 1, t.LashHit ) : 0,
-			BeamTick = lash > 0 && t.LashTick is not null ? t.LashTick.At( lash ) : 1f,
+			BeamTick = BeamTickOf( t, lash ),
+			BeamTicks = lash > 0 && t.LashTicks is not null ? Math.Max( 1, (int)t.LashTicks.At( lash ) ) : 0,
 			BeamRange = t.LashRange,
-			BeamWidth = t.LashWidth,
-			BeamRank = lash
+			BeamWidth = BeamWidthOf( t ),
+			BeamRank = lash,
+			BeamSear = Has( RoundTrait.Sear ),
+			BeamKiln = Has( RoundTrait.Kiln ) ? t.KilnTick : 1f,
+			BeamArc = Has( RoundTrait.Arc ) ? t.ArcRange : 0f,
+			BeamFork = Has( RoundTrait.Fork ),
+			BeamShunt = Has( RoundTrait.Shunt ),
+			BeamLinger = Has( RoundTrait.Linger )
 		};
 	}
 
@@ -310,6 +330,29 @@ public sealed class RunLoadout
 		if ( drum > 0 && Has( RoundTrait.Belt ) )
 			burst += t.BeltBurst;
 		return burst;
+	}
+
+	float BeamTickOf( TraitConfig t, int lash )
+	{
+		if ( lash <= 0 || t.LashTick is null )
+			return 1f;
+
+		var tick = t.LashTick.At( lash );
+		if ( Has( RoundTrait.Arc ) )
+			tick *= t.ArcTick;
+		if ( Has( RoundTrait.Shunt ) )
+			tick *= t.ShuntTick;
+		return tick;
+	}
+
+	float BeamWidthOf( TraitConfig t )
+	{
+		var width = t.LashWidth;
+		if ( Has( RoundTrait.Kiln ) )
+			width *= t.KilnWidth;
+		if ( Has( RoundTrait.Shunt ) )
+			width *= t.ShuntWidth;
+		return width;
 	}
 }
 
@@ -358,9 +401,16 @@ public struct GunRecipe
 	public float BeamMaxHold;
 	public int BeamHit;
 	public float BeamTick;
+	public int BeamTicks;
 	public float BeamRange;
 	public float BeamWidth;
 	public int BeamRank;
+	public bool BeamSear;
+	public float BeamKiln;
+	public float BeamArc;
+	public bool BeamFork;
+	public bool BeamShunt;
+	public bool BeamLinger;
 }
 
 public struct RoundFlight

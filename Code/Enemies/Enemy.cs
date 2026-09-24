@@ -139,7 +139,7 @@ public sealed class Enemy : Component
 
 	float markUntil;
 
-	public bool BlocksFrom( Vector2 incoming, RoundProjectile source, bool asBounce = false, Vector2 from = default )
+	public bool BlocksFrom( Vector2 incoming, RoundProjectile source, bool asBounce = false, Vector2 from = default, bool ignorePlate = false )
 	{
 		if ( Kind == EnemyKind.Core )
 		{
@@ -153,6 +153,9 @@ public sealed class Enemy : Component
 			return BlocksLens( incoming, source, from );
 
 		if ( Kind != EnemyKind.Shield && Kind != EnemyKind.Shardguard )
+			return false;
+
+		if ( ignorePlate )
 			return false;
 
 		if ( source is not null && source.Flight.IgnoreArmor )

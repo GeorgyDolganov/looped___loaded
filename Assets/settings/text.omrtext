@@ -223,10 +223,7 @@
       "Uncommon": "UNCOMMON",
       "Rare": "RARE",
       "Epic": "EPIC",
-      "Entry": "ENTRY",
-      "Junior": "JUNIOR",
-      "Warrior": "WARRIOR",
-      "Abomination": "ABOMINATION"
+      "Entry": "ENTRY"
     },
     "Buck": {
       "Code": "BUCK",
@@ -251,7 +248,7 @@
     "Lash": {
       "Code": "LASH",
       "Title": "LASH",
-      "Blurb": "Hold for lightning. Weak ticks. Locks out BORE."
+      "Blurb": "A charge of ticks. Short reload. Turquoise to red. Locks out BORE."
     },
     "Pin": {
       "Code": "PIN",
@@ -442,6 +439,36 @@
       "Code": "LINK",
       "Title": "LINK",
       "Blurb": "The burst finishes if you release. Cycle ×1.10. Reload +0.20s."
+    },
+    "Sear": {
+      "Code": "SEAR",
+      "Title": "SEAR",
+      "Blurb": "+1 damage while the beam stays on a body. Reload +0.15s. Locks out ARC."
+    },
+    "Kiln": {
+      "Code": "KILN",
+      "Title": "KILN",
+      "Blurb": "Tick ×0.75 while latched. Narrower. Reload +0.10s. Locks out ARC."
+    },
+    "Arc": {
+      "Code": "ARC",
+      "Title": "ARC",
+      "Blurb": "Jumps once to a neighbor within 220. Slower tick. Locks out BRAND."
+    },
+    "Fork": {
+      "Code": "FORK",
+      "Title": "FORK",
+      "Blurb": "Side bolts hit on their own. Reload +0.12s. Locks out BRAND."
+    },
+    "Shunt": {
+      "Code": "SHUNT",
+      "Title": "SHUNT",
+      "Blurb": "Ignores shields and plates. Slower tick. Narrower."
+    },
+    "Linger": {
+      "Code": "LINGER",
+      "Title": "LINGER",
+      "Blurb": "Remaining ticks finish where you let go. Reload +0.20s."
     },
     "Pierce": {
       "Code": "PRC",

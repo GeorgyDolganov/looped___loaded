@@ -22,16 +22,14 @@ public sealed class RoundInventory : Component
 	readonly Dictionary<Enemy, int> burstHits = new();
 	public bool Beaming { get; private set; }
 	public float BeamHeld { get; private set; }
+	bool beamTail;
 	public bool Ready => ReloadLeft <= 0.001f && !Beaming && MagLoaded > 0 && doubleLeft <= 0.001f;
 	public float Reload01
 	{
 		get
 		{
-			if ( Beaming )
-			{
-				var cap = MathF.Max( 0.01f, Loadout.Recipe().BeamMaxHold );
-				return Math.Clamp( BeamHeld / cap, 0f, 1f );
-			}
+			if ( Beaming && beam.IsValid() && beam.TickBudget > 0 )
+				return Math.Clamp( beam.TicksLeft / (float)beam.TickBudget, 0f, 1f );
 
 			if ( ReloadFor <= 0.01f )
 				return Ready ? 1f : 0f;
@@ -161,15 +159,28 @@ public sealed class RoundInventory : Component
 
 		if ( Beaming )
 		{
-			if ( !down )
+			if ( !beam.IsValid() || beam.Spent )
 			{
 				EndBeam( recipe );
 				return;
 			}
 
-			BeamHeld = MathF.Min( recipe.BeamMaxHold, BeamHeld + Time.Delta );
-			if ( Aim.IsValid() )
-				beam?.Aim( Aim.Muzzle, Aim.Direction, recipe );
+			if ( !down )
+			{
+				if ( recipe.BeamLinger && !beamTail && beam.TicksLeft > 0 )
+				{
+					beamTail = true;
+					beam.FreezeAim();
+				}
+				else if ( !beamTail )
+				{
+					EndBeam( recipe );
+					return;
+				}
+			}
+
+			if ( !beamTail && Aim.IsValid() )
+				beam.Aim( Aim.Muzzle, Aim.Direction, recipe );
 			return;
 		}
 
@@ -387,6 +398,7 @@ public sealed class RoundInventory : Component
 		MagLoaded--;
 		Beaming = true;
 		BeamHeld = 0f;
+		beamTail = false;
 		var go = Loop.Scene.CreateObject();
 		go.Name = "Laser Beam";
 		beam = go.AddComponent<LaserBeam>();
@@ -401,17 +413,17 @@ public sealed class RoundInventory : Component
 
 	void EndBeam( GunRecipe recipe )
 	{
-		var held = BeamHeld;
 		var origin = Runner.IsValid() ? Runner.Flat : Vector2.Zero;
 		StopBeam();
 		DropSpent( origin );
-		BeginReload( (recipe.BeamPad + recipe.BeamPerSecond * held + recipe.BoreWait) * Loadout.ReloadScale() );
+		BeginReload( recipe.Reload );
 	}
 
 	void StopBeam()
 	{
 		Beaming = false;
 		BeamHeld = 0f;
+		beamTail = false;
 		if ( beam.IsValid() )
 			beam.GameObject.Destroy();
 		beam = null;

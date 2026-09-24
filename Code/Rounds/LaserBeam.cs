@@ -2,33 +2,50 @@ namespace LoopedLoaded;
 
 public sealed class LaserBeam : Component
 {
-	static readonly Color BoltCore = new Color( 0.82f, 0.94f, 1f );
-	static readonly Color BoltGlow = new Color( 0.38f, 0.52f, 1f );
+	static readonly Color ChargeFull = new Color( 0.15f, 0.90f, 0.85f );
+	static readonly Color ChargeEmpty = new Color( 0.95f, 0.22f, 0.16f );
 
 	GameLoop loop;
 	GunRecipe recipe;
 	Vector2 origin;
 	readonly List<PolyLine> lines = new();
 	readonly List<(Vector2 A, Vector2 B)> rays = new();
-	readonly List<Enemy> caught = new();
-	readonly List<Vector2> caughtAt = new();
-	readonly Dictionary<Enemy, float> nextHit = new();
+	readonly List<Latch> latches = new();
+	readonly Dictionary<(int Bolt, Enemy Body), int> sear = new();
+	readonly HashSet<Enemy> lastMains = new();
+	int ticksLeft;
+	int tickBudget;
+	float nextTick;
+	bool steer = true;
+	Vector2 aimDir = Vector2.Right;
 	PolyLine splashRing;
 	Vector2 splashAt;
 	bool splashLive;
-	float nextSplash;
+
+	public int TicksLeft => ticksLeft;
+	public int TickBudget => tickBudget;
+	public bool Spent => tickBudget > 0 && ticksLeft <= 0;
 
 	public void Arm( GameLoop host, GunRecipe gun )
 	{
 		loop = host;
 		recipe = gun;
+		tickBudget = Math.Max( 1, gun.BeamTicks );
+		ticksLeft = tickBudget;
+		nextTick = Time.Now + MathF.Max( 0.05f, gun.BeamTick );
+		steer = true;
+		sear.Clear();
+		lastMains.Clear();
 	}
+
+	public void FreezeAim() => steer = false;
 
 	public void Aim( Vector2 muzzle, Vector2 dir, GunRecipe gun )
 	{
 		recipe = gun;
 		origin = muzzle;
-		Build( dir.Normal );
+		aimDir = dir.Normal;
+		Build( aimDir );
 	}
 
 	public bool Near( Vector2 flat, float radius )
@@ -47,15 +64,17 @@ public sealed class LaserBeam : Component
 		if ( !loop.IsValid() || loop.IsFrozen || !loop.Aim.IsValid() )
 			return;
 
-		Aim( loop.Aim.Muzzle, loop.Aim.Direction, recipe );
+		if ( steer )
+			Aim( loop.Aim.Muzzle, loop.Aim.Direction, recipe );
+		else
+			Build( aimDir );
 		Strike();
 	}
 
 	void Build( Vector2 dir )
 	{
 		rays.Clear();
-		caught.Clear();
-		caughtAt.Clear();
+		latches.Clear();
 		var count = Math.Max( 1, recipe.Count );
 		var cone = recipe.Cone;
 		var geometry = loop.Geometry;
@@ -81,21 +100,54 @@ public sealed class LaserBeam : Component
 				blocked = true;
 			}
 
-			var storm = LightningPath.Storm( origin, end, rank, seed + i * 31 );
-			if ( FirstTouch( loop, storm, origin, width, out var body, out var touch ) )
+			var storm = LightningPath.Storm( origin, end, rank, seed + i * 31, recipe.BeamFork ? 1 : 0 );
+			Enemy mainBody = null;
+			var mainAt = end;
+			var hitMain = false;
+			if ( recipe.BeamFork && storm.Count > 0 )
+			{
+				if ( TouchOne( storm[0], width, out var body, out var touch ) )
+				{
+					CutOne( storm[0], heading, touch );
+					mainBody = body;
+					mainAt = touch;
+					end = touch;
+					hitMain = true;
+					latches.Add( new Latch { Body = body, At = touch, Bolt = i } );
+				}
+
+				for ( var f = 1; f < storm.Count; f++ )
+				{
+					if ( !TouchOne( storm[f], width, out var forkBody, out var forkAt ) )
+						continue;
+
+					CutOne( storm[f], heading, forkAt );
+					if ( forkBody == mainBody )
+						continue;
+
+					latches.Add( new Latch { Body = forkBody, At = forkAt, Bolt = 100 + i * 8 + f } );
+				}
+			}
+			else if ( FirstTouch( loop, storm, origin, width, out var body, out var touch ) )
 			{
 				CutPast( storm, origin, heading, touch );
-				caught.Add( body );
-				caughtAt.Add( touch );
+				mainBody = body;
+				mainAt = touch;
 				end = touch;
+				hitMain = true;
+				latches.Add( new Latch { Body = body, At = touch, Bolt = i } );
 			}
-			else if ( blocked && loop.Arena.IsValid() )
+
+			if ( !hitMain && blocked && loop.Arena.IsValid() )
 			{
 				if ( wall.Kind == WallKind.Panel )
 					loop.Arena.StrikeBoard( wall.WallIndex, wall.Position, wall.Normal, 0f, false );
 				else if ( wall.Kind == WallKind.Spin )
 					loop.Arena.PushSpinner( wall.WallIndex, wall.Position, heading );
 			}
+
+			if ( hitMain && recipe.BeamArc > 1f )
+				Jump( mainAt, mainBody, i, seed, bolts );
 
 			if ( i == count / 2 )
 			{
@@ -119,63 +171,137 @@ public sealed class LaserBeam : Component
 
 	void Strike()
 	{
-		var tick = MathF.Max( 0.05f, recipe.BeamTick );
+		if ( ticksLeft <= 0 || Time.Now < nextTick )
+			return;
+
 		var hit = Math.Max( 1, recipe.BeamHit );
+		var staged = new List<(int Bolt, Enemy Body, int Next)>();
+		var mains = new List<Enemy>();
 		Enemy nearest = null;
 		var nearestDist = float.MaxValue;
 		Vector2 nearestAt = default;
 
-		for ( var i = 0; i < caught.Count; i++ )
+		foreach ( var latch in latches )
 		{
-			var enemy = caught[i];
+			var enemy = latch.Body;
 			if ( !enemy.IsValid() || !enemy.Alive )
 				continue;
 
-			var hitAt = caughtAt[i];
-			var incoming = hitAt - origin;
+			var incoming = latch.At - origin;
 			if ( incoming.Length < 1f )
-				incoming = loop.Aim.Direction;
+				incoming = aimDir;
 			else
 				incoming = incoming.Normal;
 
-			if ( enemy.BlocksFrom( incoming, null, recipe.Pierce > 0, hitAt ) )
+			if ( enemy.BlocksFrom( incoming, null, recipe.Pierce > 0, latch.At, recipe.BeamShunt ) )
 			{
 				if ( Locations.IsBoss( enemy.Kind ) )
 					loop.NoteArmor();
 				continue;
 			}
 
-			var dist = (hitAt - origin).Length;
+			var dist = (latch.At - origin).Length;
 			if ( dist < nearestDist )
 			{
 				nearestDist = dist;
 				nearest = enemy;
-				nearestAt = hitAt;
+				nearestAt = latch.At;
 			}
 
-			if ( nextHit.TryGetValue( enemy, out var due ) && Time.Now < due )
-				continue;
+			var key = (latch.Bolt, enemy);
+			sear.TryGetValue( key, out var prior );
+			var damage = hit;
+			if ( recipe.BeamSear && prior > 0 )
+				damage += 1;
 
-			nextHit[enemy] = Time.Now + tick;
-			enemy.Damage( hit, 0f, 1f );
-
+			enemy.Damage( damage, 0f, 1f );
 			if ( recipe.StickTime > 0.01f )
 				PinLinger.Hang( enemy, 1, recipe.StickTime );
+
+			staged.Add( (latch.Bolt, enemy, prior + 1) );
+			if ( latch.Bolt < 100 && !mains.Contains( enemy ) )
+				mains.Add( enemy );
 		}
 
-		if ( recipe.Splash > 1f && nearest.IsValid() && Time.Now >= nextSplash )
-		{
-			nextSplash = Time.Now + tick;
+		var kiln = recipe.BeamKiln > 0f && recipe.BeamKiln < 0.999f && MainsMatch( mains );
+		sear.Clear();
+		foreach ( var step in staged )
+			sear[(step.Bolt, step.Body)] = step.Next;
+
+		lastMains.Clear();
+		foreach ( var body in mains )
+			lastMains.Add( body );
+
+		ticksLeft--;
+		var gap = MathF.Max( 0.05f, recipe.BeamTick );
+		if ( kiln )
+			gap *= recipe.BeamKiln;
+		nextTick = Time.Now + gap;
+
+		if ( recipe.Splash > 1f && nearest.IsValid() )
 			RoundCombat.Blast( loop, nearestAt, recipe.Splash, Math.Max( 1, recipe.SplashDamage ), null, ShotColors.Player, recipe.FriendlySplash );
+	}
+
+	bool MainsMatch( List<Enemy> mains )
+	{
+		if ( mains.Count == 0 || mains.Count != lastMains.Count )
+			return false;
+
+		foreach ( var body in mains )
+		{
+			if ( !lastMains.Contains( body ) )
+				return false;
 		}
+
+		return true;
+	}
+
+	bool TouchOne( List<Vector2> bolt, float width, out Enemy enemy, out Vector2 at )
+	{
+		var wrap = new List<List<Vector2>> { bolt };
+		return FirstTouch( loop, wrap, origin, width, out enemy, out at );
+	}
+
+	void CutOne( List<Vector2> bolt, Vector2 heading, Vector2 stop )
+	{
+		var wrap = new List<List<Vector2>> { bolt };
+		CutPast( wrap, origin, heading, stop );
+		if ( wrap.Count == 0 )
+			bolt.Clear();
+	}
+
+	void Jump( Vector2 from, Enemy main, int bolt, int seed, List<List<Vector2>> drawn )
+	{
+		Enemy pick = null;
+		var best = recipe.BeamArc;
+		foreach ( var candidate in loop.Enemies )
+		{
+			if ( !candidate.IsValid() || !candidate.Alive || candidate == main )
+				continue;
+
+			var dist = (candidate.Flat - from).Length;
+			if ( dist > best )
+				continue;
+
+			best = dist;
+			pick = candidate;
+		}
+
+		if ( !pick.IsValid() )
+			return;
+
+		latches.Add( new Latch { Body = pick, At = pick.Flat, Bolt = bolt } );
+		drawn.Add( LightningPath.Jag( from, pick.Flat, seed + 90 + bolt, 4, 24f ) );
 	}
 
 	void Draw( List<List<Vector2>> bolts, int rank )
 	{
 		var wave = MathF.Abs( MathF.Sin( Time.Now * (14f + rank * 5f) ) );
 		var pulse = 0.2f + 0.8f * wave;
-		var core = Color.Lerp( BoltGlow, BoltCore, pulse );
-		var glow = BoltGlow * (0.15f + pulse * 0.85f );
+		var charge = tickBudget <= 1 ? 0f : (tickBudget - Math.Max( ticksLeft, 1 )) / (float)(tickBudget - 1);
+		var hue = Color.Lerp( ChargeFull, ChargeEmpty, charge );
+		var core = hue * pulse;
+		var glow = hue * (0.15f + pulse * 0.85f);
 		var width = (rank >= 3 ? 9f : rank >= 2 ? 7f : 5f) * (0.45f + wave);
 
 		while ( lines.Count < bolts.Count )
@@ -352,6 +478,13 @@ public sealed class LaserBeam : Component
 		return enemy.IsValid();
 	}
 
+	struct Latch
+	{
+		public Enemy Body;
+		public Vector2 At;
+		public int Bolt;
+	}
+
 	static void CutPast( List<List<Vector2>> bolts, Vector2 origin, Vector2 heading, Vector2 stop )
 	{
 		var limit = ArenaGeometry.Dot( stop - origin, heading );
@@ -397,7 +530,7 @@ public sealed class LaserBeam : Component
 
 public static class LightningPath
 {
-	public static List<List<Vector2>> Storm( Vector2 from, Vector2 to, int rank, int seed )
+	public static List<List<Vector2>> Storm( Vector2 from, Vector2 to, int rank, int seed, int forkFloor = 0 )
 	{
 		rank = Math.Clamp( rank, 1, 3 );
 		var bolts = new List<List<Vector2>>();
@@ -407,6 +540,8 @@ public static class LightningPath
 		bolts.Add( main );
 
 		var forks = rank <= 1 ? 0 : rank == 2 ? 1 : 2;
+		if ( forks < forkFloor )
+			forks = forkFloor;
 		for ( var f = 0; f < forks; f++ )
 		{
 			if ( main.Count < 4 )

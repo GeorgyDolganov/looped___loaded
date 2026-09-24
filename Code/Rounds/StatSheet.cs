@@ -257,17 +257,21 @@ public static class StatSheet
 				break;
 			case RoundTrait.Lash:
 			{
+				var ticks = t.LashTicks is null ? 0 : (int)t.LashTicks.At( rank );
 				if ( rank <= 1 )
 				{
 					Note( "Hold to fire lightning" );
-					Up( $"+{Math.Max( 1, t.LashHit )} Damage" );
+					Up( $"{ticks} Ticks" );
 					Note( $"Tick {Fmt( t.LashTick.At( 1 ) )}s" );
-					Note( $"Max hold {Fmt( t.LashMaxHold )}s" );
+					Up( $"Reload {Fmt( t.LashReload )}s" );
 					Down( "Locks out BORE" );
 				}
 				else
 				{
 					Note( "Lightning forks" );
+					var prev = (int)t.LashTicks.At( rank - 1 );
+					if ( ticks > prev )
+						Up( $"+{ticks - prev} Ticks" );
 					var tick = t.LashTick.At( rank ) - t.LashTick.At( rank - 1 );
 					if ( tick < -0.001f )
 						Up( $"{Fmt( tick )}s Bolt Tick" );
@@ -276,6 +280,36 @@ public static class StatSheet
 				}
 				break;
 			}
+			case RoundTrait.Sear:
+				Note( "+1 damage while the beam stays" );
+				Down( $"+{Fmt( t.SearReload )}s Reload" );
+				Down( "Locks out ARC" );
+				break;
+			case RoundTrait.Kiln:
+				Note( $"Tick ×{Fmt( t.KilnTick )} while latched" );
+				Down( $"{PctDelta( t.KilnWidth )} Beam Width" );
+				Down( $"+{Fmt( t.KilnReload )}s Reload" );
+				Down( "Locks out ARC" );
+				break;
+			case RoundTrait.Arc:
+				Note( $"Jump {Fmt( t.ArcRange )}" );
+				Down( $"{PctDelta( t.ArcTick )} Bolt Tick" );
+				Down( "Locks out BRAND" );
+				break;
+			case RoundTrait.Fork:
+				Note( "Side bolts hit" );
+				Down( $"+{Fmt( t.ForkReload )}s Reload" );
+				Down( "Locks out BRAND" );
+				break;
+			case RoundTrait.Shunt:
+				Note( "Ignores shields" );
+				Down( $"{PctDelta( t.ShuntTick )} Bolt Tick" );
+				Down( $"{PctDelta( t.ShuntWidth )} Beam Width" );
+				break;
+			case RoundTrait.Linger:
+				Note( "Remaining ticks finish" );
+				Down( $"+{Fmt( t.LingerReload )}s Reload" );
+				break;
 			case RoundTrait.Pin:
 			{
 				var nails = Gain( t.PinNails, rank );
@@ -367,6 +401,7 @@ public static class StatSheet
 		if ( now.Beam || next.Beam )
 		{
 			AddInt( rows, "Bolt Dmg", now.BeamHit, next.BeamHit, preview, true, true );
+			AddInt( rows, "Ticks", now.BeamTicks, next.BeamTicks, preview, true, true );
 			AddFloat( rows, "Bolt Tick", now.BeamTick, next.BeamTick, preview, false, "s", true );
 		}
 		AddFloat( rows, "Knockback", now.KickForce, next.KickForce, preview, true );

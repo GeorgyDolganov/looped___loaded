@@ -58,7 +58,13 @@ public enum RoundTrait
 	Bite,
 	Link,
 	Dodge,
-	Snap
+	Snap,
+	Sear,
+	Kiln,
+	Arc,
+	Fork,
+	Shunt,
+	Linger
 }
 
 public static class RoundTraits
@@ -73,7 +79,8 @@ public static class RoundTraits
 		RoundTrait.Rush, RoundTrait.Dodge, RoundTrait.Snap,
 		RoundTrait.Mirv, RoundTrait.Bloom, RoundTrait.Scorch, RoundTrait.Lance, RoundTrait.Crater, RoundTrait.Spot,
 		RoundTrait.Deep, RoundTrait.Awl, RoundTrait.Ram, RoundTrait.Mass, RoundTrait.Keel, RoundTrait.Trace,
-		RoundTrait.Belt, RoundTrait.Walk, RoundTrait.Spool, RoundTrait.Sight, RoundTrait.Bite, RoundTrait.Link
+		RoundTrait.Belt, RoundTrait.Walk, RoundTrait.Spool, RoundTrait.Sight, RoundTrait.Bite, RoundTrait.Link,
+		RoundTrait.Sear, RoundTrait.Kiln, RoundTrait.Arc, RoundTrait.Fork, RoundTrait.Shunt, RoundTrait.Linger
 	};
 
 	public static readonly RoundTrait[] Roots =
@@ -96,6 +103,11 @@ public static class RoundTraits
 		RoundTrait.Belt, RoundTrait.Walk, RoundTrait.Spool, RoundTrait.Sight, RoundTrait.Bite, RoundTrait.Link
 	};
 
+	public static readonly RoundTrait[] LaserBranch =
+	{
+		RoundTrait.Sear, RoundTrait.Kiln, RoundTrait.Arc, RoundTrait.Fork, RoundTrait.Shunt, RoundTrait.Linger
+	};
+
 	public static TraitPack Pack( RoundTrait trait ) => trait switch
 	{
 		RoundTrait.Split or RoundTrait.Fan or RoundTrait.Pump => TraitPack.Entry,
@@ -106,11 +118,11 @@ public static class RoundTraits
 		RoundTrait.Bore or RoundTrait.Deep or RoundTrait.Awl or RoundTrait.Ram or RoundTrait.Mass or RoundTrait.Keel or RoundTrait.Trace => TraitPack.Rail,
 		RoundTrait.Drum or RoundTrait.Rush or RoundTrait.Belt or RoundTrait.Walk or RoundTrait.Spool or RoundTrait.Sight or RoundTrait.Bite or RoundTrait.Link => TraitPack.Rifle,
 		RoundTrait.Warhead or RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch or RoundTrait.Lance or RoundTrait.Crater or RoundTrait.Spot => TraitPack.Rocket,
-		RoundTrait.Lash => TraitPack.Laser,
+		RoundTrait.Lash or RoundTrait.Sear or RoundTrait.Kiln or RoundTrait.Arc or RoundTrait.Fork or RoundTrait.Shunt or RoundTrait.Linger => TraitPack.Laser,
 		_ => TraitPack.Nailgun
 	};
 
-	public static bool OneShot( RoundTrait trait ) => NeedsWarhead( trait ) || NeedsBore( trait ) || NeedsDrum( trait ) || Pack( trait ) is TraitPack.Entry or TraitPack.Junior or TraitPack.Warrior or TraitPack.Abomination;
+	public static bool OneShot( RoundTrait trait ) => NeedsWarhead( trait ) || NeedsBore( trait ) || NeedsDrum( trait ) || NeedsLash( trait ) || Pack( trait ) is TraitPack.Entry or TraitPack.Junior or TraitPack.Warrior or TraitPack.Abomination;
 
 	public static bool IsCluster( RoundTrait trait ) => trait is RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch;
 
@@ -141,6 +153,16 @@ public static class RoundTraits
 	public static bool OwnsSweep( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Belt ) || loadout.Has( RoundTrait.Walk ));
 
 	public static bool OwnsTrack( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Spool ) || loadout.Has( RoundTrait.Sight ) || loadout.Has( RoundTrait.Bite ));
+
+	public static bool IsBrand( RoundTrait trait ) => trait is RoundTrait.Sear or RoundTrait.Kiln;
+
+	public static bool IsArc( RoundTrait trait ) => trait is RoundTrait.Arc or RoundTrait.Fork;
+
+	public static bool NeedsLash( RoundTrait trait ) => IsBrand( trait ) || IsArc( trait ) || trait is RoundTrait.Shunt or RoundTrait.Linger;
+
+	public static bool OwnsBrand( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Sear ) || loadout.Has( RoundTrait.Kiln ));
+
+	public static bool OwnsArc( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Arc ) || loadout.Has( RoundTrait.Fork ));
 
 	public static bool TooEarly( RoundTrait trait, int lap )
 		=> trait == RoundTrait.Snap && lap < GameSettings.Traits.SnapUnlockLap;
@@ -178,6 +200,15 @@ public static class RoundTraits
 			return true;
 
 		if ( IsTrack( trait ) && OwnsSweep( loadout ) )
+			return true;
+
+		if ( NeedsLash( trait ) && !loadout.Has( RoundTrait.Lash ) )
+			return true;
+
+		if ( IsBrand( trait ) && OwnsArc( loadout ) )
+			return true;
+
+		if ( IsArc( trait ) && OwnsBrand( loadout ) )
 			return true;
 
 		return false;
@@ -235,7 +266,7 @@ public static class RoundTraits
 		RoundTrait.Bore or RoundTrait.Deep or RoundTrait.Awl or RoundTrait.Ram or RoundTrait.Mass or RoundTrait.Keel or RoundTrait.Trace => "ui/traits/pierce.png",
 		RoundTrait.Drum or RoundTrait.Belt or RoundTrait.Walk or RoundTrait.Spool or RoundTrait.Sight or RoundTrait.Bite or RoundTrait.Link => "ui/traits/accel.png",
 		RoundTrait.Warhead or RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch or RoundTrait.Lance or RoundTrait.Crater or RoundTrait.Spot => "ui/traits/explosive.png",
-		RoundTrait.Lash => "ui/traits/electric.png",
+		RoundTrait.Lash or RoundTrait.Sear or RoundTrait.Kiln or RoundTrait.Arc or RoundTrait.Fork or RoundTrait.Shunt or RoundTrait.Linger => "ui/traits/electric.png",
 		RoundTrait.Spin => "ui/traits/clockwise.png",
 		RoundTrait.Rush => "ui/traits/step.png",
 		RoundTrait.Dodge => "ui/traits/graze.png",

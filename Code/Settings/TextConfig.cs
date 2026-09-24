@@ -105,6 +105,12 @@ public class TextConfig : GameResource
 			RoundTrait.Sight => pack.Sight ??= new(),
 			RoundTrait.Bite => pack.Bite ??= new(),
 			RoundTrait.Link => pack.Link ??= new(),
+			RoundTrait.Sear => pack.Sear ??= new(),
+			RoundTrait.Kiln => pack.Kiln ??= new(),
+			RoundTrait.Arc => pack.Arc ??= new(),
+			RoundTrait.Fork => pack.Fork ??= new(),
+			RoundTrait.Shunt => pack.Shunt ??= new(),
+			RoundTrait.Linger => pack.Linger ??= new(),
 			_ => pack.Slug ??= new()
 		};
 	}
@@ -119,9 +125,9 @@ public class TextConfig : GameResource
 		return pack switch
 		{
 			TraitPack.Entry => Or( rarity.Entry, "ENTRY" ),
-			TraitPack.Junior => Or( rarity.Junior, "JUNIOR" ),
-			TraitPack.Warrior => Or( rarity.Warrior, "WARRIOR" ),
-			TraitPack.Abomination => Or( rarity.Abomination, "ABOMINATION" ),
+			TraitPack.Junior => Or( rarity.Uncommon, "UNCOMMON" ),
+			TraitPack.Warrior => Or( rarity.Rare, "RARE" ),
+			TraitPack.Abomination => Or( rarity.Epic, "EPIC" ),
 			TraitPack.Rifle or TraitPack.Shotgun => Or( rarity.Common, "COMMON" ),
 			TraitPack.Nailgun => Or( rarity.Uncommon, "UNCOMMON" ),
 			_ => Or( rarity.Rare, "RARE" )
@@ -187,7 +193,7 @@ public class TextConfig : GameResource
 	public string CityModeLabel( CityMode mode )
 	{
 		City ??= new();
-		return mode == CityMode.Build ? Or( City.ModeBuild, "BUILD" ) : Or( City.ModeShoot, "SHOOT" );
+		return mode == CityMode.Build ? Or( City.ModeBuild, "BUILD" ) : Or( City.ModeShoot, "INJECT" );
 	}
 
 	public static string Shown( string value )
@@ -236,9 +242,6 @@ public class RarityCopy
 	[Property] public string Rare { get; set; } = "RARE";
 	[Property] public string Epic { get; set; } = "EPIC";
 	[Property] public string Entry { get; set; } = "ENTRY";
-	[Property] public string Junior { get; set; } = "JUNIOR";
-	[Property] public string Warrior { get; set; } = "WARRIOR";
-	[Property] public string Abomination { get; set; } = "ABOMINATION";
 }
 
 public class TraitsCopy
@@ -248,7 +251,7 @@ public class TraitsCopy
 	[Property] public TraitCopy Bore { get; set; } = new() { Code = "BORE", Title = "BORE", Blurb = "One punch-through. Rail at rank 3. Locks out LASH." };
 	[Property] public TraitCopy Drum { get; set; } = new() { Code = "DRUM", Title = "DRUM", Blurb = "A short burst. Rifle dump at rank 3. Long reload." };
 	[Property] public TraitCopy Warhead { get; set; } = new() { Code = "WARHEAD", Title = "WARHEAD", Blurb = "A small clap. Slow rocket. Hurts you." };
-	[Property] public TraitCopy Lash { get; set; } = new() { Code = "LASH", Title = "LASH", Blurb = "Hold for lightning. Weak ticks. Locks out BORE." };
+	[Property] public TraitCopy Lash { get; set; } = new() { Code = "LASH", Title = "LASH", Blurb = "A charge of ticks. Short reload. Turquoise to red. Locks out BORE." };
 	[Property] public TraitCopy Pin { get; set; } = new() { Code = "PIN", Title = "PIN", Blurb = "A couple of nails. Full spray at rank 3. Stick and tick." };
 	[Property] public TraitCopy Spin { get; set; } = new() { Code = "SPIN", Title = "SPIN", Blurb = "Shots sweep harder against the clock. Longer reload." };
 	[Property] public TraitCopy Rush { get; set; } = new() { Code = "RUSH", Title = "RUSH", Blurb = "Shots fly faster. Longer reload." };
@@ -287,6 +290,12 @@ public class TraitsCopy
 	[Property] public TraitCopy Sight { get; set; } = new() { Code = "SIGHT", Title = "SIGHT", Blurb = "Later volleys use half spread. Slower. Locks out SWEEP." };
 	[Property] public TraitCopy Bite { get; set; } = new() { Code = "BITE", Title = "BITE", Blurb = "+1 damage on a body this burst already hit. Slower. Locks out SWEEP." };
 	[Property] public TraitCopy Link { get; set; } = new() { Code = "LINK", Title = "LINK", Blurb = "The burst finishes if you release. Cycle ×1.10. Reload +0.20s." };
+	[Property] public TraitCopy Sear { get; set; } = new() { Code = "SEAR", Title = "SEAR", Blurb = "+1 damage while the beam stays on a body. Reload +0.15s. Locks out ARC." };
+	[Property] public TraitCopy Kiln { get; set; } = new() { Code = "KILN", Title = "KILN", Blurb = "Tick ×0.75 while latched. Narrower. Reload +0.10s. Locks out ARC." };
+	[Property] public TraitCopy Arc { get; set; } = new() { Code = "ARC", Title = "ARC", Blurb = "Jumps once to a neighbor within 220. Slower tick. Locks out BRAND." };
+	[Property] public TraitCopy Fork { get; set; } = new() { Code = "FORK", Title = "FORK", Blurb = "Side bolts hit on their own. Reload +0.12s. Locks out BRAND." };
+	[Property] public TraitCopy Shunt { get; set; } = new() { Code = "SHUNT", Title = "SHUNT", Blurb = "Ignores shields and plates. Slower tick. Narrower." };
+	[Property] public TraitCopy Linger { get; set; } = new() { Code = "LINGER", Title = "LINGER", Blurb = "Remaining ticks finish where you let go. Reload +0.20s." };
 }
 
 public class BuildingsCopy
@@ -359,7 +368,7 @@ public class ProgressCopy
 	[Property] public ProgressStepCopy Inject { get; set; } = new()
 	{
 		Title = "INJECT IT",
-		Blurb = "Shoot the frame until it works."
+		Blurb = "Inject the frame until it works."
 	};
 	[Property] public ProgressStepCopy Chapel { get; set; } = new()
 	{
@@ -609,8 +618,8 @@ public class HelpCopy
 	[Property] public string Paused { get; set; } = "1 RESUME  ·  2 MENU  ·  3 QUIT";
 	[Property] public string Saves { get; set; } = "1-3 SELECT  ·  SPACE LOAD  ·  R DELETE  ·  ESC BACK";
 	[Property] public string Menu { get; set; } = "1 PLAY  ·  2 ALTAR  ·  3 SAVES  ·  ESC QUIT";
-	[Property] public string CityBuild { get; set; } = "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E SHOOT  ·  SPACE/R RUN  ·  ESC PAUSE";
-	[Property] public string CityShoot { get; set; } = "LMB FIRE  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
+	[Property] public string CityBuild { get; set; } = "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E INJECT  ·  SPACE/R RUN  ·  ESC PAUSE";
+	[Property] public string CityShoot { get; set; } = "LMB INJECT  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
 	[Property] public string DecideLapBoss { get; set; } = "CLICK  ·  1 ALTAR  ·  2 STAY  ·  3 FIGHT THE {0}  ·  ESC PAUSE";
 	[Property] public string DecideLap { get; set; } = "CLICK  ·  1 ALTAR  ·  2 STAY  ·  ESC PAUSE";
 	[Property] public string DecideRingNext { get; set; } = "CLICK  ·  1 ALTAR  ·  2 NEXT RING  ·  ESC PAUSE";
@@ -671,9 +680,9 @@ public class AnnounceCopy
 public class CityCopy
 {
 	[Property] public string ModeBuild { get; set; } = "BUILD";
-	[Property] public string ModeShoot { get; set; } = "SHOOT";
+	[Property] public string ModeShoot { get; set; } = "INJECT";
 	[Property] public string WarehouseHud { get; set; } = "WH {0}";
-	[Property] public string ShootFire { get; set; } = "SHOOT  ·  LMB FIRE";
+	[Property] public string ShootFire { get; set; } = "INJECT  ·  LMB INJECT";
 	[Property] public string UpgradeReflects { get; set; } = "UPGRADE · REFLECTS";
 	[Property] public string Frame { get; set; } = "FRAME";
 	[Property] public string LevelReflects { get; set; } = "{0} LV{1}  ·  REFLECTS";
@@ -688,7 +697,7 @@ public class CityCopy
 	[Property] public string Removed { get; set; } = "{0} REMOVED";
 	[Property] public string WarehouseEmpty { get; set; } = "WAREHOUSE EMPTY";
 	[Property] public string FrameHits { get; set; } = "FRAME  ·  {0} HITS TO WORK";
-	[Property] public string ShootToCraft { get; set; } = "SHOOT\nTO CRAFT";
+	[Property] public string ShootToCraft { get; set; } = "INJECT\nTO CRAFT";
 	[Property] public string HpTag { get; set; } = "+1 HP";
 	[Property] public string DmgTag { get; set; } = "+1 DMG";
 	[Property] public string Now { get; set; } = "NOW";

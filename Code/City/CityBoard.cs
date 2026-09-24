@@ -272,6 +272,8 @@ public sealed class CityBoard : Component
 		CollectCells();
 
 		shooter = FindByName( stage, "City Shooter" );
+		if ( shooter.IsValid() )
+			shooter.Enabled = false;
 		EnsureOverlays();
 		bound = true;
 		SetVisible( false );
@@ -319,8 +321,7 @@ public sealed class CityBoard : Component
 		shooter.Parent = stage;
 		shooter.WorldPosition = stand;
 
-		Blocks.SpawnBox( shooter, "Torso", stand + Vector3.Up * 40f, Rotation.Identity, new Vector3( 46f, 46f, 80f ), new Color( 0.82f, 0.94f, 1f ) );
-		Blocks.SpawnBox( shooter, "Barrel", stand + new Vector3( 54f, 0f, 46f ), Rotation.Identity, new Vector3( 76f, 16f, 16f ), new Color( 0.22f, 0.3f, 0.4f ) );
+		shooter.Enabled = false;
 
 		CollectCells();
 	}
@@ -336,7 +337,7 @@ public sealed class CityBoard : Component
 
 	public void ClearShots()
 	{
-		foreach ( var shot in Scene.GetAllComponents<CityShot>().ToArray() )
+		foreach ( var shot in Scene.GetAllComponents<CityInject>().ToArray() )
 		{
 			if ( shot.IsValid() && shot.Board == this )
 				shot.GameObject.Destroy();
@@ -347,9 +348,8 @@ public sealed class CityBoard : Component
 	{
 		EnsureBuilt();
 		UpdateCursor();
-		FaceShooter();
+		HideShootRig();
 		PaintHover();
-		PaintAim();
 		PaintGhost();
 
 		for ( var i = 0; i < Buildings.All.Length; i++ )
@@ -370,7 +370,7 @@ public sealed class CityBoard : Component
 		}
 
 		if ( Input.Pressed( "Attack1" ) && !(Loop.IsValid() && Loop.BlocksShot) )
-			TryFire();
+			TryInject();
 	}
 
 	public void Choose( BuildingKind kind )
@@ -561,7 +561,7 @@ public sealed class CityBoard : Component
 			if ( Hovered is null || !Hovered.Occupied )
 				return city.ShootFire;
 
-			if ( Hovered.Maxed )
+			if ( Hovered.Working )
 				return t.F( city.LevelReflects, Buildings.Title( Hovered.Kind ), Hovered.Level );
 
 			var hitsLeft = Hovered.NextCost - Hovered.Hits;
@@ -658,6 +658,9 @@ public sealed class CityBoard : Component
 		if ( !cursor.IsValid() )
 			cursor = Blocks.SpawnSphere( runtime, "Cursor", ShooterStand + Vector3.Up * PlayHeight, 26f, ShotColors.Player, false );
 
+		if ( cursor.IsValid() )
+			cursor.Enabled = false;
+
 		var aimObject = FindByName( runtime, "City Aim" );
 		if ( !aimObject.IsValid() )
 		{
@@ -672,6 +675,7 @@ public sealed class CityBoard : Component
 		aim.HeadWidth = 3f;
 		aim.TailWidth = 8f;
 		aim.Apply();
+		aim.Clear();
 
 		var ghostObject = FindByName( runtime, "Ghost" );
 		if ( !ghostObject.IsValid() )
@@ -828,7 +832,7 @@ public sealed class CityBoard : Component
 		Loop?.Autosave();
 	}
 
-	void TryFire()
+	void TryInject()
 	{
 		if ( Warehouse <= 0 )
 		{
@@ -837,67 +841,29 @@ public sealed class CityBoard : Component
 			return;
 		}
 
-		Warehouse--;
-
-		var origin = ShooterStand + Vector3.Up * PlayHeight;
-		var to = Cursor - new Vector2( ShooterStand.x, ShooterStand.y );
-		if ( to.Length < 8f )
+		if ( Hovered is null || !Hovered.Occupied || Hovered.Working )
 		{
-			Warehouse++;
 			ArenaSounds.Deny();
 			return;
 		}
 
-		var go = Scene.CreateObject();
-		go.Name = "City Round";
-		if ( stage.IsValid() )
-			go.Parent = stage;
-
-		var shot = go.AddComponent<CityShot>();
-		shot.Board = this;
-		shot.Tint = ShotColors.Player;
-		shot.Launch( origin, to );
-
-		ArenaSounds.Fire( ShooterStand );
-		Loop?.Autosave();
+		Warehouse--;
+		CityInject.Spawn( this, stage, Hovered );
+		var at = Hovered.Root.IsValid() ? Hovered.Root.WorldPosition : WorldPosition;
+		ArenaSounds.Flesh( at );
+		RegisterHit( Hovered );
 	}
 
-	void FaceShooter()
+	void HideShootRig()
 	{
-		if ( !shooter.IsValid() )
-			return;
-
-		var to = Cursor - new Vector2( ShooterStand.x, ShooterStand.y );
-		if ( to.Length > 1f )
-			shooter.WorldRotation = Blocks.FlatFacing( to );
-	}
-
-	void PaintAim()
-	{
-		var muzzle = ShooterStand + Vector3.Up * PlayHeight;
-		var target = new Vector3( Cursor.x, Cursor.y, PlayHeight );
+		if ( shooter.IsValid() )
+			shooter.Enabled = false;
 
 		if ( cursor.IsValid() )
-		{
-			cursor.Enabled = !Building;
-			if ( !Building )
-				cursor.WorldPosition = target;
-		}
+			cursor.Enabled = false;
 
-		if ( !aim.IsValid() )
-			return;
-
-		if ( Building )
-		{
+		if ( aim.IsValid() )
 			aim.Clear();
-			return;
-		}
-
-		var tint = ShotColors.Player;
-		aim.HeadTint = tint;
-		aim.TailTint = Color.Lerp( tint, Color.White, 0.35f );
-		aim.Apply();
-		aim.SetPoints( new List<Vector3> { muzzle, target } );
 	}
 
 	void PaintHover()
