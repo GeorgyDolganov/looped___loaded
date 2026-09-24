@@ -410,7 +410,6 @@ public sealed class ArenaBuilder : Component
 	void DressLocation()
 	{
 		var glass = GlassBoard;
-		RecolorGroup( "Floor", glass ? GlassFloorTint : FloorTint );
 		RecolorGroup( "Track", glass ? GlassTrackTint : TrackTint );
 		RecolorGroup( "Edges", glass ? GlassEdgeTint : TrackEdgeTint );
 		RecolorNamed( "Walls", "Core", glass ? GlassCoreTint : CoreTint );

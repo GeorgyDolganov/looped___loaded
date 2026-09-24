@@ -68,6 +68,7 @@ public sealed class GameLoop : Component
 		}
 	}
 	public int Health { get; private set; }
+	public float PainYaw { get; private set; }
 	public float HurtAmount => Math.Clamp( 1f - (Time.Now - lastHurtAt) / GameSettings.Run.HurtFlash, 0f, 1f );
 	public bool Invulnerable => Time.Now < invulnUntil;
 	public int Kills { get; private set; }
@@ -335,6 +336,7 @@ public sealed class GameLoop : Component
 		bossWon = false;
 		InBossFight = false;
 		lastHurtAt = -99f;
+		PainYaw = 0f;
 		invulnUntil = 0f;
 		ClearPause();
 		MenuView = MenuPage.Title;
@@ -742,6 +744,7 @@ public sealed class GameLoop : Component
 		BurnedRounds = 0;
 		invulnUntil = 0f;
 		lastHurtAt = -99f;
+		PainYaw = 0f;
 		pendingBoss = false;
 		InBossFight = false;
 		bossWon = false;
@@ -1072,7 +1075,7 @@ public sealed class GameLoop : Component
 
 			if ( (enemy.Flat - Runner.Flat).Length <= enemy.Radius + reach )
 			{
-				Hurt();
+				Hurt( enemy.Flat );
 				return;
 			}
 		}
@@ -1085,17 +1088,18 @@ public sealed class GameLoop : Component
 			if ( (shot.Flat - Runner.Flat).Length <= shot.Radius + reach )
 			{
 				shot.GameObject.Destroy();
-				Hurt();
+				Hurt( shot.Flat );
 				return;
 			}
 		}
 	}
 
-	void Hurt()
+	void Hurt( Vector2 from )
 	{
 		if ( TryDodge() )
 			return;
 
+		PainYaw = YawToward( from );
 		Health--;
 		lastHurtAt = Time.Now;
 		invulnUntil = Time.Now + GameSettings.Run.IFrames;
@@ -1136,10 +1140,34 @@ public sealed class GameLoop : Component
 
 	public void TryHurt()
 	{
+		TryHurt( Runner.IsValid() ? Runner.Flat : Vector2.Zero );
+	}
+
+	public void TryHurt( Vector2 from )
+	{
 		if ( Time.Now < invulnUntil || (Runner.IsValid() && Runner.Dashing) )
 			return;
 
-		Hurt();
+		Hurt( from );
+	}
+
+	float YawToward( Vector2 from )
+	{
+		if ( !Runner.IsValid() )
+			return 0f;
+
+		var forward = Aim.IsValid() ? Aim.Direction : Runner.Tangent;
+		if ( forward.Length < 0.01f )
+			forward = Runner.Tangent;
+
+		var hit = from - Runner.Flat;
+		if ( hit.Length < 0.01f || forward.Length < 0.01f )
+			return 0f;
+
+		var face = forward.Normal;
+		var to = hit.Normal;
+		var yaw = MathX.RadianToDegree( MathF.Atan2( face.x * to.y - face.y * to.x, face.x * to.x + face.y * to.y ) );
+		return Math.Clamp( yaw, -70f, 70f );
 	}
 
 	public void NoteArmor()

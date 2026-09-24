@@ -211,7 +211,7 @@ public sealed class ArenaBoss : Component
 		var reach = loop.Runner.PlayerRadius + GameSettings.Boss.Core.PulseReachPad;
 
 		if ( MathF.Abs( pulseRadius - loop.Runner.Radius ) <= reach )
-			loop.TryHurt();
+			loop.TryHurt( Vector2.Zero );
 
 		if ( pulseRadius >= loop.Geometry.TrackOuter + GameSettings.Boss.Core.PulseEndPad )
 		{

@@ -70,6 +70,7 @@
 
 			<div class="tray-frame">
 				<img class="tray-back" src="ui/Arena UI/back.png" />
+				<HudFace class="face-slot" Loop="@Loop"></HudFace>
 				<div class="health-slot">
 					<label class="health-key">@GameSettings.Text.Hud.Health</label>
 					<div class="hp-row">
@@ -3145,6 +3146,17 @@
 		top: 0px;
 		width: 100%;
 		height: 100%;
+	}
+
+	.face-slot {
+		position: absolute;
+		left: 11.36%;
+		top: 14.34%;
+		width: 9.47%;
+		height: 70.63%;
+		overflow: hidden;
+		pointer-events: none;
+		z-index: 2;
 	}
 
 	.health-slot {

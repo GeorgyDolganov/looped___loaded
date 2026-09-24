@@ -35,7 +35,7 @@ public static class RoundCombat
 			return;
 
 		if ( (loop.Runner.Flat - origin).Length <= radius + loop.Runner.PlayerRadius )
-			loop.TryHurt();
+			loop.TryHurt( origin );
 	}
 
 	public static List<Vector3> Circle( ArenaGeometry geometry, Vector2 flat, float radius )
