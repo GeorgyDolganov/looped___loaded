@@ -40,9 +40,15 @@ public sealed class Enemy : Component
 
 	const float BarInset = 3f;
 	const int PipLimit = 10;
+	const string ShieldModelPath = "models/sheild.vmdl";
+	const float ShieldHeight = 220f;
+	const float ShieldGap = 36f;
 
 	GameObject body;
 	GameObject shieldPlate;
+	ModelRenderer shieldMesh;
+	float shieldReach = 58f;
+	float shieldLift = 120f;
 	PolyLine outline;
 	PolyLine hpBack;
 	PolyLine hpFill;
@@ -54,6 +60,8 @@ public sealed class Enemy : Component
 	Vector2 moveVelocity;
 	float hitAt = -99f;
 	readonly List<(ModelRenderer Renderer, Color Tint)> dressed = new();
+	readonly List<Vector3> circle = new( 21 );
+	readonly List<Vector3> span = new( 2 );
 	float freezeUntil;
 	float freezeScale = 1f;
 	float shotAt = -99f;
@@ -147,9 +155,6 @@ public sealed class Enemy : Component
 		if ( Kind != EnemyKind.Shield && Kind != EnemyKind.Shardguard )
 			return false;
 
-		if ( source is not null && source.ConsumeShred() )
-			return false;
-
 		if ( source is not null && source.Flight.IgnoreArmor )
 			return false;
 
@@ -157,7 +162,7 @@ public sealed class Enemy : Component
 			return false;
 
 		var facing = ShieldFacing;
-		if ( ArenaGeometry.Dot( incoming, facing ) >= GameSettings.Enemies.ShieldBlockDot )
+		if ( ArenaGeometry.Dot( incoming, facing ) >= -0.22f )
 			return false;
 
 		if ( Kind != EnemyKind.Shardguard )
@@ -267,20 +272,22 @@ public sealed class Enemy : Component
 
 		var world = Arena.Geometry.ToPlayWorld( Flat );
 		ArenaSounds.Hit();
+
+		if ( Health <= 0 )
+		{
+			Die();
+			return;
+		}
+
 		ArenaSounds.Flesh( world );
 		ImpactFlash.Spawn( Scene, world, HurtTint, 1.1f );
-
-		if ( Health > 0 )
-			return;
-
-		Die();
 	}
 
 	void Die()
 	{
 		Alive = false;
 
-		GibChunk.Burst( Loop, Scene, hobo, WorldPosition, lastImpulse, LiveTint, Radius, shieldPlate );
+		GibChunk.Burst( Loop, Scene, hobo, WorldPosition, lastImpulse, LiveTint, Radius );
 
 		if ( body.IsValid() )
 			body.Enabled = false;
@@ -295,6 +302,8 @@ public sealed class Enemy : Component
 
 		if ( !Loop.IsValid() )
 			return;
+
+		Loop.Retire( this );
 
 		if ( Locations.IsBoss( Kind ) )
 			Loop.BeatBoss();
@@ -331,11 +340,9 @@ public sealed class Enemy : Component
 		if ( !body.IsValid() )
 			return;
 
-		var renderers = body.GetComponentsInChildren<ModelRenderer>( true );
-		if ( dressed.Count != renderers.Count() )
+		if ( dressed.Count == 0 )
 		{
-			dressed.Clear();
-			foreach ( var renderer in renderers )
+			foreach ( var renderer in body.GetComponentsInChildren<ModelRenderer>( true ) )
 				dressed.Add( (renderer, renderer.Tint) );
 		}
 
@@ -463,7 +470,7 @@ public sealed class Enemy : Component
 
 	void Seek( Vector2 goal, float speed, float minRadius, float maxRadius )
 	{
-		Flat = drive.Step( Arena.Geometry, Flat, goal, Radius, speed, minRadius, maxRadius );
+		Flat = drive.Step( Arena.Geometry, Flat, goal, Radius, speed, minRadius, maxRadius, Loop.Enemies.Count );
 	}
 
 	void MoveShooter( float scale, float inner )
@@ -640,16 +647,15 @@ public sealed class Enemy : Component
 			shieldPlate.Enabled = true;
 			var plateRotation = Ease( shieldPlate.WorldRotation, Blocks.FlatFacing( ShieldFacing ), 10f );
 			var facing = plateRotation.Forward;
-			shieldPlate.WorldPosition = WorldPosition + facing.WithZ( 0f ) * 58f + Vector3.Up * 120f;
+			shieldPlate.WorldPosition = WorldPosition + facing.WithZ( 0f ) * shieldReach + Vector3.Up * shieldLift;
 			shieldPlate.WorldRotation = plateRotation;
 
-			var plate = shieldPlate.GetComponent<ModelRenderer>();
-			if ( plate.IsValid() )
+			if ( shieldMesh.IsValid() )
 			{
 				var baseTint = Kind == EnemyKind.Shardguard
-					? (plateHits > 0 ? GlassCrackPlate : ShardguardTint * 1.25f)
-					: ShieldTint * 1.3f;
-				plate.Tint = Color.Lerp( baseTint, HurtTint, flash );
+					? Color.Lerp( Color.White, plateHits > 0 ? GlassCrackPlate : ShardguardTint, plateHits > 0 ? 0.35f : 0.45f )
+					: Color.White;
+				shieldMesh.Tint = Color.Lerp( baseTint, HurtTint, flash );
 			}
 		}
 
@@ -658,10 +664,43 @@ public sealed class Enemy : Component
 			outline.HeadTint = tint;
 			outline.TailTint = tint;
 			outline.Apply();
-			outline.SetPoints( BuildCircle() );
+			outline.SetPoints( CirclePoints() );
 		}
 
 		PaintHealth( flash );
+	}
+
+	void BuildShield()
+	{
+		shieldPlate = Scene.CreateObject();
+		shieldPlate.Name = "Shield";
+		shieldPlate.Parent = GameObject;
+
+		var meshObject = Scene.CreateObject();
+		meshObject.Name = "Shield Mesh";
+		meshObject.Parent = shieldPlate;
+
+		shieldMesh = meshObject.AddComponent<ModelRenderer>();
+		var model = Model.Load( ShieldModelPath );
+		shieldMesh.Model = model;
+		shieldMesh.MaterialOverride = Material.Load( "materials/sheild/sheild.vmat" );
+		shieldMesh.Tint = Color.White;
+		shieldMesh.RenderType = ModelRenderer.ShadowRenderType.On;
+
+		var bounds = model.IsValid() ? model.Bounds : default;
+		var height = bounds.Size.z;
+		var scale = height > 1f ? ShieldHeight / height : 1f;
+		var yaw = Rotation.FromYaw( -90f );
+		meshObject.LocalRotation = yaw;
+		meshObject.LocalScale = Vector3.One * scale;
+		meshObject.LocalPosition = -(yaw * bounds.Center) * scale;
+
+		shieldReach = ShieldGap + bounds.Size.y * scale * 0.5f;
+		shieldLift = height * scale * 0.5f + 8f;
+
+		var facing = Blocks.FlatFacing( ShieldFacing );
+		shieldPlate.WorldRotation = facing;
+		shieldPlate.WorldPosition = WorldPosition + facing.Forward * shieldReach + Vector3.Up * shieldLift;
 	}
 
 	void RebuildVisuals()
@@ -671,6 +710,7 @@ public sealed class Enemy : Component
 
 		body?.Destroy();
 		shieldPlate?.Destroy();
+		shieldMesh = null;
 		outline?.GameObject?.Destroy();
 		hpBack?.GameObject?.Destroy();
 		hpFill?.GameObject?.Destroy();
@@ -699,10 +739,7 @@ public sealed class Enemy : Component
 		headTop = HoboLook.TopOf( height );
 
 		if ( Kind == EnemyKind.Shield || Kind == EnemyKind.Shardguard )
-		{
-			var plateTint = Kind == EnemyKind.Shardguard ? ShardguardTint * 1.25f : ShieldTint * 1.3f;
-			shieldPlate = Blocks.SpawnBox( GameObject, "Shield", WorldPosition + Vector3.Up * 120f, Blocks.FlatFacing( ShieldFacing ), new Vector3( 28f, 160f, 220f ), plateTint );
-		}
+			BuildShield();
 
 		var tint = LiveTint;
 
@@ -766,7 +803,7 @@ public sealed class Enemy : Component
 		hpBack.HeadTint = BarBack;
 		hpBack.TailTint = BarBack;
 		hpBack.Apply();
-		hpBack.SetPoints( new List<Vector3> { left, right } );
+		ShowSpan( hpBack, left, right );
 
 		if ( Health <= 0 || ratio <= 0f )
 		{
@@ -781,7 +818,7 @@ public sealed class Enemy : Component
 		hpFill.HeadTint = tint;
 		hpFill.TailTint = tint;
 		hpFill.Apply();
-		hpFill.SetPoints( new List<Vector3> { left + front + edge, left + front + edge + rot.Right * (span * ratio) } );
+		ShowSpan( hpFill, left + front + edge, left + front + edge + rot.Right * (span * ratio) );
 
 		PaintPips( rot, left + edge, right - edge, MaxHealth );
 	}
@@ -815,8 +852,25 @@ public sealed class Enemy : Component
 			pip.HeadTint = BarBack;
 			pip.TailTint = BarBack;
 			pip.Apply();
-			pip.SetPoints( new List<Vector3> { at + up, at - up } );
+			ShowSpan( pip, at + up, at - up );
 		}
+	}
+
+	void ShowSpan( PolyLine line, Vector3 from, Vector3 to )
+	{
+		if ( span.Count != 2 )
+		{
+			span.Clear();
+			span.Add( from );
+			span.Add( to );
+		}
+		else
+		{
+			span[0] = from;
+			span[1] = to;
+		}
+
+		line.SetPoints( span );
 	}
 
 	void ClearBar()
@@ -843,17 +897,22 @@ public sealed class Enemy : Component
 		return ratio > GameSettings.Boss.Phase3Health ? BarMid : BarLow;
 	}
 
-	List<Vector3> BuildCircle()
+	List<Vector3> CirclePoints()
 	{
 		const int segments = 20;
-		var points = new List<Vector3>( segments + 1 );
+		if ( circle.Count != segments + 1 )
+		{
+			circle.Clear();
+			for ( var n = 0; n <= segments; n++ )
+				circle.Add( Vector3.Zero );
+		}
 
 		for ( var i = 0; i <= segments; i++ )
 		{
 			var angle = MathF.Tau * i / segments;
-			points.Add( Arena.Geometry.ToWorld( Flat + ArenaGeometry.FromAngle( angle ) * Radius, 14f ) );
+			circle[i] = Arena.Geometry.ToWorld( Flat + ArenaGeometry.FromAngle( angle ) * Radius, 14f );
 		}
 
-		return points;
+		return circle;
 	}
 }

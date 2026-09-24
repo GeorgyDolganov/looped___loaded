@@ -913,9 +913,6 @@
 			}
 
 			var body = parts.Count == 0 ? GameSettings.Text.Hud.Plain : string.Join( "  ", parts );
-			if ( Loop.BloodShields > 0 )
-				body += $"  {GameSettings.Text.F( GameSettings.Text.Hud.Shield, Loop.BloodShields )}";
-
 			return $"{body}  ×{Loop.Threat:0.00}";
 		}
 	}

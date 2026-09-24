@@ -9,8 +9,8 @@ public sealed class BlastBurst : Component
 	[Property] public float Radius { get; set; } = 48f;
 	[Property] public Color Tint { get; set; } = Color.White;
 
-	const int RingSegs = 32;
-	const int Spokes = 12;
+	const int RingSegs = 12;
+	const int Spokes = 6;
 
 	PolyLine shock;
 	PolyLine edge;
@@ -18,6 +18,8 @@ public sealed class BlastBurst : Component
 	readonly List<PolyLine> spokes = new();
 	PointLight glow;
 	float born;
+	readonly List<Vector3> ring = new( RingSegs + 1 );
+	readonly List<Vector3> segment = new( 2 );
 	float shockWidth;
 	float edgeWidth;
 	float heartWidth;
@@ -40,7 +42,7 @@ public sealed class BlastBurst : Component
 		born = Time.Now;
 		origin = WorldPosition + Vector3.Up * 6f;
 
-		var bulk = Math.Clamp( Radius / 52f, 0.9f, 2.4f );
+		var bulk = Math.Clamp( Radius / 40f, 1.2f, 3.2f );
 		shockWidth = 16f * bulk;
 		edgeWidth = 7f * bulk;
 		heartWidth = 20f * bulk;
@@ -68,7 +70,7 @@ public sealed class BlastBurst : Component
 
 		var grow = 1f - MathF.Pow( 1f - Math.Clamp( t / 0.4f, 0f, 1f ), 3f );
 		var fade = t < 0.42f ? 1f : 1f - (t - 0.42f) / 0.58f;
-		var shockRadius = MathF.Max( 10f, Radius * MathF.Max( 0.12f, grow ) );
+		var shockRadius = MathF.Max( 10f, Radius * (0.22f + 1.35f * grow) );
 		var heartRadius = MathF.Max( 8f, Radius * (0.34f * (1f - t) + 0.06f) );
 
 		var shockTint = Color.Lerp( Hot, Tint, Math.Clamp( t * 1.4f, 0f, 1f ) );
@@ -126,31 +128,49 @@ public sealed class BlastBurst : Component
 		if ( !line.IsValid() )
 			return;
 
-		var points = new List<Vector3>( RingSegs + 1 );
+		if ( ring.Count != RingSegs + 1 )
+		{
+			ring.Clear();
+			for ( var n = 0; n <= RingSegs; n++ )
+				ring.Add( Vector3.Zero );
+		}
+
 		for ( var i = 0; i <= RingSegs; i++ )
 		{
 			var ang = MathF.Tau * i / RingSegs;
-			points.Add( origin + new Vector3( MathF.Cos( ang ) * radius, MathF.Sin( ang ) * radius, 0f ) );
+			ring[i] = origin + new Vector3( MathF.Cos( ang ) * radius, MathF.Sin( ang ) * radius, 0f );
 		}
 
 		line.HeadTint = color;
 		line.TailTint = color;
 		line.HeadWidth = width;
 		line.TailWidth = width;
-		line.SetPoints( points );
+		line.SetPoints( ring );
 		line.Apply();
 	}
 
-	static void PaintSegment( PolyLine line, Vector3 from, Vector3 to, Color color, float width )
+	void PaintSegment( PolyLine line, Vector3 from, Vector3 to, Color color, float width )
 	{
 		if ( !line.IsValid() )
 			return;
+
+		if ( segment.Count != 2 )
+		{
+			segment.Clear();
+			segment.Add( from );
+			segment.Add( to );
+		}
+		else
+		{
+			segment[0] = from;
+			segment[1] = to;
+		}
 
 		line.HeadTint = color;
 		line.TailTint = color.WithAlpha( color.a * 0.25f );
 		line.HeadWidth = width;
 		line.TailWidth = MathF.Max( 1.5f, width * 0.28f );
-		line.SetPoints( new List<Vector3> { from, to } );
+		line.SetPoints( segment );
 		line.Apply();
 	}
 

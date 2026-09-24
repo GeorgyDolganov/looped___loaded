@@ -8,7 +8,6 @@ public sealed class ArenaCamera : Component
 	[Property] public RingRunner Runner { get; set; }
 	[Property] public float Pitch { get; set; } = 68f;
 	[Property] public float Yaw { get; set; } = 90f;
-	[Property] public float Distance { get; set; } = 4000f;
 	[Property] public float CityFrame { get; set; } = 1.7f;
 	[Property] public float FrameMargin { get; set; } = 1.24f;
 	[Property] public float FollowBias { get; set; } = 0.14f;
@@ -43,6 +42,7 @@ public sealed class ArenaCamera : Component
 		if ( !camera.IsValid() )
 			return;
 
+		camera.IsMainCamera = true;
 		camera.BackgroundColor = Backdrop;
 
 		var city = Loop.IsValid() && Loop.InCity && City.IsValid();
@@ -62,7 +62,7 @@ public sealed class ArenaCamera : Component
 			target = new Vector3( flat.x, flat.y, 0f );
 		}
 
-		Frame( target, Distance, false );
+		Frame( target, PullFor( Arena.Geometry.BoundaryRadius * 2f * FrameMargin ), false );
 		ShakeIfHurt();
 	}
 

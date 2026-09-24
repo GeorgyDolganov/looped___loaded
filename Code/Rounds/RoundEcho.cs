@@ -91,6 +91,22 @@ public sealed class RoundEcho : Component
 
 	void Strike()
 	{
+		if ( !loop.IsValid() )
+			return;
+
+		loop.BeginEnemyScan();
+		try
+		{
+			StrikeBodies();
+		}
+		finally
+		{
+			loop.EndEnemyScan();
+		}
+	}
+
+	void StrikeBodies()
+	{
 		foreach ( var enemy in loop.Enemies )
 		{
 			if ( !enemy.IsValid() || !enemy.Alive || struck.Contains( enemy ) )

@@ -16,11 +16,15 @@ public sealed class EnemyDrive
 	const float SideHold = 0.6f;
 	const float ProbeSpan = 0.7f;
 
+	const int CrowdLod = 12;
+	const int AvoidStride = 3;
+
 	float side;
 	float sideUntil;
 	float probeAt;
 	Vector2 probeMark;
 	float pace;
+	int avoidFrame = -1;
 
 	public void Reset( Vector2 heading )
 	{
@@ -33,6 +37,7 @@ public sealed class EnemyDrive
 		probeAt = 0f;
 		probeMark = Vector2.Zero;
 		pace = 0f;
+		avoidFrame = -1;
 	}
 
 	public void Shift( float dt )
@@ -52,7 +57,7 @@ public sealed class EnemyDrive
 		probeMark = flat;
 	}
 
-	public Vector2 Step( ArenaGeometry geo, Vector2 flat, Vector2 goal, float radius, float speed, float minRadius, float maxRadius )
+	public Vector2 Step( ArenaGeometry geo, Vector2 flat, Vector2 goal, float radius, float speed, float minRadius, float maxRadius, int crowd )
 	{
 		var dt = Time.Delta;
 		if ( dt <= 0.0001f )
@@ -63,10 +68,17 @@ public sealed class EnemyDrive
 		var goalDir = span > 1f ? toGoal.Normal : Heading;
 		var look = Math.Clamp( radius * 2.2f + speed * 0.45f, 150f, 380f );
 		var reach = MathF.Min( look, MathF.Max( radius + 30f, span ) );
-		var want = Avoid( geo, flat, goalDir, radius, reach );
-		want = Band( want, flat, radius, minRadius, maxRadius );
 
-		Heading = Turn( Heading, want, TurnRate * dt );
+		FxBudget.Touch();
+		var want = Heading;
+		var refresh = crowd < CrowdLod || avoidFrame < 0 || FxBudget.Frame - avoidFrame >= AvoidStride;
+		if ( refresh )
+		{
+			want = Avoid( geo, flat, goalDir, radius, reach );
+			want = Band( want, flat, radius, minRadius, maxRadius );
+			Heading = Turn( Heading, want, TurnRate * dt );
+			avoidFrame = FxBudget.Frame;
+		}
 
 		var clearance = geo.Clearance( flat, Heading, radius, reach );
 		var target = speed

@@ -246,7 +246,6 @@
             "component_type": "CityBoard"
           },
           "CityFrame": 2,
-          "Distance": 4000,
           "FollowBias": 0.14,
           "FollowSmoothing": 6,
           "FrameMargin": 1.24,

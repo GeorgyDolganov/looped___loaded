@@ -10,6 +10,8 @@ public sealed class LaserBeam : Component
 	Vector2 origin;
 	readonly List<PolyLine> lines = new();
 	readonly List<(Vector2 A, Vector2 B)> rays = new();
+	readonly List<Enemy> caught = new();
+	readonly List<Vector2> caughtAt = new();
 	readonly Dictionary<Enemy, float> nextHit = new();
 	PolyLine splashRing;
 	Vector2 splashAt;
@@ -52,6 +54,8 @@ public sealed class LaserBeam : Component
 	void Build( Vector2 dir )
 	{
 		rays.Clear();
+		caught.Clear();
+		caughtAt.Clear();
 		var count = Math.Max( 1, recipe.Count );
 		var cone = recipe.Cone;
 		var geometry = loop.Geometry;
@@ -61,6 +65,7 @@ public sealed class LaserBeam : Component
 		var range = recipe.BeamRange;
 		if ( recipe.PointAim && loop.Aim.IsValid() )
 			range = MathF.Min( range, (loop.Aim.Cursor - origin).Length );
+		var width = MathF.Max( 8f, recipe.BeamWidth );
 		splashLive = false;
 
 		for ( var i = 0; i < count; i++ )
@@ -68,13 +73,28 @@ public sealed class LaserBeam : Component
 			var yaw = ShotSpread.Yaw( i, count, cone );
 			var heading = ShotSpread.Turn( dir, yaw );
 			var end = origin + heading * range;
-			if ( geometry is not null && geometry.TraceRay( origin, heading, range, out var hit ) )
+			var blocked = false;
+			var wall = default( ArenaHit );
+			if ( geometry is not null && geometry.TraceRay( origin, heading, range, out wall ) )
 			{
-				end = hit.Position;
-				if ( hit.Kind == WallKind.Panel && loop.Arena.IsValid() )
-					loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, 0f, false );
-				else if ( hit.Kind == WallKind.Spin && loop.Arena.IsValid() )
-					loop.Arena.PushSpinner( hit.WallIndex, hit.Position, heading );
+				end = wall.Position;
+				blocked = true;
+			}
+
+			var storm = LightningPath.Storm( origin, end, rank, seed + i * 31 );
+			if ( FirstTouch( loop, storm, origin, width, out var body, out var touch ) )
+			{
+				CutPast( storm, origin, heading, touch );
+				caught.Add( body );
+				caughtAt.Add( touch );
+				end = touch;
+			}
+			else if ( blocked && loop.Arena.IsValid() )
+			{
+				if ( wall.Kind == WallKind.Panel )
+					loop.Arena.StrikeBoard( wall.WallIndex, wall.Position, wall.Normal, 0f, false );
+				else if ( wall.Kind == WallKind.Spin )
+					loop.Arena.PushSpinner( wall.WallIndex, wall.Position, heading );
 			}
 
 			if ( i == count / 2 )
@@ -83,7 +103,7 @@ public sealed class LaserBeam : Component
 				splashLive = recipe.Splash > 1f;
 			}
 
-			foreach ( var bolt in LightningPath.Storm( origin, end, rank, seed + i * 31 ) )
+			foreach ( var bolt in storm )
 				bolts.Add( bolt );
 		}
 
@@ -99,34 +119,20 @@ public sealed class LaserBeam : Component
 
 	void Strike()
 	{
-		var width = MathF.Max( 8f, recipe.BeamWidth );
 		var tick = MathF.Max( 0.05f, recipe.BeamTick );
 		var hit = Math.Max( 1, recipe.BeamHit );
 		Enemy nearest = null;
 		var nearestDist = float.MaxValue;
 		Vector2 nearestAt = default;
 
-		foreach ( var enemy in loop.Enemies )
+		for ( var i = 0; i < caught.Count; i++ )
 		{
+			var enemy = caught[i];
 			if ( !enemy.IsValid() || !enemy.Alive )
 				continue;
 
-			var along = false;
-			Vector2 hitAt = enemy.Flat;
-			foreach ( var ray in rays )
-			{
-				if ( RoundCombat.PointSegment( enemy.Flat, ray.A, ray.B ) > width + enemy.Radius )
-					continue;
-
-				along = true;
-				hitAt = Closest( enemy.Flat, ray.A, ray.B );
-				break;
-			}
-
-			if ( !along )
-				continue;
-
-			var incoming = (hitAt - origin);
+			var hitAt = caughtAt[i];
+			var incoming = hitAt - origin;
 			if ( incoming.Length < 1f )
 				incoming = loop.Aim.Direction;
 			else
@@ -232,15 +238,160 @@ public sealed class LaserBeam : Component
 		splashRing.SetPoints( RoundCombat.Circle( loop.Geometry, splashAt, recipe.Splash ) );
 	}
 
-	static Vector2 Closest( Vector2 point, Vector2 a, Vector2 b )
+	public static Vector2 Reach( GameLoop loop, ArenaGeometry geometry, Vector2 origin, Vector2 heading, float range, float width )
 	{
-		var span = b - a;
-		var length = span.Length;
-		if ( length < 0.001f )
-			return a;
+		if ( range <= 1f || heading.Length <= 0.01f )
+			return origin;
 
-		var t = Math.Clamp( ArenaGeometry.Dot( point - a, span ) / (length * length), 0f, 1f );
-		return a + span * t;
+		var dir = heading.Normal;
+		var end = origin + dir * range;
+		if ( geometry is not null && geometry.TraceRay( origin, dir, range, out var hit ) )
+			end = hit.Position;
+
+		return FirstBody( loop, origin, end, width, out _ );
+	}
+
+	static Vector2 FirstBody( GameLoop loop, Vector2 from, Vector2 to, float width, out Enemy enemy )
+	{
+		enemy = null;
+		var span = to - from;
+		var length = span.Length;
+		if ( !loop.IsValid() || length < 1f )
+			return to;
+
+		var dir = span / length;
+		var best = length;
+		var at = to;
+		foreach ( var candidate in loop.Enemies )
+		{
+			if ( !candidate.IsValid() || !candidate.Alive )
+				continue;
+
+			var reach = width + candidate.Radius;
+			var rel = candidate.Flat - from;
+			var along = ArenaGeometry.Dot( rel, dir );
+			var perp = (rel - dir * along).Length;
+			if ( perp > reach )
+				continue;
+
+			var offset = MathF.Sqrt( MathF.Max( 0f, reach * reach - perp * perp ) );
+			var entry = along - offset;
+			if ( entry < 0f )
+			{
+				if ( along + offset < 0f )
+					continue;
+				entry = 0f;
+			}
+
+			if ( entry > length || entry >= best )
+				continue;
+
+			best = entry;
+			enemy = candidate;
+			at = from + dir * entry;
+		}
+
+		return enemy.IsValid() ? at : to;
+	}
+
+	static bool FirstTouch( GameLoop loop, List<List<Vector2>> bolts, Vector2 origin, float width, out Enemy enemy, out Vector2 at )
+	{
+		enemy = null;
+		at = default;
+		if ( !loop.IsValid() )
+			return false;
+
+		var best = float.MaxValue;
+		foreach ( var bolt in bolts )
+		{
+			for ( var i = 1; i < bolt.Count; i++ )
+			{
+				var a = bolt[i - 1];
+				var b = bolt[i];
+				var span = b - a;
+				var length = span.Length;
+				if ( length < 0.001f )
+					continue;
+
+				var dir = span / length;
+				foreach ( var candidate in loop.Enemies )
+				{
+					if ( !candidate.IsValid() || !candidate.Alive )
+						continue;
+
+					var reach = width + candidate.Radius;
+					var rel = candidate.Flat - a;
+					var along = ArenaGeometry.Dot( rel, dir );
+					var perp = (rel - dir * along).Length;
+					if ( perp > reach )
+						continue;
+
+					var offset = MathF.Sqrt( MathF.Max( 0f, reach * reach - perp * perp ) );
+					var entry = along - offset;
+					if ( entry < 0f )
+					{
+						if ( along + offset < 0f )
+							continue;
+						entry = 0f;
+					}
+					else if ( entry > length )
+						continue;
+
+					var touch = a + dir * entry;
+					var dist = (touch - origin).Length;
+					if ( dist >= best )
+						continue;
+
+					best = dist;
+					enemy = candidate;
+					at = touch;
+				}
+			}
+		}
+
+		return enemy.IsValid();
+	}
+
+	static void CutPast( List<List<Vector2>> bolts, Vector2 origin, Vector2 heading, Vector2 stop )
+	{
+		var limit = ArenaGeometry.Dot( stop - origin, heading );
+		for ( var b = bolts.Count - 1; b >= 0; b-- )
+		{
+			var bolt = bolts[b];
+			if ( bolt.Count == 0 || ArenaGeometry.Dot( bolt[0] - origin, heading ) > limit + 0.75f )
+			{
+				bolts.RemoveAt( b );
+				continue;
+			}
+
+			var kept = new List<Vector2> { bolt[0] };
+			for ( var i = 1; i < bolt.Count; i++ )
+			{
+				var a = bolt[i - 1];
+				var point = bolt[i];
+				var alongA = ArenaGeometry.Dot( a - origin, heading );
+				var alongB = ArenaGeometry.Dot( point - origin, heading );
+				if ( alongB <= limit )
+				{
+					kept.Add( point );
+					continue;
+				}
+
+				var span = alongB - alongA;
+				var t = MathF.Abs( span ) > 0.001f ? (limit - alongA) / span : 0f;
+				kept.Add( a + (point - a) * Math.Clamp( t, 0f, 1f ) );
+				break;
+			}
+
+			if ( kept.Count < 2 )
+			{
+				bolts.RemoveAt( b );
+				continue;
+			}
+
+			bolt.Clear();
+			bolt.AddRange( kept );
+		}
 	}
 }
 

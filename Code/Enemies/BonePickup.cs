@@ -18,14 +18,20 @@ public sealed class BonePickup : Component
 	float scatterUntil;
 	float speed;
 	bool taken;
-	PointLight glow;
 
 	public static void Spill( GameLoop host, Vector2 origin, int scrap )
 	{
 		if ( !host.IsValid() || scrap <= 0 )
 			return;
 
-		var count = Math.Clamp( scrap, 1, 7 );
+		var room = FxBudget.BoneRoom( host.Bones.Count );
+		var count = Math.Min( Math.Clamp( scrap, 1, 7 ), room );
+		if ( count <= 0 )
+		{
+			host.KeepScrap( scrap );
+			return;
+		}
+
 		var share = scrap / count;
 		var rest = scrap % count;
 
@@ -37,6 +43,7 @@ public sealed class BonePickup : Component
 			var bone = go.AddComponent<BonePickup>();
 			bone.Arm( host, origin, share + (i < rest ? 1 : 0), i, count );
 			host.Bones.Add( bone );
+			FxBudget.NoteBone();
 		}
 	}
 
@@ -86,10 +93,6 @@ public sealed class BonePickup : Component
 		var headB = Blocks.SpawnBox( GameObject, "Head B", WorldPosition, Rotation.Identity, new Vector3( 11f, 12f, 9f ), Tint, false );
 		headB.LocalPosition = Vector3.Backward * 11f;
 		headB.LocalRotation = Rotation.Identity;
-
-		glow = GameObject.AddComponent<PointLight>();
-		glow.LightColor = Tint * 3.2f;
-		glow.Radius = 180f;
 	}
 
 	protected override void OnUpdate()
@@ -149,12 +152,6 @@ public sealed class BonePickup : Component
 		var look = velocity.Length > 8f ? velocity : Vector2.Right;
 		WorldPosition = new Vector3( Flat.x, Flat.y, height + hop + 10f );
 		WorldRotation = Blocks.FlatFacing( look ) * Rotation.FromRoll( spin * 42f );
-
-		if ( glow.IsValid() )
-		{
-			var pulse = 0.72f + 0.28f * MathF.Sin( Time.Now * 9f + spin );
-			glow.LightColor = Tint * (2.6f * pulse);
-		}
 	}
 
 	void Catch()

@@ -1,7 +1,6 @@
 {
   "Hud": {
     "Plain": "NO TRINKETS",
-    "Shield": "SHIELD {0}",
     "Scrap": "BONES",
     "Stash": "STASHED BIOMASS",
     "Best": "BEST",
@@ -153,7 +152,6 @@
     "StartRun": "ONE LAP. ONE ROUND. TAKE BIOMASS OUT OR GO AGAIN.",
     "TargetDown": "TARGET DOWN",
     "ScrapGain": "+{0} BONES  ·  {1}",
-    "RoundChamberedShield": "PROJECTILE {0} CHAMBERED  ·  SHIELD",
     "RoundChamberedHits": "PROJECTILE {0} CHAMBERED  +{1}",
     "RoundChambered": "PROJECTILE {0} CHAMBERED",
     "RoundStatus": "PROJECTILE {0} {1}",
@@ -163,9 +161,8 @@
     "LostOnRing": "PROJECTILE LOST ON THE RING",
     "Recovered": "RECOVERED",
     "Linked": "LINKED",
-    "ShieldLeft": "SHIELD  ·  {0} LEFT",
-    "ShieldBroke": "SHIELD BROKE",
     "HealthLeft": "-1  ·  {0} LEFT",
+    "Dodged": "DODGED",
     "RunOver": "RUN OVER",
     "RingClear": "ARENA CLEAR",
     "FinalClear": "NO MORE PROJECTILES  ·  ×2",
@@ -271,6 +268,16 @@
       "Title": "RUSH",
       "Blurb": "Shots fly faster. Longer reload."
     },
+    "Dodge": {
+      "Code": "DODGE",
+      "Title": "DODGE",
+      "Blurb": "Slip a hit. 10% / 20% / 32%."
+    },
+    "Snap": {
+      "Code": "SNAP",
+      "Title": "SNAP",
+      "Blurb": "Reload only. −20% / −36% / −50%."
+    },
     "Split": {
       "Code": "SPLIT",
       "Title": "SPLIT",
@@ -299,7 +306,7 @@
     "Meat": {
       "Code": "MEAT",
       "Title": "MEAT",
-      "Blurb": "+1 dmg inside 140. Zero after 280."
+      "Blurb": "+1 dmg inside 140. -100% range."
     },
     "Rico": {
       "Code": "RICO",
@@ -334,7 +341,7 @@
     "Waste": {
       "Code": "WASTE",
       "Title": "WASTE",
-      "Blurb": "+1 dmg inside 80. Zero after 150."
+      "Blurb": "+1 dmg inside 80. -100% range."
     },
     "Breach": {
       "Code": "BREACH",
@@ -354,7 +361,7 @@
     "Bloom": {
       "Code": "BLOOM",
       "Title": "BLOOM",
-      "Blurb": "+40 splash radius. Reload +0.30s. Locks out LANCE."
+      "Blurb": "+80 splash radius. Reload +0.30s. Locks out LANCE."
     },
     "Scorch": {
       "Code": "SCORCH",
@@ -369,7 +376,7 @@
     "Crater": {
       "Code": "CRATER",
       "Title": "CRATER",
-      "Blurb": "Fat body. +28 splash. No bounce. Slower. Locks out CLUSTER."
+      "Blurb": "Fat body. +56 splash. No bounce. Slower. Locks out CLUSTER."
     },
     "Spot": {
       "Code": "SPOT",
@@ -384,7 +391,7 @@
     "Awl": {
       "Code": "AWL",
       "Title": "AWL",
-      "Blurb": "Ignores shields and the core face. Slower. Reload +0.20s. Locks out MASS."
+      "Blurb": "Ignores the core face. Slower. Reload +0.20s. Locks out MASS."
     },
     "Ram": {
       "Code": "RAM",

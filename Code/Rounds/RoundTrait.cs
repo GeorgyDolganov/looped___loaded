@@ -56,7 +56,9 @@ public enum RoundTrait
 	Spool,
 	Sight,
 	Bite,
-	Link
+	Link,
+	Dodge,
+	Snap
 }
 
 public static class RoundTraits
@@ -68,7 +70,7 @@ public static class RoundTraits
 		RoundTrait.Gape, RoundTrait.Double, RoundTrait.Kick, RoundTrait.Stun,
 		RoundTrait.Heap, RoundTrait.Waste, RoundTrait.Breach, RoundTrait.Slug,
 		RoundTrait.Buck, RoundTrait.Bore, RoundTrait.Drum, RoundTrait.Warhead, RoundTrait.Lash, RoundTrait.Pin,
-		RoundTrait.Rush,
+		RoundTrait.Rush, RoundTrait.Dodge, RoundTrait.Snap,
 		RoundTrait.Mirv, RoundTrait.Bloom, RoundTrait.Scorch, RoundTrait.Lance, RoundTrait.Crater, RoundTrait.Spot,
 		RoundTrait.Deep, RoundTrait.Awl, RoundTrait.Ram, RoundTrait.Mass, RoundTrait.Keel, RoundTrait.Trace,
 		RoundTrait.Belt, RoundTrait.Walk, RoundTrait.Spool, RoundTrait.Sight, RoundTrait.Bite, RoundTrait.Link
@@ -139,6 +141,9 @@ public static class RoundTraits
 	public static bool OwnsSweep( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Belt ) || loadout.Has( RoundTrait.Walk ));
 
 	public static bool OwnsTrack( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Spool ) || loadout.Has( RoundTrait.Sight ) || loadout.Has( RoundTrait.Bite ));
+
+	public static bool TooEarly( RoundTrait trait, int lap )
+		=> trait == RoundTrait.Snap && lap < GameSettings.Traits.SnapUnlockLap;
 
 	public static bool Blocked( RoundTrait trait, RunLoadout loadout )
 	{
@@ -233,6 +238,8 @@ public static class RoundTraits
 		RoundTrait.Lash => "ui/traits/electric.png",
 		RoundTrait.Spin => "ui/traits/clockwise.png",
 		RoundTrait.Rush => "ui/traits/step.png",
+		RoundTrait.Dodge => "ui/traits/graze.png",
+		RoundTrait.Snap => "ui/traits/snap.png",
 		_ => "ui/traits/stick.png"
 	};
 }

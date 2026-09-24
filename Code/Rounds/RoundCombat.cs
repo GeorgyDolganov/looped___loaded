@@ -9,17 +9,26 @@ public static class RoundCombat
 
 		var world = loop.Geometry.ToPlayWorld( origin );
 		ArenaSounds.Explode( world );
-		ImpactFlash.Spawn( loop.Scene, world, tint, MathF.Max( 1.4f, radius / 70f ) );
+		if ( FxBudget.AllowBlast() )
+			BlastBurst.Spawn( loop.Scene, world, radius, tint );
 
-		foreach ( var enemy in loop.Enemies )
+		loop.BeginEnemyScan();
+		try
 		{
-			if ( !enemy.IsValid() || !enemy.Alive )
-				continue;
+			foreach ( var enemy in loop.Enemies )
+			{
+				if ( !enemy.IsValid() || !enemy.Alive )
+					continue;
 
-			if ( (enemy.Flat - origin).Length > radius + enemy.Radius )
-				continue;
+				if ( (enemy.Flat - origin).Length > radius + enemy.Radius )
+					continue;
 
-			enemy.Damage( damage, source );
+				enemy.Damage( damage, source );
+			}
+		}
+		finally
+		{
+			loop.EndEnemyScan();
 		}
 
 		if ( !hurtPlayer || !loop.Runner.IsValid() )

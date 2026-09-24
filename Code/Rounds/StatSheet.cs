@@ -56,14 +56,13 @@ public static class StatSheet
 					Up( pellets == 1 ? "+1 Projectile" : $"+{pellets} Projectiles" );
 				if ( cone > 0.001f )
 					Down( $"+{Fmt( cone )}° Spread" );
-				var cut = t.BuckFalloff.At( rank );
-				var prev = rank <= 1 ? 0f : t.BuckFalloff.At( rank - 1 );
-				if ( rank <= 1 )
-					Down( $"0 Damage after {Fmt( cut )}" );
-				else if ( cut < prev - 0.001f )
-					Down( $"{Fmt( cut - prev )} Falloff" );
-				else if ( cut > prev + 0.001f )
-					Up( $"+{Fmt( cut - prev )} Falloff" );
+				var cut = t.BuckRangeCut.At( rank );
+				var prev = rank <= 1 ? 0f : t.BuckRangeCut.At( rank - 1 );
+				var delta = cut - prev;
+				if ( delta > 0.001f )
+					Down( $"-{PctPoints( delta )} Range" );
+				else if ( delta < -0.001f )
+					Up( $"+{PctPoints( -delta )} Range" );
 				break;
 			}
 			case RoundTrait.Split:
@@ -87,7 +86,7 @@ public static class StatSheet
 			case RoundTrait.Meat:
 				Up( $"+{t.MeatBonus} Damage" );
 				Note( $"Range < {Fmt( t.MeatRange )}" );
-				Down( $"0 Damage after {Fmt( t.MeatFalloff )}" );
+				Down( $"-{PctPoints( t.MeatRangeCut )} Range" );
 				break;
 			case RoundTrait.Rico:
 				Up( $"+{t.RicoBounces} Bounce" );
@@ -115,7 +114,7 @@ public static class StatSheet
 			case RoundTrait.Waste:
 				Up( $"+{t.WasteBonus} Damage" );
 				Note( $"Range < {Fmt( t.WasteRange )}" );
-				Down( $"0 Damage after {Fmt( t.WasteFalloff )}" );
+				Down( $"-{PctPoints( t.WasteRangeCut )} Range" );
 				break;
 			case RoundTrait.Breach:
 				Up( $"+{t.BreachPierce} Pierce" );
@@ -123,7 +122,7 @@ public static class StatSheet
 			case RoundTrait.Slug:
 				Up( $"+{t.SlugDamage} Damage" );
 				Note( $"Radius {Fmt( t.SlugRadius )}" );
-				Up( $"+{Fmt( t.SlugFalloffPad )} Falloff Start" );
+				Up( $"+{Fmt( t.SlugFalloffPad )} Range" );
 				break;
 			case RoundTrait.Bore:
 			{
@@ -296,6 +295,24 @@ public static class StatSheet
 				Up( $"{PctDelta( SpeedAt( t.RushSpeed, rank ) )} Projectile Speed" );
 				Down( $"+{Fmt( ReloadGain( t.RushReload, rank ) )}s Reload" );
 				break;
+			case RoundTrait.Dodge:
+			{
+				var chance = Gain( t.DodgeChance, rank );
+				if ( chance > 0.001f )
+					Up( $"+{PctPoints( chance )} Dodge" );
+				break;
+			}
+			case RoundTrait.Snap:
+			{
+				if ( t.SnapReload is null )
+					break;
+
+				var before = rank <= 1 ? 1f : t.SnapReload.At( rank - 1 );
+				var cut = before - t.SnapReload.At( rank );
+				if ( cut > 0.001f )
+					Up( $"-{PctPoints( cut )} Reload" );
+				break;
+			}
 		}
 
 		return lines;
@@ -309,6 +326,8 @@ public static class StatSheet
 		var loadout = loop.Inventory.Loadout;
 		var now = loadout.Recipe();
 		var next = hover is { } trait ? loadout.Peek( trait ) : now;
+		ShotRange.Apply( ref now, loop );
+		ShotRange.Apply( ref next, loop );
 		var preview = hover.HasValue;
 		var rows = new List<SheetRow>();
 
@@ -323,7 +342,7 @@ public static class StatSheet
 		AddInt( rows, "Bounces", now.Bounces, next.Bounces, preview, true, false );
 		AddFloat( rows, "Reload", now.Reload, next.Reload, preview, false, "s", true );
 		AddPct( rows, "Proj. Speed", now.SpeedScale, next.SpeedScale, preview, true );
-		AddFloat( rows, "Falloff", now.Falloff, next.Falloff, preview, true );
+		AddRange( rows, now.Falloff, next.Falloff, preview );
 		AddFloat( rows, "Meat Range", now.MeatRange, next.MeatRange, preview, true );
 		AddInt( rows, "Meat Damage", now.MeatBonus, next.MeatBonus, preview, true, false );
 		AddFloat( rows, "Splash", now.Splash, next.Splash, preview, true );
@@ -370,6 +389,7 @@ public static class StatSheet
 		rows.Add( new SheetRow( "Dash CD", runner.IsValid() ? $"{Fmt( runner.DashCooldown )}s" : "-" ) );
 		rows.Add( new SheetRow( "Dash Dist", runner.IsValid() ? Fmt( runner.DashDistance ) : "-" ) );
 		rows.Add( new SheetRow( "Slow", runner.IsValid() && runner.SlowUnlocked ? "Yes" : "No" ) );
+		rows.Add( new SheetRow( "Dodge", Pct( loop.DodgeChance ) ) );
 		rows.Add( new SheetRow( "Bonus Dmg", (loadout?.BonusDamage ?? 0).ToString() ) );
 		return rows;
 	}
@@ -388,6 +408,25 @@ public static class StatSheet
 			return;
 
 		rows.Add( Row( label, Fmt( now ) + suffix, Fmt( next ) + suffix, now, next, preview, higherIsGood ) );
+	}
+
+	static void AddRange( List<SheetRow> rows, float now, float next, bool preview )
+	{
+		if ( now <= 0.001f && next <= 0.001f )
+			return;
+
+		var nowText = now <= 0.001f ? "Full" : Fmt( now );
+		var nextText = next <= 0.001f ? "Full" : Fmt( next );
+		if ( !preview || Almost( now, next ) )
+		{
+			rows.Add( new SheetRow( "Range", nowText ) );
+			return;
+		}
+
+		var nowOpen = now <= 0.001f;
+		var nextOpen = next <= 0.001f;
+		var better = nextOpen || (!nowOpen && next > now);
+		rows.Add( new SheetRow( "Range", nowText, nextText, better ? 1 : -1 ) );
 	}
 
 	static void AddPct( List<SheetRow> rows, string label, float now, float next, bool preview, bool higherIsGood )
@@ -447,6 +486,8 @@ public static class StatSheet
 	}
 
 	static string Pct( float scale ) => $"{(int)MathF.Round( scale * 100f )}%";
+
+	static string PctPoints( float fraction ) => $"{(int)MathF.Round( fraction * 100f )}%";
 
 	static string Fmt( float value )
 	{

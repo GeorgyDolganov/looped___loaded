@@ -54,7 +54,12 @@ public static class Progression
 	public static int PackPrice( TraitPack pack ) => GameSettings.Traits.PackPrice( pack );
 
 	public static int TraitPrice( RoundTrait trait, int ownedLevel, int lap = 1, int location = 0 )
-		=> Math.Max( 1, Whole( Cost( PackPrice( RoundTraits.Pack( trait ) ), Math.Max( 0, ownedLevel ) ) * Swarm( lap, location ) ) );
+	{
+		var first = trait == RoundTrait.Snap
+			? Math.Max( 1, GameSettings.Traits.SnapPrice )
+			: PackPrice( RoundTraits.Pack( trait ) );
+		return Math.Max( 1, Whole( Cost( first, Math.Max( 0, ownedLevel ) ) * Swarm( lap, location ) ) );
+	}
 
 	public static int KillScrap( EnemyKind kind, int lap, int location = 0 )
 	{

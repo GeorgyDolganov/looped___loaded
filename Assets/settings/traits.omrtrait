@@ -55,11 +55,13 @@
     "Level2": 16,
     "Level3": 24
   },
-  "BuckFalloff": {
-    "Level1": 1600,
-    "Level2": 1100,
-    "Level3": 800
+  "BuckRangeCut": {
+    "Level1": 0.83,
+    "Level2": 0.94,
+    "Level3": 1
   },
+  "MeatRangeCut": 1,
+  "WasteRangeCut": 1,
   "BorePierce": {
     "Level1": 1,
     "Level2": 1,
@@ -74,9 +76,9 @@
   "DrumCycle": 0.16,
   "DrumReload": 0.7,
   "WarheadRadius": {
-    "Level1": 48,
-    "Level2": 70,
-    "Level3": 96
+    "Level1": 90,
+    "Level2": 126,
+    "Level3": 176
   },
   "WarheadSpeed": {
     "Level1": 0.78,
@@ -85,7 +87,7 @@
   },
   "MirvRadiusScale": 0.55,
   "MirvSpeed": 0.8,
-  "BloomRadius": 40,
+  "BloomRadius": 80,
   "BloomReload": 0.3,
   "ScorchDamage": 2,
   "ScorchSpeed": 0.75,
@@ -95,7 +97,7 @@
   "LanceSpeed": 0.7,
   "LanceReload": 0.45,
   "CraterBody": 22,
-  "CraterSplash": 28,
+  "CraterSplash": 56,
   "CraterSpeed": 0.65,
   "SpotSpeed": 0.85,
   "DeepPierce": 2,
@@ -161,6 +163,18 @@
     "Level3": 1.65
   },
   "RushReload": 0.18,
+  "DodgeChance": {
+    "Level1": 0.1,
+    "Level2": 0.2,
+    "Level3": 0.32
+  },
+  "SnapUnlockLap": 3,
+  "SnapPrice": 4,
+  "SnapReload": {
+    "Level1": 0.8,
+    "Level2": 0.64,
+    "Level3": 0.5
+  },
   "__references": [],
   "__version": 0
 }

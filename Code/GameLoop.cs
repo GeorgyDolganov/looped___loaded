@@ -29,6 +29,9 @@ public sealed class GameLoop : Component
 	public List<EnemyShot> Shots { get; } = new();
 	public List<BonePickup> Bones { get; } = new();
 	public List<GibChunk> Gibs { get; } = new();
+	readonly List<Enemy> retired = new();
+	readonly List<Enemy> corpses = new();
+	int enemyScan;
 
 	public MenuPage MenuView { get; private set; } = MenuPage.Title;
 	public MenuChoice MenuFocus { get; private set; } = MenuChoice.Continue;
@@ -52,6 +55,18 @@ public sealed class GameLoop : Component
 	public float LapFraction => Phase == RunPhase.DecideLap ? 1f : Runner.IsValid() ? Runner.LapFraction : 0f;
 	public int Stash { get; private set; }
 	public int HeartMax => MaxHealth + (City.IsValid() ? City.Stats().BonusHealth : 0);
+
+	public float DodgeChance
+	{
+		get
+		{
+			var level = Inventory.IsValid() ? Inventory.Loadout.TraitLevel( RoundTrait.Dodge ) : 0;
+			if ( level <= 0 )
+				return 0f;
+
+			return Math.Clamp( GameSettings.Traits.DodgeChance.At( level ), 0f, 0.95f );
+		}
+	}
 	public int Health { get; private set; }
 	public float HurtAmount => Math.Clamp( 1f - (Time.Now - lastHurtAt) / GameSettings.Run.HurtFlash, 0f, 1f );
 	public bool Invulnerable => Time.Now < invulnUntil;
@@ -60,7 +75,6 @@ public sealed class GameLoop : Component
 	public int ShotsFired { get; private set; }
 	public int Catches { get; private set; }
 	public int Losses { get; private set; }
-	public int BloodShields { get; private set; }
 	public int ExtractedRounds { get; private set; }
 	public int BurnedRounds { get; private set; }
 	public int BestExtract { get; private set; }
@@ -718,7 +732,6 @@ public sealed class GameLoop : Component
 		ShotsFired = 0;
 		Catches = 0;
 		Losses = 0;
-		BloodShields = 0;
 		Stash = 1;
 		Lap = 1;
 		Location = Locations.Start;
@@ -755,6 +768,14 @@ public sealed class GameLoop : Component
 			BonePickup.Spill( this, origin, gain );
 
 		Announce( T.Announce.TargetDown );
+	}
+
+	public void KeepScrap( int value )
+	{
+		if ( value <= 0 )
+			return;
+
+		Scrap += value;
 	}
 
 	public void CollectBone( int value, Vector3 world )
@@ -824,8 +845,59 @@ public sealed class GameLoop : Component
 		ArenaMusic.Stop();
 	}
 
+	public void Retire( Enemy enemy )
+	{
+		if ( !enemy.IsValid() )
+			return;
+
+		for ( var i = 0; i < retired.Count; i++ )
+		{
+			if ( retired[i] == enemy )
+				return;
+		}
+
+		retired.Add( enemy );
+	}
+
+	public void BeginEnemyScan()
+	{
+		if ( enemyScan == 0 )
+			FlushRetired();
+
+		enemyScan++;
+	}
+
+	public void EndEnemyScan()
+	{
+		if ( enemyScan > 0 )
+			enemyScan--;
+
+		if ( enemyScan == 0 )
+			FlushRetired();
+	}
+
+	public void FlushRetired()
+	{
+		for ( var i = 0; i < retired.Count; i++ )
+		{
+			var index = Enemies.IndexOf( retired[i] );
+			if ( index < 0 )
+				continue;
+
+			var last = Enemies.Count - 1;
+			Enemies[index] = Enemies[last];
+			Enemies.RemoveAt( last );
+			corpses.Add( retired[i] );
+		}
+
+		retired.Clear();
+	}
+
 	protected override void OnUpdate()
 	{
+		if ( enemyScan == 0 )
+			FlushRetired();
+
 		ArenaMusic.Tick( this );
 
 		if ( !Arena.IsValid() || !Runner.IsValid() || !Inventory.IsValid() )
@@ -1021,17 +1093,8 @@ public sealed class GameLoop : Component
 
 	void Hurt()
 	{
-		if ( BloodShields > 0 )
-		{
-			BloodShields--;
-			lastHurtAt = Time.Now;
-			invulnUntil = Time.Now + GameSettings.Run.IFrames;
-			var blocked = Geometry.ToPlayWorld( Runner.Flat );
-			ArenaSounds.Armor( Runner.WorldPosition );
-			ImpactFlash.Spawn( Scene, blocked, new Color( 1f, 0.85f, 0.35f ), 2.4f );
-			Announce( BloodShields > 0 ? T.F( T.Announce.ShieldLeft, BloodShields ) : T.Announce.ShieldBroke );
+		if ( TryDodge() )
 			return;
-		}
 
 		Health--;
 		lastHurtAt = Time.Now;
@@ -1055,6 +1118,20 @@ public sealed class GameLoop : Component
 		Phase = RunPhase.Dead;
 		BurnedRounds = Stash;
 		Announce( T.Announce.RunOver );
+	}
+
+	bool TryDodge()
+	{
+		var chance = DodgeChance;
+		if ( chance <= 0f || Game.Random.Float( 0f, 1f ) >= chance )
+			return false;
+
+		invulnUntil = Time.Now + GameSettings.Run.IFrames;
+		var world = Geometry.ToPlayWorld( Runner.Flat );
+		ArenaSounds.Jump( Runner.WorldPosition );
+		ImpactFlash.Spawn( Scene, world, new Color( 0.72f, 0.95f, 1f ), 2.2f );
+		Announce( T.Announce.Dodged );
+		return true;
 	}
 
 	public void TryHurt()
@@ -1087,6 +1164,7 @@ public sealed class GameLoop : Component
 
 	void FinishBossWin()
 	{
+		VacuumBones();
 		bossWon = false;
 
 		if ( Arena.IsValid() )
@@ -1373,6 +1451,9 @@ public sealed class GameLoop : Component
 			if ( RoundTraits.Blocked( trait, loadout ) )
 				continue;
 
+			if ( loadout.TraitLevel( trait ) <= 0 && RoundTraits.TooEarly( trait, Lap ) )
+				continue;
+
 			var level = loadout.TraitLevel( trait );
 			if ( level >= RoundTraits.MaxLevel( trait ) )
 				continue;
@@ -1398,7 +1479,32 @@ public sealed class GameLoop : Component
 		}
 
 		FeatureOffer( loadout );
+		OfferSnap( loadout );
 		Phase = RunPhase.PickTrait;
+	}
+
+	void OfferSnap( RunLoadout loadout )
+	{
+		var unlock = GameSettings.Traits.SnapUnlockLap;
+		if ( Lap < unlock || Lap > unlock + 1 )
+			return;
+
+		if ( loadout is null || loadout.TraitLevel( RoundTrait.Snap ) > 0 )
+			return;
+
+		foreach ( var offer in offers )
+		{
+			if ( offer.Trait == RoundTrait.Snap )
+				return;
+		}
+
+		var card = new ShopOffer { Trait = RoundTrait.Snap };
+		if ( offers.Count < GameSettings.City.MaxOffers )
+			offers.Insert( 0, card );
+		else if ( offers.Count > 0 )
+			offers[0] = card;
+		else
+			offers.Add( card );
 	}
 
 	void FeatureOffer( RunLoadout loadout )
@@ -2062,7 +2168,15 @@ public sealed class GameLoop : Component
 				enemy.GameObject.Destroy();
 		}
 
+		foreach ( var corpse in corpses )
+		{
+			if ( corpse.IsValid() )
+				corpse.GameObject.Destroy();
+		}
+
 		Enemies.Clear();
+		retired.Clear();
+		corpses.Clear();
 	}
 }
 

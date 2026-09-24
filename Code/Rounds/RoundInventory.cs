@@ -405,7 +405,7 @@ public sealed class RoundInventory : Component
 		var origin = Runner.IsValid() ? Runner.Flat : Vector2.Zero;
 		StopBeam();
 		DropSpent( origin );
-		BeginReload( recipe.BeamPad + recipe.BeamPerSecond * held + recipe.BoreWait );
+		BeginReload( (recipe.BeamPad + recipe.BeamPerSecond * held + recipe.BoreWait) * Loadout.ReloadScale() );
 	}
 
 	void StopBeam()
@@ -444,6 +444,8 @@ public sealed class RoundInventory : Component
 	{
 		if ( !Loop.IsValid() || !Aim.IsValid() )
 			return;
+
+		ShotRange.Apply( ref recipe, Loop );
 
 		if ( spendMag )
 		{
