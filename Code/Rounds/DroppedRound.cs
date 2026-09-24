@@ -4,6 +4,7 @@ public sealed class DroppedRound : Component
 {
 	const float ChaseSpeed = 220f;
 	const float StopGap = 0.02f;
+	const float BodyRadius = 13f;
 
 	[Property] public Color Tint { get; set; } = ShotColors.Player;
 
@@ -13,6 +14,7 @@ public sealed class DroppedRound : Component
 	GameLoop loop;
 	GameObject shell;
 	PointLight glow;
+	bool shellReady;
 
 	public void Place( GameLoop host, Vector2 flat, int slotIndex )
 	{
@@ -31,11 +33,29 @@ public sealed class DroppedRound : Component
 
 	protected override void OnStart()
 	{
-		shell = Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, 30f, ShotColors.Player );
+		EnsureShell();
 
 		glow = GameObject.AddComponent<PointLight>();
 		glow.LightColor = ShotColors.Player * 4f;
 		glow.Radius = 340f;
+	}
+
+	void EnsureShell()
+	{
+		if ( shellReady )
+			return;
+
+		if ( !RoundProjectile.TryAttach( GameObject, RoundProjectile.BodyDiameter( BodyRadius ), out shell ) )
+			return;
+
+		shellReady = true;
+		FaceShell();
+	}
+
+	void FaceShell()
+	{
+		var ang = MathF.Atan2( Flat.y, Flat.x );
+		RoundProjectile.Face( shell, new Vector2( -MathF.Sin( ang ), MathF.Cos( ang ) ) );
 	}
 
 	public float GapTo( float playerAngle )
@@ -80,10 +100,15 @@ public sealed class DroppedRound : Component
 
 	protected override void OnUpdate()
 	{
+		EnsureShell();
+
 		var pulse = 0.6f + 0.4f * MathF.Sin( Time.Now * 7f );
 
 		if ( shell.IsValid() )
-			shell.WorldPosition = WorldPosition + Vector3.Up * (14f * pulse);
+		{
+			shell.LocalPosition = Vector3.Up * (14f * pulse);
+			FaceShell();
+		}
 
 		if ( glow.IsValid() )
 			glow.LightColor = ShotColors.Player * (2f + 4f * pulse);

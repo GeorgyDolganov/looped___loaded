@@ -1,0 +1,6 @@
+
+Layer0
+{
+	shader "shaders/projectile_core.shader_c"
+
+}
