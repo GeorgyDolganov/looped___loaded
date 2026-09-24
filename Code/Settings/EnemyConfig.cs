@@ -5,7 +5,6 @@ public class EnemyConfig : GameResource
 {
 	[Property] public float InnerPad { get; set; } = 160f;
 	[Property] public float TrackPad { get; set; } = 28f;
-	[Property] public float ShieldBlockDot { get; set; } = -0.22f;
 	[Property] public float ShieldTrackExtra { get; set; } = 8f;
 	[Property] public float MeleeReachPad { get; set; } = 36f;
 	[Property] public float GlimmerReveal { get; set; } = 160f;

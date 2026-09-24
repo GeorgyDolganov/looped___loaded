@@ -70,6 +70,8 @@ public class TextConfig : GameResource
 			RoundTrait.Pin => pack.Pin ??= new(),
 			RoundTrait.Spin => pack.Spin ??= new(),
 			RoundTrait.Rush => pack.Rush ??= new(),
+			RoundTrait.Dodge => pack.Dodge ??= new(),
+			RoundTrait.Snap => pack.Snap ??= new(),
 			RoundTrait.Split => pack.Split ??= new(),
 			RoundTrait.Fan => pack.Fan ??= new(),
 			RoundTrait.Pump => pack.Pump ??= new(),
@@ -250,6 +252,8 @@ public class TraitsCopy
 	[Property] public TraitCopy Pin { get; set; } = new() { Code = "PIN", Title = "PIN", Blurb = "A couple of nails. Full spray at rank 3. Stick and tick." };
 	[Property] public TraitCopy Spin { get; set; } = new() { Code = "SPIN", Title = "SPIN", Blurb = "Shots sweep harder against the clock. Longer reload." };
 	[Property] public TraitCopy Rush { get; set; } = new() { Code = "RUSH", Title = "RUSH", Blurb = "Shots fly faster. Longer reload." };
+	[Property] public TraitCopy Dodge { get; set; } = new() { Code = "DODGE", Title = "DODGE", Blurb = "Slip a hit. 10% / 20% / 32%." };
+	[Property] public TraitCopy Snap { get; set; } = new() { Code = "SNAP", Title = "SNAP", Blurb = "Reload only. −20% / −36% / −50%." };
 	[Property] public TraitCopy Split { get; set; } = new() { Code = "SPLIT", Title = "SPLIT", Blurb = "+1 pellet. Shot becomes 2." };
 	[Property] public TraitCopy Fan { get; set; } = new() { Code = "FAN", Title = "FAN", Blurb = "Pellets spread 14°." };
 	[Property] public TraitCopy Pump { get; set; } = new() { Code = "PUMP", Title = "PUMP", Blurb = "+1 pellet. Reload +0.25s." };
@@ -272,7 +276,7 @@ public class TraitsCopy
 	[Property] public TraitCopy Crater { get; set; } = new() { Code = "CRATER", Title = "CRATER", Blurb = "Fat body. +56 splash. No bounce. Slower. Locks out CLUSTER." };
 	[Property] public TraitCopy Spot { get; set; } = new() { Code = "SPOT", Title = "SPOT", Blurb = "Shots fly to the cursor and burst there. No bounce. Slower." };
 	[Property] public TraitCopy Deep { get; set; } = new() { Code = "DEEP", Title = "DEEP", Blurb = "+2 pierce. Reload +0.40s. Locks out MASS." };
-	[Property] public TraitCopy Awl { get; set; } = new() { Code = "AWL", Title = "AWL", Blurb = "Ignores shields and the core face. Slower. Reload +0.20s. Locks out MASS." };
+	[Property] public TraitCopy Awl { get; set; } = new() { Code = "AWL", Title = "AWL", Blurb = "Ignores the core face. Slower. Reload +0.20s. Locks out MASS." };
 	[Property] public TraitCopy Ram { get; set; } = new() { Code = "RAM", Title = "RAM", Blurb = "Each body you punch through hits the next harder. Slower. Locks out MASS." };
 	[Property] public TraitCopy Mass { get; set; } = new() { Code = "MASS", Title = "MASS", Blurb = "One shot. No fan. +3 damage. Slower. Reload +0.45s. Locks out DEEP." };
 	[Property] public TraitCopy Keel { get; set; } = new() { Code = "KEEL", Title = "KEEL", Blurb = "No bounce. +2 damage. Stops on the first wall. Slower. Locks out DEEP." };
@@ -417,7 +421,6 @@ public class PlacesCopy
 public class HudCopy
 {
 	[Property] public string Plain { get; set; } = "PLAIN";
-	[Property] public string Shield { get; set; } = "SH {0}";
 	[Property] public string Scrap { get; set; } = "SCRAP";
 	[Property] public string Stash { get; set; } = "STASH";
 	[Property] public string Best { get; set; } = "BEST";
@@ -632,7 +635,6 @@ public class AnnounceCopy
 	[Property] public string StartRun { get; set; } = "ONE LAP. ONE GUN. CASH OUT OR GO AGAIN.";
 	[Property] public string TargetDown { get; set; } = "TARGET DOWN";
 	[Property] public string ScrapGain { get; set; } = "+{0} SCRAP  ·  {1}";
-	[Property] public string RoundChamberedShield { get; set; } = "ROUND {0} CHAMBERED  ·  SHIELD";
 	[Property] public string RoundChamberedHits { get; set; } = "ROUND {0} CHAMBERED  +{1}";
 	[Property] public string RoundChambered { get; set; } = "ROUND {0} CHAMBERED";
 	[Property] public string RoundStatus { get; set; } = "ROUND {0} {1}";
@@ -642,9 +644,8 @@ public class AnnounceCopy
 	[Property] public string LostOnRing { get; set; } = "ROUNDS LOST ON THE RING";
 	[Property] public string Recovered { get; set; } = "RECOVERED";
 	[Property] public string Linked { get; set; } = "LINKED";
-	[Property] public string ShieldLeft { get; set; } = "SHIELD  ·  {0} LEFT";
-	[Property] public string ShieldBroke { get; set; } = "SHIELD BROKE";
 	[Property] public string HealthLeft { get; set; } = "-1  ·  {0} LEFT";
+	[Property] public string Dodged { get; set; } = "DODGED";
 	[Property] public string RunOver { get; set; } = "RUN OVER";
 	[Property] public string RingClear { get; set; } = "RING CLEAR";
 	[Property] public string FinalClear { get; set; } = "NO MORE ROUNDS  ·  ×2";

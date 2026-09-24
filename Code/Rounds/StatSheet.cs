@@ -295,6 +295,24 @@ public static class StatSheet
 				Up( $"{PctDelta( SpeedAt( t.RushSpeed, rank ) )} Projectile Speed" );
 				Down( $"+{Fmt( ReloadGain( t.RushReload, rank ) )}s Reload" );
 				break;
+			case RoundTrait.Dodge:
+			{
+				var chance = Gain( t.DodgeChance, rank );
+				if ( chance > 0.001f )
+					Up( $"+{PctPoints( chance )} Dodge" );
+				break;
+			}
+			case RoundTrait.Snap:
+			{
+				if ( t.SnapReload is null )
+					break;
+
+				var before = rank <= 1 ? 1f : t.SnapReload.At( rank - 1 );
+				var cut = before - t.SnapReload.At( rank );
+				if ( cut > 0.001f )
+					Up( $"-{PctPoints( cut )} Reload" );
+				break;
+			}
 		}
 
 		return lines;
@@ -375,10 +393,10 @@ public static class StatSheet
 		rows.Add( new SheetRow( "Dash CD", runner.IsValid() ? $"{Fmt( runner.DashCooldown )}s" : "-" ) );
 		rows.Add( new SheetRow( "Dash Dist", runner.IsValid() ? Fmt( runner.DashDistance ) : "-" ) );
 		rows.Add( new SheetRow( "Slow", runner.IsValid() && runner.SlowUnlocked ? "Yes" : "No" ) );
+		rows.Add( new SheetRow( "Dodge", Pct( loop.DodgeChance ) ) );
 		rows.Add( new SheetRow( hud.Scrap, loop.Scrap.ToString() ) );
 		rows.Add( new SheetRow( hud.Stash, loop.Stash.ToString() ) );
 		rows.Add( new SheetRow( "Bonus Dmg", (loadout?.BonusDamage ?? 0).ToString() ) );
-		rows.Add( new SheetRow( "Blood", loop.BloodShields.ToString() ) );
 		return rows;
 	}
 

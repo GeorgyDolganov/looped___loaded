@@ -27,8 +27,7 @@ public sealed class GibChunk : Component
 		Hips,
 		Limb,
 		Small,
-		Drop,
-		Shard
+		Drop
 	}
 
 	const int CheapAfter = 12;
@@ -42,7 +41,7 @@ public sealed class GibChunk : Component
 	float ground = 8f;
 	ModelRenderer mesh;
 
-	public static void Burst( GameLoop host, Scene scene, SkinnedModelRenderer skin, Vector3 origin, Vector2 impulse, Color mark, float radius, GameObject shield )
+	public static void Burst( GameLoop host, Scene scene, SkinnedModelRenderer skin, Vector3 origin, Vector2 impulse, Color mark, float radius )
 	{
 		if ( !scene.IsValid() )
 			return;
@@ -73,12 +72,6 @@ public sealed class GibChunk : Component
 
 				spawned++;
 			}
-		}
-
-		if ( shield.IsValid() )
-		{
-			for ( var i = 0; i < 5 && room > 0; i++ )
-				Emit( host, scene, ref room, shield.WorldPosition, shield.WorldRotation, impulse, origin, mark * 1.15f, GibPart.Shard, scale );
 		}
 
 		if ( cheap || room <= 0 )
@@ -164,7 +157,6 @@ public sealed class GibChunk : Component
 			GibPart.Hips => new Vector3( 18f, 11f, 9f ),
 			GibPart.Limb => new Vector3( 28f, 6f, 6f ),
 			GibPart.Small => new Vector3( 8f, 8f, 8f ),
-			GibPart.Shard => new Vector3( 8f, 28f, 3f ),
 			_ => new Vector3( 5f, 5f, 5f )
 		} * scale;
 

@@ -111,6 +111,10 @@ public class TraitConfig : GameResource
 	[Property] public float SpinReload { get; set; } = 0.12f;
 	[Property] public TraitTiers RushSpeed { get; set; } = new() { Level1 = 1.20f, Level2 = 1.40f, Level3 = 1.65f };
 	[Property] public float RushReload { get; set; } = 0.18f;
+	[Property] public TraitTiers DodgeChance { get; set; } = new() { Level1 = 0.10f, Level2 = 0.20f, Level3 = 0.32f };
+	[Property] public int SnapUnlockLap { get; set; } = 3;
+	[Property] public int SnapPrice { get; set; } = 4;
+	[Property] public TraitTiers SnapReload { get; set; } = new() { Level1 = 0.80f, Level2 = 0.64f, Level3 = 0.50f };
 
 	public TraitPackStats PackOf( TraitPack pack ) => pack switch
 	{

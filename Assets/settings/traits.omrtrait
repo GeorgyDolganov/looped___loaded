@@ -163,6 +163,18 @@
     "Level3": 1.65
   },
   "RushReload": 0.18,
+  "DodgeChance": {
+    "Level1": 0.1,
+    "Level2": 0.2,
+    "Level3": 0.32
+  },
+  "SnapUnlockLap": 3,
+  "SnapPrice": 4,
+  "SnapReload": {
+    "Level1": 0.8,
+    "Level2": 0.64,
+    "Level3": 0.5
+  },
   "__references": [],
   "__version": 0
 }

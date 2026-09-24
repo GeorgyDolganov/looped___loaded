@@ -51,8 +51,6 @@ public sealed class RoundProjectile : Component
 		WorldPosition = geometry.ToPlayWorld( Flat );
 	}
 
-	public bool ConsumeShred() => false;
-
 	protected override void OnStart()
 	{
 		var size = Flight.Nail ? 16f : 26f;

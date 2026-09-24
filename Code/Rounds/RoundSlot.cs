@@ -30,6 +30,15 @@ public sealed class RunLoadout
 		Levels[index] = Math.Min( RoundTraits.MaxLevel( trait ), Levels[index] + 1 );
 	}
 
+	public float ReloadScale()
+	{
+		var snap = TraitLevel( RoundTrait.Snap );
+		if ( snap <= 0 || GameSettings.Traits.SnapReload is null )
+			return 1f;
+
+		return GameSettings.Traits.SnapReload.At( snap );
+	}
+
 	public GunRecipe Peek( RoundTrait trait )
 	{
 		var index = (int)trait;
@@ -151,6 +160,8 @@ public sealed class RunLoadout
 			reload += t.SpoolReload;
 		if ( Has( RoundTrait.Link ) )
 			reload += t.LinkReload;
+
+		reload *= ReloadScale();
 
 		var speed = 1f;
 		if ( warhead > 0 )
