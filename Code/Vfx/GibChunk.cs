@@ -31,6 +31,9 @@ public sealed class GibChunk : Component
 		Shard
 	}
 
+	const int CheapAfter = 12;
+	const int CheapParts = 5;
+
 	GameLoop loop;
 	Vector3 velocity;
 	Vector3 spin;
@@ -44,41 +47,70 @@ public sealed class GibChunk : Component
 		if ( !scene.IsValid() )
 			return;
 
+		var alive = host.IsValid() ? host.Gibs.Count : 0;
+		var room = FxBudget.GibRoom( alive );
+		if ( room <= 0 )
+			return;
+
+		var cheap = FxBudget.GibsThisFrame >= CheapAfter;
 		var scale = Math.Clamp( radius / 64f, 0.85f, 3.6f );
 		var meat = Color.Lerp( Meat, mark, 0.32f );
+		var parts = cheap ? CheapParts : BodyParts.Length;
 
 		if ( skin.IsValid() )
 		{
+			var spawned = 0;
 			foreach ( var entry in BodyParts )
 			{
+				if ( spawned >= parts || room <= 0 )
+					break;
+
 				if ( !BoneWorld( skin, entry.Name, out var tx ) )
 					continue;
 
-				Throw( host, scene, tx.Position, tx.Rotation, impulse, origin, meat, entry.Kind, scale );
+				if ( !Emit( host, scene, ref room, tx.Position, tx.Rotation, impulse, origin, meat, entry.Kind, scale ) )
+					break;
+
+				spawned++;
 			}
 		}
 
+		if ( shield.IsValid() )
+		{
+			for ( var i = 0; i < 5 && room > 0; i++ )
+				Emit( host, scene, ref room, shield.WorldPosition, shield.WorldRotation, impulse, origin, mark * 1.15f, GibPart.Shard, scale );
+		}
+
+		if ( cheap || room <= 0 )
+			return;
+
 		var extras = scale > 1.6f ? 6 : 3;
-		for ( var i = 0; i < extras; i++ )
+		for ( var i = 0; i < extras && room > 0; i++ )
 		{
 			var offset = ArenaGeometry.FromAngle( Game.Random.Float( 0f, MathF.Tau ) ) * Game.Random.Float( 12f, 38f * scale );
 			var at = origin + new Vector3( offset.x, offset.y, Game.Random.Float( 24f, 90f * scale ) );
-			Throw( host, scene, at, Toss(), impulse, origin, meat, GibPart.Small, scale );
+			Emit( host, scene, ref room, at, Toss(), impulse, origin, meat, GibPart.Small, scale );
 		}
 
 		var drops = scale > 1.6f ? 18 : 11;
-		for ( var i = 0; i < drops; i++ )
+		for ( var i = 0; i < drops && room > 0; i++ )
 		{
 			var offset = ArenaGeometry.FromAngle( Game.Random.Float( 0f, MathF.Tau ) ) * Game.Random.Float( 6f, 28f * scale );
 			var at = origin + new Vector3( offset.x, offset.y, Game.Random.Float( 18f, 70f * scale ) );
-			Throw( host, scene, at, Toss(), impulse, origin, Color.Lerp( Meat, Clot, Game.Random.Float( 0f, 1f ) ), GibPart.Drop, scale );
+			var clot = Color.Lerp( Meat, Clot, Game.Random.Float( 0f, 1f ) );
+			Emit( host, scene, ref room, at, Toss(), impulse, origin, clot, GibPart.Drop, scale );
 		}
+	}
 
-		if ( !shield.IsValid() )
-			return;
+	static bool Emit( GameLoop host, Scene scene, ref int room, Vector3 at, Rotation rotation, Vector2 impulse, Vector3 origin, Color tint, GibPart kind, float scale )
+	{
+		if ( room <= 0 )
+			return false;
 
-		for ( var i = 0; i < 5; i++ )
-			Throw( host, scene, shield.WorldPosition, shield.WorldRotation, impulse, origin, mark * 1.15f, GibPart.Shard, scale );
+		Throw( host, scene, at, rotation, impulse, origin, tint, kind, scale );
+		room--;
+		FxBudget.NoteGib();
+		return true;
 	}
 
 	static void Throw( GameLoop host, Scene scene, Vector3 at, Rotation rotation, Vector2 impulse, Vector3 origin, Color tint, GibPart kind, float scale )

@@ -29,6 +29,9 @@ public sealed class GameLoop : Component
 	public List<EnemyShot> Shots { get; } = new();
 	public List<BonePickup> Bones { get; } = new();
 	public List<GibChunk> Gibs { get; } = new();
+	readonly List<Enemy> retired = new();
+	readonly List<Enemy> corpses = new();
+	int enemyScan;
 
 	public MenuPage MenuView { get; private set; } = MenuPage.Title;
 	public MenuChoice MenuFocus { get; private set; } = MenuChoice.Continue;
@@ -757,6 +760,14 @@ public sealed class GameLoop : Component
 		Announce( T.Announce.TargetDown );
 	}
 
+	public void KeepScrap( int value )
+	{
+		if ( value <= 0 )
+			return;
+
+		Scrap += value;
+	}
+
 	public void CollectBone( int value, Vector3 world )
 	{
 		if ( value <= 0 )
@@ -824,8 +835,59 @@ public sealed class GameLoop : Component
 		ArenaMusic.Stop();
 	}
 
+	public void Retire( Enemy enemy )
+	{
+		if ( !enemy.IsValid() )
+			return;
+
+		for ( var i = 0; i < retired.Count; i++ )
+		{
+			if ( retired[i] == enemy )
+				return;
+		}
+
+		retired.Add( enemy );
+	}
+
+	public void BeginEnemyScan()
+	{
+		if ( enemyScan == 0 )
+			FlushRetired();
+
+		enemyScan++;
+	}
+
+	public void EndEnemyScan()
+	{
+		if ( enemyScan > 0 )
+			enemyScan--;
+
+		if ( enemyScan == 0 )
+			FlushRetired();
+	}
+
+	public void FlushRetired()
+	{
+		for ( var i = 0; i < retired.Count; i++ )
+		{
+			var index = Enemies.IndexOf( retired[i] );
+			if ( index < 0 )
+				continue;
+
+			var last = Enemies.Count - 1;
+			Enemies[index] = Enemies[last];
+			Enemies.RemoveAt( last );
+			corpses.Add( retired[i] );
+		}
+
+		retired.Clear();
+	}
+
 	protected override void OnUpdate()
 	{
+		if ( enemyScan == 0 )
+			FlushRetired();
+
 		ArenaMusic.Tick( this );
 
 		if ( !Arena.IsValid() || !Runner.IsValid() || !Inventory.IsValid() )
@@ -1087,6 +1149,7 @@ public sealed class GameLoop : Component
 
 	void FinishBossWin()
 	{
+		VacuumBones();
 		bossWon = false;
 
 		if ( Arena.IsValid() )
@@ -2062,7 +2125,15 @@ public sealed class GameLoop : Component
 				enemy.GameObject.Destroy();
 		}
 
+		foreach ( var corpse in corpses )
+		{
+			if ( corpse.IsValid() )
+				corpse.GameObject.Destroy();
+		}
+
 		Enemies.Clear();
+		retired.Clear();
+		corpses.Clear();
 	}
 }
 

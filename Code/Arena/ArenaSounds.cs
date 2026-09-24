@@ -35,7 +35,13 @@ public static class ArenaSounds
 	public static void Ricochet( Vector3? at = null ) => Play( "ricochet", at );
 	public static void Flesh( Vector3? at = null ) => Play( "flesh", at );
 	public static void Metal( Vector3? at = null ) => Play( "metal", at );
-	public static void Explode( Vector3? at = null ) => Play( "explode", at );
+	public static void Explode( Vector3? at = null )
+	{
+		if ( !FxBudget.AllowExplode() )
+			return;
+
+		Play( "explode", at );
+	}
 	public static void Pickup( Vector3? at = null ) => Play( "pickup", at );
 	public static void Change() => Play( "change", null );
 	public static void Deny() => Play( "deny", null );

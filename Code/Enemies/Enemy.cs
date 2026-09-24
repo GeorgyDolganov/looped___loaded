@@ -54,6 +54,8 @@ public sealed class Enemy : Component
 	Vector2 moveVelocity;
 	float hitAt = -99f;
 	readonly List<(ModelRenderer Renderer, Color Tint)> dressed = new();
+	readonly List<Vector3> circle = new( 21 );
+	readonly List<Vector3> span = new( 2 );
 	float freezeUntil;
 	float freezeScale = 1f;
 	float shotAt = -99f;
@@ -267,13 +269,15 @@ public sealed class Enemy : Component
 
 		var world = Arena.Geometry.ToPlayWorld( Flat );
 		ArenaSounds.Hit();
+
+		if ( Health <= 0 )
+		{
+			Die();
+			return;
+		}
+
 		ArenaSounds.Flesh( world );
 		ImpactFlash.Spawn( Scene, world, HurtTint, 1.1f );
-
-		if ( Health > 0 )
-			return;
-
-		Die();
 	}
 
 	void Die()
@@ -295,6 +299,8 @@ public sealed class Enemy : Component
 
 		if ( !Loop.IsValid() )
 			return;
+
+		Loop.Retire( this );
 
 		if ( Locations.IsBoss( Kind ) )
 			Loop.BeatBoss();
@@ -331,11 +337,9 @@ public sealed class Enemy : Component
 		if ( !body.IsValid() )
 			return;
 
-		var renderers = body.GetComponentsInChildren<ModelRenderer>( true );
-		if ( dressed.Count != renderers.Count() )
+		if ( dressed.Count == 0 )
 		{
-			dressed.Clear();
-			foreach ( var renderer in renderers )
+			foreach ( var renderer in body.GetComponentsInChildren<ModelRenderer>( true ) )
 				dressed.Add( (renderer, renderer.Tint) );
 		}
 
@@ -463,7 +467,7 @@ public sealed class Enemy : Component
 
 	void Seek( Vector2 goal, float speed, float minRadius, float maxRadius )
 	{
-		Flat = drive.Step( Arena.Geometry, Flat, goal, Radius, speed, minRadius, maxRadius );
+		Flat = drive.Step( Arena.Geometry, Flat, goal, Radius, speed, minRadius, maxRadius, Loop.Enemies.Count );
 	}
 
 	void MoveShooter( float scale, float inner )
@@ -658,7 +662,7 @@ public sealed class Enemy : Component
 			outline.HeadTint = tint;
 			outline.TailTint = tint;
 			outline.Apply();
-			outline.SetPoints( BuildCircle() );
+			outline.SetPoints( CirclePoints() );
 		}
 
 		PaintHealth( flash );
@@ -766,7 +770,7 @@ public sealed class Enemy : Component
 		hpBack.HeadTint = BarBack;
 		hpBack.TailTint = BarBack;
 		hpBack.Apply();
-		hpBack.SetPoints( new List<Vector3> { left, right } );
+		ShowSpan( hpBack, left, right );
 
 		if ( Health <= 0 || ratio <= 0f )
 		{
@@ -781,7 +785,7 @@ public sealed class Enemy : Component
 		hpFill.HeadTint = tint;
 		hpFill.TailTint = tint;
 		hpFill.Apply();
-		hpFill.SetPoints( new List<Vector3> { left + front + edge, left + front + edge + rot.Right * (span * ratio) } );
+		ShowSpan( hpFill, left + front + edge, left + front + edge + rot.Right * (span * ratio) );
 
 		PaintPips( rot, left + edge, right - edge, MaxHealth );
 	}
@@ -815,8 +819,25 @@ public sealed class Enemy : Component
 			pip.HeadTint = BarBack;
 			pip.TailTint = BarBack;
 			pip.Apply();
-			pip.SetPoints( new List<Vector3> { at + up, at - up } );
+			ShowSpan( pip, at + up, at - up );
 		}
+	}
+
+	void ShowSpan( PolyLine line, Vector3 from, Vector3 to )
+	{
+		if ( span.Count != 2 )
+		{
+			span.Clear();
+			span.Add( from );
+			span.Add( to );
+		}
+		else
+		{
+			span[0] = from;
+			span[1] = to;
+		}
+
+		line.SetPoints( span );
 	}
 
 	void ClearBar()
@@ -843,17 +864,22 @@ public sealed class Enemy : Component
 		return ratio > GameSettings.Boss.Phase3Health ? BarMid : BarLow;
 	}
 
-	List<Vector3> BuildCircle()
+	List<Vector3> CirclePoints()
 	{
 		const int segments = 20;
-		var points = new List<Vector3>( segments + 1 );
+		if ( circle.Count != segments + 1 )
+		{
+			circle.Clear();
+			for ( var n = 0; n <= segments; n++ )
+				circle.Add( Vector3.Zero );
+		}
 
 		for ( var i = 0; i <= segments; i++ )
 		{
 			var angle = MathF.Tau * i / segments;
-			points.Add( Arena.Geometry.ToWorld( Flat + ArenaGeometry.FromAngle( angle ) * Radius, 14f ) );
+			circle[i] = Arena.Geometry.ToWorld( Flat + ArenaGeometry.FromAngle( angle ) * Radius, 14f );
 		}
 
-		return points;
+		return circle;
 	}
 }

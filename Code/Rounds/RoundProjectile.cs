@@ -224,6 +224,20 @@ public sealed class RoundProjectile : Component
 
 	bool HitTarget()
 	{
+		Loop.BeginEnemyScan();
+		try
+		{
+			return ScanTargets();
+		}
+		finally
+		{
+			if ( Loop.IsValid() )
+				Loop.EndEnemyScan();
+		}
+	}
+
+	bool ScanTargets()
+	{
 		foreach ( var target in Loop.Enemies )
 		{
 			if ( !target.IsValid() || !target.Alive || struck.Contains( target ) )

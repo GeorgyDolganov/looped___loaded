@@ -8,11 +8,13 @@ public sealed class ImpactFlash : Component
 	[Property] public Color Tint { get; set; } = Color.White;
 
 	GameObject shell;
-	PointLight glow;
 	float born;
 
 	public static void Spawn( Scene scene, Vector3 position, Color tint, float scale = 1f )
 	{
+		if ( !scene.IsValid() || !FxBudget.AllowFlash() )
+			return;
+
 		var go = scene.CreateObject();
 		go.Name = "Impact";
 		go.WorldPosition = position;
@@ -28,10 +30,6 @@ public sealed class ImpactFlash : Component
 		born = Time.Now;
 
 		shell = Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, StartRadius, Tint );
-
-		glow = GameObject.AddComponent<PointLight>();
-		glow.LightColor = Tint * 12f;
-		glow.Radius = EndRadius * 4f;
 	}
 
 	protected override void OnUpdate()
@@ -56,8 +54,5 @@ public sealed class ImpactFlash : Component
 			if ( renderer.IsValid() )
 				renderer.Tint = Tint.WithAlpha( fade );
 		}
-
-		if ( glow.IsValid() )
-			glow.LightColor = Tint * (12f * fade * fade);
 	}
 }
