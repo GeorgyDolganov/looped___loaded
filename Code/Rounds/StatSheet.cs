@@ -329,10 +329,8 @@ public static class StatSheet
 		ShotRange.Apply( ref now, loop );
 		ShotRange.Apply( ref next, loop );
 		var preview = hover.HasValue;
-		var mag = loop.Inventory.MagCap;
 		var rows = new List<SheetRow>();
 
-		AddText( rows, "Mode", Mode( now ), Mode( next ), preview );
 		AddInt( rows, "Damage", now.Damage, next.Damage, preview, true, true );
 		AddInt( rows, "Projectiles", now.Count, next.Count, preview, true, true );
 		AddFloat( rows, "Spread", now.Cone, next.Cone, preview, false, "°" );
@@ -344,7 +342,6 @@ public static class StatSheet
 		AddInt( rows, "Bounces", now.Bounces, next.Bounces, preview, true, false );
 		AddFloat( rows, "Reload", now.Reload, next.Reload, preview, false, "s", true );
 		AddPct( rows, "Proj. Speed", now.SpeedScale, next.SpeedScale, preview, true );
-		AddInt( rows, "Mag", mag, mag, preview, true, true );
 		AddRange( rows, now.Falloff, next.Falloff, preview );
 		AddFloat( rows, "Meat Range", now.MeatRange, next.MeatRange, preview, true );
 		AddInt( rows, "Meat Damage", now.MeatBonus, next.MeatBonus, preview, true, false );
@@ -387,15 +384,12 @@ public static class StatSheet
 		var rows = new List<SheetRow>();
 		var runner = loop.Runner;
 		var loadout = loop.Inventory.IsValid() ? loop.Inventory.Loadout : null;
-		var hud = GameSettings.Text.Hud;
 		rows.Add( new SheetRow( "HP", $"{loop.Health} / {loop.HeartMax}" ) );
 		rows.Add( new SheetRow( "Speed", runner.IsValid() ? Fmt( runner.Speed ) : "-" ) );
 		rows.Add( new SheetRow( "Dash CD", runner.IsValid() ? $"{Fmt( runner.DashCooldown )}s" : "-" ) );
 		rows.Add( new SheetRow( "Dash Dist", runner.IsValid() ? Fmt( runner.DashDistance ) : "-" ) );
 		rows.Add( new SheetRow( "Slow", runner.IsValid() && runner.SlowUnlocked ? "Yes" : "No" ) );
 		rows.Add( new SheetRow( "Dodge", Pct( loop.DodgeChance ) ) );
-		rows.Add( new SheetRow( hud.Scrap, loop.Scrap.ToString() ) );
-		rows.Add( new SheetRow( hud.Stash, loop.Stash.ToString() ) );
 		rows.Add( new SheetRow( "Bonus Dmg", (loadout?.BonusDamage ?? 0).ToString() ) );
 		return rows;
 	}
@@ -480,19 +474,6 @@ public static class StatSheet
 	{
 		var before = rank <= 1 ? 0f : add * Progression.TraitMul( rank - 1 );
 		return add * Progression.TraitMul( rank ) - before;
-	}
-
-	static string Mode( GunRecipe recipe )
-	{
-		if ( recipe.PointAim && !recipe.Beam )
-			return "Point";
-		if ( recipe.Beam )
-			return "Lightning";
-		if ( recipe.Auto )
-			return "Auto";
-		if ( recipe.DoublePump )
-			return "Double";
-		return "Semi";
 	}
 
 	static string Flag( bool on ) => on ? "Yes" : "No";

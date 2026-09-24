@@ -52,8 +52,6 @@
 				</div>
 			</div>
 
-			@if ( Loop.Phase != RunPhase.PickTrait )
-			{
 			<div class="run-right">
 				<div class="hud-panel stat-panel">
 					<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
@@ -69,7 +67,6 @@
 					</div>
 				</div>
 			</div>
-			}
 
 			<div class="tray-frame">
 				<img class="tray-back" src="ui/Arena UI/back.png" />
@@ -519,48 +516,36 @@
 				<div class="shop-head">
 					<label class="overlay-title">@GameSettings.Text.Shop.Title</label>
 				</div>
-				<div class="cards">
+				<div class="cards shop-cards">
 					@for ( var i = 0; i < Loop.Offers.Count; i++ )
 					{
 						var index = i;
 						var trait = Loop.Offers[index].Trait;
 						var bought = Loop.Offers[index].Bought;
-						<div class="card @OfferClass(trait, bought)" style="border-color: @TraitBorder(trait)" @key="@((int)trait)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
-							<label class="key">@GameSettings.Text.Shop.KeyOf(index)</label>
-							<label class="title">@RoundTraits.Title(trait)</label>
-							<label class="rarity">@RoundTraits.Rarity(trait)</label>
-							<label class="blurb">@OfferBlurb(trait, bought)</label>
-							<div class="stats">
-								@foreach ( var line in OfferStats( trait, bought ) )
-								{
-									<label class="stat @line.Class">@line.Text</label>
-								}
+						<div class="card shop-offer @OfferClass(trait, bought)" style="border-color: @TraitBorder(trait)" @key="@((int)trait)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
+							<img class="shop-plate" src="@(Loop.Offers[index].LeftPlate ? "ui/Arena UI/element_shop_left_btn.png" : "ui/Arena UI/element_shop_right_btn.png")" />
+							<div class="shop-body">
+								<label class="title">@RoundTraits.Title(trait)</label>
+								<label class="rarity" style="color: @TraitInk(trait)">@RoundTraits.Rarity(trait)</label>
+								<label class="blurb">@OfferBlurb(trait, bought)</label>
+								<div class="stats">
+									@foreach ( var line in OfferStats( trait, bought ) )
+									{
+										<label class="stat @line.Class">@line.Text</label>
+									}
+								</div>
 							</div>
 							<label class="cost">@OfferCost(trait, bought)</label>
 						</div>
 					}
 				</div>
-				<div class="cards">
-					@if ( Loop.ShopHasBundle )
-					{
-						<div class="card @(Loop.ShopCanBuyAll ? "" : "poor")" onmouseover="@LeaveShop" onclick="@BuyAllOffers">
-							<label class="key">@GameSettings.Text.Shop.KeyE</label>
-							<label class="title">@GameSettings.Text.Shop.BuyAll</label>
-							<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Shop.BuyAllBlurb, Loop.ShopBuyAllCost)</label>
-							<label class="cost">@GameSettings.Text.F(GameSettings.Text.Shop.Cost, Loop.ShopBuyAllCost)</label>
-						</div>
-					}
-					<div class="card" onmouseover="@LeaveShop" onclick="@FinishShop">
-						<label class="key">@GameSettings.Text.Shop.KeySpace</label>
+				<div class="cards shop-go">
+					<div class="card shop-go-btn" onmouseover="@LeaveShop" onclick="@FinishShop">
+						<img class="shop-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
 						<label class="title">@GameSettings.Text.Shop.Go</label>
-						<label class="blurb">@GameSettings.Text.Shop.GoBlurb</label>
 					</div>
 				</div>
 				<div class="shop-sheet">
-					<div class="sheet-lead">
-						<label class="key">@GameSettings.Text.Hud.Scrap</label>
-						<label class="value">@Loop.Scrap</label>
-					</div>
 					<label class="sheet-kicker">WEAPON</label>
 					@foreach ( var row in ShopWeapon )
 					{
@@ -1077,6 +1062,13 @@
 		return $"rgba({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)}, 0.85)";
 	}
 
+	string TraitInk( RoundTrait trait )
+	{
+		var c = RoundTraits.Color( trait );
+		const float dull = 0.62f;
+		return $"rgb({(int)(c.r * dull * 255)},{(int)(c.g * dull * 255)},{(int)(c.b * dull * 255)})";
+	}
+
 	float auraX;
 	float auraY;
 	float trailX;
@@ -1084,6 +1076,7 @@
 	Sandbox.UI.Panel auraPanel;
 	Sandbox.UI.Panel trailPanel;
 	Sandbox.UI.Panel trayPanel;
+	Sandbox.UI.Panel shopSheet;
 	Sandbox.UI.Panel healthPanel;
 	Sandbox.UI.Panel dashSlot;
 	Sandbox.UI.Panel hotCard;
@@ -1120,6 +1113,15 @@
 		trayPanel.Style.Width = Sandbox.UI.Length.Pixels( width );
 		trayPanel.Style.Height = Sandbox.UI.Length.Pixels( height );
 		trayPanel.Style.Dirty();
+
+		if ( !shopSheet.IsValid() )
+			shopSheet = FindHud( "shop-sheet" );
+
+		if ( shopSheet.IsValid() )
+		{
+			shopSheet.Style.Bottom = Sandbox.UI.Length.Pixels( height + 16f );
+			shopSheet.Style.Dirty();
+		}
 	}
 
 	void PlaceHealthIcons()
@@ -2363,15 +2365,15 @@
 	}
 
 	.overlay.shop {
-		padding-right: 400px;
-		padding-left: 32px;
+		padding-left: 446px;
+		padding-right: 406px;
 	}
 
 	.shop-head {
 		flex-direction: row;
 		align-items: baseline;
 		justify-content: center;
-		margin-bottom: 4px;
+		margin-bottom: 36px;
 	}
 
 	.shop-head .overlay-title {
@@ -2380,9 +2382,9 @@
 
 	.shop-sheet {
 		position: absolute;
-		right: 24px;
-		top: 64px;
-		bottom: 64px;
+		right: 26px;
+		top: 292px;
+		bottom: 220px;
 		width: 360px;
 		padding: 20px 22px;
 		border-radius: 10px;
@@ -2547,6 +2549,76 @@
 		max-width: 1680px;
 	}
 
+	.shop-go {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.shop-cards {
+		align-items: stretch;
+	}
+
+	.shop-offer,
+	.shop-go-btn {
+		position: relative;
+		background-color: transparent;
+	}
+
+	.shop-offer {
+		flex-direction: column;
+		align-items: stretch;
+		padding-bottom: 22px;
+		border: 2px solid transparent;
+	}
+
+	.shop-go-btn {
+		border-width: 0px;
+	}
+
+	.shop-cards {
+		align-items: stretch;
+	}
+
+	.shop-body {
+		position: relative;
+		z-index: 1;
+		flex-grow: 1;
+		flex-direction: column;
+		align-items: stretch;
+		margin-bottom: 22px;
+	}
+
+	.shop-offer .cost {
+		position: relative;
+		z-index: 1;
+		align-self: flex-end;
+		margin-top: 0px;
+		margin-right: 4px;
+		color: #f0b429;
+	}
+
+	.shop-go-btn {
+		width: 320px;
+		aspect-ratio: 438 / 158;
+		align-items: center;
+		justify-content: center;
+		padding: 0px;
+	}
+
+	.shop-plate {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.shop-body,
+	.shop-go-btn .title {
+		position: relative;
+		z-index: 1;
+	}
+
 	.card {
 		width: 300px;
 		padding: 24px;
@@ -2587,6 +2659,12 @@
 		background-color: rgba(240, 180, 41, 0.18);
 	}
 
+	.shop-go-btn:hover,
+	.shop-go-btn.hot {
+		border-color: transparent;
+		background-color: transparent;
+	}
+
 	.card:active {
 		transform: scale( 0.97 ) translateY( -2px );
 	}
@@ -2614,16 +2692,8 @@
 		background-color: rgba(240, 180, 41, 0.24);
 	}
 
-	.card.poor {
-		opacity: 0.62;
-	}
-
 	.card.poor .cost {
 		color: #e0453a;
-	}
-
-	.card.upgrade.poor {
-		opacity: 0.62;
 	}
 
 	.card.upgrade.bought {
@@ -2658,6 +2728,11 @@
 
 	.card.upgrade.bought .cost {
 		color: #4fd2e8;
+	}
+
+	.card.shop-offer.poor .cost,
+	.card.shop-offer.bought .cost {
+		color: #8a6a1e;
 	}
 
 	.card.hot .key,
