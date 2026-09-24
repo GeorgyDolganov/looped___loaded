@@ -19,12 +19,61 @@ public sealed class RoundProjectile : Component
 
 	const float StepLength = 18f;
 	const int TrailPoints = 48;
+	const string ModelPath = "models/projectile.vmdl";
+	const float FaceYaw = -90f;
+
+	public static float BodyDiameter( float radius ) => MathF.Max( 8f, radius * 2f ) * 2f;
+
+	public static bool TryAttach( GameObject parent, float diameter, out GameObject pivot )
+	{
+		pivot = null;
+		if ( !parent.IsValid() )
+			return false;
+
+		var model = Model.Load( ModelPath );
+		var bounds = model.IsValid() ? model.Bounds : default;
+		if ( bounds.Size.Length < 0.01f )
+			return false;
+
+		pivot = parent.Scene.CreateObject();
+		pivot.Name = "Shell";
+		pivot.Parent = parent;
+		pivot.LocalPosition = Vector3.Zero;
+		pivot.LocalRotation = Rotation.Identity;
+
+		var meshObject = parent.Scene.CreateObject();
+		meshObject.Name = "Shell Mesh";
+		meshObject.Parent = pivot;
+		meshObject.LocalRotation = Rotation.Identity;
+
+		var renderer = meshObject.AddComponent<ModelRenderer>();
+		renderer.Model = model;
+		renderer.Tint = Color.White;
+		renderer.RenderType = ModelRenderer.ShadowRenderType.Off;
+
+		var thick = MathF.Max( bounds.Size.y, bounds.Size.z );
+		var scale = thick > 0.001f ? diameter / thick : 1f;
+		meshObject.LocalScale = Vector3.One * scale;
+		meshObject.LocalPosition = -bounds.Center * scale;
+		return true;
+	}
+
+	public static void Face( GameObject pivot, Vector2 direction )
+	{
+		if ( !pivot.IsValid() || direction.Length < 0.01f )
+			return;
+
+		pivot.LocalRotation = Blocks.FlatFacing( direction ) * Rotation.FromYaw( FaceYaw );
+	}
 
 	readonly List<Vector3> trail = new();
 	readonly HashSet<Enemy> struck = new();
 	ArenaGeometry geometry;
+	GameObject shellPivot;
+	GameObject sparks;
 	PolyLine trailLine;
 	PolyLine splashRing;
+	bool shellReady;
 	int pierceLeft;
 	int bored;
 	bool lensInside;
@@ -53,8 +102,8 @@ public sealed class RoundProjectile : Component
 
 	protected override void OnStart()
 	{
-		var size = Flight.Nail ? 16f : 26f;
-		Blocks.SpawnSphere( GameObject, "Shell", WorldPosition, size, ShotColors.Player );
+		EnsureShell();
+		EnsureSparks();
 
 		var glow = GameObject.AddComponent<PointLight>();
 		glow.LightColor = ShotColors.Player * (Flight.Nail ? 3.5f : 6f);
@@ -65,10 +114,11 @@ public sealed class RoundProjectile : Component
 		trailObject.Parent = GameObject;
 
 		trailLine = trailObject.AddComponent<PolyLine>();
-		trailLine.HeadTint = ShotColors.Player;
-		trailLine.TailTint = ShotColors.Player * 0.08f;
+		trailLine.HeadTint = ShotColors.Player.WithAlpha( 0.22f );
+		trailLine.TailTint = ShotColors.Player.WithAlpha( 0.03f );
 		trailLine.HeadWidth = Flight.Nail ? 6f : 12f;
 		trailLine.TailWidth = 1f;
+		trailLine.HardCaps = true;
 		trailLine.Apply();
 	}
 
@@ -76,6 +126,9 @@ public sealed class RoundProjectile : Component
 	{
 		if ( geometry is null || !Loop.IsValid() )
 			return;
+
+		EnsureShell();
+		EnsureSparks();
 
 		if ( !Loop.IsFrozen )
 		{
@@ -96,7 +149,29 @@ public sealed class RoundProjectile : Component
 			PushTrail( WorldPosition );
 		}
 
+		FaceShell();
+		DriveSparks();
 		PaintSplash();
+	}
+
+	void EnsureShell()
+	{
+		if ( shellReady || Loop is null )
+			return;
+
+		if ( !TryAttach( GameObject, BodyDiameter( Radius ), out shellPivot ) )
+			return;
+
+		shellReady = true;
+		FaceShell();
+	}
+
+	void FaceShell()
+	{
+		if ( !shellReady )
+			return;
+
+		Face( shellPivot, Direction );
 	}
 
 	public void NudgeOut()
@@ -363,7 +438,93 @@ public sealed class RoundProjectile : Component
 			}
 		}
 
+		ReleaseSparks();
 		GameObject.Destroy();
+	}
+
+	void EnsureSparks()
+	{
+		if ( sparks.IsValid() )
+			return;
+
+		var texture = Texture.Load( "textures/projectile_particle.png" );
+		if ( !texture.IsValid() )
+			return;
+
+		sparks = Scene.CreateObject();
+		sparks.Name = "Shot Particles";
+		sparks.Parent = GameObject;
+		sparks.LocalPosition = Vector3.Zero;
+
+		var effect = sparks.AddComponent<ParticleEffect>();
+		effect.MaxParticles = 64;
+		effect.Lifetime = 0.4f;
+		effect.LocalSpace = 0f;
+		effect.ApplyAlpha = true;
+		effect.Alpha = 1f;
+		effect.ApplyShape = true;
+		var size = BodyDiameter( Radius ) * 0.2f;
+		var startSize = size * 2.15f;
+		var endSize = size * 0.45f;
+		effect.Scale = startSize;
+		effect.ApplyRotation = true;
+		effect.InitialRoll = PerParticle( -22f, 22f );
+		var life = sparks.AddComponent<ShotSparkLife>();
+		life.StartSize = startSize;
+		life.EndSize = endSize;
+		effect.Damping = 2f;
+		effect.Brightness = 1.6f;
+		effect.Tint = Color.White;
+
+		var renderer = sparks.AddComponent<ParticleSpriteRenderer>();
+		renderer.Sprite = Sprite.FromTexture( texture );
+		renderer.Additive = true;
+		renderer.Lighting = false;
+		renderer.Shadows = false;
+		renderer.Opaque = false;
+		renderer.FaceVelocity = true;
+		renderer.RotationOffset = 75f;
+		renderer.Alignment = ParticleSpriteRenderer.BillboardAlignment.LookAtCamera;
+		renderer.TextureFilter = Sandbox.Rendering.FilterMode.Point;
+
+		var emitter = sparks.AddComponent<ParticleSphereEmitter>();
+		emitter.Loop = true;
+		emitter.Duration = 0.5f;
+		emitter.Radius = 1f;
+		emitter.Rate = 0f;
+		emitter.RateOverDistance = 5f;
+	}
+
+	void DriveSparks()
+	{
+		if ( !sparks.IsValid() )
+			return;
+
+		var effect = sparks.GetComponent<ParticleEffect>();
+		if ( !effect.IsValid() )
+			return;
+
+		effect.TimeScale = Loop.IsValid() && Loop.IsFrozen ? 0f : 1f;
+		effect.InitialVelocity = new Vector3( -Direction.x, -Direction.y, 0f ) * 140f;
+	}
+
+	static ParticleFloat PerParticle( float min, float max ) => new()
+	{
+		Type = ParticleFloat.ValueType.Range,
+		Evaluation = ParticleFloat.EvaluationType.Seed,
+		ConstantA = min,
+		ConstantB = max
+	};
+
+	void ReleaseSparks()
+	{
+		if ( !sparks.IsValid() )
+			return;
+
+		sparks.Parent = null;
+		var fade = sparks.AddComponent<ShotSparkFade>();
+		fade.Arm( 0.45f );
+		sparks = null;
 	}
 
 	void PushTrail( Vector3 point )
@@ -399,5 +560,59 @@ public sealed class RoundProjectile : Component
 		splashRing.TailWidth = 3.5f;
 		splashRing.Apply();
 		splashRing.SetPoints( RoundCombat.Circle( geometry, Flat, Flight.ExplosiveRadius ) );
+	}
+}
+
+sealed class ShotSparkLife : ParticleController
+{
+	public float StartSize { get; set; }
+	public float EndSize { get; set; }
+
+	protected override void OnParticleCreated( Particle p )
+	{
+		p.StartScale *= Random.Shared.Float( 0.9f, 1.1f );
+	}
+
+	protected override void OnAfterStep( float delta )
+	{
+		var particles = ParticleEffect?.Particles;
+		if ( particles is null )
+			return;
+
+		for ( var i = 0; i < particles.Count; i++ )
+		{
+			var p = particles[i];
+			var life = p.DeathTime - p.BornTime;
+			var t = life > 0.0001f ? p.Age / life : 0f;
+			if ( t < 0f )
+				t = 0f;
+			if ( t > 1f )
+				t = 1f;
+
+			p.Size = p.StartScale * (StartSize + (EndSize - StartSize) * t);
+			p.Alpha = 1f - t;
+		}
+	}
+}
+
+sealed class ShotSparkFade : Component
+{
+	float dieAt;
+
+	public void Arm( float life )
+	{
+		dieAt = Time.Now + life;
+		var emitter = GetComponent<ParticleEmitter>();
+		if ( emitter.IsValid() )
+		{
+			emitter.Rate = 0f;
+			emitter.RateOverDistance = 0f;
+		}
+	}
+
+	protected override void OnUpdate()
+	{
+		if ( Time.Now >= dieAt )
+			GameObject.Destroy();
 	}
 }
