@@ -4453,7 +4453,7 @@
           "IsStatic": false,
           "MaterialGroup": null,
           "Model": {
-            "Id": "b61eb03a-f281-4a46-9048-8fb3d0303961",
+            "Id": "84ce387d-064c-4e52-b761-81f8202a6612",
             "Path": "models/shrine.vmdl"
           },
           "OnComponentDestroy": null,
@@ -4480,7 +4480,7 @@
           "MaterialOverride": null,
           "Materials": null,
           "Model": {
-            "Id": "b61eb03a-f281-4a46-9048-8fb3d0303961",
+            "Id": "84ce387d-064c-4e52-b761-81f8202a6612",
             "Path": "models/shrine.vmdl"
           },
           "OnComponentDestroy": null,
@@ -4508,7 +4508,7 @@
           "Friction": null,
           "IsTrigger": false,
           "Model": {
-            "Id": "b61eb03a-f281-4a46-9048-8fb3d0303961",
+            "Id": "84ce387d-064c-4e52-b761-81f8202a6612",
             "Path": "models/shrine.vmdl"
           },
           "OnComponentDestroy": null,
@@ -5131,7 +5131,7 @@
           "IsStatic": false,
           "MaterialGroup": null,
           "Model": {
-            "Id": "d1ef8309-2a19-4c6a-b589-876396f6a6e7",
+            "Id": "2f9da18b-ad73-4453-9a27-8474522361a6",
             "Path": "models/arena.vmdl"
           },
           "OnComponentDestroy": null,
@@ -5158,7 +5158,7 @@
           "MaterialOverride": null,
           "Materials": null,
           "Model": {
-            "Id": "d1ef8309-2a19-4c6a-b589-876396f6a6e7",
+            "Id": "2f9da18b-ad73-4453-9a27-8474522361a6",
             "Path": "models/arena.vmdl"
           },
           "OnComponentDestroy": null,
@@ -5186,7 +5186,7 @@
           "Friction": null,
           "IsTrigger": false,
           "Model": {
-            "Id": "d1ef8309-2a19-4c6a-b589-876396f6a6e7",
+            "Id": "2f9da18b-ad73-4453-9a27-8474522361a6",
             "Path": "models/arena.vmdl"
           },
           "OnComponentDestroy": null,

@@ -1394,7 +1394,7 @@ public sealed class GameLoop : Component
 				break;
 
 			taken.Add( trait );
-			offers.Add( new ShopOffer { Trait = trait } );
+			offers.Add( new ShopOffer { Trait = trait, LeftPlate = Game.Random.Int( 0, 1 ) == 0 } );
 		}
 
 		FeatureOffer( loadout );
@@ -1436,7 +1436,7 @@ public sealed class GameLoop : Component
 				return;
 		}
 
-		offers[offers.Count - 1] = new ShopOffer { Trait = pick };
+		offers[offers.Count - 1] = new ShopOffer { Trait = pick, LeftPlate = Game.Random.Int( 0, 1 ) == 0 };
 	}
 
 	static void CollectBranch( List<RoundTrait> lineup, RoundTrait[] branch, RunLoadout loadout )
@@ -2070,5 +2070,6 @@ public sealed class ShopOffer
 {
 	public RoundTrait Trait { get; set; }
 	public bool Bought { get; set; }
+	public bool LeftPlate { get; set; }
 }
 
