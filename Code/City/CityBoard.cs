@@ -369,6 +369,9 @@ public sealed class CityBoard : Component
 
 		if ( Input.Pressed( "Attack1" ) && !(Loop.IsValid() && Loop.BlocksShot) )
 			TryInject();
+
+		if ( Input.Pressed( "Attack2" ) && !(Loop.IsValid() && Loop.BlocksShot) )
+			TryRemove();
 	}
 
 	public void Choose( BuildingKind kind ) => Selected = kind;
@@ -815,6 +818,31 @@ public sealed class CityBoard : Component
 		var at = Hovered.Root.IsValid() ? Hovered.Root.WorldPosition : WorldPosition;
 		ArenaSounds.Flesh( at );
 		RegisterHit( Hovered );
+	}
+
+	void TryRemove()
+	{
+		if ( Hovered is null || !Hovered.Occupied )
+			return;
+
+		if ( Hovered.Working )
+		{
+			ArenaSounds.Deny();
+			return;
+		}
+
+		var title = Buildings.Title( Hovered.Kind );
+		var spent = Math.Max( 0, Hovered.Hits );
+		Warehouse += spent;
+		Hovered.Occupied = false;
+		Hovered.Level = 0;
+		Hovered.Hits = 0;
+		Hovered.Facing = 0;
+		Hovered.Copy = 0;
+		RefreshPlot( Hovered );
+		ArenaSounds.MenuBack();
+		Loop?.Announce( GameSettings.Text.F( GameSettings.Text.City.Removed, title ) );
+		Loop?.Autosave();
 	}
 
 	void HideShootRig()

@@ -732,32 +732,32 @@
     "Infirmary": {
       "Title": "HEART",
       "Payoff": "+HP",
-      "Promise": "+{0} HP AT RANK 1",
-      "Blurb": "Raises max hearts. Same neighbor adds a rank."
+      "Promise": "+{0} HP",
+      "Blurb": "Raises max hp."
     },
     "Anvil": {
       "Title": "MUSCLE",
       "Payoff": "+DMG",
-      "Promise": "+{0} DAMAGE AT RANK 1",
-      "Blurb": "Rounds hit harder. Same neighbor adds a rank."
+      "Promise": "+{0} DAMAGE",
+      "Blurb": "Rounds hit harder."
     },
     "Booster": {
       "Title": "ADRENAL",
       "Payoff": "DASH",
-      "Promise": "SHORTER DASH COOLDOWN",
-      "Blurb": "Dash returns faster each working rank."
+      "Promise": "{0}% SHORTER DASH COOLDOWN",
+      "Blurb": "Dash returns faster."
     },
     "Brake": {
       "Title": "LUNGS",
       "Payoff": "SLOW",
       "Promise": "UNLOCKS THE SLOW METER",
-      "Blurb": "Unlocks slow. Higher rank drains slower."
+      "Blurb": "LMB to slow down time. More buildings increase the duration of the slow effect."
     },
     "Showcase": {
       "Title": "LIVER",
       "Payoff": "+CARD",
       "Promise": "+1 UPGRADE CARD AFTER EACH LAP",
-      "Blurb": "One extra upgrade card after every lap."
+      "Blurb": ""
     }
   },
   "Places": {

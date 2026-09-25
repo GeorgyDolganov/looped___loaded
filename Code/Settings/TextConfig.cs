@@ -160,8 +160,35 @@ public class TextConfig : GameResource
 
 	public string BuildingTitle( BuildingKind kind ) => Or( Building( kind ).Title, kind.ToString().ToUpperInvariant() );
 	public string BuildingPayoff( BuildingKind kind ) => Or( Building( kind ).Payoff, "" );
-	public string BuildingPromise( BuildingKind kind ) => F( Building( kind ).Promise, Progression.RankValue( 1 ) );
-	public string BuildingBlurb( BuildingKind kind ) => Or( Building( kind ).Blurb, "" );
+	public string BuildingPromise( BuildingKind kind ) => F( PromiseTemplate( kind ), PromiseAmount( kind ) );
+	public string BuildingBlurb( BuildingKind kind ) => BlurbTemplate( kind );
+
+	static string PromiseTemplate( BuildingKind kind ) => kind switch
+	{
+		BuildingKind.Infirmary => "+{0} HP",
+		BuildingKind.Anvil => "+{0} DAMAGE",
+		BuildingKind.Booster => "{0}% SHORTER DASH COOLDOWN",
+		BuildingKind.Brake => "UNLOCKS THE SLOW METER",
+		_ => "+1 UPGRADE CARD AFTER EACH LAP"
+	};
+
+	static string BlurbTemplate( BuildingKind kind ) => kind switch
+	{
+		BuildingKind.Infirmary => "Raises max hp.",
+		BuildingKind.Anvil => "Rounds hit harder.",
+		BuildingKind.Booster => "Dash returns faster.",
+		BuildingKind.Brake => "LMB to slow down time. More buildings increase the duration of the slow effect.",
+		_ => ""
+	};
+
+	static int PromiseAmount( BuildingKind kind )
+	{
+		if ( kind != BuildingKind.Booster )
+			return Progression.RankValue( 1 );
+
+		var scale = Progression.DashScale( 1 );
+		return (int)MathF.Round( (1f - scale) * 100f );
+	}
 
 	public PlaceCopy Place( RunLocation location )
 	{
@@ -326,36 +353,36 @@ public class BuildingsCopy
 	{
 		Title = "HEART",
 		Payoff = "+HP",
-		Promise = "+{0} HP AT RANK 1",
-		Blurb = "Raises max hearts. Same neighbor adds a rank."
+		Promise = "+{0} HP",
+		Blurb = "Raises max hp."
 	};
 	[Property] public BuildingCopy Anvil { get; set; } = new()
 	{
 		Title = "MUSCLE",
 		Payoff = "+DMG",
-		Promise = "+{0} DAMAGE AT RANK 1",
-		Blurb = "Rounds hit harder. Same neighbor adds a rank."
+		Promise = "+{0} DAMAGE",
+		Blurb = "Rounds hit harder."
 	};
 	[Property] public BuildingCopy Booster { get; set; } = new()
 	{
 		Title = "ADRENAL",
 		Payoff = "DASH",
-		Promise = "SHORTER DASH COOLDOWN",
-		Blurb = "Dash returns faster each working rank."
+		Promise = "{0}% SHORTER DASH COOLDOWN",
+		Blurb = "Dash returns faster."
 	};
 	[Property] public BuildingCopy Brake { get; set; } = new()
 	{
 		Title = "LUNGS",
 		Payoff = "SLOW",
 		Promise = "UNLOCKS THE SLOW METER",
-		Blurb = "Unlocks slow. Higher rank drains slower."
+		Blurb = "LMB to slow down time. More buildings increase the duration of the slow effect."
 	};
 	[Property] public BuildingCopy Showcase { get; set; } = new()
 	{
 		Title = "LIVER",
 		Payoff = "+CARD",
 		Promise = "+1 UPGRADE CARD AFTER EACH LAP",
-		Blurb = "One extra upgrade card after every lap."
+		Blurb = ""
 	};
 }
 
