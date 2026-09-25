@@ -597,6 +597,7 @@ public class DecideCopy
 	[Property] public string Extract { get; set; } = "EXTRACT";
 	[Property] public string ExtractBankOne { get; set; } = "Bank {0} biomass. Return to the altar.";
 	[Property] public string ExtractBankMany { get; set; } = "Bank {0} biomass. Return to the altar.";
+	[Property] public string Boss { get; set; } = "BOSS";
 	[Property] public string OneMore { get; set; } = "ONE MORE ROUND";
 	[Property] public string OneMoreBlurb { get; set; } = "Chapel. Another DNA card. The board gets meaner.";
 	[Property] public string Fight { get; set; } = "FIGHT THE {0}";
@@ -608,6 +609,7 @@ public class DecideCopy
 	[Property] public string DeadBurnedOne { get; set; } = "{0} ROUND BURNED";
 	[Property] public string DeadBurnedMany { get; set; } = "{0} ROUNDS BURNED";
 	[Property] public string DeadCityBlurb { get; set; } = "Leave the ring. Build with what you already banked.";
+	[Property] public string Exit { get; set; } = "Exit";
 	[Property] public string Extracted { get; set; } = "EXTRACTED";
 	[Property] public string ExtractedRoundsLabel { get; set; } = "ROUNDS";
 	[Property] public string ExtractedBiomassLabel { get; set; } = "EXTRACTED BIOMASS";

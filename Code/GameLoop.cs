@@ -991,12 +991,13 @@ public sealed class GameLoop : Component
 
 			if ( Input.Pressed( "Slot2" ) )
 			{
-				ContinueRun();
+				if ( HasBossOffer )
+					ContinueBoss();
+				else
+					ContinueRun();
 				return;
 			}
 
-			if ( HasBossOffer && Input.Pressed( "Slot3" ) )
-				ContinueBoss();
 			return;
 		}
 
@@ -1301,7 +1302,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseContinue()
 	{
-		if ( Paused || Phase != RunPhase.DecideLap )
+		if ( Paused || Phase != RunPhase.DecideLap || HasBossOffer )
 			return;
 
 		ContinueRun();
