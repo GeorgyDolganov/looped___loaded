@@ -64,7 +64,7 @@
 						</div>
 						<div class="stat-row lead">
 							<label class="key">@GameSettings.Text.Hud.Stash</label>
-							<label class="value">@Loop.Stash</label>
+							<label class="value">@(Loop.City.IsValid() ? Loop.City.Warehouse : 0)</label>
 						</div>
 					</div>
 				</div>
@@ -159,7 +159,7 @@
 										<label class="blurb">@Buildings.Blurb(Loop.City.Selected)</label>
 									}
 								</div>
-								<label class="cost">@Buildings.FrameCost(Loop.City.Selected, Loop.City.Placed(Loop.City.Selected)) biomass</label>
+								<label class="cost">@Buildings.FrameCost(Loop.City.Selected, Loop.City.Placed(Loop.City.Selected)) biomass injections</label>
 							</div>
 						</div>
 				</div>
@@ -211,7 +211,7 @@
 			</div>
 		}
 
-		@if ( !Loop.Paused && Loop.Phase != RunPhase.City )
+		@if ( !Loop.Paused && Loop.Phase != RunPhase.City && Loop.Phase != RunPhase.Playing )
 		{
 			<label class="help">@HelpText</label>
 		}
@@ -960,9 +960,9 @@
 				RunPhase.City => Loop.City.IsValid() && Loop.City.Building
 					? GameSettings.Text.Help.CityBuild
 					: GameSettings.Text.Help.CityShoot,
-				RunPhase.DecideLap => Loop.HasBossOffer ? GameSettings.Text.F( GameSettings.Text.Help.DecideLapBoss, Loop.BossName ) : GameSettings.Text.Help.DecideLap,
+				RunPhase.DecideLap => "",
 				RunPhase.DecideRing => Loop.HasNextRing ? GameSettings.Text.Help.DecideRingNext : GameSettings.Text.Help.DecideRing,
-				RunPhase.PickTrait => GameSettings.Text.F( GameSettings.Text.Help.Shop, Loop.Offers.Count ),
+				RunPhase.PickTrait => "",
 				RunPhase.Dead => GameSettings.Text.Help.Dead,
 				RunPhase.Extracted => GameSettings.Text.Help.Extracted,
 				RunPhase.Won => GameSettings.Text.Help.Won,

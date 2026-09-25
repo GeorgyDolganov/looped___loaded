@@ -8,7 +8,7 @@ public sealed class GameLoop : Component
 	[Property] public RoundInventory Inventory { get; set; }
 	[Property] public CityBoard City { get; set; }
 	[Property] public float LostRoundMinArc { get; set; } = 460f;
-	[Property] public float NoticeDuration { get; set; } = 1.6f;
+	[Property] public float NoticeDuration { get; set; } = 4f;
 	[Property] public int MaxHealth { get; set; } = 3;
 	public RunPhase Phase { get; private set; } = RunPhase.Menu;
 	public bool InCity => Phase == RunPhase.City || Phase == RunPhase.Won;
@@ -48,7 +48,7 @@ public sealed class GameLoop : Component
 	TextConfig T => GameSettings.Text;
 	public string Notice { get; private set; } = "AIM. FIRE.";
 	public float NoticeAge => Time.Now - noticeAt;
-	public bool NoticeVisible => NoticeAge < NoticeDuration;
+	public bool NoticeVisible => NoticeAge < MathF.Max( NoticeDuration, 4f );
 
 	public int Lap { get; private set; } = 1;
 	int layoutSeed;
@@ -785,7 +785,6 @@ public sealed class GameLoop : Component
 		SpawnWave( 1 );
 		Mouse.CursorType = "crosshair";
 		ArenaSounds.Fight();
-		Announce( T.Announce.StartRun );
 	}
 
 	public void RegisterKill( EnemyKind kind, Vector2 origin )
@@ -794,8 +793,6 @@ public sealed class GameLoop : Component
 		var gain = ScaleReward( Progression.KillScrap( kind, Lap, LocationIndex ) );
 		if ( gain > 0 )
 			BonePickup.Spill( this, origin, gain );
-
-		Announce( T.Announce.TargetDown );
 	}
 
 	public void KeepScrap( int value )
@@ -822,7 +819,7 @@ public sealed class GameLoop : Component
 		if ( Time.Now >= scrapNoticeAt )
 		{
 			scrapNoticeAt = Time.Now + 0.4f;
-			Announce( T.F( T.Announce.ScrapGain, value, Scrap ) );
+			Announce( T.F( T.Announce.ScrapGain, value ) );
 		}
 	}
 
@@ -1134,7 +1131,6 @@ public sealed class GameLoop : Component
 		if ( Health > 0 )
 		{
 			ArenaSounds.Pain( Runner.WorldPosition );
-			Announce( T.F( T.Announce.HealthLeft, Health ) );
 			return;
 		}
 
@@ -1283,7 +1279,6 @@ public sealed class GameLoop : Component
 		skipHinted = false;
 		Phase = RunPhase.DecideLap;
 		ArenaSounds.Tele();
-		Announce( T.F( T.Announce.LapClear, Lap ) );
 		NoteProgress( ProgressGoal.FinishLap );
 	}
 
@@ -1484,7 +1479,8 @@ public sealed class GameLoop : Component
 			Mouse.CursorType = "crosshair";
 		}
 
-		Announce( deposit ? T.F( T.Announce.CityDeposit, packed ) : T.Announce.City );
+		if ( !deposit )
+			Announce( T.Announce.City );
 		Autosave();
 	}
 
@@ -1496,9 +1492,7 @@ public sealed class GameLoop : Component
 		var added = GrantContinueRounds();
 		BeginTraitPick();
 		ArenaSounds.Pickup();
-		Announce( added > 0
-			? T.F( T.Announce.ContinueRounds, added, Stash, Threat )
-			: T.F( T.Announce.StashMax, Threat ) );
+		Announce( added > 0 ? T.Announce.ContinueRounds : T.Announce.StashMax );
 	}
 
 	void ContinueBoss()
@@ -1793,7 +1787,6 @@ public sealed class GameLoop : Component
 		Inventory.Loadout.Install( trait );
 		offers[index].Bought = true;
 		ArenaSounds.Pickup();
-		Announce( T.F( T.Announce.TraitBought, RoundTraits.Title( trait ), Inventory.Loadout.TraitLevel( trait ), Scrap ) );
 		NoteProgress( ProgressGoal.BuyTrait );
 
 		if ( OpenOfferCount() == 0 )
@@ -1844,9 +1837,8 @@ public sealed class GameLoop : Component
 		else
 			ArenaSounds.Change();
 
-		Announce( fight
-			? Locations.FightHint( Location )
-			: T.F( T.Announce.Armed, Scrap ) );
+		if ( fight )
+			Announce( Locations.FightHint( Location ) );
 	}
 
 	int OpenOfferCount()

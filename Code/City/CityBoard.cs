@@ -425,9 +425,6 @@ public sealed class CityBoard : Component
 			plot.Hits = 0;
 			plot.Level++;
 			ArenaSounds.Pickup( world );
-			Loop?.Announce( plot.Working
-				? GameSettings.Text.F( GameSettings.Text.City.LevelReflects, Buildings.Title( plot.Kind ), plot.Level )
-				: GameSettings.Text.F( GameSettings.Text.City.Level, Buildings.Title( plot.Kind ), plot.Level ) );
 			if ( plot.Working )
 				Loop?.NoteProgress( ProgressGoal.WorkOrgan );
 		}
@@ -794,7 +791,6 @@ public sealed class CityBoard : Component
 		Hovered.Hits = 0;
 		RefreshPlot( Hovered );
 		ArenaSounds.MenuOk();
-		Loop?.Announce( GameSettings.Text.F( GameSettings.Text.City.PlacedFrame, Buildings.Title( Selected ) ) );
 		Loop?.NoteProgress( ProgressGoal.PlaceFrame );
 		Loop?.Autosave();
 	}
@@ -1477,7 +1473,7 @@ public sealed class CityBoard : Component
 			if ( !sign.IsValid() )
 				continue;
 
-			PlaceCraftSign( sign, plot.X, plot.Y, plot.Kind );
+			PlaceCraftSign( sign, plot.X, plot.Y, plot.Kind, plot: plot );
 		}
 	}
 
@@ -1486,7 +1482,7 @@ public sealed class CityBoard : Component
 		var go = Scene.CreateObject();
 		go.Name = "Craft Sign";
 		go.Parent = plot.Body;
-		PlaceCraftSign( go, plot.X, plot.Y, plot.Kind );
+		PlaceCraftSign( go, plot.X, plot.Y, plot.Kind, plot: plot );
 	}
 
 	void ShowCraftSign( int x, int y )
@@ -1565,10 +1561,11 @@ public sealed class CityBoard : Component
 		text.TextScope = scope;
 	}
 
-	void PlaceCraftSign( GameObject go, int x, int y, BuildingKind kind, bool preview = false )
+	void PlaceCraftSign( GameObject go, int x, int y, BuildingKind kind, bool preview = false, CityPlot plot = null )
 	{
-		go.WorldPosition = CraftSignPosition( x, y, kind );
-		DressCraftSign( go.GetComponent<TextRenderer>() ?? go.AddComponent<TextRenderer>(), !preview, preview );
+		var lift = !preview && plot is not null && plot.NextCost > 0 ? 16f : 0f;
+		go.WorldPosition = CraftSignPosition( x, y, kind ) + Vector3.Up * lift;
+		DressCraftSign( go.GetComponent<TextRenderer>() ?? go.AddComponent<TextRenderer>(), !preview, preview, plot );
 	}
 
 	Vector3 CraftSignPosition( int x, int y, BuildingKind kind )
@@ -1594,13 +1591,15 @@ public sealed class CityBoard : Component
 		return 8f + RotatedSpanZ( model.Bounds, rotation ) * scale;
 	}
 
-	static void DressCraftSign( TextRenderer text, bool inject, bool preview )
+	static void DressCraftSign( TextRenderer text, bool inject, bool preview, CityPlot plot = null )
 	{
 		var city = GameSettings.Text.City;
 		var label = preview ? city.ClickToCraft : inject ? city.ClickToInject : city.SwitchToInject;
-		text.Text = string.IsNullOrWhiteSpace( label )
-			? (preview ? "Click to Craft" : inject ? "Click to Inject" : "Switch to Inject Mode")
-			: label;
+		if ( string.IsNullOrWhiteSpace( label ) )
+			label = preview ? "Click to Craft" : inject ? "Click to Inject" : "Switch to Inject Mode";
+		if ( inject && plot is not null && plot.NextCost > 0 )
+			label = $"{plot.Hits}/{plot.NextCost}\n{label}";
+		text.Text = label;
 		text.FontFamily = "Anton";
 		text.FontSize = 36f;
 		text.FontWeight = 700;

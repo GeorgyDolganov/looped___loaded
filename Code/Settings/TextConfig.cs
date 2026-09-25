@@ -494,7 +494,7 @@ public class HudCopy
 	[Property] public string TrinketsNone { get; set; } = "PEA";
 	[Property] public string Health { get; set; } = "HEALTH";
 	[Property] public string Ammo { get; set; } = "AMMO";
-	[Property] public string DashKey { get; set; } = "SPACEBAR";
+	[Property] public string DashKey { get; set; } = "SPACE";
 	[Property] public string SlowKey { get; set; } = "RMB";
 	[Property] public string Fed { get; set; } = "TOTAL BIOMASS";
 	[Property] public string Threat { get; set; } = "THREAT {0}";
@@ -704,7 +704,7 @@ public class AnnounceCopy
 	[Property] public string SlotDeleted { get; set; } = "SLOT {0} DELETED";
 	[Property] public string StartRun { get; set; } = "ONE LAP. ONE GUN. CASH OUT OR GO AGAIN.";
 	[Property] public string TargetDown { get; set; } = "TARGET DOWN";
-	[Property] public string ScrapGain { get; set; } = "+{0} SCRAP  ·  {1}";
+	[Property] public string ScrapGain { get; set; } = "+{0} BONES";
 	[Property] public string RoundChamberedHits { get; set; } = "ROUND {0} CHAMBERED  +{1}";
 	[Property] public string RoundChambered { get; set; } = "ROUND {0} CHAMBERED";
 	[Property] public string RoundStatus { get; set; } = "ROUND {0} {1}";
@@ -727,8 +727,8 @@ public class AnnounceCopy
 	[Property] public string Won { get; set; } = "EKKE IS FULL";
 	[Property] public string Ascended { get; set; } = "ASCEND {0}  ·  FEED {1}";
 	[Property] public string City { get; set; } = "ALTAR";
-	[Property] public string ContinueRounds { get; set; } = "+{0} BIOMASS  ·  STASH {1}  ·  ×{2:0.00}";
-	[Property] public string StashMax { get; set; } = "STASH MAX  ·  ×{0:0.00}";
+	[Property] public string ContinueRounds { get; set; } = "+1 ROUND  ·  +1 BIOMASS";
+	[Property] public string StashMax { get; set; } = "BIOMASS MAX";
 	[Property] public string BossContinue { get; set; } = "{0}  ·  +{1}  ·  STASH {2}";
 	[Property] public string NeedScrap { get; set; } = "NEED {0} SCRAP";
 	[Property] public string ShopRefresh { get; set; } = "REFRESH  ·  NEXT {0}  ·  {1} SCRAP";
