@@ -235,7 +235,7 @@
     "Bore": {
       "Code": "BORE",
       "Title": "BORE",
-      "Blurb": "Did somebody say "RAILGUN"? Locks out LASH."
+      "Blurb": "Did somebody say \"RAILGUN\"? Locks out LASH."
     },
     "Drum": {
       "Code": "DRUM",
@@ -656,11 +656,6 @@
       "Code": "FUS",
       "Title": "FUSE",
       "Blurb": "Missed catch explodes where it drops."
-    },
-    "Snap": {
-      "Code": "SNP",
-      "Title": "SNAP",
-      "Blurb": "A catch primes a faster, longer-preview shot."
     },
     "LateMag": {
       "Code": "LTM",

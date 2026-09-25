@@ -97,15 +97,18 @@
 							</div>
 						</div>
 					</div>
-					<div class="meter-row">
-						<label class="meter-key">@GameSettings.Text.Hud.Slow</label>
-						<div class="charge-meter slow">
-							<img class="charge-layer" src="ui/Arena UI/slow_empty.png" />
-							<div class="charge-reveal" style="width: 100%">
-								<img class="charge-layer" src="ui/Arena UI/slow.png" />
+					@if ( SlowUnlocked )
+					{
+						<div class="meter-row">
+							<label class="meter-key">@GameSettings.Text.Hud.Slow</label>
+							<div class="charge-meter slow">
+								<img class="charge-layer" src="ui/Arena UI/slow_empty.png" />
+								<div class="charge-reveal" style="width: @(SlowPercent)%">
+									<img class="charge-layer" src="ui/Arena UI/slow.png" />
+								</div>
 							</div>
 						</div>
-					</div>
+					}
 				</div>
 			</div>
 		}
@@ -628,6 +631,13 @@
 		<div class="cursor-ring"></div>
 		<div class="cursor-dot"></div>
 	</div>
+	<div class="shot-cursor">
+		<div class="reload-track"></div>
+		@for ( var i = 0; i < ReloadMarks; i++ )
+		{
+			<div class="reload-mark"></div>
+		}
+	</div>
 </root>
 
 @code
@@ -649,6 +659,7 @@
 			: Sandbox.UI.PointerEvents.None;
 
 		TickCursor();
+		TickReloadCursor();
 		TickHover();
 		TickSettingDrag();
 		TickTraySize();
@@ -1133,6 +1144,10 @@
 	float trailY;
 	Sandbox.UI.Panel auraPanel;
 	Sandbox.UI.Panel trailPanel;
+	Sandbox.UI.Panel shotCursor;
+	readonly List<Sandbox.UI.Panel> reloadMarks = new();
+	bool reloadLaidOut;
+	const int ReloadMarks = 24;
 	Sandbox.UI.Panel trayPanel;
 	Sandbox.UI.Panel shopSheet;
 	Sandbox.UI.Panel healthPanel;
@@ -1232,7 +1247,9 @@
 			if ( !meter.HasClass( "charge-meter" ) )
 				continue;
 
-			var fraction = meter.HasClass( "slow" ) ? 1f : Math.Clamp( DashPercent / 100f, 0f, 1f );
+			var fraction = meter.HasClass( "slow" )
+				? Math.Clamp( SlowPercent / 100f, 0f, 1f )
+				: Math.Clamp( DashPercent / 100f, 0f, 1f );
 			var revealW = fraction >= 0.999f ? ChargeMeterWidth : ChargeMeterWidth * fraction;
 
 			foreach ( var layer in meter.Descendants )
@@ -1326,6 +1343,72 @@
 		target.Style.Left = Sandbox.UI.Length.Pixels( x );
 		target.Style.Top = Sandbox.UI.Length.Pixels( y );
 		target.Style.Dirty();
+	}
+
+	void TickReloadCursor()
+	{
+		if ( !shotCursor.IsValid() || reloadMarks.Count != ReloadMarks )
+			BindReloadMarks();
+
+		var show = ShowReloadCursor();
+		var point = CursorOn();
+		PlaceCursor( shotCursor, point.x, point.y, show );
+		if ( !show || reloadMarks.Count == 0 )
+			return;
+
+		if ( !reloadLaidOut )
+			LayoutReloadMarks();
+
+		var amount = Loop.Inventory.Reload01;
+		for ( var i = 0; i < reloadMarks.Count; i++ )
+			reloadMarks[i].SetClass( "on", amount * reloadMarks.Count >= i + 0.001f );
+	}
+
+	bool ShowReloadCursor()
+	{
+		if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
+			return false;
+
+		if ( Loop.InCity || Loop.InMenu || Loop.WantsUiCursor )
+			return false;
+
+		return Loop.Inventory.ReloadLeft > 0.02f;
+	}
+
+	void BindReloadMarks()
+	{
+		shotCursor = FindHud( "shot-cursor" );
+		reloadMarks.Clear();
+		reloadLaidOut = false;
+		if ( Panel is null )
+			return;
+
+		foreach ( var child in Panel.Descendants )
+		{
+			if ( child.HasClass( "reload-mark" ) )
+				reloadMarks.Add( child );
+		}
+	}
+
+	void LayoutReloadMarks()
+	{
+		var count = reloadMarks.Count;
+		if ( count == 0 )
+			return;
+
+		const float center = 32f;
+		const float radius = 24f;
+		for ( var i = 0; i < count; i++ )
+		{
+			var ang = -MathF.PI * 0.5f + MathF.Tau * i / count;
+			var mark = reloadMarks[i];
+			mark.Style.Position = Sandbox.UI.PositionMode.Absolute;
+			mark.Style.Left = Sandbox.UI.Length.Pixels( center + MathF.Cos( ang ) * radius );
+			mark.Style.Top = Sandbox.UI.Length.Pixels( center + MathF.Sin( ang ) * radius );
+			mark.Style.Dirty();
+		}
+
+		reloadLaidOut = true;
 	}
 
 	void TickHover()
@@ -3197,6 +3280,46 @@
 		height: 10px;
 		border-radius: 5px;
 		background-color: #f0b429;
+	}
+
+	.shot-cursor {
+		position: absolute;
+		width: 64px;
+		height: 64px;
+		margin-left: -32px;
+		margin-top: -32px;
+		pointer-events: none;
+		z-index: 90;
+		opacity: 0;
+	}
+
+	.shot-cursor.on {
+		opacity: 1;
+	}
+
+	.reload-track {
+		position: absolute;
+		left: 8px;
+		top: 8px;
+		width: 48px;
+		height: 48px;
+		border-radius: 24px;
+		border: 2px solid rgba(82, 209, 255, 0.38);
+	}
+
+	.reload-mark {
+		position: absolute;
+		width: 6px;
+		height: 6px;
+		margin-left: -3px;
+		margin-top: -3px;
+		border-radius: 3px;
+		background-color: rgba(82, 209, 255, 0);
+		pointer-events: none;
+	}
+
+	.reload-mark.on {
+		background-color: #52d1ff;
 	}
 
 	.run-left {
