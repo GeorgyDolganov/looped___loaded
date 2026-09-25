@@ -40,7 +40,7 @@ public static class RoundCombat
 
 	public static List<Vector3> Circle( ArenaGeometry geometry, Vector2 flat, float radius )
 	{
-		const int segments = 20;
+		var segments = Math.Max( 3, GraphicsProfile.CircleSegments );
 		var points = new List<Vector3>( segments + 1 );
 		for ( var i = 0; i <= segments; i++ )
 		{

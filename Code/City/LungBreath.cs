@@ -27,7 +27,7 @@ public sealed class LungBreath : Component
 
 		renderer.Attributes.Set( "BreathPhase", phase );
 		renderer.Attributes.Set( "BreathRate", Rate * rateScale );
-		renderer.Attributes.Set( "BreathStrength", Strength );
+		renderer.Attributes.Set( "BreathStrength", Strength * GraphicsProfile.OrganMotion );
 		renderer.Attributes.Set( "LungMirrorX", Mirror.x );
 		renderer.Attributes.Set( "LungMirrorY", Mirror.y );
 		renderer.Attributes.Set( "LungMirrorZ", Mirror.z );

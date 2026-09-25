@@ -362,7 +362,11 @@ public sealed class ArenaBuilder : Component
 		}
 
 		if ( finishLight.IsValid() )
-			finishLight.LightColor = FinishGold * (1.4f + 6.5f * flash);
+		{
+			finishLight.LightColor = GraphicsProfile.FinishPulse
+				? FinishGold * (1.4f + 6.5f * flash)
+				: FinishGold * 2.2f;
+		}
 
 		if ( finishBeam.IsValid() )
 		{
@@ -710,7 +714,11 @@ public sealed class ArenaBuilder : Component
 		if ( normal.Length < 0.01f )
 			normal = new Vector2( -along.y, along.x );
 
-		for ( var i = 0; i < 18; i++ )
+		var count = GraphicsProfile.GlassBits;
+		if ( count <= 0 )
+			return;
+
+		for ( var i = 0; i < count; i++ )
 		{
 			var spot = wall.Center + along * (wall.Length * Game.Random.Float( -0.42f, 0.42f )) + normal * Game.Random.Float( -16f, 16f );
 			var at = new Vector3( spot.x, spot.y, Game.Random.Float( 16f, 108f ) );
@@ -769,6 +777,13 @@ public sealed class ArenaBuilder : Component
 				bit.Spin *= 0.35f;
 				if ( bit.Velocity.Length < 28f )
 				{
+					if ( !GraphicsProfile.GlassRests )
+					{
+						bit.Body.Destroy();
+						glassBits.RemoveAt( i );
+						continue;
+					}
+
 					bit.Velocity = Vector3.Zero;
 					bit.Spin = Vector3.Zero;
 					bit.Rest = true;

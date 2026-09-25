@@ -18,7 +18,6 @@ public sealed class RoundProjectile : Component
 	public Color Tint => Flight.Tint;
 
 	const float StepLength = 18f;
-	const int TrailPoints = 48;
 	const string ModelPath = "models/projectile.vmdl";
 	const float FaceYaw = -90f;
 
@@ -105,9 +104,7 @@ public sealed class RoundProjectile : Component
 		EnsureShell();
 		EnsureSparks();
 
-		var glow = GameObject.AddComponent<PointLight>();
-		glow.LightColor = ShotColors.Player * (Flight.Nail ? 3.5f : 6f);
-		glow.Radius = Flight.Nail ? 260f : 420f;
+		GraphicsApply.AddShotLight( GameObject, ShotColors.Player * (Flight.Nail ? 3.5f : 6f), Flight.Nail ? 260f : 420f );
 
 		var trailObject = Scene.CreateObject();
 		trailObject.Name = "Trail";
@@ -133,9 +130,12 @@ public sealed class RoundProjectile : Component
 		if ( !Loop.IsFrozen )
 		{
 			var toTravel = Speed * Time.Delta;
+			var steps = 0;
+			var cap = Math.Max( 1, GraphicsProfile.MaxProjectileSteps );
 			while ( toTravel > 0.001f )
 			{
-				var step = MathF.Min( StepLength, toTravel );
+				steps++;
+				var step = steps >= cap ? toTravel : MathF.Min( StepLength, toTravel );
 				toTravel -= step;
 				if ( !Step( step ) )
 					return;
@@ -444,6 +444,17 @@ public sealed class RoundProjectile : Component
 
 	void EnsureSparks()
 	{
+		if ( GraphicsProfile.MaxParticles <= 0 )
+		{
+			if ( sparks.IsValid() )
+			{
+				sparks.Destroy();
+				sparks = null;
+			}
+
+			return;
+		}
+
 		if ( sparks.IsValid() )
 			return;
 
@@ -457,7 +468,7 @@ public sealed class RoundProjectile : Component
 		sparks.LocalPosition = Vector3.Zero;
 
 		var effect = sparks.AddComponent<ParticleEffect>();
-		effect.MaxParticles = 64;
+		effect.MaxParticles = GraphicsProfile.MaxParticles;
 		effect.Lifetime = 0.4f;
 		effect.LocalSpace = 0f;
 		effect.ApplyAlpha = true;
@@ -504,6 +515,7 @@ public sealed class RoundProjectile : Component
 		if ( !effect.IsValid() )
 			return;
 
+		effect.MaxParticles = GraphicsProfile.MaxParticles;
 		effect.TimeScale = Loop.IsValid() && Loop.IsFrozen ? 0f : 1f;
 		effect.InitialVelocity = new Vector3( -Direction.x, -Direction.y, 0f ) * 140f;
 	}
@@ -531,7 +543,7 @@ public sealed class RoundProjectile : Component
 	{
 		trail.Add( point );
 
-		while ( trail.Count > TrailPoints )
+		while ( trail.Count > GraphicsProfile.TrailPoints )
 			trail.RemoveAt( 0 );
 
 		trailLine?.SetPoints( trail );
@@ -539,7 +551,7 @@ public sealed class RoundProjectile : Component
 
 	void PaintSplash()
 	{
-		if ( Flight.ExplosiveRadius <= 1f || geometry is null )
+		if ( !GraphicsProfile.SplashRings || Flight.ExplosiveRadius <= 1f || geometry is null )
 		{
 			splashRing?.Clear();
 			return;

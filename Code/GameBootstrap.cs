@@ -8,8 +8,11 @@ public sealed class GameBootstrap : Component
 	[Property] public RingRunner Runner { get; set; }
 	[Property] public CameraComponent Camera { get; set; }
 
+	int trimPasses;
+
 	protected override void OnStart()
 	{
+		TrimDuplicates();
 		EnsureLighting();
 		var loop = ResolveLoop();
 		if ( !loop.IsValid() )
@@ -18,9 +21,21 @@ public sealed class GameBootstrap : Component
 		Wire( loop );
 		EnsureHud( loop );
 		EnsureCamera( loop );
+		TrimDuplicates();
 		ArenaSounds.Warm();
 		loop.RestoreSaves();
 		loop.ShowMenu();
+		UserSettings.Load();
+		GraphicsApply.Push( Scene );
+	}
+
+	protected override void OnUpdate()
+	{
+		if ( trimPasses >= 8 )
+			return;
+
+		trimPasses++;
+		TrimDuplicates();
 	}
 
 	GameLoop ResolveLoop()
@@ -31,6 +46,9 @@ public sealed class GameBootstrap : Component
 		Loop = GetComponent<GameLoop>() ?? Scene.GetAllComponents<GameLoop>().FirstOrDefault();
 		if ( Loop.IsValid() )
 			return Loop;
+
+		if ( HasComponentNamed( GameObject, "GameLoop" ) )
+			return null;
 
 		Loop = GameObject.AddComponent<GameLoop>();
 		return Loop;
@@ -49,17 +67,30 @@ public sealed class GameBootstrap : Component
 
 		if ( !loop.Runner.IsValid() )
 		{
-			var player = Scene.CreateObject();
-			player.Name = "Player";
-			loop.Runner = player.AddComponent<RingRunner>();
-			player.AddComponent<PlayerAim>();
-			player.AddComponent<RoundInventory>();
+			var player = FindNamed( "Player" );
+			if ( player.IsValid() )
+				loop.Runner = player.GetComponent<RingRunner>();
+
+			if ( !loop.Runner.IsValid() && !HasComponentNamed( player, "RingRunner" ) )
+			{
+				if ( !player.IsValid() )
+				{
+					player = Scene.CreateObject();
+					player.Name = "Player";
+				}
+
+				loop.Runner = player.AddComponent<RingRunner>();
+				if ( !HasComponentNamed( player, "PlayerAim" ) )
+					player.AddComponent<PlayerAim>();
+				if ( !HasComponentNamed( player, "RoundInventory" ) )
+					player.AddComponent<RoundInventory>();
+			}
 		}
 
-		if ( !loop.Aim.IsValid() )
+		if ( !loop.Aim.IsValid() && loop.Runner.IsValid() )
 			loop.Aim = loop.Runner.GetComponent<PlayerAim>();
 
-		if ( !loop.Inventory.IsValid() )
+		if ( !loop.Inventory.IsValid() && loop.Runner.IsValid() )
 			loop.Inventory = loop.Runner.GetComponent<RoundInventory>();
 
 		if ( loop.Runner.IsValid() )
@@ -108,11 +139,138 @@ public sealed class GameBootstrap : Component
 			return;
 		}
 
-		var go = Scene.CreateObject();
-		go.Name = "HUD";
-		go.AddComponent<ScreenPanel>();
+		var go = FindNamed( "HUD" );
+		if ( go.IsValid() && HasComponentNamed( go, "ArenaHud" ) )
+			return;
+
+		if ( !go.IsValid() )
+		{
+			go = Scene.CreateObject();
+			go.Name = "HUD";
+		}
+
+		if ( !go.GetComponent<ScreenPanel>().IsValid() )
+			go.AddComponent<ScreenPanel>();
+
 		hud = go.AddComponent<ArenaHud>();
 		hud.Loop = loop;
+	}
+
+	void TrimDuplicates()
+	{
+		KeepNamed( "Player" );
+		KeepNamed( "HUD" );
+
+		var player = FindNamed( "Player" );
+		if ( player.IsValid() )
+		{
+			KeepComponent( player, "RingRunner" );
+			KeepChild( player, "Warlord" );
+		}
+
+		var hud = FindNamed( "HUD" );
+		if ( hud.IsValid() )
+			KeepComponent( hud, "ArenaHud" );
+	}
+
+	void KeepNamed( string name )
+	{
+		GameObject keep = null;
+		var drop = new List<GameObject>();
+		foreach ( var go in Scene.GetAllObjects( false ) )
+		{
+			if ( !go.IsValid() || go.Name != name )
+				continue;
+
+			if ( !keep.IsValid() )
+			{
+				keep = go;
+				continue;
+			}
+
+			drop.Add( go );
+		}
+
+		foreach ( var go in drop )
+		{
+			if ( go.IsValid() )
+				go.Destroy();
+		}
+	}
+
+	void KeepComponent( GameObject go, string typeName )
+	{
+		Component keep = null;
+		var drop = new List<Component>();
+		foreach ( var component in go.Components.GetAll<Component>( FindMode.EnabledInSelfAndDescendants ) )
+		{
+			if ( !component.IsValid() || component.GameObject != go || component.GetType().Name != typeName )
+				continue;
+
+			if ( !keep.IsValid() )
+			{
+				keep = component;
+				continue;
+			}
+
+			drop.Add( component );
+		}
+
+		foreach ( var component in drop )
+		{
+			if ( component.IsValid() )
+				component.Destroy();
+		}
+	}
+
+	void KeepChild( GameObject parent, string name )
+	{
+		GameObject keep = null;
+		var drop = new List<GameObject>();
+		foreach ( var child in parent.Children )
+		{
+			if ( !child.IsValid() || child.Name != name )
+				continue;
+
+			if ( !keep.IsValid() )
+			{
+				keep = child;
+				continue;
+			}
+
+			drop.Add( child );
+		}
+
+		foreach ( var child in drop )
+		{
+			if ( child.IsValid() )
+				child.Destroy();
+		}
+	}
+
+	GameObject FindNamed( string name )
+	{
+		foreach ( var go in Scene.GetAllObjects( false ) )
+		{
+			if ( go.IsValid() && go.Name == name )
+				return go;
+		}
+
+		return null;
+	}
+
+	bool HasComponentNamed( GameObject go, string typeName )
+	{
+		if ( !go.IsValid() )
+			return false;
+
+		foreach ( var component in go.Components.GetAll<Component>( FindMode.EnabledInSelfAndDescendants ) )
+		{
+			if ( component.IsValid() && component.GameObject == go && component.GetType().Name == typeName )
+				return true;
+		}
+
+		return false;
 	}
 
 	void EnsureCamera( GameLoop loop )

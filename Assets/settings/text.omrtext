@@ -203,7 +203,9 @@
     "Removed": "{0} REMOVED",
     "WarehouseEmpty": "WAREHOUSE EMPTY",
     "FrameHits": "FRAME  ·  {0} HITS TO WORK",
-    "ShootToCraft": "SHOOT\nTO CRAFT",
+    "ClickToCraft": "Click to Craft",
+    "SwitchToInject": "Switch to Inject Mode",
+    "ClickToInject": "Click to Inject",
     "HpTag": "+1 HP",
     "DmgTag": "+1 DMG",
     "Now": "NOW",
@@ -228,32 +230,32 @@
     "Buck": {
       "Code": "BUCK",
       "Title": "BUCK",
-      "Blurb": "A couple of pellets. Full spread at rank 3. Shotgun DNA."
+      "Blurb": "Say hello to my little friend"
     },
     "Bore": {
       "Code": "BORE",
       "Title": "BORE",
-      "Blurb": "One punch-through. Rail at rank 3. Locks out LASH."
+      "Blurb": "Did somebody say "RAILGUN"? Locks out LASH."
     },
     "Drum": {
       "Code": "DRUM",
       "Title": "DRUM",
-      "Blurb": "A short burst. Rifle dump at rank 3. Long reload."
+      "Blurb": "HOLD TO SHOOT MULTIPLE ROUNDS ONE AFTER ANOTHER"
     },
     "Warhead": {
       "Code": "WARHEAD",
       "Title": "WARHEAD",
-      "Blurb": "A small clap. Slow rocket. Hurts you."
+      "Blurb": "SLOW BUT AREAL. Also damages you! PS No rocket jump!"
     },
     "Lash": {
       "Code": "LASH",
       "Title": "LASH",
-      "Blurb": "A charge of ticks. Short reload. Turquoise to red. Locks out BORE."
+      "Blurb": "HOLD TO ZAP. Short reload. Locks out BORE."
     },
     "Pin": {
       "Code": "PIN",
       "Title": "PIN",
-      "Blurb": "A couple of nails. Full spray at rank 3. Stick and tick."
+      "Blurb": "Nails that damage after time. Why they are exactly nine inch?"
     },
     "Spin": {
       "Code": "SPIN",
@@ -278,7 +280,7 @@
     "Split": {
       "Code": "SPLIT",
       "Title": "SPLIT",
-      "Blurb": "+1 pellet. Shot becomes 2."
+      "Blurb": ""
     },
     "Fan": {
       "Code": "FAN",
@@ -288,12 +290,12 @@
     "Pump": {
       "Code": "PUMP",
       "Title": "PUMP",
-      "Blurb": "+1 pellet. Reload +0.25s."
+      "Blurb": ""
     },
     "Load": {
       "Code": "LOAD",
       "Title": "LOAD",
-      "Blurb": "+2 pellets. Reload +0.15s."
+      "Blurb": ""
     },
     "Choke": {
       "Code": "CHOKE",
@@ -348,7 +350,7 @@
     "Slug": {
       "Code": "SLUG",
       "Title": "SLUG",
-      "Blurb": "One fat slug. Radius 22. +2 dmg. No fan."
+      "Blurb": "One fat slug. No fun. Only DAMAGE!!!"
     },
     "Mirv": {
       "Code": "MIRV",
@@ -469,6 +471,61 @@
       "Code": "LINGER",
       "Title": "LINGER",
       "Blurb": "Remaining ticks finish where you let go. Reload +0.20s."
+    },
+    "Cell": {
+      "Code": "CELL",
+      "Title": "CELL",
+      "Blurb": "+2 ticks per charge. Reload +0.15s."
+    },
+    "Jack": {
+      "Code": "JACK",
+      "Title": "JACK",
+      "Blurb": "Reload ×0.80. Splash ×0.80."
+    },
+    "Slap": {
+      "Code": "SLAP",
+      "Title": "SLAP",
+      "Blurb": "Reload ×0.85. Speed ×0.85."
+    },
+    "Rack": {
+      "Code": "RACK",
+      "Title": "RACK",
+      "Blurb": "Reload ×0.75. Speed ×0.85."
+    },
+    "Draw": {
+      "Code": "DRAW",
+      "Title": "DRAW",
+      "Blurb": "Reload ×0.85. −1 pierce."
+    },
+    "Feed": {
+      "Code": "FEED",
+      "Title": "FEED",
+      "Blurb": "Reload ×0.75. Cycle ×1.20."
+    },
+    "Eject": {
+      "Code": "EJECT",
+      "Title": "EJECT",
+      "Blurb": "Reload ×0.85. Burst −1."
+    },
+    "Vent": {
+      "Code": "VENT",
+      "Title": "VENT",
+      "Blurb": "Reload ×0.80. Tick ×1.20."
+    },
+    "Cool": {
+      "Code": "COOL",
+      "Title": "COOL",
+      "Blurb": "Reload ×0.85. Width ×0.80."
+    },
+    "Shuck": {
+      "Code": "SHUCK",
+      "Title": "SHUCK",
+      "Blurb": "Reload ×0.80. Spread +8°."
+    },
+    "Slam": {
+      "Code": "SLAM",
+      "Title": "SLAM",
+      "Blurb": "Reload ×0.85. −1 projectile."
     },
     "Pierce": {
       "Code": "PRC",
@@ -770,6 +827,23 @@
       "Title": "",
       "Blurb": ""
     }
+  },
+  "Options": {
+    "Kicker": "OPTIONS",
+    "Title": "SETTINGS",
+    "Tagline": "Saved the moment you change it.",
+    "Graphics": "GRAPHICS",
+    "GraphicsLow": "LOW",
+    "GraphicsMedium": "MEDIUM",
+    "GraphicsHigh": "HIGH",
+    "Music": "MUSIC",
+    "Sfx": "SOUND",
+    "Shake": "SCREEN SHAKE",
+    "Value": "{0}%",
+    "Off": "OFF",
+    "Back": "BACK",
+    "AdjustHint": "ADJUST",
+    "BackHint": "ESC BACK"
   },
   "__references": [],
   "__version": 0

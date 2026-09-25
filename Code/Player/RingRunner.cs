@@ -182,23 +182,52 @@ public sealed class RingRunner : Component
 
 	void EnsureWarlord()
 	{
-		foreach ( var child in GameObject.Children.ToArray() )
+		if ( !warlord.IsValid() )
 		{
-			if ( child.Name == "Terry" || child.Name == "Terry Enemy" )
-				child.Destroy();
+			foreach ( var child in GameObject.Children )
+			{
+				if ( child.Name != "Warlord" )
+					continue;
+
+				var skin = child.GetComponent<SkinnedModelRenderer>();
+				if ( !skin.IsValid() )
+					continue;
+
+				warlord = skin;
+				break;
+			}
 		}
 
 		if ( warlord.IsValid() )
 		{
 			var size = warlord.Model?.Bounds.Size ?? Vector3.Zero;
-			if ( size.Length > 0.01f )
-				return;
+			if ( size.Length <= 0.01f )
+			{
+				warlord.GameObject.Destroy();
+				warlord = null;
+				meshes.Clear();
+			}
+		}
 
-			warlord.GameObject.Destroy();
-			warlord = null;
+		if ( warlord.IsValid() )
+		{
+			foreach ( var child in GameObject.Children.ToArray() )
+			{
+				if ( child.Name == "Warlord" && child != warlord.GameObject )
+					child.Destroy();
+			}
+
+			return;
+		}
+
+		foreach ( var child in GameObject.Children.ToArray() )
+		{
+			if ( child.Name == "Terry" || child.Name == "Terry Enemy" || child.Name == "Warlord" )
+				child.Destroy();
 		}
 
 		warlord = WarlordLook.Attach( GameObject );
+		meshes.Clear();
 	}
 
 	void DriveWarlord()
@@ -236,11 +265,9 @@ public sealed class RingRunner : Component
 
 	void PaintHurt()
 	{
-		var renderers = GameObject.GetComponentsInChildren<ModelRenderer>( true );
-		if ( meshes.Count != renderers.Count() )
+		if ( meshes.Count == 0 && warlord.IsValid() )
 		{
-			meshes.Clear();
-			foreach ( var renderer in renderers )
+			foreach ( var renderer in GameObject.GetComponentsInChildren<ModelRenderer>( true ) )
 				meshes.Add( (renderer, renderer.Tint) );
 		}
 

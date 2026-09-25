@@ -3,7 +3,7 @@ namespace LoopedLoaded;
 public sealed class RunLoadout
 {
 	public int BonusDamage;
-	public readonly int[] Levels = new int[56];
+	public readonly int[] Levels = new int[64];
 
 	public int TraitLevel( RoundTrait trait )
 	{
@@ -103,6 +103,11 @@ public sealed class RunLoadout
 			cone = 0f;
 		}
 
+		if ( Has( RoundTrait.Shuck ) )
+			cone += t.ShuckCone;
+		if ( Has( RoundTrait.Slam ) )
+			count = Math.Max( 1, count - t.SlamPellets );
+
 		var bounces = t.MaxBouncesBase;
 		if ( pin > 0 )
 			bounces += (int)t.PinBounce.At( pin );
@@ -118,6 +123,8 @@ public sealed class RunLoadout
 			pierce += t.DeepPierce;
 		if ( Has( RoundTrait.Breach ) )
 			pierce += t.BreachPierce;
+		if ( Has( RoundTrait.Draw ) )
+			pierce = Math.Max( 0, pierce - t.DrawPierce );
 
 		var reload = t.ReloadBase;
 		var boreWait = 0f;
@@ -172,7 +179,30 @@ public sealed class RunLoadout
 				reload += t.ForkReload;
 			if ( Has( RoundTrait.Linger ) )
 				reload += t.LingerReload;
+			if ( Has( RoundTrait.Cell ) )
+				reload += t.CellReload;
 		}
+
+		if ( Has( RoundTrait.Jack ) )
+			reload *= t.JackReload;
+		if ( Has( RoundTrait.Slap ) )
+			reload *= t.SlapReload;
+		if ( Has( RoundTrait.Rack ) )
+			reload *= t.RackReload;
+		if ( Has( RoundTrait.Draw ) )
+			reload *= t.DrawReload;
+		if ( Has( RoundTrait.Feed ) )
+			reload *= t.FeedReload;
+		if ( Has( RoundTrait.Eject ) )
+			reload *= t.EjectReload;
+		if ( Has( RoundTrait.Vent ) )
+			reload *= t.VentReload;
+		if ( Has( RoundTrait.Cool ) )
+			reload *= t.CoolReload;
+		if ( Has( RoundTrait.Shuck ) )
+			reload *= t.ShuckReload;
+		if ( Has( RoundTrait.Slam ) )
+			reload *= t.SlamReload;
 
 		reload *= ReloadScale();
 
@@ -205,6 +235,10 @@ public sealed class RunLoadout
 			speed *= t.SightSpeed;
 		if ( Has( RoundTrait.Bite ) )
 			speed *= t.BiteSpeed;
+		if ( Has( RoundTrait.Slap ) )
+			speed *= t.SlapSpeed;
+		if ( Has( RoundTrait.Rack ) )
+			speed *= t.RackSpeed;
 
 		var rangeCut = 0f;
 		var meatRange = 0f;
@@ -251,6 +285,8 @@ public sealed class RunLoadout
 			splash *= t.LanceRadiusScale;
 		if ( Has( RoundTrait.Crater ) )
 			splash += t.CraterSplash;
+		if ( Has( RoundTrait.Jack ) )
+			splash *= t.JackSplash;
 
 		var splashDamage = splash > 1f ? 1 : 0;
 		if ( Has( RoundTrait.Scorch ) && splash > 1f )
@@ -301,7 +337,7 @@ public sealed class RunLoadout
 			BeamMaxHold = t.LashMaxHold,
 			BeamHit = lash > 0 ? Math.Max( 1, t.LashHit ) : 0,
 			BeamTick = BeamTickOf( t, lash ),
-			BeamTicks = lash > 0 && t.LashTicks is not null ? Math.Max( 1, (int)t.LashTicks.At( lash ) ) : 0,
+			BeamTicks = BeamTicksOf( t, lash ),
 			BeamRange = t.LashRange,
 			BeamWidth = BeamWidthOf( t ),
 			BeamRank = lash,
@@ -321,6 +357,8 @@ public sealed class RunLoadout
 			cycle *= t.SpoolCycle;
 		if ( Has( RoundTrait.Link ) )
 			cycle *= t.LinkCycle;
+		if ( Has( RoundTrait.Feed ) )
+			cycle *= t.FeedCycle;
 		return cycle;
 	}
 
@@ -329,7 +367,20 @@ public sealed class RunLoadout
 		var burst = drum <= 0 ? 1 : Math.Max( 1, (int)t.DrumBurst.At( drum ) );
 		if ( drum > 0 && Has( RoundTrait.Belt ) )
 			burst += t.BeltBurst;
+		if ( drum > 0 && Has( RoundTrait.Eject ) )
+			burst = Math.Max( 1, burst - t.EjectBurst );
 		return burst;
+	}
+
+	int BeamTicksOf( TraitConfig t, int lash )
+	{
+		if ( lash <= 0 || t.LashTicks is null )
+			return 0;
+
+		var ticks = Math.Max( 1, (int)t.LashTicks.At( lash ) );
+		if ( Has( RoundTrait.Cell ) )
+			ticks += t.CellTicks;
+		return ticks;
 	}
 
 	float BeamTickOf( TraitConfig t, int lash )
@@ -342,6 +393,8 @@ public sealed class RunLoadout
 			tick *= t.ArcTick;
 		if ( Has( RoundTrait.Shunt ) )
 			tick *= t.ShuntTick;
+		if ( Has( RoundTrait.Vent ) )
+			tick *= t.VentTick;
 		return tick;
 	}
 
@@ -352,6 +405,8 @@ public sealed class RunLoadout
 			width *= t.KilnWidth;
 		if ( Has( RoundTrait.Shunt ) )
 			width *= t.ShuntWidth;
+		if ( Has( RoundTrait.Cool ) )
+			width *= t.CoolWidth;
 		return width;
 	}
 }

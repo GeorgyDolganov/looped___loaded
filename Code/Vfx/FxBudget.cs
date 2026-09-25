@@ -2,11 +2,11 @@ namespace LoopedLoaded;
 
 static class FxBudget
 {
-	public const int GibAliveCap = 56;
-	public const int GibFrameCap = 32;
-	public const int FlashCap = 3;
-	public const int BoneAliveCap = 20;
-	public const int BoneFrameCap = 8;
+	public static int GibAliveCap => GraphicsProfile.GibAliveCap;
+	public static int GibFrameCap => GraphicsProfile.GibFrameCap;
+	public static int FlashCap => GraphicsProfile.FlashCap;
+	public static int BoneAliveCap => GraphicsProfile.BoneAliveCap;
+	public static int BoneFrameCap => GraphicsProfile.BoneFrameCap;
 
 	public static int Frame { get; private set; }
 	public static int GibsThisFrame { get; private set; }

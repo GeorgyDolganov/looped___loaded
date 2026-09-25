@@ -347,6 +347,7 @@ public sealed class CityBoard : Component
 	public void Tick()
 	{
 		EnsureBuilt();
+		SyncCraftSigns();
 		UpdateCursor();
 		HideShootRig();
 		PaintHover();
@@ -1447,6 +1448,22 @@ public sealed class CityBoard : Component
 		renderer.Attributes.Set( "CraftR", tint.r );
 		renderer.Attributes.Set( "CraftG", tint.g );
 		renderer.Attributes.Set( "CraftB", tint.b );
+		renderer.Attributes.Set( "OrganMotion", GraphicsProfile.OrganMotion );
+	}
+
+	public void ApplyOrganMotion()
+	{
+		foreach ( var plot in plots )
+		{
+			if ( plot.Body is null || !plot.Body.IsValid() )
+				continue;
+
+			foreach ( var renderer in plot.Body.GetComponentsInChildren<ModelRenderer>( true ) )
+			{
+				if ( renderer.IsValid() && renderer.Attributes is not null )
+					renderer.Attributes.Set( "OrganMotion", GraphicsProfile.OrganMotion );
+			}
+		}
 	}
 
 	static Material FrameMaterial( BuildingKind kind ) => kind switch
@@ -1458,13 +1475,27 @@ public sealed class CityBoard : Component
 		_ => liverFrame ??= Material.Load( "materials/liver/liver_frame.vmat" )
 	};
 
+	void SyncCraftSigns()
+	{
+		foreach ( var plot in plots )
+		{
+			if ( !plot.Occupied || plot.Working || !IsOrgan( plot.Kind ) || !plot.Body.IsValid() )
+				continue;
+
+			var sign = FindChild( plot.Body, "Craft Sign" );
+			if ( !sign.IsValid() )
+				continue;
+
+			PlaceCraftSign( sign, plot.X, plot.Y, plot.Kind );
+		}
+	}
+
 	void SpawnCraftSign( CityPlot plot )
 	{
 		var go = Scene.CreateObject();
 		go.Name = "Craft Sign";
 		go.Parent = plot.Body;
-		go.WorldPosition = CraftSignPosition( plot.X, plot.Y );
-		DressCraftSign( go.AddComponent<TextRenderer>() );
+		PlaceCraftSign( go, plot.X, plot.Y, plot.Kind );
 	}
 
 	void ShowCraftSign( int x, int y )
@@ -1481,43 +1512,66 @@ public sealed class CityBoard : Component
 				ghostCraftSign = Scene.CreateObject();
 				ghostCraftSign.Name = "Ghost Craft Sign";
 				ghostCraftSign.Parent = runtime;
-				DressCraftSign( ghostCraftSign.AddComponent<TextRenderer>() );
 			}
 		}
 
+		PlaceCraftSign( ghostCraftSign, x, y, Selected, true );
 		ghostCraftSign.Enabled = true;
-		ghostCraftSign.WorldPosition = CraftSignPosition( x, y );
 	}
 
-	Vector3 CraftSignPosition( int x, int y )
+	void PlaceCraftSign( GameObject go, int x, int y, BuildingKind kind, bool preview = false )
+	{
+		go.WorldPosition = CraftSignPosition( x, y, kind );
+		DressCraftSign( go.GetComponent<TextRenderer>() ?? go.AddComponent<TextRenderer>(), Mode == CityMode.Shoot, preview );
+	}
+
+	Vector3 CraftSignPosition( int x, int y, BuildingKind kind )
 	{
 		var center = CellWorld( x, y );
-		var span = CellSize * 0.62f * (0.85f / 1.5f);
-		var pull = Vector3.Zero;
-		var cam = Scene.Camera;
-		if ( cam.IsValid() )
-		{
-			var to = cam.WorldPosition - center;
-			to.z = 0f;
-			if ( to.Length > 1f )
-				pull = to.Normal * 12f;
-		}
-
-		return center + Vector3.Up * (8f + span * 0.55f) + pull;
+		return center + Vector3.Up * (OrganTop( kind ) + 18f);
 	}
 
-	static void DressCraftSign( TextRenderer text )
+	float OrganTop( BuildingKind kind )
 	{
-		text.Text = GameSettings.Text.City.ShootToCraft;
+		var model = Model.Load( kind switch
+		{
+			BuildingKind.Infirmary => "models/heart.vmdl",
+			BuildingKind.Anvil => "models/muscle.vmdl",
+			BuildingKind.Booster => "models/adrenal.vmdl",
+			BuildingKind.Brake => "models/lung.vmdl",
+			_ => "models/liver.vmdl"
+		} );
+		var scale = FitOrgan( model, OrganBase );
+		var rotation = kind == BuildingKind.Brake
+			? Rotation.From( -90f, 0f, 90f )
+			: Rotation.FromPitch( -90f );
+		return 8f + RotatedSpanZ( model.Bounds, rotation ) * scale;
+	}
+
+	static void DressCraftSign( TextRenderer text, bool inject, bool preview )
+	{
+		var city = GameSettings.Text.City;
+		var label = preview ? city.ClickToCraft : inject ? city.ClickToInject : city.SwitchToInject;
+		text.Text = string.IsNullOrWhiteSpace( label )
+			? (preview ? "Click to Craft" : inject ? "Click to Inject" : "Switch to Inject Mode")
+			: label;
 		text.FontFamily = "Anton";
 		text.FontSize = 36f;
 		text.FontWeight = 700;
-		text.Scale = 0.5f;
+		text.Scale = 0.5f / 1.25f;
 		text.Color = Color.White;
 		text.HorizontalAlignment = TextRenderer.HAlignment.Center;
 		text.VerticalAlignment = TextRenderer.VAlignment.Center;
 		text.Billboard = TextRenderer.BillboardMode.Always;
 		text.FogStrength = 0f;
+
+		var scope = text.TextScope;
+		var outline = scope.Outline;
+		outline.Enabled = true;
+		outline.Color = Color.Black;
+		outline.Size = 4f;
+		scope.Outline = outline;
+		text.TextScope = scope;
 	}
 
 	static float RotatedSpanZ( BBox bounds, Rotation rotation )

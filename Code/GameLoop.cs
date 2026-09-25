@@ -35,9 +35,9 @@ public sealed class GameLoop : Component
 
 	public MenuPage MenuView { get; private set; } = MenuPage.Title;
 	public MenuChoice MenuFocus { get; private set; } = MenuChoice.Continue;
-	public SettingRow SettingCursor { get; private set; } = SettingRow.Music;
+	public SettingRow SettingCursor { get; private set; } = SettingRow.Graphics;
 	static readonly MenuChoice[] MenuOrder = { MenuChoice.Continue, MenuChoice.Upgrades, MenuChoice.Saves, MenuChoice.Settings, MenuChoice.Quit };
-	public static readonly SettingRow[] SettingOrder = { SettingRow.Music, SettingRow.Sfx, SettingRow.Shake };
+	public static readonly SettingRow[] SettingOrder = { SettingRow.Graphics, SettingRow.Music, SettingRow.Sfx, SettingRow.Shake };
 	public int ActiveSlot { get; private set; }
 	public int SaveCursor { get; private set; }
 	readonly GameSave[] slotCache = new GameSave[SaveStore.Slots];
@@ -407,7 +407,7 @@ public sealed class GameLoop : Component
 	public void OpenSettings()
 	{
 		UserSettings.Load();
-		SettingCursor = SettingRow.Music;
+		SettingCursor = SettingRow.Graphics;
 		MenuView = MenuPage.Settings;
 		ArenaSounds.MenuOk();
 	}
@@ -433,7 +433,12 @@ public sealed class GameLoop : Component
 		SettingCursor = row;
 
 		if ( UserSettings.Nudge( row, delta ) )
+		{
+			if ( row == SettingRow.Graphics )
+				GraphicsApply.Push( Scene );
+
 			ArenaSounds.MenuMove();
+		}
 		else
 			ArenaSounds.Deny();
 	}
@@ -1080,8 +1085,9 @@ public sealed class GameLoop : Component
 			}
 		}
 
-		foreach ( var shot in Shots.ToArray() )
+		for ( var i = Shots.Count - 1; i >= 0; i-- )
 		{
+			var shot = Shots[i];
 			if ( !shot.IsValid() )
 				continue;
 
@@ -1541,6 +1547,8 @@ public sealed class GameLoop : Component
 			return;
 
 		var lineup = new List<RoundTrait>();
+		if ( loadout.Has( RoundTrait.Buck ) )
+			CollectBranch( lineup, RoundTraits.ShotgunBranch, loadout );
 		if ( loadout.Has( RoundTrait.Warhead ) )
 			CollectBranch( lineup, RoundTraits.RocketBranch, loadout );
 		if ( loadout.Has( RoundTrait.Bore ) )
@@ -1621,6 +1629,13 @@ public sealed class GameLoop : Component
 					pool.Add( trait );
 			}
 		}
+		else if ( loadout is not null
+			&& loadout.TraitLevel( RoundTrait.Lash ) > 0
+			&& loadout.TraitLevel( RoundTrait.Lash ) < RoundTraits.MaxLevel( RoundTrait.Lash )
+			&& !Used( RoundTrait.Lash ) )
+		{
+			pool.Add( RoundTrait.Lash );
+		}
 
 		if ( pool.Count == 0 )
 		{
@@ -1642,7 +1657,7 @@ public sealed class GameLoop : Component
 				pool = cheap;
 		}
 
-		pick = WeightedTrait( pool );
+		pick = WeightedTrait( pool, loadout );
 		if ( hadFresh )
 			fresh.Remove( pick );
 		else
@@ -1651,11 +1666,11 @@ public sealed class GameLoop : Component
 		return true;
 	}
 
-	static RoundTrait WeightedTrait( List<RoundTrait> pool )
+	static RoundTrait WeightedTrait( List<RoundTrait> pool, RunLoadout loadout )
 	{
 		var total = 0;
 		foreach ( var trait in pool )
-			total += RoundTraits.Weight( trait );
+			total += DrawWeight( trait, loadout );
 
 		if ( total <= 0 )
 			return pool[0];
@@ -1664,12 +1679,21 @@ public sealed class GameLoop : Component
 		var acc = 0;
 		foreach ( var trait in pool )
 		{
-			acc += RoundTraits.Weight( trait );
+			acc += DrawWeight( trait, loadout );
 			if ( roll < acc )
 				return trait;
 		}
 
 		return pool[0];
+	}
+
+	static int DrawWeight( RoundTrait trait, RunLoadout loadout )
+	{
+		var weight = RoundTraits.Weight( trait );
+		if ( trait != RoundTrait.Lash || loadout is null || loadout.TraitLevel( trait ) <= 0 )
+			return weight;
+
+		return Math.Max( weight, GameSettings.Traits.LashRankWeight );
 	}
 
 	void TryBuyOffer( RoundTrait trait )

@@ -54,9 +54,7 @@ public sealed class BlastBurst : Component
 		for ( var i = 0; i < Spokes; i++ )
 			spokes.Add( Spoke( spokeWidth, 2f ) );
 
-		glow = GameObject.AddComponent<PointLight>();
-		glow.LightColor = Core * 18f;
-		glow.Radius = Radius * 5f;
+		glow = GraphicsApply.AddShotLight( GameObject, Core * 18f, Radius * 5f );
 	}
 
 	protected override void OnUpdate()
@@ -90,7 +88,7 @@ public sealed class BlastBurst : Component
 		if ( glow.IsValid() )
 		{
 			glow.LightColor = Color.Lerp( Core, Tint, t ) * (20f * fade * fade);
-			glow.Radius = Radius * (3.2f + 3.4f * grow);
+			glow.Radius = Radius * (3.2f + 3.4f * grow) * GraphicsProfile.ShotLightScale;
 		}
 	}
 

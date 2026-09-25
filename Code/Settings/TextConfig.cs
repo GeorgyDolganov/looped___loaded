@@ -111,6 +111,17 @@ public class TextConfig : GameResource
 			RoundTrait.Fork => pack.Fork ??= new(),
 			RoundTrait.Shunt => pack.Shunt ??= new(),
 			RoundTrait.Linger => pack.Linger ??= new(),
+			RoundTrait.Cell => pack.Cell ??= new(),
+			RoundTrait.Jack => pack.Jack ??= new(),
+			RoundTrait.Slap => pack.Slap ??= new(),
+			RoundTrait.Rack => pack.Rack ??= new(),
+			RoundTrait.Draw => pack.Draw ??= new(),
+			RoundTrait.Feed => pack.Feed ??= new(),
+			RoundTrait.Eject => pack.Eject ??= new(),
+			RoundTrait.Vent => pack.Vent ??= new(),
+			RoundTrait.Cool => pack.Cool ??= new(),
+			RoundTrait.Shuck => pack.Shuck ??= new(),
+			RoundTrait.Slam => pack.Slam ??= new(),
 			_ => pack.Slug ??= new()
 		};
 	}
@@ -257,10 +268,10 @@ public class TraitsCopy
 	[Property] public TraitCopy Rush { get; set; } = new() { Code = "RUSH", Title = "RUSH", Blurb = "Shots fly faster. Longer reload." };
 	[Property] public TraitCopy Dodge { get; set; } = new() { Code = "DODGE", Title = "DODGE", Blurb = "Slip a hit. 10% / 20% / 32%." };
 	[Property] public TraitCopy Snap { get; set; } = new() { Code = "SNAP", Title = "SNAP", Blurb = "Reload only. −20% / −36% / −50%." };
-	[Property] public TraitCopy Split { get; set; } = new() { Code = "SPLIT", Title = "SPLIT", Blurb = "+1 pellet. Shot becomes 2." };
+	[Property] public TraitCopy Split { get; set; } = new() { Code = "SPLIT", Title = "SPLIT", Blurb = "" };
 	[Property] public TraitCopy Fan { get; set; } = new() { Code = "FAN", Title = "FAN", Blurb = "Pellets spread 14°." };
-	[Property] public TraitCopy Pump { get; set; } = new() { Code = "PUMP", Title = "PUMP", Blurb = "+1 pellet. Reload +0.25s." };
-	[Property] public TraitCopy Load { get; set; } = new() { Code = "LOAD", Title = "LOAD", Blurb = "+2 pellets. Reload +0.15s." };
+	[Property] public TraitCopy Pump { get; set; } = new() { Code = "PUMP", Title = "PUMP", Blurb = "" };
+	[Property] public TraitCopy Load { get; set; } = new() { Code = "LOAD", Title = "LOAD", Blurb = "" };
 	[Property] public TraitCopy Choke { get; set; } = new() { Code = "CHOKE", Title = "CHOKE", Blurb = "Cone −10°. Floor 6°." };
 	[Property] public TraitCopy Meat { get; set; } = new() { Code = "MEAT", Title = "MEAT", Blurb = "+1 dmg inside 140. -100% range." };
 	[Property] public TraitCopy Rico { get; set; } = new() { Code = "RICO", Title = "RICO", Blurb = "Pellets bounce +1." };
@@ -271,7 +282,7 @@ public class TraitsCopy
 	[Property] public TraitCopy Heap { get; set; } = new() { Code = "HEAP", Title = "HEAP", Blurb = "+3 pellets. Reload +0.40s." };
 	[Property] public TraitCopy Waste { get; set; } = new() { Code = "WASTE", Title = "WASTE", Blurb = "+1 dmg inside 80. -100% range." };
 	[Property] public TraitCopy Breach { get; set; } = new() { Code = "BREACH", Title = "BREACH", Blurb = "Pellets punch 1 body." };
-	[Property] public TraitCopy Slug { get; set; } = new() { Code = "SLUG", Title = "SLUG", Blurb = "One fat slug. Radius 22. +2 dmg. No fan." };
+	[Property] public TraitCopy Slug { get; set; } = new() { Code = "SLUG", Title = "SLUG", Blurb = "One fat slug. No fan." };
 	[Property] public TraitCopy Mirv { get; set; } = new() { Code = "MIRV", Title = "MIRV", Blurb = "Each pellet splashes. Radius ×0.55. Slower. Locks out LANCE." };
 	[Property] public TraitCopy Bloom { get; set; } = new() { Code = "BLOOM", Title = "BLOOM", Blurb = "+80 splash radius. Reload +0.30s. Locks out LANCE." };
 	[Property] public TraitCopy Scorch { get; set; } = new() { Code = "SCORCH", Title = "SCORCH", Blurb = "Splash damage 2. Slower. Reload +0.20s. Locks out LANCE." };
@@ -296,6 +307,17 @@ public class TraitsCopy
 	[Property] public TraitCopy Fork { get; set; } = new() { Code = "FORK", Title = "FORK", Blurb = "Side bolts hit on their own. Reload +0.12s. Locks out BRAND." };
 	[Property] public TraitCopy Shunt { get; set; } = new() { Code = "SHUNT", Title = "SHUNT", Blurb = "Ignores shields and plates. Slower tick. Narrower." };
 	[Property] public TraitCopy Linger { get; set; } = new() { Code = "LINGER", Title = "LINGER", Blurb = "Remaining ticks finish where you let go. Reload +0.20s." };
+	[Property] public TraitCopy Cell { get; set; } = new() { Code = "CELL", Title = "CELL", Blurb = "+2 ticks per charge. Reload +0.15s." };
+	[Property] public TraitCopy Jack { get; set; } = new() { Code = "JACK", Title = "JACK", Blurb = "Reload ×0.80. Splash ×0.80." };
+	[Property] public TraitCopy Slap { get; set; } = new() { Code = "SLAP", Title = "SLAP", Blurb = "Reload ×0.85. Speed ×0.85." };
+	[Property] public TraitCopy Rack { get; set; } = new() { Code = "RACK", Title = "RACK", Blurb = "Reload ×0.75. Speed ×0.85." };
+	[Property] public TraitCopy Draw { get; set; } = new() { Code = "DRAW", Title = "DRAW", Blurb = "Reload ×0.85. −1 pierce." };
+	[Property] public TraitCopy Feed { get; set; } = new() { Code = "FEED", Title = "FEED", Blurb = "Reload ×0.75. Cycle ×1.20." };
+	[Property] public TraitCopy Eject { get; set; } = new() { Code = "EJECT", Title = "EJECT", Blurb = "Reload ×0.85. Burst −1." };
+	[Property] public TraitCopy Vent { get; set; } = new() { Code = "VENT", Title = "VENT", Blurb = "Reload ×0.80. Tick ×1.20." };
+	[Property] public TraitCopy Cool { get; set; } = new() { Code = "COOL", Title = "COOL", Blurb = "Reload ×0.85. Width ×0.80." };
+	[Property] public TraitCopy Shuck { get; set; } = new() { Code = "SHUCK", Title = "SHUCK", Blurb = "Reload ×0.80. Spread +8°." };
+	[Property] public TraitCopy Slam { get; set; } = new() { Code = "SLAM", Title = "SLAM", Blurb = "Reload ×0.85. −1 projectile." };
 }
 
 public class BuildingsCopy
@@ -505,6 +527,10 @@ public class OptionsCopy
 	[Property] public string Kicker { get; set; } = "OPTIONS";
 	[Property] public string Title { get; set; } = "SETTINGS";
 	[Property] public string Tagline { get; set; } = "Saved the moment you change it.";
+	[Property] public string Graphics { get; set; } = "GRAPHICS";
+	[Property] public string GraphicsLow { get; set; } = "LOW";
+	[Property] public string GraphicsMedium { get; set; } = "MEDIUM";
+	[Property] public string GraphicsHigh { get; set; } = "HIGH";
 	[Property] public string Music { get; set; } = "MUSIC";
 	[Property] public string Sfx { get; set; } = "SOUND";
 	[Property] public string Shake { get; set; } = "SCREEN SHAKE";
@@ -681,7 +707,7 @@ public class CityCopy
 {
 	[Property] public string ModeBuild { get; set; } = "BUILD";
 	[Property] public string ModeShoot { get; set; } = "INJECT";
-	[Property] public string WarehouseHud { get; set; } = "WH {0}";
+	[Property] public string WarehouseHud { get; set; } = "BIOMASS {0}";
 	[Property] public string ShootFire { get; set; } = "INJECT  ·  LMB INJECT";
 	[Property] public string UpgradeReflects { get; set; } = "UPGRADE · REFLECTS";
 	[Property] public string Frame { get; set; } = "FRAME";
@@ -697,7 +723,9 @@ public class CityCopy
 	[Property] public string Removed { get; set; } = "{0} REMOVED";
 	[Property] public string WarehouseEmpty { get; set; } = "WAREHOUSE EMPTY";
 	[Property] public string FrameHits { get; set; } = "FRAME  ·  {0} HITS TO WORK";
-	[Property] public string ShootToCraft { get; set; } = "INJECT\nTO CRAFT";
+	[Property] public string ClickToCraft { get; set; } = "Click to Craft";
+	[Property] public string SwitchToInject { get; set; } = "Switch to Inject Mode";
+	[Property] public string ClickToInject { get; set; } = "Click to Inject";
 	[Property] public string HpTag { get; set; } = "+1 HP";
 	[Property] public string DmgTag { get; set; } = "+1 DMG";
 	[Property] public string Now { get; set; } = "NOW";

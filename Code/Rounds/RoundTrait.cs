@@ -64,7 +64,18 @@ public enum RoundTrait
 	Arc,
 	Fork,
 	Shunt,
-	Linger
+	Linger,
+	Cell,
+	Jack,
+	Slap,
+	Rack,
+	Draw,
+	Feed,
+	Eject,
+	Vent,
+	Cool,
+	Shuck,
+	Slam
 }
 
 public static class RoundTraits
@@ -80,7 +91,11 @@ public static class RoundTraits
 		RoundTrait.Mirv, RoundTrait.Bloom, RoundTrait.Scorch, RoundTrait.Lance, RoundTrait.Crater, RoundTrait.Spot,
 		RoundTrait.Deep, RoundTrait.Awl, RoundTrait.Ram, RoundTrait.Mass, RoundTrait.Keel, RoundTrait.Trace,
 		RoundTrait.Belt, RoundTrait.Walk, RoundTrait.Spool, RoundTrait.Sight, RoundTrait.Bite, RoundTrait.Link,
-		RoundTrait.Sear, RoundTrait.Kiln, RoundTrait.Arc, RoundTrait.Fork, RoundTrait.Shunt, RoundTrait.Linger
+		RoundTrait.Sear, RoundTrait.Kiln, RoundTrait.Arc, RoundTrait.Fork, RoundTrait.Shunt, RoundTrait.Linger,
+		RoundTrait.Cell,
+		RoundTrait.Jack, RoundTrait.Slap, RoundTrait.Rack, RoundTrait.Draw,
+		RoundTrait.Feed, RoundTrait.Eject, RoundTrait.Vent, RoundTrait.Cool,
+		RoundTrait.Shuck, RoundTrait.Slam
 	};
 
 	public static readonly RoundTrait[] Roots =
@@ -88,24 +103,33 @@ public static class RoundTraits
 		RoundTrait.Buck, RoundTrait.Bore, RoundTrait.Drum, RoundTrait.Warhead, RoundTrait.Lash, RoundTrait.Pin
 	};
 
+	public static readonly RoundTrait[] ShotgunBranch =
+	{
+		RoundTrait.Shuck, RoundTrait.Slam
+	};
+
 	public static readonly RoundTrait[] RocketBranch =
 	{
-		RoundTrait.Mirv, RoundTrait.Bloom, RoundTrait.Scorch, RoundTrait.Lance, RoundTrait.Crater, RoundTrait.Spot
+		RoundTrait.Mirv, RoundTrait.Bloom, RoundTrait.Scorch, RoundTrait.Lance, RoundTrait.Crater, RoundTrait.Spot,
+		RoundTrait.Jack, RoundTrait.Slap
 	};
 
 	public static readonly RoundTrait[] RailBranch =
 	{
-		RoundTrait.Deep, RoundTrait.Awl, RoundTrait.Ram, RoundTrait.Mass, RoundTrait.Keel, RoundTrait.Trace
+		RoundTrait.Deep, RoundTrait.Awl, RoundTrait.Ram, RoundTrait.Mass, RoundTrait.Keel, RoundTrait.Trace,
+		RoundTrait.Rack, RoundTrait.Draw
 	};
 
 	public static readonly RoundTrait[] RifleBranch =
 	{
-		RoundTrait.Belt, RoundTrait.Walk, RoundTrait.Spool, RoundTrait.Sight, RoundTrait.Bite, RoundTrait.Link
+		RoundTrait.Belt, RoundTrait.Walk, RoundTrait.Spool, RoundTrait.Sight, RoundTrait.Bite, RoundTrait.Link,
+		RoundTrait.Feed, RoundTrait.Eject
 	};
 
 	public static readonly RoundTrait[] LaserBranch =
 	{
-		RoundTrait.Sear, RoundTrait.Kiln, RoundTrait.Arc, RoundTrait.Fork, RoundTrait.Shunt, RoundTrait.Linger
+		RoundTrait.Sear, RoundTrait.Kiln, RoundTrait.Arc, RoundTrait.Fork, RoundTrait.Shunt, RoundTrait.Linger,
+		RoundTrait.Cell, RoundTrait.Vent, RoundTrait.Cool
 	};
 
 	public static TraitPack Pack( RoundTrait trait ) => trait switch
@@ -114,21 +138,23 @@ public static class RoundTraits
 		RoundTrait.Load or RoundTrait.Choke or RoundTrait.Meat or RoundTrait.Rico => TraitPack.Junior,
 		RoundTrait.Gape or RoundTrait.Double or RoundTrait.Kick or RoundTrait.Stun => TraitPack.Warrior,
 		RoundTrait.Heap or RoundTrait.Waste or RoundTrait.Breach or RoundTrait.Slug => TraitPack.Abomination,
-		RoundTrait.Buck => TraitPack.Shotgun,
-		RoundTrait.Bore or RoundTrait.Deep or RoundTrait.Awl or RoundTrait.Ram or RoundTrait.Mass or RoundTrait.Keel or RoundTrait.Trace => TraitPack.Rail,
-		RoundTrait.Drum or RoundTrait.Rush or RoundTrait.Belt or RoundTrait.Walk or RoundTrait.Spool or RoundTrait.Sight or RoundTrait.Bite or RoundTrait.Link => TraitPack.Rifle,
-		RoundTrait.Warhead or RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch or RoundTrait.Lance or RoundTrait.Crater or RoundTrait.Spot => TraitPack.Rocket,
-		RoundTrait.Lash or RoundTrait.Sear or RoundTrait.Kiln or RoundTrait.Arc or RoundTrait.Fork or RoundTrait.Shunt or RoundTrait.Linger => TraitPack.Laser,
+		RoundTrait.Buck or RoundTrait.Shuck or RoundTrait.Slam => TraitPack.Shotgun,
+		RoundTrait.Bore or RoundTrait.Deep or RoundTrait.Awl or RoundTrait.Ram or RoundTrait.Mass or RoundTrait.Keel or RoundTrait.Trace or RoundTrait.Rack or RoundTrait.Draw => TraitPack.Rail,
+		RoundTrait.Drum or RoundTrait.Rush or RoundTrait.Belt or RoundTrait.Walk or RoundTrait.Spool or RoundTrait.Sight or RoundTrait.Bite or RoundTrait.Link or RoundTrait.Feed or RoundTrait.Eject => TraitPack.Rifle,
+		RoundTrait.Warhead or RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch or RoundTrait.Lance or RoundTrait.Crater or RoundTrait.Spot or RoundTrait.Jack or RoundTrait.Slap => TraitPack.Rocket,
+		RoundTrait.Lash or RoundTrait.Sear or RoundTrait.Kiln or RoundTrait.Arc or RoundTrait.Fork or RoundTrait.Shunt or RoundTrait.Linger or RoundTrait.Cell or RoundTrait.Vent or RoundTrait.Cool => TraitPack.Laser,
 		_ => TraitPack.Nailgun
 	};
 
-	public static bool OneShot( RoundTrait trait ) => NeedsWarhead( trait ) || NeedsBore( trait ) || NeedsDrum( trait ) || NeedsLash( trait ) || Pack( trait ) is TraitPack.Entry or TraitPack.Junior or TraitPack.Warrior or TraitPack.Abomination;
+	public static bool OneShot( RoundTrait trait ) => NeedsBuck( trait ) || NeedsWarhead( trait ) || NeedsBore( trait ) || NeedsDrum( trait ) || NeedsLash( trait ) || Pack( trait ) is TraitPack.Entry or TraitPack.Junior or TraitPack.Warrior or TraitPack.Abomination;
+
+	public static bool NeedsBuck( RoundTrait trait ) => trait is RoundTrait.Shuck or RoundTrait.Slam;
 
 	public static bool IsCluster( RoundTrait trait ) => trait is RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch;
 
 	public static bool IsLance( RoundTrait trait ) => trait is RoundTrait.Lance or RoundTrait.Crater;
 
-	public static bool NeedsWarhead( RoundTrait trait ) => IsCluster( trait ) || IsLance( trait ) || trait == RoundTrait.Spot;
+	public static bool NeedsWarhead( RoundTrait trait ) => IsCluster( trait ) || IsLance( trait ) || trait is RoundTrait.Spot or RoundTrait.Jack or RoundTrait.Slap;
 
 	public static bool OwnsCluster( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Mirv ) || loadout.Has( RoundTrait.Bloom ) || loadout.Has( RoundTrait.Scorch ));
 
@@ -138,7 +164,7 @@ public static class RoundTraits
 
 	public static bool IsMass( RoundTrait trait ) => trait is RoundTrait.Mass or RoundTrait.Keel;
 
-	public static bool NeedsBore( RoundTrait trait ) => IsDeep( trait ) || IsMass( trait ) || trait == RoundTrait.Trace;
+	public static bool NeedsBore( RoundTrait trait ) => IsDeep( trait ) || IsMass( trait ) || trait is RoundTrait.Trace or RoundTrait.Rack or RoundTrait.Draw;
 
 	public static bool OwnsDeep( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Deep ) || loadout.Has( RoundTrait.Awl ) || loadout.Has( RoundTrait.Ram ));
 
@@ -148,7 +174,7 @@ public static class RoundTraits
 
 	public static bool IsTrack( RoundTrait trait ) => trait is RoundTrait.Spool or RoundTrait.Sight or RoundTrait.Bite;
 
-	public static bool NeedsDrum( RoundTrait trait ) => IsSweep( trait ) || IsTrack( trait ) || trait == RoundTrait.Link;
+	public static bool NeedsDrum( RoundTrait trait ) => IsSweep( trait ) || IsTrack( trait ) || trait is RoundTrait.Link or RoundTrait.Feed or RoundTrait.Eject;
 
 	public static bool OwnsSweep( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Belt ) || loadout.Has( RoundTrait.Walk ));
 
@@ -158,7 +184,7 @@ public static class RoundTraits
 
 	public static bool IsArc( RoundTrait trait ) => trait is RoundTrait.Arc or RoundTrait.Fork;
 
-	public static bool NeedsLash( RoundTrait trait ) => IsBrand( trait ) || IsArc( trait ) || trait is RoundTrait.Shunt or RoundTrait.Linger;
+	public static bool NeedsLash( RoundTrait trait ) => IsBrand( trait ) || IsArc( trait ) || trait is RoundTrait.Shunt or RoundTrait.Linger or RoundTrait.Cell or RoundTrait.Vent or RoundTrait.Cool;
 
 	public static bool OwnsBrand( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Sear ) || loadout.Has( RoundTrait.Kiln ));
 
@@ -171,6 +197,9 @@ public static class RoundTraits
 	{
 		if ( loadout is null )
 			return false;
+
+		if ( NeedsBuck( trait ) && !loadout.Has( RoundTrait.Buck ) )
+			return true;
 
 		if ( NeedsWarhead( trait ) && !loadout.Has( RoundTrait.Warhead ) )
 			return true;
@@ -209,6 +238,21 @@ public static class RoundTraits
 			return true;
 
 		if ( IsArc( trait ) && OwnsBrand( loadout ) )
+			return true;
+
+		if ( trait == RoundTrait.Slam && !loadout.Has( RoundTrait.Shuck ) )
+			return true;
+
+		if ( trait == RoundTrait.Slap && !loadout.Has( RoundTrait.Jack ) )
+			return true;
+
+		if ( trait == RoundTrait.Draw && !loadout.Has( RoundTrait.Rack ) )
+			return true;
+
+		if ( trait == RoundTrait.Eject && !loadout.Has( RoundTrait.Feed ) )
+			return true;
+
+		if ( trait == RoundTrait.Cool && !loadout.Has( RoundTrait.Vent ) )
 			return true;
 
 		return false;
@@ -266,7 +310,8 @@ public static class RoundTraits
 		RoundTrait.Bore or RoundTrait.Deep or RoundTrait.Awl or RoundTrait.Ram or RoundTrait.Mass or RoundTrait.Keel or RoundTrait.Trace => "ui/traits/pierce.png",
 		RoundTrait.Drum or RoundTrait.Belt or RoundTrait.Walk or RoundTrait.Spool or RoundTrait.Sight or RoundTrait.Bite or RoundTrait.Link => "ui/traits/accel.png",
 		RoundTrait.Warhead or RoundTrait.Mirv or RoundTrait.Bloom or RoundTrait.Scorch or RoundTrait.Lance or RoundTrait.Crater or RoundTrait.Spot => "ui/traits/explosive.png",
-		RoundTrait.Lash or RoundTrait.Sear or RoundTrait.Kiln or RoundTrait.Arc or RoundTrait.Fork or RoundTrait.Shunt or RoundTrait.Linger => "ui/traits/electric.png",
+		RoundTrait.Lash or RoundTrait.Sear or RoundTrait.Kiln or RoundTrait.Arc or RoundTrait.Fork or RoundTrait.Shunt or RoundTrait.Linger or RoundTrait.Cell => "ui/traits/electric.png",
+		RoundTrait.Jack or RoundTrait.Slap or RoundTrait.Rack or RoundTrait.Draw or RoundTrait.Feed or RoundTrait.Eject or RoundTrait.Vent or RoundTrait.Cool or RoundTrait.Shuck or RoundTrait.Slam => "ui/traits/snap.png",
 		RoundTrait.Spin => "ui/traits/clockwise.png",
 		RoundTrait.Rush => "ui/traits/step.png",
 		RoundTrait.Dodge => "ui/traits/graze.png",

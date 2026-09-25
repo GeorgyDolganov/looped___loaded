@@ -22,9 +22,7 @@ public static class HoboLook
 		var scale = ScaleOf( height );
 		var lift = -model.Bounds.Mins.z * scale;
 
-		var body = MakeSkin( parent, "Hobo", model, scale, lift, false );
-		MakeSkin( parent, OverlayName, model, scale, lift, true );
-		return body;
+		return MakeSkin( parent, "Hobo", model, scale, lift, false );
 	}
 
 	public static float ScaleOf( float height )
@@ -48,7 +46,7 @@ public static class HoboLook
 		var renderer = go.AddComponent<SkinnedModelRenderer>();
 		renderer.Model = model;
 		renderer.UseAnimGraph = false;
-		renderer.CreateBoneObjects = true;
+		renderer.CreateBoneObjects = false;
 		renderer.Sequence.Name = "idle";
 		renderer.Sequence.Looping = true;
 		if ( hide )
@@ -82,7 +80,7 @@ public static class HoboLook
 
 	public static float PlayAttack( SkinnedModelRenderer skin )
 	{
-		var overlay = OverlayOf( skin );
+		var overlay = EnsureOverlay( skin );
 		if ( !overlay.IsValid() )
 			return 0f;
 
@@ -108,9 +106,32 @@ public static class HoboLook
 		}
 
 		if ( attacking )
-			CopyUpper( skin, OverlayOf( skin ) );
+			CopyUpper( skin, EnsureOverlay( skin ) );
+		else
+			DropOverlay( skin );
 
 		WarlordLook.Face( skin, velocity, look );
+	}
+
+	static SkinnedModelRenderer EnsureOverlay( SkinnedModelRenderer skin )
+	{
+		var found = OverlayOf( skin );
+		if ( found.IsValid() )
+			return found;
+
+		if ( !skin.IsValid() || !skin.GameObject.IsValid() || !skin.GameObject.Parent.IsValid() || !skin.Model.IsValid() )
+			return null;
+
+		var scale = skin.GameObject.LocalScale.x;
+		var lift = skin.GameObject.LocalPosition.z;
+		return MakeSkin( skin.GameObject.Parent, OverlayName, skin.Model, scale, lift, true );
+	}
+
+	static void DropOverlay( SkinnedModelRenderer skin )
+	{
+		var overlay = OverlayOf( skin );
+		if ( overlay.IsValid() )
+			overlay.GameObject.Destroy();
 	}
 
 	static void CopyUpper( SkinnedModelRenderer body, SkinnedModelRenderer overlay )

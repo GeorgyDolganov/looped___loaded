@@ -26,7 +26,7 @@ public sealed class ArenaCamera : Component
 		camera = GetComponent<CameraComponent>() ?? GameObject.AddComponent<CameraComponent>();
 		camera.IsMainCamera = true;
 		camera.ZNear = 10f;
-		camera.ZFar = 20000f;
+		camera.ZFar = 8000f;
 		if ( camera.FieldOfView < 1f )
 			camera.FieldOfView = 60f;
 	}

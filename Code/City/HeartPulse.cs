@@ -27,7 +27,7 @@ public sealed class HeartPulse : Component
 
 		renderer.Attributes.Set( "HeartPhase", phase );
 		renderer.Attributes.Set( "HeartRate", Rate * rateScale );
-		renderer.Attributes.Set( "HeartStrength", Strength );
+		renderer.Attributes.Set( "HeartStrength", Strength * GraphicsProfile.OrganMotion );
 		renderer.Attributes.Set( "HeartGap", gap );
 		renderer.Attributes.Set( "HeartNoise", 0.18f );
 	}

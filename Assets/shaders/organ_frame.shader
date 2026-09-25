@@ -33,6 +33,7 @@ VS
 {
 	#include "common/vertex.hlsl"
 
+	float g_flOrganMotion < Attribute( "OrganMotion" ); Default( 1.0 ); >;
 	float g_flLungMirrorX < Attribute( "LungMirrorX" ); Default( 0.0 ); >;
 	float g_flLungMirrorY < Attribute( "LungMirrorY" ); Default( 0.0 ); >;
 	float g_flLungMirrorZ < Attribute( "LungMirrorZ" ); Default( 0.0 ); >;
@@ -56,7 +57,9 @@ VS
 		}
 
 		float3 pos = i.vPositionOs.xyz;
-		float wobble = sin( g_flTime * 2.4 + dot( pos, float3( 1.7, 2.3, 1.1 ) ) ) * 0.012;
+		float wobble = g_flOrganMotion > 0.001
+			? sin( g_flTime * 2.4 + dot( pos, float3( 1.7, 2.3, 1.1 ) ) ) * 0.012 * g_flOrganMotion
+			: 0.0;
 		i.vPositionOs.xyz *= 1.0 + wobble;
 
 		PixelInput o = ProcessVertex( i );

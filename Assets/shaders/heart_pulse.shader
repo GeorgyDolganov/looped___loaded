@@ -83,25 +83,28 @@ VS
 
 	PixelInput MainVs( VertexInput i )
 	{
-		float3 pos = i.vPositionOs.xyz;
-		float along = saturate( pos.z * 0.7 + 0.5 );
+		if ( g_flHeartStrength > 0.0001 )
+		{
+			float3 pos = i.vPositionOs.xyz;
+			float along = saturate( pos.z * 0.7 + 0.5 );
 
-		float globalCycle = frac( g_flTime * g_flHeartRate + g_flHeartPhase );
-		float globalBeat = Beat( globalCycle, g_flHeartGap );
+			float globalCycle = frac( g_flTime * g_flHeartRate + g_flHeartPhase );
+			float globalBeat = Beat( globalCycle, g_flHeartGap );
 
-		float localCycle = frac( g_flTime * g_flHeartRate + g_flHeartPhase - along * 0.34 );
-		float localBeat = Beat( localCycle, g_flHeartGap );
+			float localCycle = frac( g_flTime * g_flHeartRate + g_flHeartPhase - along * 0.34 );
+			float localBeat = Beat( localCycle, g_flHeartGap );
 
-		float n2 = Noise3( pos * 9.0 - float3( g_flTime * 1.8, 0.0, g_flTime * 1.1 ) );
-		float quiver = ( n2 * 2.0 - 1.0 ) * localBeat;
-		float pulse = g_flHeartStrength * (
-			globalBeat * 0.7
-			+ localBeat * 0.55
-			+ 0.08 * quiver * g_flHeartNoise );
+			float n2 = Noise3( pos * 9.0 - float3( g_flTime * 1.8, 0.0, g_flTime * 1.1 ) );
+			float quiver = ( n2 * 2.0 - 1.0 ) * localBeat;
+			float pulse = g_flHeartStrength * (
+				globalBeat * 0.7
+				+ localBeat * 0.55
+				+ 0.08 * quiver * g_flHeartNoise );
 
-		i.vPositionOs.xyz *= 1.0 + pulse;
-		float3 dir = pos / max( length( pos ), 0.001 );
-		i.vPositionOs.xyz += dir * g_flHeartStrength * g_flHeartNoise * 0.16 * quiver;
+			i.vPositionOs.xyz *= 1.0 + pulse;
+			float3 dir = pos / max( length( pos ), 0.001 );
+			i.vPositionOs.xyz += dir * g_flHeartStrength * g_flHeartNoise * 0.16 * quiver;
+		}
 
 		PixelInput o = ProcessVertex( i );
 		return FinalizeVertex( o );

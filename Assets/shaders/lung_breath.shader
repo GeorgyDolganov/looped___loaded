@@ -19,8 +19,6 @@ COMMON
 	#include "common/shared.hlsl"
 }
 
-RenderState( CullMode, NONE );
-
 struct VertexInput
 {
 	#include "common/vertexinput.hlsl"
@@ -67,15 +65,18 @@ VS
 			i.vNormalOs.z = -i.vNormalOs.z;
 		}
 
-		float3 pos = i.vPositionOs.xyz;
-		float globalCycle = frac( g_flTime * g_flBreathRate + g_flBreathPhase );
-		float sideDelay = 0.07 * saturate( pos.x * 0.75 + 0.5 );
-		float localCycle = frac( g_flTime * g_flBreathRate + g_flBreathPhase - sideDelay );
-		float globalAir = Breath( globalCycle );
-		float localAir = Breath( localCycle );
-		float outer = saturate( abs( pos.x ) * 1.15 );
-		float air = globalAir * 0.72 + localAir * outer * 0.28;
-		i.vPositionOs.xyz *= 1.0 + g_flBreathStrength * air;
+		if ( g_flBreathStrength > 0.0001 )
+		{
+			float3 pos = i.vPositionOs.xyz;
+			float globalCycle = frac( g_flTime * g_flBreathRate + g_flBreathPhase );
+			float sideDelay = 0.07 * saturate( pos.x * 0.75 + 0.5 );
+			float localCycle = frac( g_flTime * g_flBreathRate + g_flBreathPhase - sideDelay );
+			float globalAir = Breath( globalCycle );
+			float localAir = Breath( localCycle );
+			float outer = saturate( abs( pos.x ) * 1.15 );
+			float air = globalAir * 0.72 + localAir * outer * 0.28;
+			i.vPositionOs.xyz *= 1.0 + g_flBreathStrength * air;
+		}
 
 		PixelInput o = ProcessVertex( i );
 		return FinalizeVertex( o );
@@ -85,6 +86,8 @@ VS
 PS
 {
 	#include "common/pixel.hlsl"
+
+	RenderState( CullMode, NONE );
 
 	CreateInputTexture2D( TextureColor, Srgb, 8, "", "", "Color,10/10", Default3( 1.0, 1.0, 1.0 ) );
 	Texture2D g_tColor < Channel( RGBA, Box( TextureColor ), Srgb ); OutputFormat( BC7 ); SrgbRead( true ); >;

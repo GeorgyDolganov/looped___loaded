@@ -2,6 +2,8 @@
 @inherits PanelComponent
 
 <root>
+	@if ( Loop.IsValid() )
+	{
 	<div class="hud">
 
 		@if ( !Loop.Paused && (Loop.Phase == RunPhase.DecideLap || Loop.Phase == RunPhase.DecideRing || Loop.Phase == RunPhase.PickTrait) )
@@ -234,7 +236,7 @@
 						<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
 						<div class="stat-face">
 							<div class="stat-row lead city-biomass">
-								<label class="key">@GameSettings.Text.City.WarehouseHud.Replace( "{0}", "" ).Trim()</label>
+								<label class="key">BIOMASS</label>
 								<label class="value">@Loop.City.Warehouse</label>
 							</div>
 						</div>
@@ -395,6 +397,10 @@
 					</div>
 
 					<div class="rail-list">
+						<div class="rail-row preset @(Loop.SettingCursor == SettingRow.Graphics ? "on" : "")" onmouseover="@(() => Loop?.HighlightSetting( SettingRow.Graphics ))" onclick="@(() => CycleGraphics())">
+							<label class="row-title">@GameSettings.Text.Options.Graphics</label>
+							<label class="row-value">@GraphicsLabel</label>
+						</div>
 						@foreach ( var row in SettingRows )
 						{
 							<div class="rail-row slider @(Loop.SettingCursor == row.Row ? "on" : "")" onmouseover="@(() => Loop.HighlightSetting( row.Row ))">
@@ -548,7 +554,10 @@
 							<div class="shop-body">
 								<label class="title">@RoundTraits.Title(trait)</label>
 								<label class="rarity" style="color: @TraitInk(trait)">@RoundTraits.Rarity(trait)</label>
-								<label class="blurb">@OfferBlurb(trait, bought)</label>
+								@if ( OfferBlurb( trait, bought ) is { Length: > 0 } blurb )
+								{
+									<label class="blurb">@blurb</label>
+								}
 								<div class="stats">
 									@foreach ( var line in OfferStats( trait, bought ) )
 									{
@@ -657,6 +666,7 @@
 		}
 
 	</div>
+	}
 
 	<div class="cursor-trail"></div>
 	<div class="cursor-aura">
@@ -687,6 +697,7 @@
 		TickHover();
 		TickSettingDrag();
 		TickTraySize();
+		TickHurtVeil();
 
 		if ( Loop.Phase != RunPhase.PickTrait )
 			shopHover = -1;
@@ -725,6 +736,31 @@
 	{
 		Loop?.NoteUiClick();
 		Loop?.CloseSettings();
+	}
+
+	void CycleGraphics()
+	{
+		Loop?.NoteUiClick();
+		Loop?.NudgeSetting( SettingRow.Graphics, 1 );
+	}
+
+	string GraphicsLabel => UserSettings.Graphics switch
+	{
+		GraphicsPreset.Low => GameSettings.Text.Options.GraphicsLow,
+		GraphicsPreset.Medium => GameSettings.Text.Options.GraphicsMedium,
+		_ => GameSettings.Text.Options.GraphicsHigh
+	};
+
+	void TickHurtVeil()
+	{
+		if ( !Loop.IsValid() )
+			return;
+
+		var veil = FindHud( "hurt-veil" );
+		if ( !veil.IsValid() )
+			return;
+
+		veil.Style.Opacity = Loop.HurtAmount * 0.55f;
 	}
 
 	SettingRow? trackScrub;
@@ -834,6 +870,9 @@
 			var list = new List<(SettingRow, string, string, int)>();
 			foreach ( var row in GameLoop.SettingOrder )
 			{
+				if ( row == SettingRow.Graphics )
+					continue;
+
 				var title = row switch
 				{
 					SettingRow.Music => copy.Music,
@@ -1374,84 +1413,76 @@
 
 	protected override int BuildHash()
 	{
+		if ( !Loop.IsValid() )
+			return 0;
+
+		var menu = Loop.InMenu;
+		var city = Loop.InCity;
+		var shop = Loop.Phase == RunPhase.PickTrait;
+		var saves = menu && Loop.MenuView == MenuPage.Saves;
+		var boss = Loop.InBossFight;
+		var mag = Loop.Inventory.IsValid() ? Loop.Inventory.MagLoaded : 0;
+
 		var a = System.HashCode.Combine(
-			Loop.IsValid() ? Loop.Lap : 0,
-			Loop.IsValid() ? Loop.Health : 0,
-			Loop.IsValid() ? (int)Loop.Phase : 0,
-			DashPercent,
-			Loop.IsValid() ? Loop.Stash : 0,
-			Loop.IsValid() && Loop.Inventory.IsValid() ? ReloadPercent : 0,
-			System.HashCode.Combine(
-				Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.MagLoaded : 0,
-				Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.MagFlight : 0,
-				Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.MagDropped : 0,
-				Loop.IsValid() && Loop.NoticeVisible ) );
+			Loop.Lap,
+			Loop.Health,
+			(int)Loop.Phase,
+			Loop.Stash,
+			Loop.Scrap,
+			Loop.Kills,
+			mag,
+			Loop.HurtAmount > 0.01f );
 
 		var b = System.HashCode.Combine(
-			Loop.IsValid() ? Loop.Notice : "",
+			Loop.Notice,
+			Loop.NoticeVisible,
 			TimeText,
-			GlobalMods,
-			Loop.IsValid() ? Loop.Kills : 0,
-			Loop.IsValid() ? Loop.BestExtract : 0,
-			Loop.IsValid() ? Loop.ExtractedRounds : 0,
-			Loop.IsValid() ? Loop.BurnedRounds : 0,
-			Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.ShotsFired : 0 );
+			Loop.Paused,
+			(int)Loop.MenuView,
+			(int)Loop.MenuFocus,
+			(int)Loop.SettingCursor,
+			(int)UserSettings.Graphics );
 
 		var c = System.HashCode.Combine(
-			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.Warehouse : 0,
-			Loop.IsValid() && Loop.City.IsValid() ? (int)Loop.City.Selected : 0,
-			Loop.IsValid() ? Loop.Offers.Count : 0,
-			Loop.IsValid() ? Loop.HeartMax : 0,
-			string.Join( " ", CityBonusLines ),
-			HurtPercent,
-			Loop.IsValid() && Loop.InBossFight );
+			boss ? Loop.BossHealth : 0,
+			Loop.HasBossOffer,
+			boss,
+			Loop.CanPause,
+			(int)Loop.Location,
+			Loop.BestLine,
+			Loop.FedBiomass,
+			Loop.TaskDone );
 
 		var d = System.HashCode.Combine(
-			Loop.IsValid() ? Loop.BossHealth : 0,
-			Loop.IsValid() && Loop.HasBossOffer,
-			Loop.IsValid() && Loop.City.IsValid() ? Loop.City.PlacementFacing : 0,
-			Loop.IsValid() && Loop.City.IsValid() ? (int)Loop.City.Mode : 0,
-			Loop.IsValid() && Loop.Paused,
-			Loop.IsValid() ? (int)Loop.MenuView : 0,
-			Loop.IsValid() ? Loop.ActiveSlot : 0,
-			Loop.IsValid() ? Loop.SaveCursor : 0 );
+			Loop.TaskStamp,
+			Loop.HasTask,
+			Loop.HasNextRing,
+			Loop.BestExtract,
+			Loop.ExtractedRounds,
+			Loop.BurnedRounds,
+			Loop.ShotsFired,
+			shopHover );
 
-		var e = System.HashCode.Combine(
-			Loop.IsValid() ? Loop.SlotBlurb( 0 ) : "",
-			Loop.IsValid() ? Loop.SlotBlurb( 1 ) : "",
-			Loop.IsValid() ? Loop.SlotBlurb( 2 ) : "",
-			Loop.IsValid() && Loop.SlotExists( 0 ),
-			Loop.IsValid() && Loop.SlotExists( 1 ),
-			Loop.IsValid() && Loop.SlotExists( 2 ),
-			Loop.IsValid() && Loop.CanSkipLap,
-			Loop.IsValid() && Loop.CanPause );
+		var e = saves
+			? System.HashCode.Combine( Loop.SlotBlurb( 0 ), Loop.SlotBlurb( 1 ), Loop.SlotBlurb( 2 ), Loop.SlotExists( 0 ), Loop.SlotExists( 1 ), Loop.SlotExists( 2 ), Loop.ActiveSlot, Loop.SaveCursor )
+			: System.HashCode.Combine( Loop.ActiveSlot, Loop.SaveCursor );
 
-		var f = System.HashCode.Combine(
-			Loop.IsValid() ? Loop.Scrap : 0,
-			Loop.IsValid() ? Loop.OfferStamp : 0,
-			Loop.IsValid() && Loop.ShopHasBundle,
-			Loop.IsValid() && Loop.ShopCanBuyAll,
-			Loop.IsValid() ? Loop.ShopBuyAllCost : 0,
-			shopHover,
+		var f = city && Loop.City.IsValid()
+			? System.HashCode.Combine( Loop.City.Warehouse, (int)Loop.City.Selected, Loop.City.PlacementFacing, (int)Loop.City.Mode )
+			: 0;
+
+		var g = shop
+			? System.HashCode.Combine( Loop.Offers.Count, Loop.OfferStamp, Loop.ShopHasBundle, Loop.ShopCanBuyAll, Loop.ShopBuyAllCost )
+			: 0;
+
+		var h = System.HashCode.Combine(
+			menu && Loop.City.IsValid() ? Loop.OrganCount : 0,
+			menu ? UserSettings.Steps( SettingRow.Music ) : 0,
+			menu ? UserSettings.Steps( SettingRow.Sfx ) : 0,
+			menu ? UserSettings.Steps( SettingRow.Shake ) : 0,
 			(int)OrganLift );
 
-		var g = System.HashCode.Combine(
-			Loop.IsValid() ? (int)Loop.Location : 0,
-			Loop.IsValid() ? Loop.BestLine : -1,
-			Loop.IsValid() && Loop.HasNextRing,
-			Loop.IsValid() ? Loop.TaskStamp : "",
-			Loop.IsValid() && Loop.HasTask,
-			Loop.IsValid() ? Loop.TaskDone : 0,
-			Loop.IsValid() ? Loop.FedBiomass : 0,
-			System.HashCode.Combine(
-				Loop.IsValid() ? (int)Loop.MenuFocus : 0,
-				Loop.IsValid() ? Loop.OrganCount : 0,
-				Loop.IsValid() ? (int)Loop.SettingCursor : 0,
-				UserSettings.Steps( SettingRow.Music ),
-				UserSettings.Steps( SettingRow.Sfx ),
-				UserSettings.Steps( SettingRow.Shake ) ) );
-
-		return System.HashCode.Combine( a, b, c, d, e, f, g );
+		return System.HashCode.Combine( a, b, c, d, e, f, g, h );
 	}
 }
 
@@ -3784,7 +3815,9 @@
 	}
 
 	.rail-row.slider .row-title,
-	.rail-row.slider .row-value {
+	.rail-row.slider .row-value,
+	.rail-row.preset .row-title,
+	.rail-row.preset .row-value {
 		pointer-events: none;
 	}
 

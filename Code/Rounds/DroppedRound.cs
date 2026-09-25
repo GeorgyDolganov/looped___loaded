@@ -35,9 +35,7 @@ public sealed class DroppedRound : Component
 	{
 		EnsureShell();
 
-		glow = GameObject.AddComponent<PointLight>();
-		glow.LightColor = ShotColors.Player * 4f;
-		glow.Radius = 340f;
+		glow = GraphicsApply.AddShotLight( GameObject, ShotColors.Player * 4f, 340f );
 	}
 
 	void EnsureShell()

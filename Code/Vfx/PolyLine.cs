@@ -11,11 +11,35 @@ public sealed class PolyLine : Component
 
 	readonly List<GameObject> nodes = new();
 	LineRenderer line;
+	bool styled;
+	Color styledHead;
+	Color styledTail;
+	float styledHeadWidth;
+	float styledTailWidth;
+	bool styledHard;
+	bool styledSolid;
 
 	public void Apply()
 	{
 		if ( !line.IsValid() )
 			return;
+
+		if ( styled
+			&& styledHard == HardCaps
+			&& styledSolid == Solid
+			&& styledHeadWidth == HeadWidth
+			&& styledTailWidth == TailWidth
+			&& Same( styledHead, HeadTint )
+			&& Same( styledTail, TailTint ) )
+			return;
+
+		styled = true;
+		styledHard = HardCaps;
+		styledSolid = Solid;
+		styledHeadWidth = HeadWidth;
+		styledTailWidth = TailWidth;
+		styledHead = HeadTint;
+		styledTail = TailTint;
 
 		var cap = HardCaps ? SceneLineObject.CapStyle.None : SceneLineObject.CapStyle.Rounded;
 		line.StartCap = cap;
@@ -30,6 +54,8 @@ public sealed class PolyLine : Component
 			new Curve.Frame( 0f, TailWidth ),
 			new Curve.Frame( 1f, HeadWidth ) );
 	}
+
+	static bool Same( Color a, Color b ) => a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
 
 	public void SetPoints( List<Vector3> points )
 	{

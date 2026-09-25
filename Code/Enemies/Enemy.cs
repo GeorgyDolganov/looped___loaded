@@ -664,10 +664,17 @@ public sealed class Enemy : Component
 
 		if ( outline.IsValid() )
 		{
-			outline.HeadTint = tint;
-			outline.TailTint = tint;
-			outline.Apply();
-			outline.SetPoints( CirclePoints() );
+			if ( GraphicsProfile.CircleSegments < 3 )
+			{
+				outline.Clear();
+			}
+			else
+			{
+				outline.HeadTint = tint;
+				outline.TailTint = tint;
+				outline.Apply();
+				outline.SetPoints( CirclePoints() );
+			}
 		}
 
 		PaintHealth( flash );
@@ -902,7 +909,7 @@ public sealed class Enemy : Component
 
 	List<Vector3> CirclePoints()
 	{
-		const int segments = 20;
+		var segments = Math.Max( 3, GraphicsProfile.CircleSegments );
 		if ( circle.Count != segments + 1 )
 		{
 			circle.Clear();

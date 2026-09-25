@@ -17,7 +17,6 @@ public sealed class EnemyDrive
 	const float ProbeSpan = 0.7f;
 
 	const int CrowdLod = 12;
-	const int AvoidStride = 3;
 
 	float side;
 	float sideUntil;
@@ -71,7 +70,7 @@ public sealed class EnemyDrive
 
 		FxBudget.Touch();
 		var want = Heading;
-		var refresh = crowd < CrowdLod || avoidFrame < 0 || FxBudget.Frame - avoidFrame >= AvoidStride;
+		var refresh = crowd < CrowdLod || avoidFrame < 0 || FxBudget.Frame - avoidFrame >= GraphicsProfile.AvoidStride;
 		if ( refresh )
 		{
 			want = Avoid( geo, flat, goalDir, radius, reach );

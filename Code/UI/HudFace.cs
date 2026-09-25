@@ -19,6 +19,7 @@ public sealed class HudFace : ScenePanel
 	float flinchSide = 1f;
 	int seenHealth = -1;
 	int seenMag = -1;
+	int faceFrame;
 
 	public override void Tick()
 	{
@@ -27,8 +28,19 @@ public sealed class HudFace : ScenePanel
 		if ( !Loop.IsValid() )
 			return;
 
+		if ( GraphicsProfile.HudFaceStride <= 0 )
+		{
+			RenderScene = null;
+			return;
+		}
+
 		Ensure();
 		if ( !ready )
+			return;
+
+		RenderScene = scene;
+		faceFrame++;
+		if ( GraphicsProfile.HudFaceStride > 1 && (faceFrame % GraphicsProfile.HudFaceStride) != 0 )
 			return;
 
 		var dt = MathF.Min( Time.Delta, 0.05f );

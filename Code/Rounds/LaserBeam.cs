@@ -341,7 +341,7 @@ public sealed class LaserBeam : Component
 
 	void PaintSplash()
 	{
-		if ( !splashLive || loop?.Geometry is null )
+		if ( !GraphicsProfile.SplashRings || !splashLive || loop?.Geometry is null )
 		{
 			splashRing?.Clear();
 			return;

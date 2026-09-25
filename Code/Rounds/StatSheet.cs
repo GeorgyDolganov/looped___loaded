@@ -84,9 +84,8 @@ public static class StatSheet
 				Note( $"Spread min {Fmt( t.ChokeFloor )}°" );
 				break;
 			case RoundTrait.Meat:
-				Up( $"+{t.MeatBonus} Damage" );
-				Note( $"Range < {Fmt( t.MeatRange )}" );
-				Down( $"-{PctPoints( t.MeatRangeCut )} Range" );
+				Up( $"+{t.MeatBonus} Damage within {Fmt( t.MeatRange )}" );
+				Down( $"-{PctPoints( t.MeatRangeCut )} Shot distance" );
 				break;
 			case RoundTrait.Rico:
 				Up( $"+{t.RicoBounces} Bounce" );
@@ -100,29 +99,26 @@ public static class StatSheet
 				Down( $"+{Fmt( t.DoubleReload )}s Reload" );
 				break;
 			case RoundTrait.Kick:
-				Up( $"+{Fmt( t.KickForce )} Knockback" );
-				Note( $"Range {Fmt( t.KickRange )}" );
+				Up( $"+{Fmt( t.KickForce )} Knockback within {Fmt( t.KickRange )}" );
 				break;
 			case RoundTrait.Stun:
-				Up( $"+{Fmt( t.StunTime )}s Stun" );
-				Note( $"Range {Fmt( t.StunRange )}" );
+				Up( $"+{Fmt( t.StunTime )}s Stun within {Fmt( t.StunRange )}" );
 				break;
 			case RoundTrait.Heap:
 				Up( $"+{t.HeapPellets} Projectiles" );
 				Down( $"+{Fmt( t.HeapReload )}s Reload" );
 				break;
 			case RoundTrait.Waste:
-				Up( $"+{t.WasteBonus} Damage" );
-				Note( $"Range < {Fmt( t.WasteRange )}" );
-				Down( $"-{PctPoints( t.WasteRangeCut )} Range" );
+				Up( $"+{t.WasteBonus} Damage within {Fmt( t.WasteRange )}" );
+				Down( $"-{PctPoints( t.WasteRangeCut )} Shot distance" );
 				break;
 			case RoundTrait.Breach:
 				Up( $"+{t.BreachPierce} Pierce" );
 				break;
 			case RoundTrait.Slug:
 				Up( $"+{t.SlugDamage} Damage" );
-				Note( $"Radius {Fmt( t.SlugRadius )}" );
-				Up( $"+{Fmt( t.SlugFalloffPad )} Range" );
+				Note( $"Body radius {Fmt( t.SlugRadius )}" );
+				Up( $"Flies +{Fmt( t.SlugFalloffPad )} farther" );
 				break;
 			case RoundTrait.Bore:
 			{
@@ -182,7 +178,7 @@ public static class StatSheet
 				break;
 			case RoundTrait.Crater:
 				Up( $"+{Fmt( t.CraterSplash )} Splash Radius" );
-				Up( $"Body {Fmt( t.CraterBody )}" );
+				Up( $"Body radius {Fmt( t.CraterBody )}" );
 				Down( $"{PctDelta( t.CraterSpeed )} Projectile Speed" );
 				Down( "Bounces 0" );
 				Down( "Locks out CLUSTER" );
@@ -310,6 +306,50 @@ public static class StatSheet
 				Note( "Remaining ticks finish" );
 				Down( $"+{Fmt( t.LingerReload )}s Reload" );
 				break;
+			case RoundTrait.Cell:
+				Up( $"+{t.CellTicks} Ticks" );
+				Down( $"+{Fmt( t.CellReload )}s Reload" );
+				break;
+			case RoundTrait.Jack:
+				Up( $"{PctDelta( t.JackReload )} Reload" );
+				Down( $"{PctDelta( t.JackSplash )} Splash Radius" );
+				break;
+			case RoundTrait.Slap:
+				Up( $"{PctDelta( t.SlapReload )} Reload" );
+				Down( $"{PctDelta( t.SlapSpeed )} Projectile Speed" );
+				break;
+			case RoundTrait.Rack:
+				Up( $"{PctDelta( t.RackReload )} Reload" );
+				Down( $"{PctDelta( t.RackSpeed )} Projectile Speed" );
+				break;
+			case RoundTrait.Draw:
+				Up( $"{PctDelta( t.DrawReload )} Reload" );
+				Down( $"-{t.DrawPierce} Pierce" );
+				break;
+			case RoundTrait.Feed:
+				Up( $"{PctDelta( t.FeedReload )} Reload" );
+				Down( $"{PctDelta( t.FeedCycle )} Cycle" );
+				break;
+			case RoundTrait.Eject:
+				Up( $"{PctDelta( t.EjectReload )} Reload" );
+				Down( $"-{t.EjectBurst} Burst" );
+				break;
+			case RoundTrait.Vent:
+				Up( $"{PctDelta( t.VentReload )} Reload" );
+				Down( $"{PctDelta( t.VentTick )} Bolt Tick" );
+				break;
+			case RoundTrait.Cool:
+				Up( $"{PctDelta( t.CoolReload )} Reload" );
+				Down( $"{PctDelta( t.CoolWidth )} Beam Width" );
+				break;
+			case RoundTrait.Shuck:
+				Up( $"{PctDelta( t.ShuckReload )} Reload" );
+				Down( $"+{Fmt( t.ShuckCone )}° Spread" );
+				break;
+			case RoundTrait.Slam:
+				Up( $"{PctDelta( t.SlamReload )} Reload" );
+				Down( $"-{t.SlamPellets} Projectile" );
+				break;
 			case RoundTrait.Pin:
 			{
 				var nails = Gain( t.PinNails, rank );
@@ -377,7 +417,7 @@ public static class StatSheet
 		AddFloat( rows, "Reload", now.Reload, next.Reload, preview, false, "s", true );
 		AddPct( rows, "Proj. Speed", now.SpeedScale, next.SpeedScale, preview, true );
 		AddRange( rows, now.Falloff, next.Falloff, preview );
-		AddFloat( rows, "Meat Range", now.MeatRange, next.MeatRange, preview, true );
+		AddFloat( rows, "Damage within", now.MeatRange, next.MeatRange, preview, true );
 		AddInt( rows, "Meat Damage", now.MeatBonus, next.MeatBonus, preview, true, false );
 		AddFloat( rows, "Splash", now.Splash, next.Splash, preview, true );
 		AddInt( rows, "Splash Dmg", now.SplashDamage, next.SplashDamage, preview, true, false );

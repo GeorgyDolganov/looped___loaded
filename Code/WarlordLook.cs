@@ -39,7 +39,7 @@ public static class WarlordLook
 		var renderer = go.AddComponent<SkinnedModelRenderer>();
 		renderer.Model = model;
 		renderer.UseAnimGraph = false;
-		renderer.CreateBoneObjects = true;
+		renderer.CreateBoneObjects = false;
 		renderer.Sequence.Name = sequence;
 		renderer.Sequence.Looping = looping;
 		return renderer;

@@ -54,6 +54,7 @@ public enum MenuPage
 
 public enum SettingRow
 {
+	Graphics,
 	Music,
 	Sfx,
 	Shake

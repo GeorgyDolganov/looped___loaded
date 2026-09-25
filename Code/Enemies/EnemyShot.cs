@@ -56,9 +56,7 @@ public sealed class EnemyShot : Component
 		bolt = Blocks.SpawnBox( GameObject, "Bolt", WorldPosition, Blocks.FlatFacing( Direction ),
 			new Vector3( 42f, 16f, 16f ), ShotColors.Enemy, false );
 
-		var glow = GameObject.AddComponent<PointLight>();
-		glow.LightColor = ShotColors.Enemy * 7f;
-		glow.Radius = 280f;
+		GraphicsApply.AddShotLight( GameObject, ShotColors.Enemy * 7f, 280f );
 
 		var trailObject = Scene.CreateObject();
 		trailObject.Name = "Trail";
@@ -123,7 +121,8 @@ public sealed class EnemyShot : Component
 	{
 		trail.Add( point );
 
-		while ( trail.Count > TrailPoints )
+		var keep = Math.Min( TrailPoints, Math.Max( 2, GraphicsProfile.TrailPoints ) );
+		while ( trail.Count > keep )
 			trail.RemoveAt( 0 );
 
 		trailLine?.SetPoints( trail );

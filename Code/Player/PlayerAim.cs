@@ -195,7 +195,7 @@ public sealed class PlayerAim : Component
 
 	void PaintRing( PolyLine line, Vector2 flat, float radius, bool friendly )
 	{
-		if ( !line.IsValid() || radius <= 1f )
+		if ( !GraphicsProfile.SplashRings || !line.IsValid() || radius <= 1f )
 		{
 			line?.Clear();
 			return;

@@ -2,10 +2,11 @@ namespace LoopedLoaded;
 
 public sealed class UserOptions
 {
-	public int Version { get; set; } = 1;
+	public int Version { get; set; } = 2;
 	public float Music { get; set; } = 1f;
 	public float Sfx { get; set; } = 0.5f;
 	public float Shake { get; set; } = 1f;
+	public int Graphics { get; set; } = (int)GraphicsPreset.High;
 }
 
 public static class UserSettings
@@ -19,6 +20,7 @@ public static class UserSettings
 	public static float Music => Current.Music;
 	public static float Sfx => Current.Sfx;
 	public static float Shake => Current.Shake;
+	public static GraphicsPreset Graphics => (GraphicsPreset)Math.Clamp( Current.Graphics, 0, 2 );
 
 	static UserOptions Current
 	{
@@ -35,10 +37,12 @@ public static class UserSettings
 			return;
 
 		loaded = true;
+		var existed = false;
 
 		try
 		{
-			if ( FileSystem.Data.FileExists( File ) )
+			existed = FileSystem.Data.FileExists( File );
+			if ( existed )
 				data = FileSystem.Data.ReadJson<UserOptions>( File ) ?? new UserOptions();
 		}
 		catch
@@ -49,12 +53,23 @@ public static class UserSettings
 		data.Music = Clamp( data.Music );
 		data.Sfx = Clamp( data.Sfx );
 		data.Shake = Clamp( data.Shake );
+		if ( data.Version < 2 )
+		{
+			data.Graphics = (int)GraphicsPreset.High;
+			data.Version = 2;
+			if ( existed )
+				Save();
+		}
+
+		data.Graphics = Math.Clamp( data.Graphics, 0, 2 );
+		GraphicsProfile.Use( (GraphicsPreset)data.Graphics );
 	}
 
 	public static float Value( SettingRow row ) => row switch
 	{
 		SettingRow.Music => Current.Music,
 		SettingRow.Sfx => Current.Sfx,
+		SettingRow.Graphics => Current.Graphics,
 		_ => Current.Shake
 	};
 
@@ -62,7 +77,29 @@ public static class UserSettings
 
 	public static int Steps( SettingRow row ) => (int)MathF.Round( Value( row ) * 10f );
 
-	public static bool Nudge( SettingRow row, int delta ) => Set( row, Value( row ) + delta * Step );
+	public static bool Nudge( SettingRow row, int delta )
+	{
+		if ( row == SettingRow.Graphics )
+			return CycleGraphics( delta );
+
+		return Set( row, Value( row ) + delta * Step );
+	}
+
+	public static bool CycleGraphics( int delta )
+	{
+		var count = 3;
+		var next = (Current.Graphics + delta) % count;
+		if ( next < 0 )
+			next += count;
+
+		if ( next == Current.Graphics )
+			return false;
+
+		Current.Graphics = next;
+		GraphicsProfile.Use( (GraphicsPreset)next );
+		Save();
+		return true;
+	}
 
 	public static bool Set( SettingRow row, float value )
 	{
