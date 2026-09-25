@@ -634,6 +634,7 @@ public class ShopCopy
 	[Property] public string BuyAll { get; set; } = "BUY ALL";
 	[Property] public string BuyAllBlurb { get; set; } = "Take every leftover card for {0} scrap.";
 	[Property] public string Cost { get; set; } = "{0} SCRAP";
+	[Property] public string Refresh { get; set; } = "REFRESH";
 	[Property] public string Go { get; set; } = "GO";
 	[Property] public string GoBlurb { get; set; } = "Next lap. Keep leftover scrap.";
 	[Property] public string Bought { get; set; } = "BOUGHT";
@@ -677,7 +678,7 @@ public class HelpCopy
 	[Property] public string DecideLap { get; set; } = "CLICK  ·  1 ALTAR  ·  2 STAY  ·  ESC PAUSE";
 	[Property] public string DecideRingNext { get; set; } = "CLICK  ·  1 ALTAR  ·  2 NEXT RING  ·  ESC PAUSE";
 	[Property] public string DecideRing { get; set; } = "CLICK  ·  1 ALTAR  ·  ESC PAUSE";
-	[Property] public string Shop { get; set; } = "CLICK A CARD  ·  1-{0} BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
+	[Property] public string Shop { get; set; } = "CLICK A CARD  ·  1-{0} BUY  ·  E ALL  ·  REFRESH  ·  SPACE GO  ·  ESC PAUSE";
 	[Property] public string Dead { get; set; } = "CLICK ALTAR  ·  R ALTAR  ·  ESC MENU";
 	[Property] public string Extracted { get; set; } = "SPACE CONTINUE";
 	[Property] public string Won { get; set; } = "CLICK  ·  SPACE PLAY AGAIN  ·  ESC MENU";
@@ -722,6 +723,7 @@ public class AnnounceCopy
 	[Property] public string StashMax { get; set; } = "STASH MAX  ·  ×{0:0.00}";
 	[Property] public string BossContinue { get; set; } = "{0}  ·  +{1}  ·  STASH {2}";
 	[Property] public string NeedScrap { get; set; } = "NEED {0} SCRAP";
+	[Property] public string ShopRefresh { get; set; } = "REFRESH  ·  NEXT {0}  ·  {1} SCRAP";
 	[Property] public string TraitBought { get; set; } = "{0} LV{1}  ·  {2} SCRAP";
 	[Property] public string Armed { get; set; } = "ARMED  ·  {0} SCRAP";
 	[Property] public string PlaceRule { get; set; } = "{0}  ·  {1}";

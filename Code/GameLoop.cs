@@ -98,6 +98,7 @@ public sealed class GameLoop : Component
 		}
 	}
 	public int ShopBuyAllCost => Phase == RunPhase.PickTrait ? RemainingOfferCost() : 0;
+	public int ShopRefreshCost => Math.Max( 1, GameSettings.Traits.RefreshPrice ) + shopRefreshUses * Math.Max( 0, GameSettings.Traits.RefreshStep );
 	public bool ShopHasBundle => Phase == RunPhase.PickTrait && OpenOfferCount() >= 2;
 	public bool ShopCanBuyAll => ShopHasBundle && Scrap >= ShopBuyAllCost && ShopBuyAllCost > 0;
 
@@ -158,6 +159,7 @@ public sealed class GameLoop : Component
 	float uiClickUntil;
 	bool pendingBoss;
 	int featureTurn;
+	int shopRefreshUses;
 	readonly List<ShopOffer> offers = new();
 	static readonly string[] OfferSlots = { "Slot1", "Slot2", "Slot3", "Slot4", "Slot5", "Slot6", "Slot7", "Slot8", "Slot9" };
 	bool bossWon;
@@ -736,6 +738,7 @@ public sealed class GameLoop : Component
 		Kills = 0;
 		Scrap = 0;
 		featureTurn = 0;
+		shopRefreshUses = 0;
 		ShotsFired = 0;
 		Catches = 0;
 		Losses = 0;
@@ -1334,6 +1337,26 @@ public sealed class GameLoop : Component
 		LeaveShop();
 	}
 
+	public void ChooseRefreshShop()
+	{
+		if ( Paused || Phase != RunPhase.PickTrait )
+			return;
+
+		var price = ShopRefreshCost;
+		if ( Scrap < price )
+		{
+			ArenaSounds.Deny();
+			Announce( T.F( T.Announce.NeedScrap, price - Scrap ) );
+			return;
+		}
+
+		Scrap -= price;
+		shopRefreshUses++;
+		RollShop();
+		ArenaSounds.Pickup();
+		Announce( T.F( T.Announce.ShopRefresh, ShopRefreshCost, Scrap ) );
+	}
+
 	public int PriceOf( RoundTrait trait )
 	{
 		if ( !Inventory.IsValid() )
@@ -1477,6 +1500,13 @@ public sealed class GameLoop : Component
 
 	void BeginTraitPick()
 	{
+		shopRefreshUses = 0;
+		RollShop();
+		Phase = RunPhase.PickTrait;
+	}
+
+	void RollShop()
+	{
 		var loadout = Inventory.Loadout;
 		var fresh = new List<RoundTrait>();
 		var owned = new List<RoundTrait>();
@@ -1514,7 +1544,6 @@ public sealed class GameLoop : Component
 
 		FeatureOffer( loadout );
 		OfferSnap( loadout );
-		Phase = RunPhase.PickTrait;
 	}
 
 	void OfferSnap( RunLoadout loadout )
@@ -1770,6 +1799,8 @@ public sealed class GameLoop : Component
 	{
 		if ( Phase != RunPhase.PickTrait )
 			return;
+
+		shopRefreshUses = 0;
 
 		var fight = pendingBoss;
 		pendingBoss = false;

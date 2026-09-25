@@ -528,6 +528,13 @@
 					}
 				</div>
 				<div class="cards shop-go">
+					<div class="card shop-go-btn @RefreshClass" onmouseover="@LeaveShop" onclick="@RefreshShop">
+						<img class="shop-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
+						<div class="shop-go-copy">
+							<label class="title">@GameSettings.Text.Shop.Refresh</label>
+							<label class="cost">@GameSettings.Text.F(GameSettings.Text.Shop.Cost, Loop.ShopRefreshCost)</label>
+						</div>
+					</div>
 					<div class="card shop-go-btn" onmouseover="@LeaveShop" onclick="@FinishShop">
 						<img class="shop-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
 						<label class="title">@GameSettings.Text.Shop.Go</label>
@@ -895,6 +902,7 @@
 	void PickOffer( int index ) => Loop?.ChooseUpgradeAt( index );
 	void BuyAllOffers() => Loop?.ChooseBuyAll();
 	void FinishShop() => Loop?.ChooseShopGo();
+	void RefreshShop() => Loop?.ChooseRefreshShop();
 	void HoverShop( int index ) => shopHover = index;
 	void LeaveShop() => shopHover = -1;
 	void PickOrgan( BuildingKind kind )
@@ -1110,6 +1118,8 @@
 
 		return GameSettings.Text.F( GameSettings.Text.Shop.Cost, Loop.PriceOf( trait ) );
 	}
+
+	string RefreshClass => Loop.IsValid() && Loop.Scrap < Loop.ShopRefreshCost ? "poor" : "";
 
 	string OfferClass( RoundTrait trait, bool bought )
 	{
@@ -1535,7 +1545,7 @@
 			: 0;
 
 		var g = shop
-			? System.HashCode.Combine( Loop.Offers.Count, Loop.OfferStamp, Loop.ShopHasBundle, Loop.ShopCanBuyAll, Loop.ShopBuyAllCost )
+			? System.HashCode.Combine( Loop.Offers.Count, Loop.OfferStamp, Loop.ShopHasBundle, Loop.ShopCanBuyAll, Loop.ShopBuyAllCost, Loop.ShopRefreshCost )
 			: 0;
 
 		var h = System.HashCode.Combine(
@@ -3050,9 +3060,29 @@
 	}
 
 	.shop-body,
-	.shop-go-btn .title {
+	.shop-go-btn .title,
+	.shop-go-copy {
 		position: relative;
 		z-index: 1;
+	}
+
+	.shop-go-copy {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.card.shop-go-btn .title {
+		margin-top: 0px;
+	}
+
+	.card.shop-go-btn .cost {
+		margin-top: 2px;
+		font-size: 16px;
+	}
+
+	.card.shop-go-btn.poor .cost {
+		color: #e0453a;
 	}
 
 	.card {
