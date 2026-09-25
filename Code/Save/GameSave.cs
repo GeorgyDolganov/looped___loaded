@@ -23,7 +23,7 @@ public sealed class GameSave
 			var count = 0;
 			foreach ( var plot in Plots )
 			{
-				if ( plot is not null && plot.Occupied )
+				if ( plot is not null && plot.Occupied && plot.Level > 0 )
 					count++;
 			}
 
@@ -31,7 +31,24 @@ public sealed class GameSave
 		}
 	}
 
-	public bool HasProgress => Warehouse > 0 || FedBiomass > 0 || BestExtract > 0 || BuildingCount > 0 || BestLine >= 0 || Runs > 0 || Ascend > 0 || (Tasks is not null && Tasks.Count > 0);
+	public bool HasProgress => Warehouse > 0 || FedBiomass > 0 || BestExtract > 0 || HasPlot || BestLine >= 0 || Runs > 0 || Ascend > 0 || (Tasks is not null && Tasks.Count > 0);
+
+	bool HasPlot
+	{
+		get
+		{
+			if ( Plots is null )
+				return false;
+
+			foreach ( var plot in Plots )
+			{
+				if ( plot is not null && plot.Occupied )
+					return true;
+			}
+
+			return false;
+		}
+	}
 }
 
 public sealed class PlotSave

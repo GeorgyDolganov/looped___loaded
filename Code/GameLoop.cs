@@ -157,7 +157,7 @@ public sealed class GameLoop : Component
 	float lastHurtAt = -99f;
 	float armorNoticeAt = -99f;
 	float boneSoundAt = -99f;
-	float scrapNoticeAt = -99f;
+	int boneNoticeSum;
 	float pauseStartedAt;
 	float uiClickUntil;
 	bool pendingBoss;
@@ -325,6 +325,7 @@ public sealed class GameLoop : Component
 	{
 		Notice = TextConfig.Shown( text );
 		noticeAt = Time.Now;
+		boneNoticeSum = 0;
 	}
 
 	public void NoteProgress( ProgressGoal goal, RunLocation location = default )
@@ -816,11 +817,13 @@ public sealed class GameLoop : Component
 		}
 
 		ImpactFlash.Spawn( Scene, world, BonePickup.Tint, 0.42f );
-		if ( Time.Now >= scrapNoticeAt )
-		{
-			scrapNoticeAt = Time.Now + 0.4f;
-			Announce( T.F( T.Announce.ScrapGain, value ) );
-		}
+		if ( !NoticeVisible )
+			boneNoticeSum = 0;
+
+		boneNoticeSum += value;
+		var sum = boneNoticeSum;
+		Announce( T.F( T.Announce.ScrapGain, sum ) );
+		boneNoticeSum = sum;
 	}
 
 	public void NoteShot()
@@ -1564,31 +1567,6 @@ public sealed class GameLoop : Component
 		}
 
 		FeatureOffer( loadout );
-		OfferSnap( loadout );
-	}
-
-	void OfferSnap( RunLoadout loadout )
-	{
-		var unlock = GameSettings.Traits.SnapUnlockLap;
-		if ( Lap < unlock || Lap > unlock + 1 )
-			return;
-
-		if ( loadout is null || loadout.TraitLevel( RoundTrait.Snap ) > 0 )
-			return;
-
-		foreach ( var offer in offers )
-		{
-			if ( offer.Trait == RoundTrait.Snap )
-				return;
-		}
-
-		var card = new ShopOffer { Trait = RoundTrait.Snap };
-		if ( offers.Count < GameSettings.City.MaxOffers )
-			offers.Insert( 0, card );
-		else if ( offers.Count > 0 )
-			offers[0] = card;
-		else
-			offers.Add( card );
 	}
 
 	void FeatureOffer( RunLoadout loadout )

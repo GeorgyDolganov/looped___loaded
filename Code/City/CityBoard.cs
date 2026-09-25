@@ -177,7 +177,7 @@ public sealed class CityBoard : Component
 			var count = 0;
 			foreach ( var plot in plots )
 			{
-				if ( plot.Occupied )
+				if ( plot.Working )
 					count++;
 			}
 
@@ -787,6 +787,13 @@ public sealed class CityBoard : Component
 		{
 			ArenaSounds.Deny();
 			Loop?.Announce( GameSettings.Text.City.DashCap );
+			return;
+		}
+
+		if ( Selected == BuildingKind.Showcase && Stats().OfferCount >= GameSettings.City.MaxOffers )
+		{
+			ArenaSounds.Deny();
+			Loop?.Announce( GameSettings.Text.City.CardCap );
 			return;
 		}
 

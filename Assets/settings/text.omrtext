@@ -213,8 +213,9 @@
     "LevelStageHits": "{0} LV{1}  ·  {2}  ·  {3} HITS",
     "PlacedFrame": "{0} FRAME",
     "Removed": "{0} REMOVED",
-    "WarehouseEmpty": "WAREHOUSE EMPTY",
+    "WarehouseEmpty": "NOT ENOUGH BIOMASS",
     "DashCap": "DASH COOLDOWN CAPPED",
+    "CardCap": "ONLY 5 CARDS",
     "FrameHits": "FRAME  ·  {0} HITS TO WORK",
     "ClickToCraft": "Click to Craft",
     "SwitchToInject": "Switch to Inject Mode",
@@ -765,7 +766,7 @@
       "Title": "LIVER",
       "Payoff": "+CARD",
       "Promise": "+1 UPGRADE CARD AFTER EACH LAP",
-      "Blurb": ""
+      "Blurb": "Adds a chapel card. Only 5 cards."
     }
   },
   "Places": {

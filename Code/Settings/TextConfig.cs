@@ -178,6 +178,7 @@ public class TextConfig : GameResource
 		BuildingKind.Anvil => "Rounds hit harder.",
 		BuildingKind.Booster => "Dash returns faster. Caps at 60%.",
 		BuildingKind.Brake => "RMB to slow down time. More buildings increase the duration of the slow effect.",
+		BuildingKind.Showcase => "Adds a chapel card. Only 5 cards.",
 		_ => ""
 	};
 
@@ -382,7 +383,7 @@ public class BuildingsCopy
 		Title = "LIVER",
 		Payoff = "+CARD",
 		Promise = "+1 UPGRADE CARD AFTER EACH LAP",
-		Blurb = ""
+		Blurb = "Adds a chapel card. Only 5 cards."
 	};
 }
 
@@ -758,8 +759,9 @@ public class CityCopy
 	[Property] public string LevelStageHits { get; set; } = "{0} LV{1}  ·  {2}  ·  {3} HITS";
 	[Property] public string PlacedFrame { get; set; } = "{0} FRAME";
 	[Property] public string Removed { get; set; } = "{0} REMOVED";
-	[Property] public string WarehouseEmpty { get; set; } = "WAREHOUSE EMPTY";
+	[Property] public string WarehouseEmpty { get; set; } = "NOT ENOUGH BIOMASS";
 	[Property] public string DashCap { get; set; } = "DASH COOLDOWN CAPPED";
+	[Property] public string CardCap { get; set; } = "ONLY 5 CARDS";
 	[Property] public string FrameHits { get; set; } = "FRAME  ·  {0} HITS TO WORK";
 	[Property] public string ClickToCraft { get; set; } = "Click to Craft";
 	[Property] public string SwitchToInject { get; set; } = "Switch to Inject Mode";
