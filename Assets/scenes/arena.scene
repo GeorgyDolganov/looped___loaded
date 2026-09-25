@@ -362,7 +362,7 @@
           },
           "LostRoundMinArc": 460,
           "MaxHealth": 3,
-          "NoticeDuration": 1.6,
+          "NoticeDuration": 4,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,

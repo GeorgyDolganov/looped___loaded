@@ -425,9 +425,6 @@ public sealed class CityBoard : Component
 			plot.Hits = 0;
 			plot.Level++;
 			ArenaSounds.Pickup( world );
-			Loop?.Announce( plot.Working
-				? GameSettings.Text.F( GameSettings.Text.City.LevelReflects, Buildings.Title( plot.Kind ), plot.Level )
-				: GameSettings.Text.F( GameSettings.Text.City.Level, Buildings.Title( plot.Kind ), plot.Level ) );
 			if ( plot.Working )
 				Loop?.NoteProgress( ProgressGoal.WorkOrgan );
 		}
@@ -794,7 +791,6 @@ public sealed class CityBoard : Component
 		Hovered.Hits = 0;
 		RefreshPlot( Hovered );
 		ArenaSounds.MenuOk();
-		Loop?.Announce( GameSettings.Text.F( GameSettings.Text.City.PlacedFrame, Buildings.Title( Selected ) ) );
 		Loop?.NoteProgress( ProgressGoal.PlaceFrame );
 		Loop?.Autosave();
 	}

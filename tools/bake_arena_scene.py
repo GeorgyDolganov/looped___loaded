@@ -472,7 +472,7 @@ def main():
                         "__type": "LoopedLoaded.GameLoop",
                         "__guid": loop_id,
                         "LostRoundMinArc": 460,
-                        "NoticeDuration": 1.6,
+                        "NoticeDuration": 4,
                         "MaxHealth": 3,
                     },
                 ],

@@ -960,9 +960,9 @@
 				RunPhase.City => Loop.City.IsValid() && Loop.City.Building
 					? GameSettings.Text.Help.CityBuild
 					: GameSettings.Text.Help.CityShoot,
-				RunPhase.DecideLap => Loop.HasBossOffer ? GameSettings.Text.F( GameSettings.Text.Help.DecideLapBoss, Loop.BossName ) : GameSettings.Text.Help.DecideLap,
+				RunPhase.DecideLap => "",
 				RunPhase.DecideRing => Loop.HasNextRing ? GameSettings.Text.Help.DecideRingNext : GameSettings.Text.Help.DecideRing,
-				RunPhase.PickTrait => GameSettings.Text.F( GameSettings.Text.Help.Shop, Loop.Offers.Count ),
+				RunPhase.PickTrait => "",
 				RunPhase.Dead => GameSettings.Text.Help.Dead,
 				RunPhase.Extracted => GameSettings.Text.Help.Extracted,
 				RunPhase.Won => GameSettings.Text.Help.Won,
