@@ -82,7 +82,10 @@ public sealed class GameLoop : Component
 	public int Runs { get; private set; }
 	bool softEnemies;
 	public int FedBiomass { get; private set; }
-	public int WinNeed => Math.Max( 1, GameSettings.Run.WinBiomass );
+	public int Ascend { get; private set; }
+	public int WinNeed => Progression.WinNeed( Ascend );
+	public int ScaleHealth( int hp ) => Ascend <= 0 ? hp : Progression.Whole( hp * Progression.AscendHealth( Ascend ) );
+	int ScaleReward( int value ) => Ascend <= 0 || value <= 0 ? value : Progression.Whole( value * Progression.AscendReward( Ascend ) );
 	public float RunTime => Time.Now - runStartedAt;
 
 	public IReadOnlyList<ShopOffer> Offers => offers;
@@ -144,7 +147,7 @@ public sealed class GameLoop : Component
 					return enemy.MaxHealth;
 			}
 
-			return Progression.BossHealth( Lap, LocationIndex );
+			return ScaleHealth( Progression.BossHealth( Lap, LocationIndex ) );
 		}
 	}
 
@@ -238,6 +241,7 @@ public sealed class GameLoop : Component
 		var save = City.Capture( BestExtract, BestLine );
 		save.FedBiomass = FedBiomass;
 		save.Runs = Runs;
+		save.Ascend = Ascend;
 		save.Tasks = progress.Capture();
 		if ( !save.HasProgress && !SaveStore.Exists( ActiveSlot ) )
 			return;
@@ -305,6 +309,7 @@ public sealed class GameLoop : Component
 		BestExtract = save.BestExtract;
 		BestLine = save.BestLine;
 		Runs = save.Version >= SaveStore.CurrentVersion ? Math.Max( 0, save.Runs ) : Progression.SoftRuns;
+		Ascend = Math.Max( 0, save.Ascend );
 		City?.Apply( save );
 		FedBiomass = Math.Max( save.FedBiomass, City.IsValid() ? City.Warehouse : save.Warehouse );
 		progress.Apply( save.Tasks, City, BestLine, BestExtract );
@@ -786,7 +791,7 @@ public sealed class GameLoop : Component
 	public void RegisterKill( EnemyKind kind, Vector2 origin )
 	{
 		Kills++;
-		var gain = Progression.KillScrap( kind, Lap, LocationIndex );
+		var gain = ScaleReward( Progression.KillScrap( kind, Lap, LocationIndex ) );
 		if ( gain > 0 )
 			BonePickup.Spill( this, origin, gain );
 
@@ -949,13 +954,7 @@ public sealed class GameLoop : Component
 
 		if ( Input.Pressed( "Reload" ) )
 		{
-			if ( Phase == RunPhase.Won )
-			{
-				PlayAgain();
-				return;
-			}
-
-			if ( Phase == RunPhase.Extracted )
+			if ( Phase == RunPhase.Won || Phase == RunPhase.Extracted )
 				return;
 
 			if ( Phase == RunPhase.City || Phase == RunPhase.Playing || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait )
@@ -1052,11 +1051,14 @@ public sealed class GameLoop : Component
 		if ( Phase == RunPhase.Won )
 		{
 			Mouse.CursorType = "pointer";
-			if ( Input.Pressed( "Jump" )
-				|| Input.Pressed( "Use" )
-				|| Input.Pressed( "Attack1" )
-				|| Input.Pressed( "Slot1" ) )
-				PlayAgain();
+			if ( Input.Pressed( "Slot1" ) )
+			{
+				ChooseAscend();
+				return;
+			}
+
+			if ( Input.Pressed( "Slot2" ) )
+				ChooseKeep();
 			return;
 		}
 
@@ -1244,7 +1246,7 @@ public sealed class GameLoop : Component
 			BestExtract = ExtractedRounds;
 
 		EnterCity( true, doubled );
-		Announce( T.F( T.Announce.FinalBank, doubled ) );
+		Announce( T.F( T.Announce.FinalBank, ScaleReward( doubled ) ) );
 	}
 
 	void CheckLap()
@@ -1388,14 +1390,27 @@ public sealed class GameLoop : Component
 		EnterCity( false );
 	}
 
-	public void PlayAgain()
+	public void ChooseAscend()
 	{
 		if ( Paused || Phase != RunPhase.Won )
 			return;
 
-		NoteUiClick();
-		WipeCampaign();
+		Ascend++;
+		FedBiomass = 0;
+		City?.Wipe();
 		Restart();
+		Announce( T.F( T.Announce.Ascended, Ascend, WinNeed ) );
+	}
+
+	public void ChooseKeep()
+	{
+		if ( Paused || Phase != RunPhase.Won )
+			return;
+
+		Phase = RunPhase.City;
+		Mouse.CursorType = "crosshair";
+		ArenaSounds.MenuOk();
+		Announce( T.Announce.City );
 	}
 
 	void WipeCampaign()
@@ -1403,6 +1418,7 @@ public sealed class GameLoop : Component
 		BestExtract = 0;
 		BestLine = -1;
 		Runs = 0;
+		Ascend = 0;
 		softEnemies = false;
 		FedBiomass = 0;
 		ExtractedRounds = 0;
@@ -1428,14 +1444,13 @@ public sealed class GameLoop : Component
 			return;
 		}
 
-		var packed = rounds >= 0 ? rounds : Stash;
+		var packed = ScaleReward( Math.Max( 0, rounds >= 0 ? rounds : Stash ) );
 		var crossed = false;
 		if ( deposit && City.IsValid() )
 		{
-			var before = FedBiomass;
 			City.Deposit( packed );
-			FedBiomass += Math.Max( 0, packed );
-			crossed = before < WinNeed && FedBiomass >= WinNeed;
+			FedBiomass += packed;
+			crossed = FedBiomass >= WinNeed;
 			NoteProgress( ProgressGoal.Extract );
 		}
 
@@ -1469,7 +1484,7 @@ public sealed class GameLoop : Component
 			Mouse.CursorType = "crosshair";
 		}
 
-		Announce( deposit ? T.F( T.Announce.CityDeposit, ExtractedRounds ) : T.Announce.City );
+		Announce( deposit ? T.F( T.Announce.CityDeposit, packed ) : T.Announce.City );
 		Autosave();
 	}
 
@@ -1949,7 +1964,7 @@ public sealed class GameLoop : Component
 			var lensEnemy = lensObject.AddComponent<Enemy>();
 			lensEnemy.Arena = Arena;
 			lensEnemy.Loop = this;
-			lensEnemy.Setup( EnemyKind.Lens, Vector2.Zero, Progression.BossHealth( Lap, LocationIndex ) );
+			lensEnemy.Setup( EnemyKind.Lens, Vector2.Zero, ScaleHealth( Progression.BossHealth( Lap, LocationIndex ) ) );
 			Enemies.Add( lensEnemy );
 
 			var lens = lensObject.AddComponent<ArenaLens>();
@@ -1963,7 +1978,7 @@ public sealed class GameLoop : Component
 		var enemy = go.AddComponent<Enemy>();
 		enemy.Arena = Arena;
 		enemy.Loop = this;
-		enemy.Setup( EnemyKind.Core, Vector2.Zero, Progression.BossHealth( Lap, LocationIndex ) );
+		enemy.Setup( EnemyKind.Core, Vector2.Zero, ScaleHealth( Progression.BossHealth( Lap, LocationIndex ) ) );
 		Enemies.Add( enemy );
 
 		var boss = go.AddComponent<ArenaBoss>();
@@ -2120,17 +2135,17 @@ public sealed class GameLoop : Component
 	int BodyHealth( int lap )
 	{
 		if ( softEnemies )
-			return SoftHealth( lap );
+			return ScaleHealth( SoftHealth( lap ) );
 
-		return Progression.EnemyHealth( WaveBodyHp( lap ), lap, LocationIndex );
+		return ScaleHealth( Progression.EnemyHealth( WaveBodyHp( lap ), lap, LocationIndex ) );
 	}
 
 	int ExtraHealth( int lap )
 	{
 		if ( softEnemies )
-			return SoftHealth( lap );
+			return ScaleHealth( SoftHealth( lap ) );
 
-		return Progression.EnemyHealth( WaveExtraHp( lap ), lap, LocationIndex );
+		return ScaleHealth( Progression.EnemyHealth( WaveExtraHp( lap ), lap, LocationIndex ) );
 	}
 
 	int SoftHealth( int lap )

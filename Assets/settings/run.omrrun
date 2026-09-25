@@ -1,6 +1,9 @@
 {
   "BossOfferLap": 10,
-  "WinBiomass": 100,
+  "WinBiomass": 150,
+  "AscendWinRatio": 1.5,
+  "AscendHealthRatio": 1.3,
+  "AscendRewardRatio": 1.2,
   "FinalStashMul": 2,
   "RingHeal": 1,
   "IFrames": 1.05,
