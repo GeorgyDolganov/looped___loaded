@@ -12,9 +12,9 @@ public sealed class CityBoard : Component
 	public int Warehouse { get; private set; }
 	public BuildingKind Selected { get; private set; } = BuildingKind.Infirmary;
 	public int PlacementFacing { get; private set; }
-	public CityMode Mode { get; private set; } = CityMode.Build;
+	public CityMode Mode => Building ? CityMode.Build : CityMode.Shoot;
 	public string ModeLabel => GameSettings.Text.CityModeLabel( Mode );
-	public bool Building => Mode == CityMode.Build;
+	public bool Building => Hovered is not null && !Hovered.Occupied;
 	public CityPlot Hovered { get; private set; }
 	public Vector2 Cursor { get; private set; }
 	public Vector3 Anchor => GameObject.WorldPosition;
@@ -359,9 +359,6 @@ public sealed class CityBoard : Component
 				Choose( Buildings.All[i] );
 		}
 
-		if ( Input.Pressed( "Use" ) || Input.Pressed( "Score" ) )
-			SetMode( Mode == CityMode.Build ? CityMode.Shoot : CityMode.Build );
-
 		if ( Building )
 		{
 			TickRotate();
@@ -374,22 +371,7 @@ public sealed class CityBoard : Component
 			TryInject();
 	}
 
-	public void Choose( BuildingKind kind )
-	{
-		Selected = kind;
-		if ( Mode != CityMode.Build )
-			SetMode( CityMode.Build );
-	}
-
-	void SetMode( CityMode mode )
-	{
-		if ( Mode == mode )
-			return;
-
-		Mode = mode;
-		ArenaSounds.Change();
-		Loop?.Announce( Building ? GameSettings.Text.City.ModeBuild : GameSettings.Text.City.ModeShoot );
-	}
+	public void Choose( BuildingKind kind ) => Selected = kind;
 
 	void TickRotate()
 	{
@@ -796,7 +778,7 @@ public sealed class CityBoard : Component
 
 		if ( Hovered.Occupied )
 		{
-			TryRemove();
+			ArenaSounds.Deny();
 			return;
 		}
 
@@ -810,26 +792,6 @@ public sealed class CityBoard : Component
 		ArenaSounds.MenuOk();
 		Loop?.Announce( GameSettings.Text.F( GameSettings.Text.City.PlacedFrame, Buildings.Title( Selected ) ) );
 		Loop?.NoteProgress( ProgressGoal.PlaceFrame );
-		Loop?.Autosave();
-	}
-
-	void TryRemove()
-	{
-		if ( Hovered is null || !Hovered.Occupied || Hovered.Working )
-		{
-			ArenaSounds.Deny();
-			return;
-		}
-
-		var title = Buildings.Title( Hovered.Kind );
-		Hovered.Occupied = false;
-		Hovered.Level = 0;
-		Hovered.Hits = 0;
-		Hovered.Facing = 0;
-		Hovered.Copy = 0;
-		RefreshPlot( Hovered );
-		ArenaSounds.MenuBack();
-		Loop?.Announce( GameSettings.Text.F( GameSettings.Text.City.Removed, title ) );
 		Loop?.Autosave();
 	}
 
@@ -1522,7 +1484,7 @@ public sealed class CityBoard : Component
 	void PlaceCraftSign( GameObject go, int x, int y, BuildingKind kind, bool preview = false )
 	{
 		go.WorldPosition = CraftSignPosition( x, y, kind );
-		DressCraftSign( go.GetComponent<TextRenderer>() ?? go.AddComponent<TextRenderer>(), Mode == CityMode.Shoot, preview );
+		DressCraftSign( go.GetComponent<TextRenderer>() ?? go.AddComponent<TextRenderer>(), !preview, preview );
 	}
 
 	Vector3 CraftSignPosition( int x, int y, BuildingKind kind )
