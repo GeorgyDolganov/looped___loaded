@@ -141,9 +141,12 @@
 								<div class="copy">
 									<label class="title">@Buildings.Title(Loop.City.Selected)</label>
 									<label class="payoff">@Buildings.Promise(Loop.City.Selected)</label>
-									<label class="blurb">@Buildings.Blurb(Loop.City.Selected)</label>
-									<label class="cost">@GameSettings.Text.F(GameSettings.Text.City.FrameHits, Buildings.FrameCost(Loop.City.Selected, Loop.City.Placed(Loop.City.Selected)))</label>
+									@if ( !string.IsNullOrWhiteSpace( Buildings.Blurb( Loop.City.Selected ) ) )
+									{
+										<label class="blurb">@Buildings.Blurb(Loop.City.Selected)</label>
+									}
 								</div>
+								<label class="cost">@Buildings.FrameCost(Loop.City.Selected, Loop.City.Placed(Loop.City.Selected)) biomass</label>
 							</div>
 						</div>
 				</div>
@@ -1429,7 +1432,7 @@
 			: System.HashCode.Combine( Loop.ActiveSlot, Loop.SaveCursor );
 
 		var f = city && Loop.City.IsValid()
-			? System.HashCode.Combine( Loop.City.Warehouse, (int)Loop.City.Selected, Loop.City.PlacementFacing, (int)Loop.City.Mode, string.Join( "|", CityBonusLines.Select( line => line.Name + line.Value ) ) )
+			? System.HashCode.Combine( Loop.City.Warehouse, (int)Loop.City.Selected, Loop.City.PlacementFacing, (int)Loop.City.Mode, string.Join( "|", CityBonusLines.Select( line => line.Name + line.Value ) ), Buildings.Blurb( Loop.City.Selected ), Buildings.Promise( Loop.City.Selected ) + Buildings.FrameCost( Loop.City.Selected, Loop.City.Placed( Loop.City.Selected ) ) )
 			: 0;
 
 		var g = shop
@@ -2216,7 +2219,7 @@
 		width: 77%;
 		height: 59%;
 		flex-direction: row;
-		align-items: center;
+		align-items: flex-start;
 	}
 
 	.blueprint-back {
@@ -2358,9 +2361,13 @@
 	}
 
 	.blueprint .cost {
-		font-size: 13px;
-		color: #7b746a;
-		margin-top: 6px;
+		position: absolute;
+		right: 0px;
+		bottom: 0px;
+		font-size: 22px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #f4ece0;
 	}
 
 	.promise {
