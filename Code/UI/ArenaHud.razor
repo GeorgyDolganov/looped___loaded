@@ -279,62 +279,47 @@
 					<div class="rail-list">
 						@foreach ( var row in MainRows )
 						{
-							<div class="rail-row @(Loop.MenuFocus == row.Item ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( row.Item ))" onclick="@(() => PickRow( row.Item ))">
+							<div class="rail-row plated @(Loop.MenuFocus == row.Item ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( row.Item ))" onclick="@(() => PickRow( row.Item ))">
+								<img class="row-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
+								<div class="row-tint"></div>
 								<div class="rivet a"></div>
 								<div class="rivet b"></div>
-								<label class="caret">play_arrow</label>
 								<label class="row-title">@row.Title</label>
-								<label class="row-key">@row.Key</label>
 							</div>
 						}
 					</div>
 
-					<div class="rail-split"></div>
-
 					<div class="rail-list quiet">
-						<div class="rail-row @(Loop.MenuFocus == MenuChoice.Settings ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( MenuChoice.Settings ))" onclick="@(() => PickRow( MenuChoice.Settings ))">
+						<div class="rail-row plated @(Loop.MenuFocus == MenuChoice.Settings ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( MenuChoice.Settings ))" onclick="@(() => PickRow( MenuChoice.Settings ))">
+							<img class="row-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
+							<div class="row-tint"></div>
 							<label class="row-title">@GameSettings.Text.Menu.Settings</label>
 						</div>
-						<div class="rail-row @(Loop.MenuFocus == MenuChoice.Quit ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( MenuChoice.Quit ))" onclick="@(() => PickRow( MenuChoice.Quit ))">
+						<div class="rail-row plated @(Loop.MenuFocus == MenuChoice.Quit ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( MenuChoice.Quit ))" onclick="@(() => PickRow( MenuChoice.Quit ))">
+							<img class="row-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
+							<div class="row-tint"></div>
 							<label class="row-title">@GameSettings.Text.Menu.Quit</label>
 						</div>
-					</div>
-
-					<label class="rail-slot">@GameSettings.Text.F(GameSettings.Text.Menu.ActiveSave, Loop.ActiveSlot + 1)</label>
-
-					<div class="rail-hint">
-						<label class="icon">expand_less</label>
-						<label class="icon">expand_more</label>
-						<label class="word">@GameSettings.Text.Menu.NavigateHint</label>
-						<label class="word">@GameSettings.Text.Menu.SelectHint</label>
 					</div>
 				</div>
 
 				<div class="objective">
-					<div class="rivet a"></div>
-					<div class="rivet b"></div>
-					<div class="rivet c"></div>
-					<div class="rivet d"></div>
-					<label class="obj-kicker">@GameSettings.Text.Menu.Objective</label>
-					<label class="obj-title">@(Loop.HasTask ? Loop.TaskTitle : GameSettings.Text.Menu.ObjectiveDone)</label>
-					@if ( Loop.HasTask )
-					{
-						<label class="obj-blurb">@Loop.TaskBlurb</label>
-					}
-					<div class="obj-split"></div>
-					<div class="obj-stats">
-						<div class="obj-stat">
-							<label class="key">@GameSettings.Text.Menu.StatBiomass</label>
-							<label class="value">@Loop.FedBiomass</label>
-						</div>
-						<div class="obj-stat">
-							<label class="key">@GameSettings.Text.Menu.StatBest</label>
-							<label class="value">@Loop.BestExtract</label>
-						</div>
-						<div class="obj-stat">
-							<label class="key">@GameSettings.Text.Menu.StatOrgans</label>
-							<label class="value">@Loop.OrganCount</label>
-						</div>
+					<img class="obj-back" src="ui/Arena UI/element_back_double_two_floors.png" />
+					<div class="obj-face">
+						<label class="obj-kicker">@GameSettings.Text.Menu.Objective</label>
+						<label class="obj-title">@(Loop.HasTask ? Loop.TaskTitle : GameSettings.Text.Menu.ObjectiveDone)</label>
+						@if ( Loop.HasTask )
+						{
+							<label class="obj-blurb">@Loop.TaskBlurb</label>
+						}
+					</div>
+					<div class="obj-biomass">
+						<label class="key">@GameSettings.Text.Hud.Fed</label>
+						<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+					</div>
+					<div class="obj-organs">
+						<label class="key">@GameSettings.Text.Menu.StatOrgans</label>
+						<label class="value">@Loop.OrganCount</label>
 					</div>
 				</div>
 			</div>
@@ -4003,6 +3988,64 @@
 		background-color: rgba(25, 21, 16, 0.32);
 	}
 
+	.rail-row.plated {
+		width: 300px;
+		height: auto;
+		aspect-ratio: 438 / 158;
+		padding: 0px 22px;
+		margin-bottom: 8px;
+		background-color: transparent;
+		border-left-width: 0px;
+		overflow: hidden;
+	}
+
+	.rail-row.plated .row-plate {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.rail-row.plated .caret,
+	.rail-row.plated .row-title {
+		position: relative;
+		z-index: 2;
+	}
+
+	.rail-row.plated .row-key {
+		z-index: 1;
+	}
+
+	.rail-row.plated.on {
+		background-color: transparent;
+		border-left-color: transparent;
+		transform: translateX( 0px );
+	}
+
+	.rail-row.plated .row-tint {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(176, 28, 24, 0);
+		z-index: 1;
+	}
+
+	.rail-row.plated.on .row-tint {
+		background-color: rgba(176, 28, 24, 0.34);
+	}
+
+	.rail-row.plated.on .row-title,
+	.rail-row.plated.on .row-key {
+		color: #f0b429;
+	}
+
+	.rail-row.plated.on .caret {
+		color: #f0b429;
+	}
+
 	.rail-split {
 		width: 100%;
 		height: 2px;
@@ -4031,6 +4074,32 @@
 	.rail-list.quiet .rail-row.on .row-title,
 	.rail-list.quiet .rail-row.back:hover .row-title {
 		color: #191510;
+	}
+
+	.rail-list.quiet .rail-row.plated {
+		width: 300px;
+		height: auto;
+		aspect-ratio: 438 / 158;
+		padding: 0px 22px;
+		margin-bottom: 8px;
+		background-color: transparent;
+	}
+
+	.rail-list.quiet .rail-row.plated .row-title {
+		position: relative;
+		z-index: 2;
+		font-size: 38px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #efe6d8;
+	}
+
+	.rail-list.quiet .rail-row.plated.on {
+		background-color: transparent;
+	}
+
+	.rail-list.quiet .rail-row.plated.on .row-title {
+		color: #f0b429;
 	}
 
 	.rail-list.quiet .rail-row.back {
@@ -4150,98 +4219,94 @@
 	.objective {
 		position: absolute;
 		right: 64px;
-		bottom: 58px;
-		width: 600px;
-		padding: 26px 30px;
+		bottom: 48px;
+		width: 598px;
+		aspect-ratio: 477 / 392;
+		padding: 0px;
 		flex-direction: column;
 		align-items: stretch;
-		background-color: rgba(14, 15, 17, 0.88);
-		border: 2px solid rgba(240, 180, 41, 0.28);
+		background-color: transparent;
+		border: 0px solid transparent;
+		overflow: hidden;
 	}
 
-	.objective .rivet {
+	.obj-back {
 		position: absolute;
-		width: 6px;
-		height: 6px;
-		border-radius: 3px;
-		background-color: rgba(240, 180, 41, 0.45);
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
 	}
 
-	.objective .rivet.a {
-		left: 10px;
-		top: 10px;
+	.obj-face {
+		position: absolute;
+		left: 12%;
+		top: 14%;
+		width: 76%;
+		height: 30%;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		z-index: 1;
 	}
 
-	.objective .rivet.b {
-		right: 10px;
-		top: 10px;
+	.obj-biomass,
+	.obj-organs {
+		position: absolute;
+		top: 58%;
+		width: 31%;
+		height: 29%;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		z-index: 1;
 	}
 
-	.objective .rivet.c {
-		left: 10px;
-		bottom: 10px;
+	.obj-biomass {
+		left: 13%;
 	}
 
-	.objective .rivet.d {
-		right: 10px;
-		bottom: 10px;
+	.obj-organs {
+		left: 57%;
 	}
 
 	.obj-kicker {
-		font-size: 18px;
+		font-size: 21px;
 		font-weight: 600;
-		letter-spacing: 5px;
+		letter-spacing: 4px;
 		color: #f0b429;
 	}
 
 	.obj-title {
-		margin-top: 6px;
-		font-size: 42px;
+		margin-top: 5px;
+		font-size: 36px;
 		font-weight: 700;
-		letter-spacing: 2px;
+		letter-spacing: 1px;
 		color: #f4ece0;
 	}
 
 	.obj-blurb {
-		margin-top: 4px;
-		font-size: 22px;
+		margin-top: 3px;
+		font-size: 23px;
 		color: #948d83;
 	}
 
-	.obj-split {
-		height: 2px;
-		margin-top: 18px;
-		margin-bottom: 16px;
-		background-color: rgba(200, 190, 170, 0.14);
-	}
-
-	.obj-stats {
-		flex-direction: row;
-		align-items: stretch;
-	}
-
-	.obj-stat {
-		width: 33.3%;
-		flex-direction: column;
-		align-items: flex-start;
-	}
-
-	.obj-stats .obj-stat:nth-child(2),
-	.obj-stats .obj-stat:nth-child(3) {
-		padding-left: 24px;
-		border-left: 2px solid rgba(200, 190, 170, 0.12);
-	}
-
-	.obj-stat .key {
-		font-size: 16px;
-		letter-spacing: 4px;
+	.obj-biomass .key,
+	.obj-organs .key {
+		font-size: 18px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		text-align: center;
 		color: #7b746a;
 	}
 
-	.obj-stat .value {
-		font-size: 46px;
-		line-height: 46px;
+	.obj-biomass .value,
+	.obj-organs .value {
+		margin-top: 5px;
+		font-size: 36px;
+		line-height: 36px;
 		font-weight: 700;
+		text-align: center;
 		color: #f4ece0;
 	}
 
