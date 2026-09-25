@@ -177,7 +177,7 @@ public class TextConfig : GameResource
 		BuildingKind.Infirmary => "Raises max hp.",
 		BuildingKind.Anvil => "Rounds hit harder.",
 		BuildingKind.Booster => "Dash returns faster.",
-		BuildingKind.Brake => "LMB to slow down time. More buildings increase the duration of the slow effect.",
+		BuildingKind.Brake => "RMB to slow down time. More buildings increase the duration of the slow effect.",
 		_ => ""
 	};
 
@@ -375,7 +375,7 @@ public class BuildingsCopy
 		Title = "LUNGS",
 		Payoff = "SLOW",
 		Promise = "UNLOCKS THE SLOW METER",
-		Blurb = "LMB to slow down time. More buildings increase the duration of the slow effect."
+		Blurb = "RMB to slow down time. More buildings increase the duration of the slow effect."
 	};
 	[Property] public BuildingCopy Showcase { get; set; } = new()
 	{

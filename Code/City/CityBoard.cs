@@ -352,6 +352,7 @@ public sealed class CityBoard : Component
 		HideShootRig();
 		PaintHover();
 		PaintGhost();
+		SyncBonusSigns();
 
 		for ( var i = 0; i < Buildings.All.Length; i++ )
 		{
@@ -1507,6 +1508,61 @@ public sealed class CityBoard : Component
 
 		PlaceCraftSign( ghostCraftSign, x, y, Selected, true );
 		ghostCraftSign.Enabled = true;
+	}
+
+	void SyncBonusSigns()
+	{
+		var placing = Building && Hovered is not null && !Hovered.Occupied;
+		foreach ( var plot in plots )
+		{
+			if ( !plot.Body.IsValid() )
+				continue;
+
+			var sign = FindChild( plot.Body, "Bonus Sign" );
+			var near = placing
+				&& plot.Working
+				&& plot.Kind == Selected
+				&& Math.Abs( plot.X - Hovered.X ) + Math.Abs( plot.Y - Hovered.Y ) == 1;
+			if ( !near )
+			{
+				if ( sign.IsValid() )
+					sign.Enabled = false;
+				continue;
+			}
+
+			if ( !sign.IsValid() )
+			{
+				sign = Scene.CreateObject();
+				sign.Name = "Bonus Sign";
+				sign.Parent = plot.Body;
+				DressBonusSign( sign.AddComponent<TextRenderer>() );
+			}
+
+			sign.Enabled = true;
+			sign.WorldPosition = CraftSignPosition( plot.X, plot.Y, plot.Kind ) + Vector3.Up * 36f;
+		}
+	}
+
+	static void DressBonusSign( TextRenderer text )
+	{
+		text.Text = "BONUS";
+		text.FontFamily = "Anton";
+		text.FontSize = 42f;
+		text.FontWeight = 700;
+		text.Scale = 0.5f / 1.25f;
+		text.Color = new Color( 1f, 0.78f, 0.22f );
+		text.HorizontalAlignment = TextRenderer.HAlignment.Center;
+		text.VerticalAlignment = TextRenderer.VAlignment.Center;
+		text.Billboard = TextRenderer.BillboardMode.Always;
+		text.FogStrength = 0f;
+
+		var scope = text.TextScope;
+		var outline = scope.Outline;
+		outline.Enabled = true;
+		outline.Color = Color.Black;
+		outline.Size = 4f;
+		scope.Outline = outline;
+		text.TextScope = scope;
 	}
 
 	void PlaceCraftSign( GameObject go, int x, int y, BuildingKind kind, bool preview = false )

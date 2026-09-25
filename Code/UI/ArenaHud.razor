@@ -136,6 +136,10 @@
 						<label>@(Loop.City.Building ? "LMB BUILD" : "LMB INJECT")</label>
 						<label>RMB DELETE UNFINISHED / ROTATE</label>
 					</div>
+					<div class="city-run" onclick="@CityRun">
+						<img src="ui/Arena UI/element_shop_bottom_btn.png" />
+						<label>RUN</label>
+					</div>
 				</div>
 				<div class="altar-tray">
 					<img class="altar-back" src="ui/Arena UI/altar_back.png" />
@@ -673,6 +677,11 @@
 	}
 	void PauseToMenu() => Loop?.ShowMenu();
 	void StartRun() => Loop?.Restart();
+	void CityRun()
+	{
+		Loop?.NoteUiClick();
+		Loop?.Restart();
+	}
 
 	void PickRow( MenuChoice item )
 	{
@@ -1582,6 +1591,39 @@
 		font-weight: 700;
 		letter-spacing: 2px;
 		color: #cdc6ba;
+	}
+
+	.city-run {
+		position: relative;
+		width: 380px;
+		aspect-ratio: 438 / 158;
+		margin-top: 28px;
+		margin-left: 10px;
+		align-items: center;
+		justify-content: center;
+		pointer-events: all;
+		cursor: pointer;
+	}
+
+	.city-run img {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.city-run label {
+		position: relative;
+		font-size: 64px;
+		font-weight: 800;
+		letter-spacing: 6px;
+		color: #f0b429;
+		text-shadow: 0px 0px 18px rgba(240, 180, 41, 0.85);
+	}
+
+	.city-run:hover label {
+		color: #ffe08a;
 	}
 
 	.lap-chip {

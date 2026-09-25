@@ -746,7 +746,7 @@
       "Title": "LUNGS",
       "Payoff": "SLOW",
       "Promise": "UNLOCKS THE SLOW METER",
-      "Blurb": "LMB to slow down time. More buildings increase the duration of the slow effect."
+      "Blurb": "RMB to slow down time. More buildings increase the duration of the slow effect."
     },
     "Showcase": {
       "Title": "LIVER",
