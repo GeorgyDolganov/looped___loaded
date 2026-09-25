@@ -265,17 +265,17 @@
     "Rush": {
       "Code": "RUSH",
       "Title": "RUSH",
-      "Blurb": "Shots fly faster. Longer reload."
+      "Blurb": ""
     },
     "Dodge": {
       "Code": "DODGE",
       "Title": "DODGE",
-      "Blurb": "Slip a hit. 10% / 20% / 32%."
+      "Blurb": "Improve your chance of ignoring damage"
     },
     "Snap": {
       "Code": "SNAP",
       "Title": "SNAP",
-      "Blurb": "Reload only. −20% / −36% / −50%."
+      "Blurb": ""
     },
     "Split": {
       "Code": "SPLIT",
@@ -285,7 +285,7 @@
     "Fan": {
       "Code": "FAN",
       "Title": "FAN",
-      "Blurb": "Pellets spread 14°."
+      "Blurb": ""
     },
     "Pump": {
       "Code": "PUMP",
@@ -300,142 +300,142 @@
     "Choke": {
       "Code": "CHOKE",
       "Title": "CHOKE",
-      "Blurb": "Cone -10°. Floor 6°."
+      "Blurb": ""
     },
     "Meat": {
       "Code": "MEAT",
       "Title": "MEAT",
-      "Blurb": "+1 dmg inside 140. -100% range."
+      "Blurb": ""
     },
     "Rico": {
       "Code": "RICO",
       "Title": "RICO",
-      "Blurb": "Pellets bounce +1."
+      "Blurb": ""
     },
     "Gape": {
       "Code": "GAPE",
       "Title": "GAPE",
-      "Blurb": "Cone +14°."
+      "Blurb": ""
     },
     "Double": {
       "Code": "DOUBLE",
       "Title": "DOUBLE",
-      "Blurb": "Two fans, 0.12s apart. Reload +0.55s. One mag."
+      "Blurb": ""
     },
     "Kick": {
       "Code": "KICK",
       "Title": "KICK",
-      "Blurb": "Shove 110 inside 180."
+      "Blurb": ""
     },
     "Stun": {
       "Code": "STUN",
       "Title": "STUN",
-      "Blurb": "0.45s stagger inside 160. No bosses."
+      "Blurb": "*Doesn't affect boss."
     },
     "Heap": {
       "Code": "HEAP",
       "Title": "HEAP",
-      "Blurb": "+3 pellets. Reload +0.40s."
+      "Blurb": ""
     },
     "Waste": {
       "Code": "WASTE",
       "Title": "WASTE",
-      "Blurb": "+1 dmg inside 80. -100% range."
+      "Blurb": ""
     },
     "Breach": {
       "Code": "BREACH",
       "Title": "BREACH",
-      "Blurb": "Pellets punch 1 body."
+      "Blurb": ""
     },
     "Slug": {
       "Code": "SLUG",
       "Title": "SLUG",
-      "Blurb": "One fat slug. No fun. Only DAMAGE!!!"
+      "Blurb": "Get +damage for each removed projectile"
     },
     "Mirv": {
       "Code": "MIRV",
       "Title": "MIRV",
-      "Blurb": "Each pellet splashes. Radius ×0.55. Slower. Locks out LANCE."
+      "Blurb": "Explosions not only on first contact! Locks out LANCE."
     },
     "Bloom": {
       "Code": "BLOOM",
       "Title": "BLOOM",
-      "Blurb": "+80 splash radius. Reload +0.30s. Locks out LANCE."
+      "Blurb": "Locks out LANCE."
     },
     "Scorch": {
       "Code": "SCORCH",
       "Title": "SCORCH",
-      "Blurb": "Splash damage 2. Slower. Reload +0.20s. Locks out LANCE."
+      "Blurb": "Locks out LANCE."
     },
     "Lance": {
       "Code": "LANCE",
       "Title": "LANCE",
-      "Blurb": "No friendly splash. +2 direct hit. Smaller radius. No bounce. Locks out CLUSTER."
+      "Blurb": "Are you tiered from hitting yourself? Try this! Disables Ricochet. Locks out CLUSTER."
     },
     "Crater": {
       "Code": "CRATER",
       "Title": "CRATER",
-      "Blurb": "Fat body. +56 splash. No bounce. Slower. Locks out CLUSTER."
+      "Blurb": "Locks out CLUSTER."
     },
     "Spot": {
       "Code": "SPOT",
       "Title": "SPOT",
-      "Blurb": "Shots fly to the cursor and burst there. No bounce. Slower."
+      "Blurb": "AIM TO BOOOOM"
     },
     "Deep": {
       "Code": "DEEP",
       "Title": "DEEP",
-      "Blurb": "+2 pierce. Reload +0.40s. Locks out MASS."
+      "Blurb": "Locks out MASS."
     },
     "Awl": {
       "Code": "AWL",
       "Title": "AWL",
-      "Blurb": "Ignores the core face. Slower. Reload +0.20s. Locks out MASS."
+      "Blurb": "Ignores boss armor. Locks out MASS."
     },
     "Ram": {
       "Code": "RAM",
       "Title": "RAM",
-      "Blurb": "Each body you punch through hits the next harder. Slower. Locks out MASS."
+      "Blurb": "Each body you punch through hits the next HARDER. Locks out MASS."
     },
     "Mass": {
       "Code": "MASS",
       "Title": "MASS",
-      "Blurb": "One shot. No fan. +3 damage. Slower. Reload +0.45s. Locks out DEEP."
+      "Blurb": "One shot. For each removed projectile +damage. Locks out DEEP."
     },
     "Keel": {
       "Code": "KEEL",
       "Title": "KEEL",
-      "Blurb": "No bounce. +2 damage. Stops on the first wall. Slower. Locks out DEEP."
+      "Blurb": "Removes richochet. Locks out DEEP."
     },
     "Trace": {
       "Code": "TRACE",
       "Title": "TRACE",
-      "Blurb": "Shots fly faster. Reload +0.25s."
+      "Blurb": "="
     },
     "Belt": {
       "Code": "BELT",
       "Title": "BELT",
-      "Blurb": "+3 burst. Reload +0.45s. Locks out TRACK."
+      "Blurb": "Locks out TRACK."
     },
     "Walk": {
       "Code": "WALK",
       "Title": "WALK",
-      "Blurb": "Later volleys spread +3° each. Reload +0.20s. Locks out TRACK."
+      "Blurb": "Locks out TRACK."
     },
     "Spool": {
       "Code": "SPOOL",
       "Title": "SPOOL",
-      "Blurb": "Cycle ×0.65. Reload +0.25s. Locks out SWEEP."
+      "Blurb": "Locks out SWEEP."
     },
     "Sight": {
       "Code": "SIGHT",
       "Title": "SIGHT",
-      "Blurb": "Later volleys use half spread. Slower. Locks out SWEEP."
+      "Blurb": "Later shots in a burst use half spread. Locks out SWEEP."
     },
     "Bite": {
       "Code": "BITE",
       "Title": "BITE",
-      "Blurb": "+1 damage on a body this burst already hit. Slower. Locks out SWEEP."
+      "Blurb": "+damage on a body this burst already hit. Locks out SWEEP."
     },
     "Link": {
       "Code": "LINK",
@@ -450,92 +450,92 @@
     "Kiln": {
       "Code": "KILN",
       "Title": "KILN",
-      "Blurb": "Tick ×0.75 while latched. Narrower. Reload +0.10s. Locks out ARC."
+      "Blurb": "Tick ×0.75 while latched. Locks out ARC."
     },
     "Arc": {
       "Code": "ARC",
       "Title": "ARC",
-      "Blurb": "Jumps once to a neighbor within 220. Slower tick. Locks out BRAND."
+      "Blurb": "Jumps once to a near neighbor. Locks out BRAND."
     },
     "Fork": {
       "Code": "FORK",
       "Title": "FORK",
-      "Blurb": "Side bolts hit on their own. Reload +0.12s. Locks out BRAND."
+      "Blurb": "Side bolts hit on their own. Locks out BRAND."
     },
     "Shunt": {
       "Code": "SHUNT",
       "Title": "SHUNT",
-      "Blurb": "Ignores shields and plates. Slower tick. Narrower."
+      "Blurb": "Ignores shields and plates."
     },
     "Linger": {
       "Code": "LINGER",
       "Title": "LINGER",
-      "Blurb": "Remaining ticks finish where you let go. Reload +0.20s."
+      "Blurb": "Remaining ticks finish where you let go."
     },
     "Cell": {
       "Code": "CELL",
       "Title": "CELL",
-      "Blurb": "+2 ticks per charge. Reload +0.15s."
+      "Blurb": ""
     },
     "Jack": {
       "Code": "JACK",
       "Title": "JACK",
-      "Blurb": "Reload ×0.80. Splash ×0.80."
+      "Blurb": ""
     },
     "Slap": {
       "Code": "SLAP",
       "Title": "SLAP",
-      "Blurb": "Reload ×0.85. Speed ×0.85."
+      "Blurb": ""
     },
     "Rack": {
       "Code": "RACK",
       "Title": "RACK",
-      "Blurb": "Reload ×0.75. Speed ×0.85."
+      "Blurb": ""
     },
     "Draw": {
       "Code": "DRAW",
       "Title": "DRAW",
-      "Blurb": "Reload ×0.85. −1 pierce."
+      "Blurb": ""
     },
     "Feed": {
       "Code": "FEED",
       "Title": "FEED",
-      "Blurb": "Reload ×0.75. Cycle ×1.20."
+      "Blurb": ""
     },
     "Eject": {
       "Code": "EJECT",
       "Title": "EJECT",
-      "Blurb": "Reload ×0.85. Burst −1."
+      "Blurb": ""
     },
     "Vent": {
       "Code": "VENT",
       "Title": "VENT",
-      "Blurb": "Reload ×0.80. Tick ×1.20."
+      "Blurb": ""
     },
     "Cool": {
       "Code": "COOL",
       "Title": "COOL",
-      "Blurb": "Reload ×0.85. Width ×0.80."
+      "Blurb": ""
     },
     "Shuck": {
       "Code": "SHUCK",
       "Title": "SHUCK",
-      "Blurb": "Reload ×0.80. Spread +8°."
+      "Blurb": ""
     },
     "Slam": {
       "Code": "SLAM",
       "Title": "SLAM",
-      "Blurb": "Reload ×0.85. −1 projectile."
+      "Blurb": ""
     },
     "Pierce": {
       "Code": "PRC",
       "Title": "PIERCE",
-      "Blurb": "Pass through enemies instead of bouncing off them."
+      "Blurb": ""
     },
     "Bounce": {
       "Code": "RCH",
       "Title": "RICOCHET",
-      "Blurb": "More wall bounces and a longer flight."
+      "Blurb": ""
     },
     "Magnetic": {
       "Code": "MAG",

@@ -193,8 +193,13 @@ public static class RoundTraits
 	public static bool TooEarly( RoundTrait trait, int lap )
 		=> trait == RoundTrait.Snap && lap < GameSettings.Traits.SnapUnlockLap;
 
+	public static bool Off( RoundTrait trait ) => trait == RoundTrait.Link;
+
 	public static bool Blocked( RoundTrait trait, RunLoadout loadout )
 	{
+		if ( Off( trait ) )
+			return true;
+
 		if ( loadout is null )
 			return false;
 

@@ -116,7 +116,7 @@ public static class StatSheet
 				Up( $"+{t.BreachPierce} Pierce" );
 				break;
 			case RoundTrait.Slug:
-				Up( $"+{t.SlugDamage} Damage" );
+				Up( $"+{t.SlugDamage} Damage per removed projectile" );
 				Note( $"Body radius {Fmt( t.SlugRadius )}" );
 				Up( $"Flies +{Fmt( t.SlugFalloffPad )} farther" );
 				break;
@@ -185,6 +185,8 @@ public static class StatSheet
 				break;
 			case RoundTrait.Spot:
 				Note( "Aim at a point" );
+				Up( $"+{Fmt( t.SpotSplash )} Splash Radius" );
+				Up( $"+{t.SpotSplashDamage} Splash Damage" );
 				Down( $"{PctDelta( t.SpotSpeed )} Projectile Speed" );
 				Down( "Bounces 0" );
 				break;
@@ -207,6 +209,7 @@ public static class StatSheet
 			case RoundTrait.Mass:
 				Note( "One projectile" );
 				Up( $"+{t.MassDamage} Damage" );
+				Up( $"+{t.MassDamage} Damage per removed projectile" );
 				Down( $"{PctDelta( t.MassSpeed )} Projectile Speed" );
 				Down( $"+{Fmt( t.MassReload )}s Reload" );
 				Down( "Locks out DEEP" );

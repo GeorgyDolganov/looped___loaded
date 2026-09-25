@@ -7,6 +7,9 @@ public sealed class RunLoadout
 
 	public int TraitLevel( RoundTrait trait )
 	{
+		if ( RoundTraits.Off( trait ) )
+			return 0;
+
 		var index = (int)trait;
 		return index < 0 || index >= Levels.Length ? 0 : Levels[index];
 	}
@@ -76,6 +79,10 @@ public sealed class RunLoadout
 		if ( buck > 0 )
 			count += Math.Max( 0, (int)t.BuckPellets.At( buck ) - 1 );
 
+		var full = count;
+		if ( count <= 1 && pin > 0 )
+			full = Math.Max( 1, (int)t.PinNails.At( pin ) );
+
 		var cone = 0f;
 		if ( Has( RoundTrait.Fan ) )
 			cone += t.FanCone;
@@ -93,10 +100,11 @@ public sealed class RunLoadout
 		}
 		else if ( count <= 1 && pin > 0 )
 		{
-			count = Math.Max( 1, (int)t.PinNails.At( pin ) );
+			count = full;
 			cone = t.PinCone.At( pin );
 		}
 
+		var beforeMass = count;
 		if ( Has( RoundTrait.Mass ) )
 		{
 			count = 1;
@@ -106,7 +114,11 @@ public sealed class RunLoadout
 		if ( Has( RoundTrait.Shuck ) )
 			cone += t.ShuckCone;
 		if ( Has( RoundTrait.Slam ) )
+		{
 			count = Math.Max( 1, count - t.SlamPellets );
+			full = Math.Max( 1, full - t.SlamPellets );
+			beforeMass = Math.Max( 1, beforeMass - t.SlamPellets );
+		}
 
 		var bounces = t.MaxBouncesBase;
 		if ( pin > 0 )
@@ -262,11 +274,11 @@ public sealed class RunLoadout
 
 		var damage = Math.Max( 1, t.BaseDamage + BonusDamage );
 		if ( slug )
-			damage += t.SlugDamage;
+			damage += t.SlugDamage * Math.Max( 0, full - count );
 		if ( Has( RoundTrait.Lance ) )
 			damage += t.LanceDamage;
 		if ( Has( RoundTrait.Mass ) )
-			damage += t.MassDamage;
+			damage += t.MassDamage * Math.Max( 1, beforeMass - count + 1 );
 		if ( Has( RoundTrait.Keel ) )
 			damage += t.KeelDamage;
 
@@ -285,12 +297,16 @@ public sealed class RunLoadout
 			splash *= t.LanceRadiusScale;
 		if ( Has( RoundTrait.Crater ) )
 			splash += t.CraterSplash;
+		if ( Has( RoundTrait.Spot ) )
+			splash += t.SpotSplash;
 		if ( Has( RoundTrait.Jack ) )
 			splash *= t.JackSplash;
 
 		var splashDamage = splash > 1f ? 1 : 0;
 		if ( Has( RoundTrait.Scorch ) && splash > 1f )
 			splashDamage = Math.Max( splashDamage, t.ScorchDamage );
+		if ( Has( RoundTrait.Spot ) && splash > 1f )
+			splashDamage += t.SpotSplashDamage;
 
 		return new GunRecipe
 		{

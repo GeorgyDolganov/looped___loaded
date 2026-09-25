@@ -72,6 +72,8 @@ public class TraitConfig : GameResource
 	[Property] public float CraterSplash { get; set; } = 56f;
 	[Property] public float CraterSpeed { get; set; } = 0.65f;
 	[Property] public float SpotSpeed { get; set; } = 0.85f;
+	[Property] public float SpotSplash { get; set; } = 40f;
+	[Property] public int SpotSplashDamage { get; set; } = 1;
 	[Property] public int DeepPierce { get; set; } = 2;
 	[Property] public float DeepReload { get; set; } = 0.40f;
 	[Property] public float AwlSpeed { get; set; } = 0.85f;
