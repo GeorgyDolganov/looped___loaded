@@ -211,7 +211,7 @@
 			</div>
 		}
 
-		@if ( Loop.Phase != RunPhase.City )
+		@if ( !Loop.Paused && Loop.Phase != RunPhase.City )
 		{
 			<label class="help">@HelpText</label>
 		}
@@ -219,6 +219,7 @@
 		@if ( Loop.CanPause )
 		{
 			<div class="pause-btn" onclick="@HitPause">
+				<img class="pause-btn-back" src="ui/Arena UI/small_button.png" />
 				<div class="pause-glyph">
 					<div class="pause-bar"></div>
 					<div class="pause-bar"></div>
@@ -229,31 +230,22 @@
 
 		@if ( Loop.Paused )
 		{
-			<div class="overlay menu">
-				<label class="kicker">@GameSettings.Text.Pause.Kicker</label>
-				<label class="overlay-title">@GameSettings.Text.Pause.Title</label>
-				<label class="blurb">@GameSettings.Text.Pause.Blurb</label>
-				@if ( Loop.HasTask )
-				{
-					<div class="task overlay-task">
-						<label class="key">@GameSettings.Text.Hud.Task</label>
-						<label class="title">@Loop.TaskTitle</label>
-						<label class="blurb">@Loop.TaskBlurb</label>
-					</div>
-				}
+			<div class="overlay menu pause">
+				<label class="pause-word">@GameSettings.Text.Pause.Kicker</label>
+				<label class="pause-line">@GameSettings.Text.Pause.Blurb</label>
 				<div class="cards">
 					<div class="card" onclick="@Resume">
-						<label class="key">@GameSettings.Text.Pause.Key1</label>
+						<img class="pause-plate" src="ui/Arena UI/buttons_left.png" />
 						<label class="title">@GameSettings.Text.Pause.Resume</label>
 						<label class="blurb">@GameSettings.Text.Pause.ResumeBlurb</label>
 					</div>
 					<div class="card" onclick="@PauseToMenu">
-						<label class="key">@GameSettings.Text.Pause.Key2</label>
+						<img class="pause-plate" src="ui/Arena UI/buttons_left.png" />
 						<label class="title">@GameSettings.Text.Pause.Menu</label>
 						<label class="blurb">@GameSettings.Text.Pause.MenuBlurb</label>
 					</div>
 					<div class="card" onclick="@QuitGame">
-						<label class="key">@GameSettings.Text.Pause.Key3</label>
+						<img class="pause-plate" src="ui/Arena UI/buttons_left.png" />
 						<label class="title">@GameSettings.Text.Pause.Quit</label>
 						<label class="blurb">@GameSettings.Text.Pause.QuitBlurb</label>
 					</div>
@@ -439,14 +431,12 @@
 					<div class="choice-hit left" onclick="@ChooseExtract">
 						<img class="choice-btn" src="ui/Arena UI/buttons_left.png" />
 						<div class="choice-label">
-							<label class="choice-key">@GameSettings.Text.Decide.Key1</label>
 							<label class="choice-name">@GameSettings.Text.Decide.Extract</label>
 						</div>
 					</div>
 					<div class="choice-hit right" onclick="@ChooseContinue">
 						<img class="choice-btn" src="ui/Arena UI/buttons_right.png" />
 						<div class="choice-label">
-							<label class="choice-key">@GameSettings.Text.Decide.Key2</label>
 							<label class="choice-name">@GameSettings.Text.Decide.OneMore</label>
 						</div>
 					</div>
@@ -530,6 +520,8 @@
 					</div>
 				</div>
 				<div class="shop-sheet">
+					<img class="sheet-back" src="ui/Arena UI/element_back_long.png" />
+					<div class="sheet-body">
 					<label class="sheet-kicker">WEAPON</label>
 					@foreach ( var row in ShopWeapon )
 					{
@@ -555,6 +547,7 @@
 							</div>
 						</div>
 					}
+					</div>
 				</div>
 			</div>
 		}
@@ -577,27 +570,15 @@
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.Extracted )
 		{
 			<div class="overlay choose showcase">
-				<label class="kicker">@GameSettings.Text.Decide.ShowcaseKicker  ·  @GameSettings.Text.F(GameSettings.Text.Decide.ShowcaseCount, Loop.TaskDone, Loop.TaskTotal)</label>
-				<label class="overlay-title">@GameSettings.Text.Decide.Extracted</label>
-				<label class="blurb">@(Loop.ExtractedRounds == 1 ? GameSettings.Text.F(GameSettings.Text.Decide.ExtractedOne, Loop.ExtractedRounds, Loop.BestExtract) : GameSettings.Text.F(GameSettings.Text.Decide.ExtractedMany, Loop.ExtractedRounds, Loop.BestExtract))</label>
-				<div class="reel">
-					@for ( var i = 0; i < Loop.CompletedTasks.Count; i++ )
-					{
-						var step = Loop.CompletedTasks[i];
-						<div class="beat" style="animation-delay: @(i * 70)ms">
-							<div class="mark"></div>
-							<div class="copy">
-								<label class="title">@step.Title</label>
-								<label class="blurb">@step.Blurb</label>
-							</div>
-						</div>
-					}
-				</div>
-				<div class="cards">
-					<div class="card" onclick="@GoCity">
-						<label class="key">@GameSettings.Text.Shop.KeySpace</label>
+				<div class="extract-plate">
+					<img class="extract-back" src="ui/Arena UI/element_back_merged.png" />
+					<label class="extract-title">@GameSettings.Text.Decide.Extracted</label>
+					<label class="extract-count">@Loop.ExtractedRounds</label>
+					<label class="extract-rounds">@GameSettings.Text.Decide.ExtractedRoundsLabel</label>
+					<label class="extract-biomass">@GameSettings.Text.Decide.ExtractedBiomassLabel</label>
+					<div class="card continue-btn" onclick="@GoCity">
+						<img class="continue-back" src="ui/Arena UI/small_button.png" />
 						<label class="title">@GameSettings.Text.Menu.Continue</label>
-						<label class="blurb">@GameSettings.Text.Decide.ShowcaseContinue</label>
 					</div>
 				</div>
 			</div>
@@ -1743,18 +1724,6 @@
 		margin-top: 2px;
 	}
 
-	.overlay .task.overlay-task {
-		align-items: center;
-		max-width: 520px;
-		margin-top: 0px;
-		margin-bottom: 18px;
-	}
-
-	.overlay .task.overlay-task .blurb {
-		text-align: center;
-		margin-bottom: 0px;
-	}
-
 	.mod-chip {
 		flex-direction: row;
 		align-items: center;
@@ -2596,23 +2565,39 @@
 
 	.pause-btn {
 		position: absolute;
-		right: 26px;
-		top: 24px;
+		right: 402px;
+		top: 76px;
+		width: 220px;
+		height: 69px;
+		aspect-ratio: 271 / 85;
 		flex-direction: row;
 		align-items: center;
-		padding: 10px 20px;
-		border-radius: 10px;
-		background-color: rgba(14, 15, 17, 0.86);
-		border: 2px solid rgba(240, 180, 41, 0.3);
+		justify-content: center;
+		padding: 0px;
+		background-color: transparent;
+		border-width: 0px;
+		border-radius: 0px;
 		pointer-events: all;
 		cursor: pointer;
 		z-index: 40;
-		transition: background-color 0.12s ease-out, border-color 0.12s ease-out;
+	}
+
+	.pause-btn-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
 	}
 
 	.pause-btn:hover {
-		border-color: #f0b429;
-		background-color: rgba(240, 180, 41, 0.18);
+		background-color: transparent;
+	}
+
+	.pause-glyph,
+	.pause-btn label {
+		position: relative;
+		z-index: 1;
 	}
 
 	.pause-glyph {
@@ -2765,6 +2750,190 @@
 
 	.overlay.menu {
 		background-color: rgba(5, 5, 7, 0.78);
+	}
+
+	.overlay.pause .pause-word {
+		font-family: Anton;
+		font-size: 108px;
+		font-weight: 800;
+		letter-spacing: 12px;
+		color: #fff6d8;
+		margin-bottom: 8px;
+	}
+
+	.overlay.pause .pause-line {
+		font-size: 22px;
+		font-weight: 600;
+		letter-spacing: 1px;
+		color: #8a847c;
+		margin-bottom: 28px;
+	}
+
+	.overlay.pause .card {
+		position: relative;
+		width: 420px;
+		height: 178px;
+		aspect-ratio: 271 / 115;
+		padding: 0px 36px;
+		margin: 0px 14px;
+		background-color: transparent;
+		border-width: 0px;
+		border-radius: 0px;
+		overflow: visible;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.overlay.pause .pause-plate {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.overlay.pause .card .title,
+	.overlay.pause .card .blurb {
+		position: relative;
+		z-index: 1;
+		width: 100%;
+		text-align: center;
+	}
+
+	.overlay.pause .card .title {
+		margin-top: 0px;
+	}
+
+	.overlay.pause .card .blurb {
+		margin-top: 2px;
+	}
+
+	.overlay.pause .card:hover,
+	.overlay.pause .card.hot {
+		border-color: transparent;
+		background-color: transparent;
+	}
+
+	.extract-plate {
+		position: relative;
+		width: 820px;
+		height: 590px;
+		aspect-ratio: 684 / 492;
+	}
+
+	.extract-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.extract-title,
+	.extract-count,
+	.extract-rounds,
+	.extract-biomass {
+		position: absolute;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+		color: #f4ece0;
+	}
+
+	.extract-title {
+		left: 8%;
+		top: 8.5%;
+		width: 82%;
+		height: 14%;
+		font-family: Anton;
+		font-size: 46px;
+		letter-spacing: 6px;
+	}
+
+	.extract-count {
+		left: 7.2%;
+		top: 32%;
+		width: 23.5%;
+		height: 35%;
+		font-family: Anton;
+		font-size: 150px;
+		letter-spacing: 2px;
+	}
+
+	.extract-rounds,
+	.extract-biomass {
+		left: 39%;
+		width: 51%;
+		height: 13%;
+		font-family: "Barlow Condensed";
+		font-size: 32px;
+		font-weight: 700;
+		letter-spacing: 3px;
+	}
+
+	.extract-rounds {
+		top: 31.4%;
+	}
+
+	.extract-biomass {
+		top: 53.6%;
+	}
+
+	.extract-plate .continue-btn {
+		position: absolute;
+		left: 33.9%;
+		top: 77.4%;
+		width: 264px;
+		height: 83px;
+		padding: 0px;
+		margin: 0px;
+		z-index: 2;
+		overflow: visible;
+		border-radius: 0px;
+		border: 0px solid transparent;
+		background-color: transparent;
+	}
+
+	.extract-plate .continue-btn:hover,
+	.extract-plate .continue-btn.hot {
+		border-color: transparent;
+		background-color: transparent;
+	}
+
+	.continue-btn {
+		position: relative;
+		width: 220px;
+		height: 69px;
+		aspect-ratio: 271 / 85;
+		padding: 0px;
+		margin: 28px 0px 0px 0px;
+		background-color: transparent;
+		border-width: 0px;
+		border-radius: 0px;
+		align-items: center;
+		justify-content: center;
+		overflow: visible;
+	}
+
+	.continue-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.continue-btn .title {
+		position: relative;
+		z-index: 1;
+		margin-top: 0px;
+		text-align: center;
+	}
+
+	.continue-btn:hover,
+	.continue-btn.hot {
+		border-color: transparent;
+		background-color: transparent;
 	}
 
 	.save-plate {
@@ -2946,16 +3115,36 @@
 	.shop-sheet {
 		position: absolute;
 		right: 26px;
-		top: 292px;
-		bottom: 220px;
+		top: 248px;
 		width: 360px;
-		padding: 20px 22px;
-		border-radius: 10px;
-		background-color: rgba(10, 11, 13, 0.94);
-		border: 2px solid rgba(240, 180, 41, 0.35);
+		height: 619px;
+		aspect-ratio: 477 / 820;
+		padding: 0px;
+		background-color: transparent;
+		border-width: 0px;
+		border-radius: 0px;
+		overflow: visible;
+		pointer-events: none;
+	}
+
+	.sheet-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.sheet-body {
+		position: absolute;
+		z-index: 1;
+		left: 13%;
+		right: 13%;
+		top: 8%;
+		bottom: 7%;
+		padding: 0px;
 		flex-direction: column;
 		align-items: stretch;
-		pointer-events: none;
 		overflow: scroll;
 	}
 
@@ -3494,7 +3683,7 @@
 	.run-right {
 		position: absolute;
 		right: 26px;
-		top: 108px;
+		top: 76px;
 		width: 360px;
 		flex-direction: column;
 		align-items: stretch;
