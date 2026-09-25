@@ -102,25 +102,23 @@ public sealed class PlayerAim : Component
 
 		var recipe = Inventory.Loadout.Recipe();
 		ShotRange.Apply( ref recipe, Loop );
+		if ( recipe.Beam )
+		{
+			Hide( paths, 0 );
+			Hide( rings, 0 );
+			return;
+		}
+
 		var count = Math.Max( 1, recipe.Count );
 		var reach = recipe.PointAim ? (Cursor - Muzzle).Length : 0f;
 		var bounces = Math.Max( 0, recipe.Bounces );
 		var body = recipe.Radius > 1f ? recipe.Radius : RoundRadius;
-		var bolt = new Color( 0.55f, 0.78f, 1f );
 
 		for ( var i = 0; i < count; i++ )
 		{
 			var heading = ShotSpread.Turn( Direction, ShotSpread.Yaw( i, count, recipe.Cone ) );
 			List<Vector2> flat;
-			if ( recipe.Beam )
-			{
-				var range = recipe.BeamRange;
-				if ( recipe.PointAim )
-					range = MathF.Min( range, reach );
-				var end = LaserBeam.Reach( Loop, Arena.Geometry, Muzzle, heading, range, MathF.Max( 8f, recipe.BeamWidth ) );
-				flat = new List<Vector2> { Muzzle, end };
-			}
-			else if ( recipe.PointAim )
+			if ( recipe.PointAim )
 			{
 				var leg = recipe.Falloff > 1f ? MathF.Min( reach, recipe.Falloff ) : reach;
 				flat = new List<Vector2> { Muzzle, Clip( Muzzle, heading, leg ) };
@@ -133,7 +131,7 @@ public sealed class PlayerAim : Component
 				flat = Arena.Geometry.PredictPath( Muzzle, heading, body, first, bounceLeg, bounces );
 			}
 
-			PaintPath( Take( paths, i, "Aim Path" ), flat, recipe.Beam ? bolt : tint, recipe.Beam ? 4f : 3f );
+			PaintPath( Take( paths, i, "Aim Path" ), flat, tint, 3f );
 			if ( recipe.Splash > 1f && flat.Count > 0 )
 				PaintRing( Take( rings, i, "Aim Splash" ), flat[^1], recipe.Splash, recipe.FriendlySplash );
 		}
