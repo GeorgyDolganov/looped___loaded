@@ -2014,7 +2014,7 @@ public sealed class GameLoop : Component
 				var enemy = go.AddComponent<Enemy>();
 				enemy.Arena = Arena;
 				enemy.Loop = this;
-				enemy.Setup( kind, ArenaGeometry.FromAngle( angle + n * wave.ExtraAngle ) * radius, hp );
+				enemy.Setup( kind, ArenaGeometry.FromAngle( LowerHalf( angle + n * wave.ExtraAngle - offset, wave.EdgeAngle ) ) * radius, hp );
 				Enemies.Add( enemy );
 			}
 		}
@@ -2074,6 +2074,13 @@ public sealed class GameLoop : Component
 		}
 
 		AddWaveExtras( lap, offset, hunt, mid, inner, Add, EnemyKind.Chaser );
+	}
+
+	static float LowerHalf( float relative, float edge )
+	{
+		var wrapped = relative - MathF.Tau * MathF.Floor( (relative + MathF.PI) / MathF.Tau );
+		var reach = MathF.PI * 0.5f - Math.Clamp( edge, 0f, MathF.PI * 0.5f );
+		return -MathF.PI * 0.5f + wrapped / MathF.PI * reach;
 	}
 
 	void SpawnGlassWave( int lap, float offset, float hunt, float mid, float inner, float outer, Action<EnemyKind, float, float, int> add )

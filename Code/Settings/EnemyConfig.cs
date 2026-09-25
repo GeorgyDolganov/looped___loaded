@@ -77,4 +77,5 @@ public class WaveLayout
 	[Property] public float MidMix { get; set; } = 0.45f;
 	[Property] public float OuterPad { get; set; } = 90f;
 	[Property] public float ExtraAngle { get; set; } = 0.85f;
+	[Property] public float EdgeAngle { get; set; } = 0.2f;
 }

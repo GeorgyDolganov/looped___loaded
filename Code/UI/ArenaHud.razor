@@ -96,6 +96,7 @@
 								<img class="charge-layer" src="ui/Arena UI/dash.png" />
 							</div>
 						</div>
+						<label class="meter-hint">@GameSettings.Text.Hud.DashKey</label>
 					</div>
 					@if ( SlowUnlocked )
 					{
@@ -107,6 +108,7 @@
 									<img class="charge-layer" src="ui/Arena UI/slow.png" />
 								</div>
 							</div>
+							<label class="meter-hint">@GameSettings.Text.Hud.SlowKey</label>
 						</div>
 					}
 				</div>
@@ -1284,7 +1286,7 @@
 
 		var want = CursorOn();
 		var snap = !show || (trailX == 0f && trailY == 0f);
-		var drag = MathF.Min( 1f, Time.Delta * 9f );
+		var drag = MathF.Min( 1f, RealTime.Delta * 9f );
 
 		auraX = want.x;
 		auraY = want.y;
@@ -3859,6 +3861,16 @@
 		font-weight: 700;
 		letter-spacing: 1px;
 		color: #e6d3a1;
+		flex-shrink: 0;
+	}
+
+	.meter-hint {
+		width: 64px;
+		margin-left: 8px;
+		font-size: 14px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #a39c91;
 		flex-shrink: 0;
 	}
 

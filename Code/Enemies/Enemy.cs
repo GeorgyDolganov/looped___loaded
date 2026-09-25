@@ -592,11 +592,7 @@ public sealed class Enemy : Component
 		var gun = GameSettings.Enemies.Shooter;
 		var dist = MathF.Max( gun.LeadMinDistance, to.Length );
 		var travel = dist / (gun.ShotSpeed * Pressure);
-		var pace = runner.Speed;
-		if ( runner.Slowing )
-			pace *= runner.SlowSpeedScale;
-
-		return runner.Flat + runner.Tangent * (pace * travel);
+		return runner.Flat + runner.Tangent * (runner.Speed * travel);
 	}
 
 	Vector2 LeadDirection()

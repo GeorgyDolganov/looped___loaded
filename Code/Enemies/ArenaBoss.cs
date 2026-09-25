@@ -252,11 +252,7 @@ public sealed class ArenaBoss : Component
 		var to = runner.Flat - origin;
 		var speed = GameSettings.Boss.Core.AimedSpeed * loop.Threat;
 		var travel = to.Length / speed;
-		var pace = runner.Speed;
-		if ( runner.Slowing )
-			pace *= runner.SlowSpeedScale;
-
-		var predicted = runner.Flat + runner.Tangent * (pace * travel);
+		var predicted = runner.Flat + runner.Tangent * (runner.Speed * travel);
 		return predicted.Length > 1f ? predicted.Normal : to.Normal;
 	}
 

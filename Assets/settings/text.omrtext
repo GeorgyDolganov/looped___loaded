@@ -8,6 +8,8 @@
     "Caught": "CAUGHT",
     "Dash": "DASH",
     "Slow": "SLOW",
+    "DashKey": "SPACEBAR",
+    "SlowKey": "RMB",
     "HurtStamp": "-1",
     "Task": "NEXT",
     "FeedCount": "TOTAL BIOMASS {0} / {1}",

@@ -12,6 +12,8 @@ public sealed class RingRunner : Component
 	[Property] public float SlowDrain { get; set; } = 0.55f;
 	[Property] public float SlowRegen { get; set; } = 0.28f;
 	[Property] public float PlayerRadius { get; set; } = 48f;
+	[Property] public float ClearSpeedScale { get; set; } = 3f;
+	[Property] public float ClearSpeedRamp { get; set; } = 1.2f;
 
 	public float Angle { get; private set; }
 	public float TravelledArc { get; private set; }
@@ -22,6 +24,7 @@ public sealed class RingRunner : Component
 	public bool SlowUnlocked { get; set; }
 	public float SlowCharge { get; private set; } = 1f;
 	public bool Slowing { get; private set; }
+	public float SpeedScale => 1f + (ClearSpeedScale - 1f) * clearBoost * clearBoost * (3f - 2f * clearBoost);
 
 	public float Radius => Arena.IsValid() ? Arena.Geometry.TrackRadius : 1000f;
 	public Vector2 Flat => ArenaGeometry.FromAngle( Angle ) * Radius;
@@ -31,6 +34,7 @@ public sealed class RingRunner : Component
 	float lastDash = -999f;
 	float dashSpent;
 	bool slowOverheat;
+	float clearBoost;
 	SkinnedModelRenderer warlord;
 	Vector3 warlordVelocity;
 	Vector3 warlordLook;
@@ -69,9 +73,11 @@ public sealed class RingRunner : Component
 		SlowCharge = 1f;
 		Slowing = false;
 		slowOverheat = false;
+		clearBoost = 0f;
 		DashCooldown = startDashCooldown;
 		SlowDrain = startSlowDrain;
 		Speed = startSpeed;
+		ApplyTimeScale();
 		ApplyTransform();
 	}
 
@@ -82,6 +88,7 @@ public sealed class RingRunner : Component
 		dashElapsed = 999f;
 		dashSpent = 0f;
 		Slowing = false;
+		ApplyTimeScale();
 		ApplyTransform();
 	}
 
@@ -125,6 +132,7 @@ public sealed class RingRunner : Component
 		dashElapsed = 999f;
 		dashSpent = 0f;
 		Slowing = false;
+		ApplyTimeScale();
 		ApplyTransform();
 	}
 
@@ -133,10 +141,27 @@ public sealed class RingRunner : Component
 		lastDash += dt;
 	}
 
+	protected override void OnDisabled()
+	{
+		Slowing = false;
+		ApplyTimeScale();
+	}
+
+	protected override void OnDestroy()
+	{
+		Slowing = false;
+		ApplyTimeScale();
+	}
+
 	protected override void OnUpdate()
 	{
 		if ( Loop.IsValid() && Loop.IsFrozen )
 		{
+			if ( !Loop.Paused )
+				clearBoost = 0f;
+
+			Slowing = false;
+			ApplyTimeScale();
 			ApplyTransform();
 			EnsureWarlord();
 			DriveWarlord();
@@ -144,11 +169,10 @@ public sealed class RingRunner : Component
 			return;
 		}
 
-		var arc = Speed * Time.Delta;
+		TickClearBoost();
+		var arc = Speed * SpeedScale * Time.Delta;
 		TickSlow();
-
-		if ( Slowing )
-			arc *= SlowSpeedScale;
+		ApplyTimeScale();
 
 		var dashArc = 0f;
 		if ( Dashing )
@@ -239,9 +263,7 @@ public sealed class RingRunner : Component
 		var speed = 0f;
 		if ( !frozen )
 		{
-			speed = Speed;
-			if ( Slowing )
-				speed *= SlowSpeedScale;
+			speed = Speed * SpeedScale;
 			if ( Dashing )
 				speed += DashDistance / MathF.Max( 0.05f, DashDuration );
 		}
@@ -288,6 +310,13 @@ public sealed class RingRunner : Component
 		}
 	}
 
+	void TickClearBoost()
+	{
+		var cleared = Loop.IsValid() && Loop.CanSkipLap;
+		var step = ClearSpeedRamp <= 0f ? 1f : Time.Delta / ClearSpeedRamp;
+		clearBoost = cleared ? MathF.Min( 1f, clearBoost + step ) : MathF.Max( 0f, clearBoost - step );
+	}
+
 	void TickSlow()
 	{
 		Slowing = false;
@@ -296,10 +325,11 @@ public sealed class RingRunner : Component
 			return;
 
 		var holding = Input.Down( "Attack2" );
+		var dt = RealTime.Delta;
 
 		if ( slowOverheat )
 		{
-			SlowCharge = MathF.Min( 1f, SlowCharge + SlowRegen * Time.Delta );
+			SlowCharge = MathF.Min( 1f, SlowCharge + SlowRegen * dt );
 			if ( SlowCharge >= 0.3f && !holding )
 				slowOverheat = false;
 			return;
@@ -308,7 +338,7 @@ public sealed class RingRunner : Component
 		if ( holding && SlowCharge > 0f )
 		{
 			Slowing = true;
-			SlowCharge = MathF.Max( 0f, SlowCharge - SlowDrain * Time.Delta );
+			SlowCharge = MathF.Max( 0f, SlowCharge - SlowDrain * dt );
 
 			if ( SlowCharge <= 0f )
 				slowOverheat = true;
@@ -316,7 +346,15 @@ public sealed class RingRunner : Component
 			return;
 		}
 
-		SlowCharge = MathF.Min( 1f, SlowCharge + SlowRegen * Time.Delta );
+		SlowCharge = MathF.Min( 1f, SlowCharge + SlowRegen * dt );
+	}
+
+	void ApplyTimeScale()
+	{
+		if ( !Scene.IsValid() )
+			return;
+
+		Scene.TimeScale = Slowing ? SlowSpeedScale : 1f;
 	}
 
 	void Advance( float arc )

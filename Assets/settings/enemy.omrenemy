@@ -72,7 +72,8 @@
     "MidOuterPad": 140,
     "MidMix": 0.45,
     "OuterPad": 90,
-    "ExtraAngle": 0.85
+    "ExtraAngle": 0.85,
+    "EdgeAngle": 0.2
   },
   "__references": [],
   "__version": 0

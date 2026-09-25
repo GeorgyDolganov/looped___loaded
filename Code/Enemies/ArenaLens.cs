@@ -149,11 +149,7 @@ public sealed class ArenaLens : Component
 		var to = runner.Flat;
 		var speed = GameSettings.Boss.Lens.AimedSpeed * loop.Threat;
 		var travel = to.Length / MathF.Max( GameSettings.Boss.Lens.LeadMinSpeed, speed );
-		var pace = runner.Speed;
-		if ( runner.Slowing )
-			pace *= runner.SlowSpeedScale;
-
-		var predicted = runner.Flat + runner.Tangent * (pace * travel);
+		var predicted = runner.Flat + runner.Tangent * (runner.Speed * travel);
 		return predicted.Length > 1f ? predicted.Normal : to.Normal;
 	}
 }
