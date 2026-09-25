@@ -8,7 +8,7 @@
     "Caught": "CAUGHT",
     "Dash": "DASH",
     "Slow": "SLOW",
-    "DashKey": "SPACEBAR",
+    "DashKey": "SPACE",
     "SlowKey": "RMB",
     "HurtStamp": "-1",
     "Task": "NEXT",
