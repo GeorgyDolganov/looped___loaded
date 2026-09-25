@@ -7,7 +7,7 @@
   "PaceRatio": 1.035,
   "PaceCap": 1.4,
   "DashRatio": 1.16,
-  "DashScaleFloor": 0.42,
+  "DashScaleFloor": 0.4,
   "RoundRatio": 1.25,
   "MaxSlots": 9,
   "BossBaseHealth": 18,

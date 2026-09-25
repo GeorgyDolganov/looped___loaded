@@ -176,7 +176,7 @@ public class TextConfig : GameResource
 	{
 		BuildingKind.Infirmary => "Raises max hp.",
 		BuildingKind.Anvil => "Rounds hit harder.",
-		BuildingKind.Booster => "Dash returns faster.",
+		BuildingKind.Booster => "Dash returns faster. Caps at 60%.",
 		BuildingKind.Brake => "RMB to slow down time. More buildings increase the duration of the slow effect.",
 		_ => ""
 	};
@@ -368,7 +368,7 @@ public class BuildingsCopy
 		Title = "ADRENAL",
 		Payoff = "DASH",
 		Promise = "{0}% SHORTER DASH COOLDOWN",
-		Blurb = "Dash returns faster."
+		Blurb = "Dash returns faster. Caps at 60%."
 	};
 	[Property] public BuildingCopy Brake { get; set; } = new()
 	{
@@ -759,6 +759,7 @@ public class CityCopy
 	[Property] public string PlacedFrame { get; set; } = "{0} FRAME";
 	[Property] public string Removed { get; set; } = "{0} REMOVED";
 	[Property] public string WarehouseEmpty { get; set; } = "WAREHOUSE EMPTY";
+	[Property] public string DashCap { get; set; } = "DASH COOLDOWN CAPPED";
 	[Property] public string FrameHits { get; set; } = "FRAME  ·  {0} HITS TO WORK";
 	[Property] public string ClickToCraft { get; set; } = "Click to Craft";
 	[Property] public string SwitchToInject { get; set; } = "Switch to Inject Mode";

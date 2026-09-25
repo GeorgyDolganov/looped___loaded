@@ -214,6 +214,7 @@
     "PlacedFrame": "{0} FRAME",
     "Removed": "{0} REMOVED",
     "WarehouseEmpty": "WAREHOUSE EMPTY",
+    "DashCap": "DASH COOLDOWN CAPPED",
     "FrameHits": "FRAME  ·  {0} HITS TO WORK",
     "ClickToCraft": "Click to Craft",
     "SwitchToInject": "Switch to Inject Mode",
@@ -752,7 +753,7 @@
       "Title": "ADRENAL",
       "Payoff": "DASH",
       "Promise": "{0}% SHORTER DASH COOLDOWN",
-      "Blurb": "Dash returns faster."
+      "Blurb": "Dash returns faster. Caps at 60%."
     },
     "Brake": {
       "Title": "LUNGS",

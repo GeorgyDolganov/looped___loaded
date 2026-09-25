@@ -10,7 +10,6 @@ public static class Progression
 	public static float CostRatio => C.CostRatio;
 	public static float TraitRatio => C.TraitRatio;
 	public static float PaceRatio => C.PaceRatio;
-	public static float DashRatio => C.DashRatio;
 	public static float RoundRatio => C.RoundRatio;
 	public static int MaxSlots => C.MaxSlots;
 	public static int BossBaseHealth => C.BossBaseHealth;
@@ -70,8 +69,12 @@ public static class Progression
 		return Whole( seed * Threat( lap, location ) * C.KillScrapScale );
 	}
 
+	public const float DashCut = 0.30f;
+
 	public static float DashScale( int boost )
-		=> MathF.Max( C.DashScaleFloor, 1f / MathF.Pow( DashRatio, Math.Max( 0, boost ) ) );
+		=> boost <= 0 ? 1f : MathF.Max( C.DashScaleFloor, 1f - DashCut * boost );
+
+	public static bool DashAtCap( float scale ) => scale <= C.DashScaleFloor + 0.001f;
 
 	public static float SlowDrain( int brake )
 	{

@@ -783,6 +783,13 @@ public sealed class CityBoard : Component
 			return;
 		}
 
+		if ( Selected == BuildingKind.Booster && Progression.DashAtCap( Stats().DashCooldownScale ) )
+		{
+			ArenaSounds.Deny();
+			Loop?.Announce( GameSettings.Text.City.DashCap );
+			return;
+		}
+
 		Hovered.Copy = Placed( Selected );
 		Hovered.Occupied = true;
 		Hovered.Kind = Selected;

@@ -11,7 +11,7 @@ public class ProgressionConfig : GameResource
 	[Property] public float PaceRatio { get; set; } = 1.035f;
 	[Property] public float PaceCap { get; set; } = 1.4f;
 	[Property] public float DashRatio { get; set; } = 1.16f;
-	[Property] public float DashScaleFloor { get; set; } = 0.42f;
+	[Property] public float DashScaleFloor { get; set; } = 0.40f;
 	[Property] public float RoundRatio { get; set; } = 1.25f;
 	[Property] public int MaxSlots { get; set; } = 9;
 	[Property] public int BossBaseHealth { get; set; } = 18;
