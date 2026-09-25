@@ -571,12 +571,12 @@ public class OptionsCopy
 public class SavesCopy
 {
 	[Property] public string Kicker { get; set; } = "AUTOSAVE";
-	[Property] public string Title { get; set; } = "SAVES";
+	[Property] public string Title { get; set; } = "AUTOSAVES";
 	[Property] public string Blurb { get; set; } = "Altar writes itself. Pick a slot, then load or delete.";
 	[Property] public string Slot { get; set; } = "SLOT {0}";
 	[Property] public string Empty { get; set; } = "EMPTY";
 	[Property] public string WithLine { get; set; } = "WH {0}  ·  BEST {1}  ·  {2}";
-	[Property] public string WithBuildings { get; set; } = "WH {0}  ·  BEST {1}  ·  {2} BUILDINGS";
+	[Property] public string WithBuildings { get; set; } = "TOTAL BIOMASS {0}  ·  {1} ORGANS";
 	[Property] public string Load { get; set; } = "LOAD SLOT {0}";
 	[Property] public string LoadHas { get; set; } = "Use this altar.";
 	[Property] public string LoadEmpty { get; set; } = "Empty slot. Fresh altar.";
