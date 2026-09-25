@@ -4,7 +4,7 @@ public sealed class CityInject : Component
 {
 	public const string ModelPath = "models/syrenge.vmdl";
 
-	const float TargetLength = 78f;
+	const float TargetLength = 156f;
 	const float FallbackLife = 1.21f;
 	const string SequenceName = "inject";
 

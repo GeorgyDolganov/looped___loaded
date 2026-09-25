@@ -406,6 +406,8 @@
             "go": "b85ad2cf-7618-567f-a70c-5623ec3b8b60",
             "component_type": "ArenaBuilder"
           },
+          "ClearSpeedRamp": 1.2,
+          "ClearSpeedScale": 3,
           "DashCooldown": 1.1,
           "DashDistance": 430,
           "DashDuration": 0.17,

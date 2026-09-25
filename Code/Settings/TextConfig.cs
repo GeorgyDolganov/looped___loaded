@@ -494,7 +494,7 @@ public class HudCopy
 	[Property] public string TrinketsNone { get; set; } = "PEA";
 	[Property] public string Health { get; set; } = "HEALTH";
 	[Property] public string Ammo { get; set; } = "AMMO";
-	[Property] public string DashKey { get; set; } = "SPACEBAR";
+	[Property] public string DashKey { get; set; } = "SPACE";
 	[Property] public string SlowKey { get; set; } = "RMB";
 	[Property] public string Fed { get; set; } = "TOTAL BIOMASS";
 	[Property] public string Threat { get; set; } = "THREAT {0}";

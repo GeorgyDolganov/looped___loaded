@@ -442,7 +442,7 @@
     "Sight": {
       "Code": "SIGHT",
       "Title": "SIGHT",
-      "Blurb": "Later shots in a burst use half spread. 
+      "Blurb": "Later shots in a burst use half spread."
     },
     "Bite": {
       "Code": "BITE",
@@ -820,7 +820,7 @@
     },
     "Lens": {
       "Title": "BREAK THE LENS",
-      "Blurb": "After lap 5, fight LENS."
+      "Blurb": "After round 10, fight LENS."
     },
     "Ring": {
       "Title": "RIDE THE NEXT RING",
