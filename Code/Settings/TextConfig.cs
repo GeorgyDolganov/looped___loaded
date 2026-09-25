@@ -615,11 +615,16 @@ public class DecideCopy
 	[Property] public string ShowcaseCount { get; set; } = "{0} / {1}";
 	[Property] public string ShowcaseContinue { get; set; } = "Back to the altar.";
 	[Property] public string WonKicker { get; set; } = "THE FEEDING";
+	[Property] public string WonKickerAscend { get; set; } = "THE FEEDING  ·  ASCEND {0}";
 	[Property] public string Won { get; set; } = "EKKE IS FULL";
 	[Property] public string WonBlurb { get; set; } = "{0} BIOMASS ON THE ALTAR. THE MOUTH IS QUIET.";
-	[Property] public string WonPlay { get; set; } = "PLAY AGAIN";
-	[Property] public string WonPlayBlurb { get; set; } = "A new body. Feed it again.";
-	[Property] public string WonKey { get; set; } = "SPACE";
+	[Property] public string WonAscend { get; set; } = "ASCEND {0}";
+	[Property] public string WonAscendBlurb { get; set; } = "Every organ and all biomass go to the EKKE.";
+	[Property] public string WonAscendHealth { get; set; } = "ENEMY HP ×{0:0.00}";
+	[Property] public string WonAscendReward { get; set; } = "BIOMASS & BONES ×{0:0.00}";
+	[Property] public string WonAscendFeed { get; set; } = "FEED {0} TO WIN";
+	[Property] public string WonKeep { get; set; } = "KEEP";
+	[Property] public string WonKeepBlurb { get; set; } = "Keep your organs and biomass. The offer returns every time you bank.";
 	[Property] public string City { get; set; } = "ALTAR";
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
@@ -680,7 +685,7 @@ public class HelpCopy
 	[Property] public string Shop { get; set; } = "CLICK A CARD  ·  1-{0} BUY  ·  E ALL  ·  SPACE GO  ·  ESC PAUSE";
 	[Property] public string Dead { get; set; } = "CLICK ALTAR  ·  R ALTAR  ·  ESC MENU";
 	[Property] public string Extracted { get; set; } = "SPACE CONTINUE";
-	[Property] public string Won { get; set; } = "CLICK  ·  SPACE PLAY AGAIN  ·  ESC MENU";
+	[Property] public string Won { get; set; } = "1 ASCEND  ·  2 KEEP  ·  ESC MENU";
 	[Property] public string BossGlass { get; set; } = "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
 	[Property] public string BossYard { get; set; } = "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
 	[Property] public string PlayGlassSkip { get; set; } = "PANELS SHATTER  ·  E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
@@ -717,6 +722,7 @@ public class AnnounceCopy
 	[Property] public string LapClear { get; set; } = "ROUND {0} CLEAR";
 	[Property] public string CityDeposit { get; set; } = "ALTAR  ·  +{0} WAREHOUSE";
 	[Property] public string Won { get; set; } = "EKKE IS FULL";
+	[Property] public string Ascended { get; set; } = "ASCEND {0}  ·  FEED {1}";
 	[Property] public string City { get; set; } = "ALTAR";
 	[Property] public string ContinueRounds { get; set; } = "+{0} BIOMASS  ·  STASH {1}  ·  ×{2:0.00}";
 	[Property] public string StashMax { get; set; } = "STASH MAX  ·  ×{0:0.00}";

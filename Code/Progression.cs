@@ -106,6 +106,15 @@ public static class Progression
 		return c;
 	}
 
+	public static int WinNeed( int ascend )
+		=> Whole( GameSettings.Run.WinBiomass * AscendMul( GameSettings.Run.AscendWinRatio, ascend ) );
+
+	public static float AscendHealth( int ascend ) => AscendMul( GameSettings.Run.AscendHealthRatio, ascend );
+
+	public static float AscendReward( int ascend ) => AscendMul( GameSettings.Run.AscendRewardRatio, ascend );
+
+	static float AscendMul( float ratio, int ascend ) => MathF.Pow( ratio, Math.Max( 0, ascend ) );
+
 	public static int Whole( float value )
 		=> Math.Max( 1, (int)MathF.Round( value ) );
 }

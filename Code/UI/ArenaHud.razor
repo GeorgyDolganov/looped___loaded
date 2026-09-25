@@ -609,15 +609,25 @@
 
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.Won )
 		{
-			<div class="overlay menu victory" onclick="@PlayAgain">
-				<label class="kicker">@GameSettings.Text.Decide.WonKicker</label>
+			<div class="overlay menu victory">
+				<label class="kicker">@(Loop.Ascend > 0 ? GameSettings.Text.F(GameSettings.Text.Decide.WonKickerAscend, Loop.Ascend) : GameSettings.Text.Decide.WonKicker)</label>
 				<label class="overlay-title">@GameSettings.Text.Decide.Won</label>
 				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.WonBlurb, Loop.FedBiomass)</label>
 				<div class="cards">
-					<div class="card" onclick="@PlayAgain">
-						<label class="key">@GameSettings.Text.Decide.WonKey</label>
-						<label class="title">@GameSettings.Text.Decide.WonPlay</label>
-						<label class="blurb">@GameSettings.Text.Decide.WonPlayBlurb</label>
+					<div class="card" onclick="@ChooseAscend">
+						<label class="key">@GameSettings.Text.Decide.Key1</label>
+						<label class="title">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscend, Loop.Ascend + 1)</label>
+						<label class="blurb">@GameSettings.Text.Decide.WonAscendBlurb</label>
+						<div class="stats">
+							<label class="stat down">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscendHealth, Progression.AscendHealth(Loop.Ascend + 1))</label>
+							<label class="stat up">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscendReward, Progression.AscendReward(Loop.Ascend + 1))</label>
+							<label class="stat note">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscendFeed, Progression.WinNeed(Loop.Ascend + 1))</label>
+						</div>
+					</div>
+					<div class="card" onclick="@ChooseKeep">
+						<label class="key">@GameSettings.Text.Decide.Key2</label>
+						<label class="title">@GameSettings.Text.Decide.WonKeep</label>
+						<label class="blurb">@GameSettings.Text.Decide.WonKeepBlurb</label>
 					</div>
 				</div>
 			</div>
@@ -911,10 +921,16 @@
 		Loop?.NoteUiClick();
 		Loop?.ChooseCity();
 	}
-	void PlayAgain()
+	void ChooseAscend()
 	{
 		Loop?.NoteUiClick();
-		Loop?.PlayAgain();
+		Loop?.ChooseAscend();
+	}
+
+	void ChooseKeep()
+	{
+		Loop?.NoteUiClick();
+		Loop?.ChooseKeep();
 	}
 
 	int FeedPercent => Loop.IsValid() && Loop.WinNeed > 0 ? (int)(Math.Clamp( Loop.FedBiomass / (float)Loop.WinNeed, 0f, 1f ) * 100f) : 0;
@@ -1543,7 +1559,8 @@
 			menu ? UserSettings.Steps( SettingRow.Music ) : 0,
 			menu ? UserSettings.Steps( SettingRow.Sfx ) : 0,
 			menu ? UserSettings.Steps( SettingRow.Shake ) : 0,
-			(int)OrganLift );
+			(int)OrganLift,
+			Loop.Ascend );
 
 		return System.HashCode.Combine( a, b, c, d, e, f, g, h );
 	}
@@ -2768,7 +2785,6 @@
 
 	.overlay.victory {
 		pointer-events: all;
-		cursor: pointer;
 		background-color: rgba(7, 5, 5, 0.86);
 	}
 
