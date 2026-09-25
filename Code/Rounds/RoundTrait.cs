@@ -278,16 +278,12 @@ public static class RoundTraits
 
 	public static Color Color( RoundTrait trait ) => Pack( trait ) switch
 	{
-		TraitPack.Entry => new Color( 1f, 0.74f, 0.42f ),
-		TraitPack.Junior => new Color( 1f, 0.55f, 0.22f ),
-		TraitPack.Warrior => new Color( 0.95f, 0.28f, 0.16f ),
-		TraitPack.Abomination => new Color( 0.62f, 0.95f, 0.28f ),
-		TraitPack.Rifle => new Color( 0.55f, 0.85f, 1f ),
-		TraitPack.Shotgun => new Color( 1f, 0.62f, 0.28f ),
-		TraitPack.Nailgun => new Color( 0.95f, 0.82f, 0.35f ),
-		TraitPack.Laser => new Color( 0.95f, 0.35f, 0.72f ),
-		TraitPack.Rail => new Color( 0.4f, 0.75f, 1f ),
-		_ => new Color( 1f, 0.38f, 0.28f )
+		TraitPack.Rifle or TraitPack.Shotgun => new Color( 0.616f, 0.616f, 0.616f ),
+		TraitPack.Nailgun or TraitPack.Junior => new Color( 0.118f, 1f, 0f ),
+		TraitPack.Warrior or TraitPack.Laser or TraitPack.Rail or TraitPack.Rocket => new Color( 0f, 0.439f, 0.867f ),
+		TraitPack.Abomination => new Color( 0.639f, 0.208f, 0.933f ),
+		TraitPack.Entry => new Color( 0.95f, 0.95f, 0.95f ),
+		_ => new Color( 0f, 0.439f, 0.867f )
 	};
 
 	public static string Rarity( RoundTrait trait ) => GameSettings.Text.RarityOf( Pack( trait ) );
