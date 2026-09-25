@@ -129,6 +129,10 @@
 							<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
 						</div>
 					</div>
+					<div class="city-controls">
+						<label>@(Loop.City.Building ? "LMB BUILD" : "LMB INJECT")</label>
+						<label>RMB DELETE UNFINISHED / ROTATE</label>
+					</div>
 				</div>
 				<div class="altar-tray">
 					<img class="altar-back" src="ui/Arena UI/altar_back.png" />
@@ -198,7 +202,10 @@
 			</div>
 		}
 
-		<label class="help">@HelpText</label>
+		@if ( Loop.Phase != RunPhase.City )
+		{
+			<label class="help">@HelpText</label>
+		}
 
 		@if ( Loop.CanPause )
 		{
@@ -1478,6 +1485,20 @@
 		width: 400px;
 		flex-direction: column;
 		align-items: stretch;
+	}
+
+	.city-controls {
+		flex-direction: column;
+		align-items: flex-start;
+		margin-top: 16px;
+		margin-left: 18px;
+	}
+
+	.city-controls label {
+		font-size: 18px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #cdc6ba;
 	}
 
 	.lap-chip {
