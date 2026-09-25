@@ -4,14 +4,16 @@ public readonly struct StatLine
 {
 	public string Text { get; }
 	public int Sign { get; }
+	public bool Mixed { get; }
 
-	public StatLine( string text, int sign )
+	public StatLine( string text, int sign, bool mixed = false )
 	{
 		Text = text;
 		Sign = sign;
+		Mixed = mixed;
 	}
 
-	public string Class => Sign < 0 ? "down" : Sign > 0 ? "up" : "note";
+	public string Class => Mixed ? "mixed" : Sign < 0 ? "down" : Sign > 0 ? "up" : "note";
 }
 
 public readonly struct SheetRow
@@ -20,16 +22,18 @@ public readonly struct SheetRow
 	public string Now { get; }
 	public string Next { get; }
 	public int Sign { get; }
+	public bool Mixed { get; }
 
-	public SheetRow( string label, string now, string next = "", int sign = 0 )
+	public SheetRow( string label, string now, string next = "", int sign = 0, bool mixed = false )
 	{
 		Label = label;
 		Now = now;
 		Next = next;
 		Sign = sign;
+		Mixed = mixed;
 	}
 
-	public string NextClass => Sign < 0 ? "down" : "up";
+	public string NextClass => Mixed ? "mixed" : Sign < 0 ? "down" : "up";
 }
 
 public static class StatSheet
@@ -43,6 +47,7 @@ public static class StatSheet
 		void Up( string text ) => lines.Add( new StatLine( text, 1 ) );
 		void Down( string text ) => lines.Add( new StatLine( text, -1 ) );
 		void Note( string text ) => lines.Add( new StatLine( text, 0 ) );
+		void Mixed( string text ) => lines.Add( new StatLine( text, 0, true ) );
 
 		switch ( trait )
 		{
@@ -55,7 +60,7 @@ public static class StatSheet
 				if ( pellets > 0 )
 					Up( pellets == 1 ? "+1 Projectile" : $"+{pellets} Projectiles" );
 				if ( cone > 0.001f )
-					Down( $"+{Fmt( cone )}° Spread" );
+					Mixed( $"+{Fmt( cone )}° Spread" );
 				var cut = t.BuckRangeCut.At( rank );
 				var prev = rank <= 1 ? 0f : t.BuckRangeCut.At( rank - 1 );
 				var delta = cut - prev;
@@ -69,7 +74,7 @@ public static class StatSheet
 				Up( $"+{t.SplitPellets} Projectile" );
 				break;
 			case RoundTrait.Fan:
-				Down( $"+{Fmt( t.FanCone )}° Spread" );
+				Mixed( $"+{Fmt( t.FanCone )}° Spread" );
 				break;
 			case RoundTrait.Pump:
 				Up( $"+{t.PumpPellets} Projectile" );
@@ -80,8 +85,8 @@ public static class StatSheet
 				Down( $"+{Fmt( t.LoadReload )}s Reload" );
 				break;
 			case RoundTrait.Choke:
-				Up( $"-{Fmt( t.ChokeCone )}° Spread" );
-				Note( $"Spread min {Fmt( t.ChokeFloor )}°" );
+				Mixed( $"-{Fmt( t.ChokeCone )}° Spread" );
+				Mixed( $"Spread min {Fmt( t.ChokeFloor )}°" );
 				break;
 			case RoundTrait.Meat:
 				Up( $"+{t.MeatBonus} Damage within {Fmt( t.MeatRange )}" );
@@ -91,7 +96,7 @@ public static class StatSheet
 				Up( $"+{t.RicoBounces} Bounce" );
 				break;
 			case RoundTrait.Gape:
-				Down( $"+{Fmt( t.GapeCone )}° Spread" );
+				Mixed( $"+{Fmt( t.GapeCone )}° Spread" );
 				break;
 			case RoundTrait.Double:
 				Note( "Two volleys per mag" );
@@ -230,7 +235,7 @@ public static class StatSheet
 				Down( "Locks out TRACK" );
 				break;
 			case RoundTrait.Walk:
-				Note( $"+{Fmt( t.WalkCone )}° spread per later volley" );
+				Mixed( $"+{Fmt( t.WalkCone )}° spread per later volley" );
 				Down( $"+{Fmt( t.WalkReload )}s Reload" );
 				Down( "Locks out TRACK" );
 				break;
@@ -240,7 +245,7 @@ public static class StatSheet
 				Down( "Locks out SWEEP" );
 				break;
 			case RoundTrait.Sight:
-				Note( "Later volleys use half spread" );
+				Mixed( "Later volleys use half spread" );
 				Down( $"{PctDelta( t.SightSpeed )} Projectile Speed" );
 				Down( "Locks out SWEEP" );
 				break;
@@ -347,7 +352,7 @@ public static class StatSheet
 				break;
 			case RoundTrait.Shuck:
 				Up( $"{PctDelta( t.ShuckReload )} Reload" );
-				Down( $"+{Fmt( t.ShuckCone )}° Spread" );
+				Mixed( $"+{Fmt( t.ShuckCone )}° Spread" );
 				break;
 			case RoundTrait.Slam:
 				Up( $"{PctDelta( t.SlamReload )} Reload" );
@@ -363,7 +368,7 @@ public static class StatSheet
 				if ( bounce > 0f )
 					Up( $"+{(int)bounce} Bounce" );
 				if ( cone > 0.001f )
-					Down( $"+{Fmt( cone )}° Spread" );
+					Mixed( $"+{Fmt( cone )}° Spread" );
 				if ( rank <= 1 )
 					Note( $"Stick {Fmt( t.PinStick )}s" );
 				break;
@@ -410,7 +415,7 @@ public static class StatSheet
 
 		AddInt( rows, "Damage", now.Damage, next.Damage, preview, true, true );
 		AddInt( rows, "Projectiles", now.Count, next.Count, preview, true, true );
-		AddFloat( rows, "Spread", now.Cone, next.Cone, preview, false, "°" );
+		AddFloat( rows, "Spread", now.Cone, next.Cone, preview, null, "°" );
 		AddInt( rows, "Pierce", now.Pierce, next.Pierce, preview, true, false );
 		if ( now.IgnoreArmor || next.IgnoreArmor )
 			AddText( rows, "Armor", now.IgnoreArmor ? "Ignored" : "Holds", next.IgnoreArmor ? "Ignored" : "Holds", preview );
@@ -434,9 +439,9 @@ public static class StatSheet
 			AddFloat( rows, "Cycle", now.Cycle, next.Cycle, preview, false, "s", true );
 		}
 		if ( now.WalkStep > 0f || next.WalkStep > 0f )
-			AddFloat( rows, "Walk", now.WalkStep, next.WalkStep, preview, true, "°" );
+			AddFloat( rows, "Walk", now.WalkStep, next.WalkStep, preview, null, "°" );
 		if ( now.Sight || next.Sight )
-			AddText( rows, "Sight", now.Sight ? "Half" : "Full", next.Sight ? "Half" : "Full", preview );
+			AddText( rows, "Sight", now.Sight ? "Half" : "Full", next.Sight ? "Half" : "Full", preview, true );
 		if ( now.Bite || next.Bite )
 			AddText( rows, "Bite", now.Bite ? "+1" : "Flat", next.Bite ? "+1" : "Flat", preview );
 		if ( now.CommitBurst || next.CommitBurst )
@@ -480,7 +485,7 @@ public static class StatSheet
 		rows.Add( Row( label, now.ToString(), next.ToString(), now, next, preview, higherIsGood ) );
 	}
 
-	static void AddFloat( List<SheetRow> rows, string label, float now, float next, bool preview, bool higherIsGood, string suffix = "", bool always = false )
+	static void AddFloat( List<SheetRow> rows, string label, float now, float next, bool preview, bool? higherIsGood, string suffix = "", bool always = false )
 	{
 		if ( !always && now <= 0.001f && next <= 0.001f )
 			return;
@@ -512,7 +517,7 @@ public static class StatSheet
 		rows.Add( Row( label, Pct( now ), Pct( next ), now, next, preview, higherIsGood ) );
 	}
 
-	static void AddText( List<SheetRow> rows, string label, string now, string next, bool preview )
+	static void AddText( List<SheetRow> rows, string label, string now, string next, bool preview, bool mixed = false )
 	{
 		if ( now == "No" && next == "No" )
 			return;
@@ -523,16 +528,19 @@ public static class StatSheet
 			return;
 		}
 
-		rows.Add( new SheetRow( label, now, next, next == "Yes" ? 1 : 0 ) );
+		rows.Add( new SheetRow( label, now, next, next == "Yes" ? 1 : 0, mixed ) );
 	}
 
-	static SheetRow Row( string label, string nowText, string nextText, float now, float next, bool preview, bool higherIsGood )
+	static SheetRow Row( string label, string nowText, string nextText, float now, float next, bool preview, bool? higherIsGood )
 	{
 		if ( !preview || Almost( now, next ) )
 			return new SheetRow( label, nowText );
 
+		if ( higherIsGood is not { } good )
+			return new SheetRow( label, nowText, nextText, 0, true );
+
 		var better = next > now;
-		var sign = better == higherIsGood ? 1 : -1;
+		var sign = better == good ? 1 : -1;
 		return new SheetRow( label, nowText, nextText, sign );
 	}
 

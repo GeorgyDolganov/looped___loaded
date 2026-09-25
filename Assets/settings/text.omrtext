@@ -243,7 +243,7 @@
     "Bore": {
       "Code": "BORE",
       "Title": "BORE",
-      "Blurb": "Did somebody say \"RAILGUN\"? Locks out LASH."
+      "Blurb": "Did somebody say \"RAILGUN\"?"
     },
     "Drum": {
       "Code": "DRUM",
@@ -258,7 +258,7 @@
     "Lash": {
       "Code": "LASH",
       "Title": "LASH",
-      "Blurb": "HOLD TO ZAP. Short reload. Locks out BORE."
+      "Blurb": "HOLD TO ZAP. Short reload."
     },
     "Pin": {
       "Code": "PIN",
@@ -363,27 +363,27 @@
     "Mirv": {
       "Code": "MIRV",
       "Title": "MIRV",
-      "Blurb": "Explosions not only on first contact! Locks out LANCE."
+      "Blurb": "Explosions not only on first contact!"
     },
     "Bloom": {
       "Code": "BLOOM",
       "Title": "BLOOM",
-      "Blurb": "Locks out LANCE."
+      "Blurb": ""
     },
     "Scorch": {
       "Code": "SCORCH",
       "Title": "SCORCH",
-      "Blurb": "Locks out LANCE."
+      "Blurb": ""
     },
     "Lance": {
       "Code": "LANCE",
       "Title": "LANCE",
-      "Blurb": "Are you tiered from hitting yourself? Try this! Disables Ricochet. Locks out CLUSTER."
+      "Blurb": "Are you tiered from hitting yourself? Try this! Disables Ricochet."
     },
     "Crater": {
       "Code": "CRATER",
       "Title": "CRATER",
-      "Blurb": "Locks out CLUSTER."
+      "Blurb": ""
     },
     "Spot": {
       "Code": "SPOT",
@@ -393,27 +393,27 @@
     "Deep": {
       "Code": "DEEP",
       "Title": "DEEP",
-      "Blurb": "Locks out MASS."
+      "Blurb": ""
     },
     "Awl": {
       "Code": "AWL",
       "Title": "AWL",
-      "Blurb": "Ignores boss armor. Locks out MASS."
+      "Blurb": "Ignores boss armor."
     },
     "Ram": {
       "Code": "RAM",
       "Title": "RAM",
-      "Blurb": "Each body you punch through hits the next HARDER. Locks out MASS."
+      "Blurb": "Each body you punch through hits the next HARDER. "
     },
     "Mass": {
       "Code": "MASS",
       "Title": "MASS",
-      "Blurb": "One shot. For each removed projectile +damage. Locks out DEEP."
+      "Blurb": "One shot. For each removed projectile +damage. "
     },
     "Keel": {
       "Code": "KEEL",
       "Title": "KEEL",
-      "Blurb": "Removes richochet. Locks out DEEP."
+      "Blurb": "Removes richochet."
     },
     "Trace": {
       "Code": "TRACE",
@@ -423,52 +423,52 @@
     "Belt": {
       "Code": "BELT",
       "Title": "BELT",
-      "Blurb": "Locks out TRACK."
+      "Blurb": ""
     },
     "Walk": {
       "Code": "WALK",
       "Title": "WALK",
-      "Blurb": "Locks out TRACK."
+      "Blurb": ""
     },
     "Spool": {
       "Code": "SPOOL",
       "Title": "SPOOL",
-      "Blurb": "Locks out SWEEP."
+      "Blurb": ""
     },
     "Sight": {
       "Code": "SIGHT",
       "Title": "SIGHT",
-      "Blurb": "Later shots in a burst use half spread. Locks out SWEEP."
+      "Blurb": "Later shots in a burst use half spread. 
     },
     "Bite": {
       "Code": "BITE",
       "Title": "BITE",
-      "Blurb": "+damage on a body this burst already hit. Locks out SWEEP."
+      "Blurb": "+damage on a body this burst already hit. "
     },
     "Link": {
       "Code": "LINK",
       "Title": "LINK",
-      "Blurb": "The burst finishes if you release. Cycle ×1.10. Reload +0.20s."
+      "Blurb": "The burst finishes if you release."
     },
     "Sear": {
       "Code": "SEAR",
       "Title": "SEAR",
-      "Blurb": "+1 damage while the beam stays on a body. Reload +0.15s. Locks out ARC."
+      "Blurb": "+1 damage while the beam stays on a body."
     },
     "Kiln": {
       "Code": "KILN",
       "Title": "KILN",
-      "Blurb": "Tick ×0.75 while latched. Locks out ARC."
+      "Blurb": "Tick ×0.75 while latched. "
     },
     "Arc": {
       "Code": "ARC",
       "Title": "ARC",
-      "Blurb": "Jumps once to a near neighbor. Locks out BRAND."
+      "Blurb": "Jumps once to a near neighbor."
     },
     "Fork": {
       "Code": "FORK",
       "Title": "FORK",
-      "Blurb": "Side bolts hit on their own. Locks out BRAND."
+      "Blurb": "Side bolts hit on their own."
     },
     "Shunt": {
       "Code": "SHUNT",
