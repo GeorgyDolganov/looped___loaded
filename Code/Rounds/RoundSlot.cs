@@ -65,17 +65,12 @@ public sealed class RunLoadout
 		var lash = TraitLevel( RoundTrait.Lash );
 		var pin = TraitLevel( RoundTrait.Pin );
 		var rush = TraitLevel( RoundTrait.Rush );
+		var split = TraitLevel( RoundTrait.Split );
 		var slug = Has( RoundTrait.Slug );
 
 		var count = 1;
-		if ( Has( RoundTrait.Split ) )
-			count += t.SplitPellets;
-		if ( Has( RoundTrait.Pump ) )
-			count += t.PumpPellets;
-		if ( Has( RoundTrait.Load ) )
-			count += t.LoadPellets;
-		if ( Has( RoundTrait.Heap ) )
-			count += t.HeapPellets;
+		if ( split > 0 && t.SplitPellets is not null )
+			count += Math.Max( 0, (int)t.SplitPellets.At( split ) );
 		if ( buck > 0 )
 			count += Math.Max( 0, (int)t.BuckPellets.At( buck ) - 1 );
 
@@ -86,8 +81,6 @@ public sealed class RunLoadout
 		var cone = 0f;
 		if ( Has( RoundTrait.Fan ) )
 			cone += t.FanCone;
-		if ( Has( RoundTrait.Gape ) )
-			cone += t.GapeCone;
 		if ( Has( RoundTrait.Choke ) )
 			cone = MathF.Max( t.ChokeFloor, cone - t.ChokeCone );
 		if ( buck > 0 )
@@ -104,20 +97,12 @@ public sealed class RunLoadout
 			cone = t.PinCone.At( pin );
 		}
 
-		var beforeMass = count;
-		if ( Has( RoundTrait.Mass ) )
-		{
-			count = 1;
-			cone = 0f;
-		}
-
 		if ( Has( RoundTrait.Shuck ) )
 			cone += t.ShuckCone;
 		if ( Has( RoundTrait.Slam ) )
 		{
 			count = Math.Max( 1, count - t.SlamPellets );
 			full = Math.Max( 1, full - t.SlamPellets );
-			beforeMass = Math.Max( 1, beforeMass - t.SlamPellets );
 		}
 
 		var bounces = t.MaxBouncesBase;
@@ -133,8 +118,6 @@ public sealed class RunLoadout
 		var pierce = bore <= 0 ? 0 : (int)t.BorePierce.At( bore );
 		if ( Has( RoundTrait.Deep ) )
 			pierce += t.DeepPierce;
-		if ( Has( RoundTrait.Breach ) )
-			pierce += t.BreachPierce;
 		if ( Has( RoundTrait.Draw ) )
 			pierce = Math.Max( 0, pierce - t.DrawPierce );
 
@@ -149,12 +132,8 @@ public sealed class RunLoadout
 			reload += t.DrumReload * Progression.TraitMul( drum );
 		if ( rush > 0 )
 			reload += t.RushReload * Progression.TraitMul( rush );
-		if ( Has( RoundTrait.Pump ) )
-			reload += t.PumpReload;
-		if ( Has( RoundTrait.Load ) )
-			reload += t.LoadReload;
-		if ( Has( RoundTrait.Heap ) )
-			reload += t.HeapReload;
+		if ( split > 0 && t.SplitReload is not null )
+			reload += t.SplitReload.At( split );
 		if ( Has( RoundTrait.Double ) )
 			reload += t.DoubleReload;
 		if ( Has( RoundTrait.Bloom ) )
@@ -167,10 +146,6 @@ public sealed class RunLoadout
 			reload += t.DeepReload;
 		if ( Has( RoundTrait.Awl ) )
 			reload += t.AwlReload;
-		if ( Has( RoundTrait.Mass ) )
-			reload += t.MassReload;
-		if ( Has( RoundTrait.Trace ) )
-			reload += t.TraceReload;
 		if ( Has( RoundTrait.Belt ) )
 			reload += t.BeltReload;
 		if ( Has( RoundTrait.Walk ) )
@@ -237,12 +212,8 @@ public sealed class RunLoadout
 			speed *= t.AwlSpeed;
 		if ( Has( RoundTrait.Ram ) )
 			speed *= t.RamSpeed;
-		if ( Has( RoundTrait.Mass ) )
-			speed *= t.MassSpeed;
 		if ( Has( RoundTrait.Keel ) )
 			speed *= t.KeelSpeed;
-		if ( Has( RoundTrait.Trace ) )
-			speed *= t.TraceSpeed;
 		if ( Has( RoundTrait.Sight ) )
 			speed *= t.SightSpeed;
 		if ( Has( RoundTrait.Bite ) )
@@ -253,20 +224,14 @@ public sealed class RunLoadout
 			speed *= t.RackSpeed;
 
 		var rangeCut = 0f;
+		var meat = TraitLevel( RoundTrait.Meat );
 		var meatRange = 0f;
 		var meatBonus = 0;
-		if ( Has( RoundTrait.Meat ) )
+		if ( meat > 0 )
 		{
 			meatRange = MathF.Max( meatRange, t.MeatRange );
-			meatBonus += t.MeatBonus;
-			rangeCut += t.MeatRangeCut;
-		}
-
-		if ( Has( RoundTrait.Waste ) )
-		{
-			meatRange = MathF.Max( meatRange, t.WasteRange );
-			meatBonus += t.WasteBonus;
-			rangeCut += t.WasteRangeCut;
+			meatBonus += t.MeatBonus * meat;
+			rangeCut += t.MeatRangeCut * meat;
 		}
 
 		if ( buck > 0 )
@@ -277,8 +242,6 @@ public sealed class RunLoadout
 			damage += t.SlugDamage * Math.Max( 0, full - count );
 		if ( Has( RoundTrait.Lance ) )
 			damage += t.LanceDamage;
-		if ( Has( RoundTrait.Mass ) )
-			damage += t.MassDamage * Math.Max( 1, beforeMass - count + 1 );
 		if ( Has( RoundTrait.Keel ) )
 			damage += t.KeelDamage;
 

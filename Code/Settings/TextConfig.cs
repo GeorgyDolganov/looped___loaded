@@ -135,7 +135,7 @@ public class TextConfig : GameResource
 		var rarity = (Traits ??= new()).Rarity ??= new();
 		return pack switch
 		{
-			TraitPack.Entry => Or( rarity.Entry, "ENTRY" ),
+			TraitPack.Entry => Or( rarity.Common, "COMMON" ),
 			TraitPack.Junior => Or( rarity.Uncommon, "UNCOMMON" ),
 			TraitPack.Warrior => Or( rarity.Rare, "RARE" ),
 			TraitPack.Abomination => Or( rarity.Epic, "EPIC" ),
@@ -648,6 +648,9 @@ public class ShopCopy
 	[Property] public string Bought { get; set; } = "BOUGHT";
 	[Property] public string Locked { get; set; } = "LOCKED";
 	[Property] public string OfferBlurb { get; set; } = "{0}  LV{1}";
+	[Property] public string OfferRank { get; set; } = "LV {0}";
+	[Property] public string Weapon { get; set; } = "WEAPON";
+	[Property] public string Unlocks { get; set; } = "Opens {0}.";
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
 	[Property] public string Key3 { get; set; } = "3";
@@ -732,6 +735,7 @@ public class AnnounceCopy
 	[Property] public string StashMax { get; set; } = "BIOMASS MAX";
 	[Property] public string BossContinue { get; set; } = "{0}  ·  +{1}  ·  STASH {2}";
 	[Property] public string NeedScrap { get; set; } = "NEED {0} SCRAP";
+	[Property] public string ShopAdded { get; set; } = "{0} ADDED TO THE SHOP";
 	[Property] public string ShopRefresh { get; set; } = "REFRESH  ·  NEXT {0}  ·  {1} SCRAP";
 	[Property] public string TraitBought { get; set; } = "{0} LV{1}  ·  {2} SCRAP";
 	[Property] public string Armed { get; set; } = "ARMED  ·  {0} SCRAP";

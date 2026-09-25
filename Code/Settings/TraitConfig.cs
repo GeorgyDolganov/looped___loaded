@@ -21,7 +21,8 @@ public class TraitConfig : GameResource
 	[Property] public TraitPackStats Junior { get; set; } = new() { Price = 3, Weight = 4 };
 	[Property] public TraitPackStats Warrior { get; set; } = new() { Price = 5, Weight = 2 };
 	[Property] public TraitPackStats Abomination { get; set; } = new() { Price = 8, Weight = 1 };
-	[Property] public int SplitPellets { get; set; } = 1;
+	[Property] public TraitTiers SplitPellets { get; set; } = new() { Level1 = 1f, Level2 = 2f, Level3 = 4f, Level4 = 7f };
+	[Property] public TraitTiers SplitReload { get; set; } = new() { Level1 = 0f, Level2 = 0.15f, Level3 = 0.25f, Level4 = 0.50f };
 	[Property] public float FanCone { get; set; } = 14f;
 	[Property] public int PumpPellets { get; set; } = 1;
 	[Property] public float PumpReload { get; set; } = 0.25f;
@@ -35,7 +36,7 @@ public class TraitConfig : GameResource
 	[Property] public int RicoBounces { get; set; } = 1;
 	[Property] public float GapeCone { get; set; } = 14f;
 	[Property] public float DoubleGap { get; set; } = 0.12f;
-	[Property] public float DoubleReload { get; set; } = 0.55f;
+	[Property] public float DoubleReload { get; set; } = 0.35f;
 	[Property] public float KickForce { get; set; } = 110f;
 	[Property] public float KickRange { get; set; } = 180f;
 	[Property] public float StunTime { get; set; } = 0.45f;
@@ -53,23 +54,23 @@ public class TraitConfig : GameResource
 	[Property] public TraitTiers BuckCone { get; set; } = new() { Level1 = 10f, Level2 = 16f, Level3 = 24f };
 	[Property] public TraitTiers BuckRangeCut { get; set; } = new() { Level1 = 0.83f, Level2 = 0.94f, Level3 = 1f };
 	[Property] public TraitTiers BorePierce { get; set; } = new() { Level1 = 1f, Level2 = 1f, Level3 = 2f };
-	[Property] public float BoreReload { get; set; } = 0.55f;
+	[Property] public float BoreReload { get; set; } = 0.35f;
 	[Property] public TraitTiers DrumBurst { get; set; } = new() { Level1 = 3f, Level2 = 4f, Level3 = 6f };
 	[Property] public float DrumCycle { get; set; } = 0.16f;
-	[Property] public float DrumReload { get; set; } = 0.70f;
+	[Property] public float DrumReload { get; set; } = 0.45f;
 	[Property] public TraitTiers WarheadRadius { get; set; } = new() { Level1 = 90f, Level2 = 126f, Level3 = 176f };
 	[Property] public TraitTiers WarheadSpeed { get; set; } = new() { Level1 = 0.78f, Level2 = 0.68f, Level3 = 0.58f };
 	[Property] public float MirvRadiusScale { get; set; } = 0.55f;
 	[Property] public float MirvSpeed { get; set; } = 0.80f;
 	[Property] public float BloomRadius { get; set; } = 80f;
-	[Property] public float BloomReload { get; set; } = 0.30f;
+	[Property] public float BloomReload { get; set; } = 0.20f;
 	[Property] public int ScorchDamage { get; set; } = 2;
 	[Property] public float ScorchSpeed { get; set; } = 0.75f;
-	[Property] public float ScorchReload { get; set; } = 0.20f;
+	[Property] public float ScorchReload { get; set; } = 0.12f;
 	[Property] public int LanceDamage { get; set; } = 2;
 	[Property] public float LanceRadiusScale { get; set; } = 0.70f;
 	[Property] public float LanceSpeed { get; set; } = 0.70f;
-	[Property] public float LanceReload { get; set; } = 0.45f;
+	[Property] public float LanceReload { get; set; } = 0.30f;
 	[Property] public float CraterBody { get; set; } = 22f;
 	[Property] public float CraterSplash { get; set; } = 56f;
 	[Property] public float CraterSpeed { get; set; } = 0.65f;
@@ -77,9 +78,9 @@ public class TraitConfig : GameResource
 	[Property] public float SpotSplash { get; set; } = 40f;
 	[Property] public int SpotSplashDamage { get; set; } = 1;
 	[Property] public int DeepPierce { get; set; } = 2;
-	[Property] public float DeepReload { get; set; } = 0.40f;
+	[Property] public float DeepReload { get; set; } = 0.25f;
 	[Property] public float AwlSpeed { get; set; } = 0.85f;
-	[Property] public float AwlReload { get; set; } = 0.20f;
+	[Property] public float AwlReload { get; set; } = 0.12f;
 	[Property] public float RamSpeed { get; set; } = 0.75f;
 	[Property] public int MassDamage { get; set; } = 3;
 	[Property] public float MassSpeed { get; set; } = 0.70f;
@@ -89,11 +90,11 @@ public class TraitConfig : GameResource
 	[Property] public float TraceSpeed { get; set; } = 1.60f;
 	[Property] public float TraceReload { get; set; } = 0.25f;
 	[Property] public int BeltBurst { get; set; } = 3;
-	[Property] public float BeltReload { get; set; } = 0.45f;
+	[Property] public float BeltReload { get; set; } = 0.30f;
 	[Property] public float WalkCone { get; set; } = 3f;
-	[Property] public float WalkReload { get; set; } = 0.20f;
+	[Property] public float WalkReload { get; set; } = 0.12f;
 	[Property] public float SpoolCycle { get; set; } = 0.65f;
-	[Property] public float SpoolReload { get; set; } = 0.25f;
+	[Property] public float SpoolReload { get; set; } = 0.15f;
 	[Property] public float SightSpeed { get; set; } = 0.90f;
 	[Property] public float BiteSpeed { get; set; } = 0.80f;
 	[Property] public float LinkCycle { get; set; } = 1.10f;
@@ -108,18 +109,18 @@ public class TraitConfig : GameResource
 	[Property] public int LashRankWeight { get; set; } = 12;
 	[Property] public float LashRange { get; set; } = 1600f;
 	[Property] public float LashWidth { get; set; } = 8f;
-	[Property] public float SearReload { get; set; } = 0.15f;
+	[Property] public float SearReload { get; set; } = 0.10f;
 	[Property] public float KilnTick { get; set; } = 0.75f;
 	[Property] public float KilnWidth { get; set; } = 0.75f;
-	[Property] public float KilnReload { get; set; } = 0.10f;
+	[Property] public float KilnReload { get; set; } = 0.06f;
 	[Property] public float ArcRange { get; set; } = 220f;
 	[Property] public float ArcTick { get; set; } = 1.15f;
-	[Property] public float ForkReload { get; set; } = 0.12f;
+	[Property] public float ForkReload { get; set; } = 0.08f;
 	[Property] public float ShuntTick { get; set; } = 1.25f;
 	[Property] public float ShuntWidth { get; set; } = 0.85f;
-	[Property] public float LingerReload { get; set; } = 0.20f;
+	[Property] public float LingerReload { get; set; } = 0.12f;
 	[Property] public int CellTicks { get; set; } = 2;
-	[Property] public float CellReload { get; set; } = 0.15f;
+	[Property] public float CellReload { get; set; } = 0.10f;
 	[Property] public float JackReload { get; set; } = 0.80f;
 	[Property] public float JackSplash { get; set; } = 0.80f;
 	[Property] public float SlapReload { get; set; } = 0.85f;
@@ -149,7 +150,7 @@ public class TraitConfig : GameResource
 	[Property] public TraitTiers SpinBoost { get; set; } = new() { Level1 = 140f, Level2 = 260f, Level3 = 420f };
 	[Property] public float SpinReload { get; set; } = 0.12f;
 	[Property] public TraitTiers RushSpeed { get; set; } = new() { Level1 = 1.20f, Level2 = 1.40f, Level3 = 1.65f };
-	[Property] public float RushReload { get; set; } = 0.18f;
+	[Property] public float RushReload { get; set; } = 0.12f;
 	[Property] public TraitTiers DodgeChance { get; set; } = new() { Level1 = 0.10f, Level2 = 0.20f, Level3 = 0.32f };
 	[Property] public int SnapUnlockLap { get; set; } = 3;
 	[Property] public int SnapPrice { get; set; } = 4;
@@ -178,8 +179,15 @@ public class TraitTiers
 	[Property] public float Level1 { get; set; }
 	[Property] public float Level2 { get; set; }
 	[Property] public float Level3 { get; set; }
+	[Property] public float Level4 { get; set; }
 
-	public float At( int level ) => Progression.Tier( level, Level1, Level2, Level3 );
+	public float At( int level )
+	{
+		if ( level >= 4 && Level4 != 0f )
+			return Level4;
+
+		return Progression.Tier( level, Level1, Level2, Level3 );
+	}
 }
 
 public class TraitPackStats

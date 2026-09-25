@@ -82,14 +82,14 @@ public static class RoundTraits
 {
 	public static readonly RoundTrait[] All =
 	{
-		RoundTrait.Split, RoundTrait.Fan, RoundTrait.Pump,
-		RoundTrait.Load, RoundTrait.Choke, RoundTrait.Meat, RoundTrait.Rico,
-		RoundTrait.Gape, RoundTrait.Double, RoundTrait.Kick, RoundTrait.Stun,
-		RoundTrait.Heap, RoundTrait.Waste, RoundTrait.Breach, RoundTrait.Slug,
+		RoundTrait.Split, RoundTrait.Fan,
+		RoundTrait.Choke, RoundTrait.Meat, RoundTrait.Rico,
+		RoundTrait.Double, RoundTrait.Kick, RoundTrait.Stun,
+		RoundTrait.Slug,
 		RoundTrait.Buck, RoundTrait.Bore, RoundTrait.Drum, RoundTrait.Warhead, RoundTrait.Lash, RoundTrait.Pin,
 		RoundTrait.Rush, RoundTrait.Dodge, RoundTrait.Snap,
 		RoundTrait.Mirv, RoundTrait.Bloom, RoundTrait.Scorch, RoundTrait.Lance, RoundTrait.Crater, RoundTrait.Spot,
-		RoundTrait.Deep, RoundTrait.Awl, RoundTrait.Ram, RoundTrait.Mass, RoundTrait.Keel, RoundTrait.Trace,
+		RoundTrait.Deep, RoundTrait.Awl, RoundTrait.Ram, RoundTrait.Keel,
 		RoundTrait.Belt, RoundTrait.Walk, RoundTrait.Spool, RoundTrait.Sight, RoundTrait.Bite, RoundTrait.Link,
 		RoundTrait.Sear, RoundTrait.Kiln, RoundTrait.Arc, RoundTrait.Fork, RoundTrait.Shunt, RoundTrait.Linger,
 		RoundTrait.Cell,
@@ -116,7 +116,7 @@ public static class RoundTraits
 
 	public static readonly RoundTrait[] RailBranch =
 	{
-		RoundTrait.Deep, RoundTrait.Awl, RoundTrait.Ram, RoundTrait.Mass, RoundTrait.Keel, RoundTrait.Trace,
+		RoundTrait.Deep, RoundTrait.Awl, RoundTrait.Ram, RoundTrait.Keel,
 		RoundTrait.Rack, RoundTrait.Draw
 	};
 
@@ -132,6 +132,34 @@ public static class RoundTraits
 		RoundTrait.Cell, RoundTrait.Vent, RoundTrait.Cool
 	};
 
+	public static RoundTrait[] BranchOf( RoundTrait trait ) => trait switch
+	{
+		RoundTrait.Buck => ShotgunBranch,
+		RoundTrait.Bore => RailBranch,
+		RoundTrait.Drum => RifleBranch,
+		RoundTrait.Warhead => RocketBranch,
+		RoundTrait.Lash => LaserBranch,
+		_ => null
+	};
+
+	public static string UnlockList( RoundTrait trait )
+	{
+		var branch = BranchOf( trait );
+		if ( branch is null )
+			return "";
+
+		var names = new List<string>();
+		foreach ( var item in branch )
+		{
+			if ( Off( item ) )
+				continue;
+
+			names.Add( Title( item ) );
+		}
+
+		return names.Count == 0 ? "" : string.Join( ", ", names );
+	}
+
 	public static TraitPack Pack( RoundTrait trait ) => trait switch
 	{
 		RoundTrait.Split or RoundTrait.Fan or RoundTrait.Pump => TraitPack.Entry,
@@ -146,7 +174,15 @@ public static class RoundTraits
 		_ => TraitPack.Nailgun
 	};
 
-	public static bool OneShot( RoundTrait trait ) => NeedsBuck( trait ) || NeedsWarhead( trait ) || NeedsBore( trait ) || NeedsDrum( trait ) || NeedsLash( trait ) || Pack( trait ) is TraitPack.Entry or TraitPack.Junior or TraitPack.Warrior or TraitPack.Abomination;
+	public static bool Generic( RoundTrait trait ) => Pack( trait ) is TraitPack.Entry or TraitPack.Junior or TraitPack.Warrior or TraitPack.Abomination;
+
+	public static bool OneShot( RoundTrait trait )
+	{
+		if ( trait is RoundTrait.Split or RoundTrait.Meat )
+			return false;
+
+		return NeedsBuck( trait ) || NeedsWarhead( trait ) || NeedsBore( trait ) || NeedsDrum( trait ) || NeedsLash( trait ) || Generic( trait );
+	}
 
 	public static bool NeedsBuck( RoundTrait trait ) => trait is RoundTrait.Shuck or RoundTrait.Slam;
 
@@ -162,13 +198,13 @@ public static class RoundTraits
 
 	public static bool IsDeep( RoundTrait trait ) => trait is RoundTrait.Deep or RoundTrait.Awl or RoundTrait.Ram;
 
-	public static bool IsMass( RoundTrait trait ) => trait is RoundTrait.Mass or RoundTrait.Keel;
+	public static bool IsMass( RoundTrait trait ) => trait == RoundTrait.Keel;
 
-	public static bool NeedsBore( RoundTrait trait ) => IsDeep( trait ) || IsMass( trait ) || trait is RoundTrait.Trace or RoundTrait.Rack or RoundTrait.Draw;
+	public static bool NeedsBore( RoundTrait trait ) => IsDeep( trait ) || IsMass( trait ) || trait is RoundTrait.Rack or RoundTrait.Draw;
 
 	public static bool OwnsDeep( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Deep ) || loadout.Has( RoundTrait.Awl ) || loadout.Has( RoundTrait.Ram ));
 
-	public static bool OwnsMass( RunLoadout loadout ) => loadout is not null && (loadout.Has( RoundTrait.Mass ) || loadout.Has( RoundTrait.Keel ));
+	public static bool OwnsMass( RunLoadout loadout ) => loadout is not null && loadout.Has( RoundTrait.Keel );
 
 	public static bool IsSweep( RoundTrait trait ) => trait is RoundTrait.Belt or RoundTrait.Walk;
 
@@ -193,7 +229,7 @@ public static class RoundTraits
 	public static bool TooEarly( RoundTrait trait, int lap )
 		=> trait == RoundTrait.Snap && lap < GameSettings.Traits.SnapUnlockLap;
 
-	public static bool Off( RoundTrait trait ) => trait == RoundTrait.Link;
+	public static bool Off( RoundTrait trait ) => trait is RoundTrait.Link or RoundTrait.Pump or RoundTrait.Load or RoundTrait.Gape or RoundTrait.Heap or RoundTrait.Waste or RoundTrait.Breach or RoundTrait.Mass or RoundTrait.Trace;
 
 	public static bool Blocked( RoundTrait trait, RunLoadout loadout )
 	{
@@ -270,7 +306,16 @@ public static class RoundTraits
 		_ => null
 	};
 
-	public static int MaxLevel( RoundTrait trait ) => OneShot( trait ) ? 1 : GameSettings.Traits.MaxLevel;
+	public static int MaxLevel( RoundTrait trait )
+	{
+		if ( trait == RoundTrait.Split )
+			return 4;
+
+		if ( trait == RoundTrait.Meat )
+			return 2;
+
+		return OneShot( trait ) ? 1 : GameSettings.Traits.MaxLevel;
+	}
 
 	public static string Code( RoundTrait trait ) => GameSettings.Text.TraitCode( trait );
 	public static string Title( RoundTrait trait ) => GameSettings.Text.TraitTitle( trait );

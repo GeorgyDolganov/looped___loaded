@@ -71,18 +71,17 @@ public static class StatSheet
 				break;
 			}
 			case RoundTrait.Split:
-				Up( $"+{t.SplitPellets} Projectile" );
+			{
+				var pellets = t.SplitPellets is null ? 0 : (int)Gain( t.SplitPellets, rank );
+				var reload = t.SplitReload is null ? 0f : Gain( t.SplitReload, rank );
+				if ( pellets > 0 )
+					Up( pellets == 1 ? "+1 Projectile" : $"+{pellets} Projectiles" );
+				if ( reload > 0.001f )
+					Down( $"+{Fmt( reload )}s Reload" );
 				break;
+			}
 			case RoundTrait.Fan:
 				Mixed( $"+{Fmt( t.FanCone )}° Spread" );
-				break;
-			case RoundTrait.Pump:
-				Up( $"+{t.PumpPellets} Projectile" );
-				Down( $"+{Fmt( t.PumpReload )}s Reload" );
-				break;
-			case RoundTrait.Load:
-				Up( $"+{t.LoadPellets} Projectiles" );
-				Down( $"+{Fmt( t.LoadReload )}s Reload" );
 				break;
 			case RoundTrait.Choke:
 				Mixed( $"-{Fmt( t.ChokeCone )}° Spread" );
@@ -95,9 +94,6 @@ public static class StatSheet
 			case RoundTrait.Rico:
 				Up( $"+{t.RicoBounces} Bounce" );
 				break;
-			case RoundTrait.Gape:
-				Mixed( $"+{Fmt( t.GapeCone )}° Spread" );
-				break;
 			case RoundTrait.Double:
 				Note( "Two volleys per mag" );
 				Note( $"Gap {Fmt( t.DoubleGap )}s" );
@@ -108,17 +104,6 @@ public static class StatSheet
 				break;
 			case RoundTrait.Stun:
 				Up( $"+{Fmt( t.StunTime )}s Stun within {Fmt( t.StunRange )}" );
-				break;
-			case RoundTrait.Heap:
-				Up( $"+{t.HeapPellets} Projectiles" );
-				Down( $"+{Fmt( t.HeapReload )}s Reload" );
-				break;
-			case RoundTrait.Waste:
-				Up( $"+{t.WasteBonus} Damage within {Fmt( t.WasteRange )}" );
-				Down( $"-{PctPoints( t.WasteRangeCut )} Shot distance" );
-				break;
-			case RoundTrait.Breach:
-				Up( $"+{t.BreachPierce} Pierce" );
 				break;
 			case RoundTrait.Slug:
 				Up( $"+{t.SlugDamage} Damage per removed projectile" );
@@ -198,36 +183,24 @@ public static class StatSheet
 			case RoundTrait.Deep:
 				Up( $"+{t.DeepPierce} Pierce" );
 				Down( $"+{Fmt( t.DeepReload )}s Reload" );
-				Down( "Locks out MASS" );
+				Down( "Locks out KEEL" );
 				break;
 			case RoundTrait.Awl:
 				Note( "Ignores armor" );
 				Down( $"{PctDelta( t.AwlSpeed )} Projectile Speed" );
 				Down( $"+{Fmt( t.AwlReload )}s Reload" );
-				Down( "Locks out MASS" );
+				Down( "Locks out KEEL" );
 				break;
 			case RoundTrait.Ram:
 				Note( "+1 damage per body already pierced" );
 				Down( $"{PctDelta( t.RamSpeed )} Projectile Speed" );
-				Down( "Locks out MASS" );
-				break;
-			case RoundTrait.Mass:
-				Note( "One projectile" );
-				Up( $"+{t.MassDamage} Damage" );
-				Up( $"+{t.MassDamage} Damage per removed projectile" );
-				Down( $"{PctDelta( t.MassSpeed )} Projectile Speed" );
-				Down( $"+{Fmt( t.MassReload )}s Reload" );
-				Down( "Locks out DEEP" );
+				Down( "Locks out KEEL" );
 				break;
 			case RoundTrait.Keel:
 				Up( $"+{t.KeelDamage} Damage" );
 				Down( $"{PctDelta( t.KeelSpeed )} Projectile Speed" );
 				Down( "Bounces 0" );
 				Down( "Locks out DEEP" );
-				break;
-			case RoundTrait.Trace:
-				Up( $"{PctDelta( t.TraceSpeed )} Projectile Speed" );
-				Down( $"+{Fmt( t.TraceReload )}s Reload" );
 				break;
 			case RoundTrait.Belt:
 				Up( $"+{t.BeltBurst} Burst" );

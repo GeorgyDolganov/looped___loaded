@@ -161,7 +161,6 @@ public sealed class GameLoop : Component
 	float pauseStartedAt;
 	float uiClickUntil;
 	bool pendingBoss;
-	int featureTurn;
 	int shopRefreshUses;
 	readonly List<ShopOffer> offers = new();
 	static readonly string[] OfferSlots = { "Slot1", "Slot2", "Slot3", "Slot4", "Slot5", "Slot6", "Slot7", "Slot8", "Slot9" };
@@ -755,7 +754,6 @@ public sealed class GameLoop : Component
 		}
 		Kills = 0;
 		Scrap = 0;
-		featureTurn = 0;
 		shopRefreshUses = 0;
 		ShotsFired = 0;
 		Catches = 0;
@@ -1532,8 +1530,7 @@ public sealed class GameLoop : Component
 	void RollShop()
 	{
 		var loadout = Inventory.Loadout;
-		var fresh = new List<RoundTrait>();
-		var owned = new List<RoundTrait>();
+		var available = new List<RoundTrait>();
 		foreach ( var trait in RoundTraits.All )
 		{
 			if ( RoundTraits.Blocked( trait, loadout ) )
@@ -1542,14 +1539,10 @@ public sealed class GameLoop : Component
 			if ( loadout.TraitLevel( trait ) <= 0 && RoundTraits.TooEarly( trait, Lap ) )
 				continue;
 
-			var level = loadout.TraitLevel( trait );
-			if ( level >= RoundTraits.MaxLevel( trait ) )
+			if ( loadout.TraitLevel( trait ) >= RoundTraits.MaxLevel( trait ) )
 				continue;
 
-			if ( level > 0 )
-				owned.Add( trait );
-			else
-				fresh.Add( trait );
+			available.Add( trait );
 		}
 
 		var count = City.IsValid() ? City.Stats().OfferCount : GameSettings.City.MinOffers;
@@ -1559,73 +1552,15 @@ public sealed class GameLoop : Component
 		var taken = new List<RoundTrait>();
 		for ( var i = 0; i < count; i++ )
 		{
-			if ( !TryTakeTrait( fresh, owned, loadout, Scrap, taken, out var trait ) )
+			if ( !TryTakeTrait( available, loadout, Scrap, taken, out var trait ) )
 				break;
 
 			taken.Add( trait );
 			offers.Add( new ShopOffer { Trait = trait, LeftPlate = Game.Random.Int( 0, 1 ) == 0 } );
 		}
-
-		FeatureOffer( loadout );
 	}
 
-	void FeatureOffer( RunLoadout loadout )
-	{
-		if ( offers.Count == 0 || loadout is null )
-			return;
-
-		var lineup = new List<RoundTrait>();
-		if ( loadout.Has( RoundTrait.Buck ) )
-			CollectBranch( lineup, RoundTraits.ShotgunBranch, loadout );
-		if ( loadout.Has( RoundTrait.Warhead ) )
-			CollectBranch( lineup, RoundTraits.RocketBranch, loadout );
-		if ( loadout.Has( RoundTrait.Bore ) )
-			CollectBranch( lineup, RoundTraits.RailBranch, loadout );
-		if ( loadout.Has( RoundTrait.Drum ) )
-			CollectBranch( lineup, RoundTraits.RifleBranch, loadout );
-		if ( loadout.Has( RoundTrait.Lash ) )
-			CollectBranch( lineup, RoundTraits.LaserBranch, loadout );
-
-		if ( lineup.Count == 0 )
-		{
-			foreach ( var trait in RoundTraits.Roots )
-			{
-				if ( loadout.TraitLevel( trait ) >= RoundTraits.MaxLevel( trait ) )
-					continue;
-
-				lineup.Add( trait );
-			}
-		}
-
-		if ( lineup.Count == 0 )
-			return;
-
-		var pick = lineup[featureTurn % lineup.Count];
-		featureTurn++;
-		foreach ( var offer in offers )
-		{
-			if ( offer.Trait == pick )
-				return;
-		}
-
-		offers[offers.Count - 1] = new ShopOffer { Trait = pick, LeftPlate = Game.Random.Int( 0, 1 ) == 0 };
-	}
-
-	static void CollectBranch( List<RoundTrait> lineup, RoundTrait[] branch, RunLoadout loadout )
-	{
-		foreach ( var trait in branch )
-		{
-			if ( RoundTraits.Blocked( trait, loadout ) )
-				continue;
-
-			if ( loadout.TraitLevel( trait ) >= RoundTraits.MaxLevel( trait ) )
-				continue;
-
-			lineup.Add( trait );
-		}
-	}
-
-	bool TryTakeTrait( List<RoundTrait> fresh, List<RoundTrait> owned, RunLoadout loadout, int budget, List<RoundTrait> taken, out RoundTrait pick )
+	bool TryTakeTrait( List<RoundTrait> available, RunLoadout loadout, int budget, List<RoundTrait> taken, out RoundTrait pick )
 	{
 		bool Used( RoundTrait trait )
 		{
@@ -1642,27 +1577,10 @@ public sealed class GameLoop : Component
 		}
 
 		var pool = new List<RoundTrait>();
-		foreach ( var trait in fresh )
+		foreach ( var trait in available )
 		{
 			if ( !Used( trait ) )
 				pool.Add( trait );
-		}
-
-		var hadFresh = pool.Count > 0;
-		if ( pool.Count == 0 )
-		{
-			foreach ( var trait in owned )
-			{
-				if ( !Used( trait ) )
-					pool.Add( trait );
-			}
-		}
-		else if ( loadout is not null
-			&& loadout.TraitLevel( RoundTrait.Lash ) > 0
-			&& loadout.TraitLevel( RoundTrait.Lash ) < RoundTraits.MaxLevel( RoundTrait.Lash )
-			&& !Used( RoundTrait.Lash ) )
-		{
-			pool.Add( RoundTrait.Lash );
 		}
 
 		if ( pool.Count == 0 )
@@ -1686,11 +1604,7 @@ public sealed class GameLoop : Component
 		}
 
 		pick = WeightedTrait( pool, loadout );
-		if ( hadFresh )
-			fresh.Remove( pick );
-		else
-			owned.Remove( pick );
-
+		available.Remove( pick );
 		return true;
 	}
 
@@ -1761,9 +1675,13 @@ public sealed class GameLoop : Component
 			return;
 		}
 
+		var owned = Inventory.Loadout.TraitLevel( trait );
 		Scrap -= price;
 		Inventory.Loadout.Install( trait );
 		offers[index].Bought = true;
+		var added = owned <= 0 ? RoundTraits.UnlockList( trait ) : "";
+		if ( added.Length > 0 )
+			Announce( T.F( T.Announce.ShopAdded, added ) );
 		ArenaSounds.Pickup();
 		NoteProgress( ProgressGoal.BuyTrait );
 

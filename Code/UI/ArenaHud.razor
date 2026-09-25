@@ -489,11 +489,21 @@
 						<div class="card shop-offer @OfferClass(trait, bought)" style="border-color: @TraitBorder(trait)" @key="@((int)trait)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
 							<img class="shop-plate" src="@(Loop.Offers[index].LeftPlate ? "ui/Arena UI/element_shop_left_btn.png" : "ui/Arena UI/element_shop_right_btn.png")" />
 							<div class="shop-body">
-								<label class="title">@RoundTraits.Title(trait)</label>
+								<div class="shop-name">
+									<label class="title">@RoundTraits.Title(trait)</label>
+									@if ( RoundTraits.BranchOf( trait ) is not null )
+									{
+										<label class="weapon">@GameSettings.Text.Shop.Weapon</label>
+									}
+								</div>
 								<label class="rarity" style="color: @TraitInk(trait)">@RoundTraits.Rarity(trait)</label>
-								@if ( OfferBlurb( trait, bought ) is { Length: > 0 } blurb )
+								@if ( OfferBlurb( trait ) is { Length: > 0 } blurb )
 								{
 									<label class="blurb">@blurb</label>
+								}
+								@if ( OfferUnlocks( trait ) is { Length: > 0 } opens )
+								{
+									<label class="blurb">@opens</label>
 								}
 								<div class="stats">
 									@foreach ( var line in OfferStats( trait, bought ) )
@@ -502,7 +512,13 @@
 									}
 								</div>
 							</div>
-							<label class="cost">@OfferCost(trait, bought)</label>
+							<div class="shop-foot">
+								@if ( OfferRank( trait, bought ) is { Length: > 0 } rank )
+								{
+									<label class="rank">@rank</label>
+								}
+								<label class="cost">@OfferCost(trait, bought)</label>
+							</div>
 						</div>
 					}
 				</div>
@@ -1041,18 +1057,26 @@
 		return StatSheet.Effects( trait, rank );
 	}
 
-	string OfferBlurb( RoundTrait trait, bool bought )
+	string OfferBlurb( RoundTrait trait )
 	{
 		var text = RoundTraits.Blurb( trait );
-		if ( string.IsNullOrWhiteSpace( text ) )
-			return "";
+		return string.IsNullOrWhiteSpace( text ) ? "" : text;
+	}
 
-		if ( RoundTraits.OneShot( trait ) )
-			return text;
+	string OfferUnlocks( RoundTrait trait )
+	{
+		var names = RoundTraits.UnlockList( trait );
+		return names.Length == 0 ? "" : GameSettings.Text.F( GameSettings.Text.Shop.Unlocks, names );
+	}
+
+	string OfferRank( RoundTrait trait, bool bought )
+	{
+		if ( RoundTraits.OneShot( trait ) && !RoundTraits.Generic( trait ) )
+			return "";
 
 		var level = TraitLevel( trait );
 		var shown = bought ? Math.Max( 1, level ) : Math.Min( RoundTraits.MaxLevel( trait ), level + 1 );
-		return GameSettings.Text.F( GameSettings.Text.Shop.OfferBlurb, text, shown );
+		return GameSettings.Text.F( GameSettings.Text.Shop.OfferRank, shown );
 	}
 
 	RoundTrait? ShopPreview
@@ -1114,9 +1138,20 @@
 
 	string TraitInk( RoundTrait trait )
 	{
+		var pack = RoundTraits.Pack( trait );
+		if ( pack is TraitPack.Rifle or TraitPack.Shotgun or TraitPack.Entry )
+			return "rgb(245, 245, 245)";
+
+		if ( pack == TraitPack.Abomination )
+			return "rgb(226, 182, 255)";
+
 		var c = RoundTraits.Color( trait );
-		const float dull = 0.62f;
-		return $"rgb({(int)(c.r * dull * 255)},{(int)(c.g * dull * 255)},{(int)(c.b * dull * 255)})";
+		if ( c.b > 0.7f && c.r < 0.1f && c.g < 0.6f )
+			c = Color.Lerp( c, Color.White, 0.42f );
+		else
+			c *= 0.62f;
+
+		return $"rgb({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)})";
 	}
 
 	float auraX;
@@ -1857,6 +1892,7 @@
 		top: 15%;
 		width: 100%;
 		justify-content: center;
+		z-index: 50;
 		transition: opacity 0.18s ease-out;
 	}
 
@@ -1866,6 +1902,9 @@
 		font-weight: 700;
 		letter-spacing: 4px;
 		color: #f0b429;
+		max-width: 1100px;
+		text-align: center;
+		white-space: normal;
 		text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0px 2px 0 #000, 0px -2px 0 #000, 2px 0px 0 #000, -2px 0px 0 #000;
 	}
 
@@ -3344,7 +3383,42 @@
 		margin-bottom: 22px;
 	}
 
-	.shop-offer .cost {
+	.shop-name {
+		flex-direction: row;
+		align-items: flex-end;
+		justify-content: space-between;
+		width: 100%;
+	}
+
+	.shop-offer .weapon {
+		margin-left: 8px;
+		flex-shrink: 0;
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		white-space: nowrap;
+		color: #fff;
+	}
+
+	.shop-foot {
+		position: relative;
+		z-index: 1;
+		flex-direction: row;
+		align-items: flex-end;
+		justify-content: flex-end;
+		width: 100%;
+	}
+
+	.shop-offer .rank {
+		margin-right: auto;
+		margin-left: 4px;
+		font-size: 19px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #fff;
+	}
+
+	.shop-offer .shop-foot .cost {
 		position: relative;
 		z-index: 1;
 		align-self: flex-end;
@@ -3545,11 +3619,21 @@
 		margin-top: 6px;
 	}
 
+	.shop-offer .shop-name .title {
+		white-space: nowrap;
+	}
+
 	.card .blurb {
 		font-size: 19px;
 		color: #8e8b86;
 		margin-top: 8px;
 		margin-bottom: 0px;
+	}
+
+	.card.shop-offer .blurb,
+	.card.shop-offer.hot .blurb,
+	.card.shop-offer:hover .blurb {
+		color: #fff;
 	}
 
 	.card .stats {
