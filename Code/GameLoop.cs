@@ -174,17 +174,31 @@ public sealed class GameLoop : Component
 	public int TaskDone => progress.CompletedSteps.Count;
 	public int TaskTotal => ProgressTrack.Total;
 
-	public string SlotBlurb( int index )
+	public bool SlotHasProgress( int index )
+	{
+		var save = SlotInfo( index );
+		return save is not null && save.HasProgress;
+	}
+
+	public string SlotBiomass( int index )
 	{
 		var save = SlotInfo( index );
 		if ( save is null || !save.HasProgress )
 			return T.Saves.Empty;
 
-		var line = Locations.LineBlurb( save.BestLine );
-		return line.Length > 0
-			? T.F( T.Saves.WithLine, save.Warehouse, save.BestExtract, line )
-			: T.F( T.Saves.WithBuildings, save.Warehouse, save.BestExtract, save.BuildingCount );
+		return T.F( "TOTAL BIOMASS {0}", save.FedBiomass );
 	}
+
+	public string SlotOrgans( int index )
+	{
+		var save = SlotInfo( index );
+		if ( save is null || !save.HasProgress )
+			return "";
+
+		return T.F( "{0} ORGANS", save.BuildingCount );
+	}
+
+	public string SlotBlurb( int index ) => SlotHasProgress( index ) ? SlotBiomass( index ) + SlotOrgans( index ) : SlotBiomass( index );
 
 	public bool HasActiveSave => SlotInfo( ActiveSlot ) is not null && SlotInfo( ActiveSlot ).HasProgress;
 
@@ -255,9 +269,7 @@ public sealed class GameLoop : Component
 		SaveStore.SetLastSlot( ActiveSlot );
 		ApplySave( SaveStore.Read( ActiveSlot ) );
 		RefreshSaves();
-		MenuView = MenuPage.Title;
-		ArenaSounds.MenuOk();
-		Announce( T.F( T.Announce.SlotPicked, ActiveSlot + 1 ) );
+		OpenCityFromMenu();
 	}
 
 	public void DeleteSave( int index )
