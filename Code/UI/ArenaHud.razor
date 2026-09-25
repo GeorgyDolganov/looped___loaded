@@ -134,9 +134,7 @@
 					<img class="altar-back" src="ui/Arena UI/altar_back.png" />
 				</div>
 				<div class="bottom" style="bottom: @(OrganLift)px">
-					@if ( Loop.City.Building )
-					{
-						<div class="blueprint">
+					<div class="blueprint">
 							<img class="blueprint-back" src="ui/Arena UI/default_element_back.png" />
 							<div class="blueprint-face">
 								<img class="organ-art @KindClass(Loop.City.Selected)" src="@OrganArt(Loop.City.Selected)" />
@@ -148,7 +146,6 @@
 								</div>
 							</div>
 						</div>
-					}
 				</div>
 				<div class="altar-notches">
 					@foreach ( var kind in Buildings.All )
@@ -159,7 +156,7 @@
 							{
 								<img class="notch-lamp" src="ui/Arena UI/selection_lamp.png" />
 							}
-							<div class="slot @KindClass(kind) @(kind == Loop.City.Selected ? "selected chambered" : "") @(Loop.City.Building ? "" : "idle")">
+							<div class="slot @KindClass(kind) @(kind == Loop.City.Selected ? "selected chambered" : "")">
 								<img class="organ-art @KindClass(kind)" src="@OrganArt(kind)" />
 								<div class="text">
 									<label class="name">@Buildings.Title(kind)</label>

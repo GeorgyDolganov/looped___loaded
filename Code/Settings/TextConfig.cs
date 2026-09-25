@@ -644,8 +644,8 @@ public class HelpCopy
 	[Property] public string Paused { get; set; } = "1 RESUME  ·  2 MENU  ·  3 QUIT";
 	[Property] public string Saves { get; set; } = "1-3 SELECT  ·  SPACE LOAD  ·  R DELETE  ·  ESC BACK";
 	[Property] public string Menu { get; set; } = "1 PLAY  ·  2 ALTAR  ·  3 SAVES  ·  ESC QUIT";
-	[Property] public string CityBuild { get; set; } = "LMB PLACE/REMOVE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  E INJECT  ·  SPACE/R RUN  ·  ESC PAUSE";
-	[Property] public string CityShoot { get; set; } = "LMB INJECT  ·  E BUILD  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
+	[Property] public string CityBuild { get; set; } = "LMB PLACE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
+	[Property] public string CityShoot { get; set; } = "LMB INJECT  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
 	[Property] public string DecideLapBoss { get; set; } = "CLICK  ·  1 ALTAR  ·  2 STAY  ·  3 FIGHT THE {0}  ·  ESC PAUSE";
 	[Property] public string DecideLap { get; set; } = "CLICK  ·  1 ALTAR  ·  2 STAY  ·  ESC PAUSE";
 	[Property] public string DecideRingNext { get; set; } = "CLICK  ·  1 ALTAR  ·  2 NEXT RING  ·  ESC PAUSE";
