@@ -608,8 +608,10 @@ public class DecideCopy
 	[Property] public string DeadBurnedMany { get; set; } = "{0} ROUNDS BURNED";
 	[Property] public string DeadCityBlurb { get; set; } = "Leave the ring. Build with what you already banked.";
 	[Property] public string Extracted { get; set; } = "EXTRACTED";
-	[Property] public string ExtractedOne { get; set; } = "{0} ROUND BANKED  ·  BEST {1}";
-	[Property] public string ExtractedMany { get; set; } = "{0} ROUNDS BANKED  ·  BEST {1}";
+	[Property] public string ExtractedRoundsLabel { get; set; } = "ROUNDS";
+	[Property] public string ExtractedBiomassLabel { get; set; } = "EXTRACTED BIOMASS";
+	[Property] public string ExtractedOne { get; set; } = "{0} ROUND";
+	[Property] public string ExtractedMany { get; set; } = "{0} ROUNDS";
 	[Property] public string ExtractedCityBlurb { get; set; } = "Return to construction.";
 	[Property] public string ShowcaseKicker { get; set; } = "DONE";
 	[Property] public string ShowcaseCount { get; set; } = "{0} / {1}";
