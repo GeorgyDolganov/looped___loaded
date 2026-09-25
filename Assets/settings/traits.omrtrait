@@ -1,5 +1,7 @@
 {
   "MaxLevel": 3,
+  "RefreshPrice": 2,
+  "RefreshStep": 1,
   "BaseDamage": 1,
   "MaxBouncesBase": 1,
   "EnergyBase": 5500,
