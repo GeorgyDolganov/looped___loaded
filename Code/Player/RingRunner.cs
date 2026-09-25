@@ -20,7 +20,7 @@ public sealed class RingRunner : Component
 	public int Lap => 1 + (int)(TravelledArc / (MathF.Tau * Radius));
 	public float LapFraction => (TravelledArc / (MathF.Tau * Radius)) % 1f;
 	public bool Dashing => dashElapsed < DashDuration;
-	public float DashCharge => DashCooldown <= 0f ? 1f : MathF.Min( 1f, (Time.Now - lastDash) / DashCooldown );
+	public float DashCharge => DashCooldown <= 0f ? 1f : MathF.Min( 1f, (RealTime.Now - lastDash) / DashCooldown );
 	public bool SlowUnlocked { get; set; }
 	public float SlowCharge { get; private set; } = 1f;
 	public bool Slowing { get; private set; }
@@ -111,7 +111,7 @@ public sealed class RingRunner : Component
 		if ( DashCharge < 1f )
 			return false;
 
-		lastDash = Time.Now;
+		lastDash = RealTime.Now;
 		dashElapsed = 0f;
 		dashSpent = 0f;
 		return true;
@@ -170,14 +170,15 @@ public sealed class RingRunner : Component
 		}
 
 		TickClearBoost();
-		var arc = Speed * SpeedScale * Time.Delta;
+		var play = RealTime.Delta;
+		var arc = Speed * SpeedScale * play;
 		TickSlow();
 		ApplyTimeScale();
 
 		var dashArc = 0f;
 		if ( Dashing )
 		{
-			dashElapsed = MathF.Min( DashDuration, dashElapsed + Time.Delta );
+			dashElapsed = MathF.Min( DashDuration, dashElapsed + play );
 			var eased = 1f - MathF.Pow( 1f - dashElapsed / DashDuration, 3f );
 			var target = DashDistance * eased;
 			dashArc = target - dashSpent;
@@ -294,7 +295,7 @@ public sealed class RingRunner : Component
 		}
 
 		var hurt = Loop.IsValid() ? Loop.HurtAmount : 0f;
-		var blink = Loop.IsValid() && Loop.Invulnerable && (Time.Now * 16f % 1f) < 0.5f;
+		var blink = Loop.IsValid() && Loop.Invulnerable && (RealTime.Now * 16f % 1f) < 0.5f;
 
 		foreach ( var mesh in meshes )
 		{
@@ -313,7 +314,7 @@ public sealed class RingRunner : Component
 	void TickClearBoost()
 	{
 		var cleared = Loop.IsValid() && Loop.CanSkipLap;
-		var step = ClearSpeedRamp <= 0f ? 1f : Time.Delta / ClearSpeedRamp;
+		var step = ClearSpeedRamp <= 0f ? 1f : RealTime.Delta / ClearSpeedRamp;
 		clearBoost = cleared ? MathF.Min( 1f, clearBoost + step ) : MathF.Max( 0f, clearBoost - step );
 	}
 
@@ -354,6 +355,7 @@ public sealed class RingRunner : Component
 		if ( !Scene.IsValid() )
 			return;
 
+		// Time.* slows enemies and their shots. The player side reads RealTime.
 		Scene.TimeScale = Slowing ? SlowSpeedScale : 1f;
 	}
 

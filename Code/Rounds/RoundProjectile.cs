@@ -129,7 +129,7 @@ public sealed class RoundProjectile : Component
 
 		if ( !Loop.IsFrozen )
 		{
-			var toTravel = Speed * Time.Delta;
+			var toTravel = Speed * RealTime.Delta;
 			var steps = 0;
 			var cap = Math.Max( 1, GraphicsProfile.MaxProjectileSteps );
 			while ( toTravel > 0.001f )
@@ -516,7 +516,9 @@ public sealed class RoundProjectile : Component
 			return;
 
 		effect.MaxParticles = GraphicsProfile.MaxParticles;
-		effect.TimeScale = Loop.IsValid() && Loop.IsFrozen ? 0f : 1f;
+		var frozen = Loop.IsValid() && Loop.IsFrozen;
+		var scale = Scene.IsValid() ? Scene.TimeScale : 1f;
+		effect.TimeScale = frozen || scale < 0.05f ? 0f : 1f / scale;
 		effect.InitialVelocity = new Vector3( -Direction.x, -Direction.y, 0f ) * 140f;
 	}
 
@@ -613,7 +615,7 @@ sealed class ShotSparkFade : Component
 
 	public void Arm( float life )
 	{
-		dieAt = Time.Now + life;
+		dieAt = RealTime.Now + life;
 		var emitter = GetComponent<ParticleEmitter>();
 		if ( emitter.IsValid() )
 		{
@@ -624,7 +626,7 @@ sealed class ShotSparkFade : Component
 
 	protected override void OnUpdate()
 	{
-		if ( Time.Now >= dieAt )
+		if ( RealTime.Now >= dieAt )
 			GameObject.Destroy();
 	}
 }

@@ -118,6 +118,7 @@ public static class WarlordLook
 		if ( !skin.IsValid() )
 			return;
 
+		KeepRealtime( skin );
 		skin.UseAnimGraph = false;
 		var name = Locomotion( skin.Sequence.Name, velocity, look );
 		if ( skin.Sequence.Name != name )
@@ -144,12 +145,13 @@ public static class WarlordLook
 			return;
 
 		overlay.UseAnimGraph = false;
+		KeepRealtime( overlay );
 		overlay.Sequence.Name = "shoot";
 		overlay.Sequence.Looping = false;
 		overlay.Sequence.Time = 0f;
 		Hide( overlay );
 		var duration = overlay.Sequence.Duration;
-		shootUntil = Time.Now + (duration > 0.05f ? duration : 13f / 25f);
+		shootUntil = RealTime.Now + (duration > 0.05f ? duration : 13f / 25f);
 	}
 
 	public static void Face( SkinnedModelRenderer skin, Vector3 velocity, Vector3 look )
@@ -173,12 +175,21 @@ public static class WarlordLook
 
 		var overlay = FindOverlay( skin );
 		if ( overlay.IsValid() )
+		{
+			KeepRealtime( overlay );
 			Hide( overlay );
+		}
 
-		if ( shootUntil < 0f || Time.Now >= shootUntil )
+		if ( shootUntil < 0f || RealTime.Now >= shootUntil )
 			return;
 
 		CopyUpper( skin, overlay );
+	}
+
+	static void KeepRealtime( SkinnedModelRenderer skin )
+	{
+		var scale = skin.Scene.IsValid() ? skin.Scene.TimeScale : 1f;
+		skin.PlaybackRate = scale > 0.05f ? 1f / scale : 1f;
 	}
 
 	static string Locomotion( string current, Vector3 velocity, Vector3 look )

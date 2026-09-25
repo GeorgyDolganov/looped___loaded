@@ -68,7 +68,7 @@ public sealed class ArenaCamera : Component
 
 	void Frame( Vector3 target, float distance, bool city )
 	{
-		var blend = MathF.Min( 1f, Time.Delta * FollowSmoothing );
+		var blend = MathF.Min( 1f, RealTime.Delta * FollowSmoothing );
 		var dist = MathF.Max( 80f, distance );
 		focus = framingCity == city
 			? focus.LerpTo( target, blend )

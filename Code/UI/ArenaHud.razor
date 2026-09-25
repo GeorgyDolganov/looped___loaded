@@ -1027,7 +1027,10 @@
 				parts.Add( new CityBonus( "DASH", $"-{faster}%" ) );
 			}
 			if ( stats.SlowUnlocked )
-				parts.Add( new CityBonus( "SLOW", "ENABLED" ) );
+			{
+				var seconds = 1f / MathF.Max( 0.001f, stats.SlowDrain );
+				parts.Add( new CityBonus( "SLOW", $"{seconds.ToString( "0.##", System.Globalization.CultureInfo.InvariantCulture )}s" ) );
+			}
 			var cards = stats.OfferCount - GameSettings.City.MinOffers;
 			if ( cards > 0 )
 				parts.Add( new CityBonus( "CARDS", $"+{cards}" ) );

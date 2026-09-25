@@ -65,7 +65,7 @@ public sealed class RoundEcho : Component
 			return;
 		}
 
-		var remain = Speed * Time.Delta;
+		var remain = Speed * RealTime.Delta;
 		while ( remain > 0.001f && cursor < path.Count )
 		{
 			var to = path[cursor] - flat;

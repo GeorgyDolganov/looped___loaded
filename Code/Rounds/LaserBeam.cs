@@ -32,7 +32,7 @@ public sealed class LaserBeam : Component
 		recipe = gun;
 		tickBudget = Math.Max( 1, gun.BeamTicks );
 		ticksLeft = tickBudget;
-		nextTick = Time.Now + MathF.Max( 0.05f, gun.BeamTick );
+		nextTick = RealTime.Now + MathF.Max( 0.05f, gun.BeamTick );
 		steer = true;
 		sear.Clear();
 		lastMains.Clear();
@@ -79,7 +79,7 @@ public sealed class LaserBeam : Component
 		var cone = recipe.Cone;
 		var geometry = loop.Geometry;
 		var rank = Math.Max( 1, recipe.BeamRank );
-		var seed = (int)(Time.Now * (9f + rank * 7f));
+		var seed = (int)(RealTime.Now * (9f + rank * 7f));
 		var bolts = new List<List<Vector2>>();
 		var range = recipe.BeamRange;
 		if ( recipe.PointAim && loop.Aim.IsValid() )
@@ -171,7 +171,7 @@ public sealed class LaserBeam : Component
 
 	void Strike()
 	{
-		if ( ticksLeft <= 0 || Time.Now < nextTick )
+		if ( ticksLeft <= 0 || RealTime.Now < nextTick )
 			return;
 
 		var hit = Math.Max( 1, recipe.BeamHit );
@@ -236,7 +236,7 @@ public sealed class LaserBeam : Component
 		var gap = MathF.Max( 0.05f, recipe.BeamTick );
 		if ( kiln )
 			gap *= recipe.BeamKiln;
-		nextTick = Time.Now + gap;
+		nextTick = RealTime.Now + gap;
 
 		if ( recipe.Splash > 1f && nearest.IsValid() )
 			RoundCombat.Blast( loop, nearestAt, recipe.Splash, Math.Max( 1, recipe.SplashDamage ), null, ShotColors.Player, recipe.FriendlySplash );
@@ -296,7 +296,7 @@ public sealed class LaserBeam : Component
 
 	void Draw( List<List<Vector2>> bolts, int rank )
 	{
-		var wave = MathF.Abs( MathF.Sin( Time.Now * (14f + rank * 5f) ) );
+		var wave = MathF.Abs( MathF.Sin( RealTime.Now * (14f + rank * 5f) ) );
 		var pulse = 0.2f + 0.8f * wave;
 		var charge = tickBudget <= 1 ? 0f : (tickBudget - Math.Max( ticksLeft, 1 )) / (float)(tickBudget - 1);
 		var hue = Color.Lerp( ChargeFull, ChargeEmpty, charge );
@@ -623,12 +623,12 @@ public sealed class PinLinger : Component
 		var hang = go.AddComponent<PinLinger>();
 		hang.target = enemy;
 		hang.damage = amount;
-		hang.due = Time.Now + delay;
+		hang.due = RealTime.Now + delay;
 	}
 
 	protected override void OnUpdate()
 	{
-		if ( Time.Now < due )
+		if ( RealTime.Now < due )
 			return;
 
 		if ( target.IsValid() && target.Alive )

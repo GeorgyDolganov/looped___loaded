@@ -790,6 +790,13 @@ public sealed class CityBoard : Component
 			return;
 		}
 
+		if ( Selected == BuildingKind.Brake && Progression.SlowAtCap( Stats().SlowDrain ) )
+		{
+			ArenaSounds.Deny();
+			Loop?.Announce( GameSettings.Text.City.SlowCap );
+			return;
+		}
+
 		if ( Selected == BuildingKind.Showcase && Stats().OfferCount >= GameSettings.City.MaxOffers )
 		{
 			ArenaSounds.Deny();

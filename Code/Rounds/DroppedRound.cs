@@ -73,7 +73,7 @@ public sealed class DroppedRound : Component
 		if ( gap <= StopGap )
 			return playerArc > 0.001f;
 
-		var closing = (playerArc + ChaseSpeed * Time.Delta + dashArc) / track;
+		var closing = (playerArc + ChaseSpeed * RealTime.Delta + dashArc) / track;
 		return closing >= gap;
 	}
 
@@ -87,7 +87,7 @@ public sealed class DroppedRound : Component
 			return;
 
 		var ang = MathF.Atan2( Flat.y, Flat.x );
-		var step = (ChaseSpeed * Time.Delta + MathF.Max( 0f, dashArc )) / track;
+		var step = (ChaseSpeed * RealTime.Delta + MathF.Max( 0f, dashArc )) / track;
 		SetFlat( ArenaGeometry.FromAngle( ang + MathF.Min( step, gap - StopGap ) ) * track );
 	}
 

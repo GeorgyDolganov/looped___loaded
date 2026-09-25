@@ -76,6 +76,8 @@ public static class Progression
 
 	public static bool DashAtCap( float scale ) => scale <= C.DashScaleFloor + 0.001f;
 
+	public static bool SlowAtCap( float drain ) => drain <= C.SlowDrainFloor + 0.001f;
+
 	public static float SlowDrain( int brake )
 	{
 		if ( brake <= 0 )

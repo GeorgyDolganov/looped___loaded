@@ -219,6 +219,7 @@
     "Removed": "{0} REMOVED",
     "WarehouseEmpty": "NOT ENOUGH BIOMASS",
     "DashCap": "DASH COOLDOWN CAPPED",
+    "SlowCap": "SLOW DURATION CAPPED",
     "CardCap": "ONLY 5 CARDS",
     "FrameHits": "FRAME  ·  {0} HITS TO WORK",
     "ClickToCraft": "Click to Craft",
@@ -764,7 +765,7 @@
       "Title": "LUNGS",
       "Payoff": "SLOW",
       "Promise": "UNLOCKS THE SLOW METER",
-      "Blurb": "RMB to slow down time. More buildings increase the duration of the slow effect."
+      "Blurb": "RMB slows enemies and their shots. Caps at 4.55s."
     },
     "Showcase": {
       "Title": "LIVER",

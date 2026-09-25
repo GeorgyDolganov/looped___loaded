@@ -133,12 +133,13 @@ public sealed class RoundInventory : Component
 		if ( !Loop.IsValid() || Loop.IsFrozen )
 			return;
 
-		ReloadLeft = MathF.Max( 0f, ReloadLeft - Time.Delta );
-		cycleLeft = MathF.Max( 0f, cycleLeft - Time.Delta );
+		var play = RealTime.Delta;
+		ReloadLeft = MathF.Max( 0f, ReloadLeft - play );
+		cycleLeft = MathF.Max( 0f, cycleLeft - play );
 
 		if ( doubleLeft > 0.001f )
 		{
-			doubleLeft = MathF.Max( 0f, doubleLeft - Time.Delta );
+			doubleLeft = MathF.Max( 0f, doubleLeft - play );
 			if ( doubleLeft <= 0.001f && doubleVolley is not null )
 			{
 				doubleVolley.Hold = false;
