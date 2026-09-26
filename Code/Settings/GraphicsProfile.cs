@@ -40,6 +40,7 @@ public static class GraphicsProfile
 	public static bool PostLook { get; private set; } = true;
 	public static float ChromaticScale { get; private set; } = 1f;
 	public static float SharpenScale { get; private set; } = 1f;
+	public static bool SceneSmoke { get; private set; } = true;
 
 	public static void Use( GraphicsPreset preset )
 	{
@@ -48,15 +49,15 @@ public static class GraphicsProfile
 		{
 			case GraphicsPreset.Low:
 				Fill( 8, 4, 1, 6, 2, 0, 8, false, false, 0f, 0, 0, 6, 2, 0f, 0, false, false,
-					false, 1, false, false, false, false, 0f, false, false, 0f, 0f );
+					false, 1, false, false, false, false, 0f, false, false, 0f, 0f, false );
 				break;
 			case GraphicsPreset.Medium:
 				Fill( 24, 12, 2, 10, 4, 12, 16, true, true, 0.5f, 16, 2, 4, 4, 1f, 8, false, true,
-					true, 1, false, false, false, true, 0.5f, false, true, 0f, 0f );
+					true, 1, false, false, false, true, 0.5f, false, true, 0f, 0f, false );
 				break;
 			default:
 				Fill( 56, 32, 3, 20, 8, 20, 48, true, true, 1f, 64, 1, 3, 4, 1f, 18, true, true,
-					true, 0, true, true, true, true, 1f, true, true, 1f, 1f );
+					true, 0, true, true, true, true, 1f, true, true, 1f, 1f, true );
 				break;
 		}
 	}
@@ -67,7 +68,7 @@ public static class GraphicsProfile
 		int faceStride, int avoidStride, int projectileSteps, float organMotion,
 		int glassBits, bool glassRests, bool finishPulse,
 		bool sunShadows, int cascades, bool contact, bool localShadows, bool localFog,
-		bool bloom, float bloomScale, bool autoExposure, bool postLook, float chromatic, float sharpen )
+		bool bloom, float bloomScale, bool autoExposure, bool postLook, float chromatic, float sharpen, bool smoke )
 	{
 		GibAliveCap = gibAlive;
 		GibFrameCap = gibFrame;
@@ -98,5 +99,6 @@ public static class GraphicsProfile
 		PostLook = postLook;
 		ChromaticScale = chromatic;
 		SharpenScale = sharpen;
+		SceneSmoke = smoke;
 	}
 }

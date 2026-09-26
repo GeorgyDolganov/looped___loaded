@@ -38,11 +38,18 @@ public static class GraphicsApply
 		public float Sharpen;
 	}
 
+	sealed class SmokeSnap
+	{
+		public GameObject Object;
+		public bool Enabled;
+	}
+
 	static readonly List<SunSnap> suns = new();
 	static readonly List<LocalSnap> locals = new();
 	static readonly List<BloomSnap> blooms = new();
 	static readonly List<ToneSnap> tones = new();
 	static readonly List<LookSnap> looks = new();
+	static readonly List<SmokeSnap> smokes = new();
 	static readonly Dictionary<PointLight, float> shotRadius = new();
 	static bool captured;
 
@@ -142,6 +149,18 @@ public static class GraphicsApply
 				Sharpen = look.Sharpen
 			} );
 		}
+
+		foreach ( var go in scene.GetAllObjects( false ) )
+		{
+			if ( !go.IsValid() || go.Name != "Smoke" )
+				continue;
+
+			smokes.Add( new SmokeSnap
+			{
+				Object = go,
+				Enabled = go.Enabled
+			} );
+		}
 	}
 
 	static void RememberLocal( Light light )
@@ -205,6 +224,14 @@ public static class GraphicsApply
 			look.Look.Intensity = GraphicsProfile.PostLook ? look.Intensity : 0f;
 			look.Look.Chromatic = look.Chromatic * GraphicsProfile.ChromaticScale;
 			look.Look.Sharpen = look.Sharpen * GraphicsProfile.SharpenScale;
+		}
+
+		foreach ( var smoke in smokes )
+		{
+			if ( !smoke.Object.IsValid() )
+				continue;
+
+			smoke.Object.Enabled = GraphicsProfile.SceneSmoke && smoke.Enabled;
 		}
 
 		SyncShots();
