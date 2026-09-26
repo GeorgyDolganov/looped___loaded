@@ -1,7 +1,7 @@
 {
   "Id": "PIN",
   "Title": "BLEED",
-  "Blurb": "Any damage marks the body. The bleed lasts 3s / 5s / 8s.",
+  "Blurb": "Any damage marks the body. It loses 1 health each second for 3s / 5s / 8s.",
   "Icon": "ui/traits/stick.png",
   "Pack": "Nailgun",
   "MaxLevel": 3,
@@ -10,17 +10,13 @@
   "UnlockLap": 0,
   "Price": 0,
   "OwnedWeight": 0,
-  "Hook": "Pin",
-  "Flags": [
-    "Nail"
-  ],
   "Requires": [],
   "Excludes": [],
   "Mods": [],
   "Notes": [],
   "Cap": 3,
   "ShownTitle": "BLEED",
-  "ShownBlurb": "Any damage marks the body. The bleed lasts 3s / 5s / 8s.",
+  "ShownBlurb": "Any damage marks the body. It loses 1 health each second for 3s / 5s / 8s.",
   "IconPath": "ui/traits/stick.png",
   "__references": [],
   "__version": 0

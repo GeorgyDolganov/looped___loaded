@@ -234,7 +234,7 @@
 | Pack | Nailgun |
 | InPool | yes |
 | MaxLevel | 3 |
-| Blurb | Any damage marks the body. The bleed lasts 3s / 5s / 8s and adds no damage. |
+| Blurb | Any damage marks the body. It loses 1 health each second for 3s / 5s / 8s. |
 
 ## Rifle
 

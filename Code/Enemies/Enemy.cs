@@ -61,6 +61,8 @@ public sealed class Enemy : Component
 	Vector2 moveVelocity;
 	float hitAt = -99f;
 	float bleedUntil = -99f;
+	float nextBleed;
+	bool fromBleed;
 	readonly List<(ModelRenderer Renderer, Color Tint)> dressed = new();
 	readonly List<Vector3> circle = new( 21 );
 	readonly List<Vector3> span = new( 2 );
@@ -285,7 +287,7 @@ public sealed class Enemy : Component
 			return;
 		}
 
-		if ( amount > 0 )
+		if ( amount > 0 && !fromBleed )
 			RefreshBleed();
 
 		ArenaSounds.Flesh( world );
@@ -307,7 +309,21 @@ public sealed class Enemy : Component
 			2 => 5f,
 			_ => 3f
 		};
+		var fresh = Time.Now >= bleedUntil;
 		bleedUntil = Time.Now + seconds;
+		if ( fresh || nextBleed <= Time.Now )
+			nextBleed = Time.Now + 1f;
+	}
+
+	void TickBleed()
+	{
+		if ( Time.Now >= bleedUntil || Time.Now < nextBleed )
+			return;
+
+		nextBleed = Time.Now + 1f;
+		fromBleed = true;
+		Damage( 1, null );
+		fromBleed = false;
 	}
 
 	void Die()
@@ -427,6 +443,10 @@ public sealed class Enemy : Component
 		Move();
 		ThinkShoot();
 		ThinkMelee();
+		TickBleed();
+		if ( !Alive )
+			return;
+
 		Paint();
 	}
 
@@ -444,6 +464,8 @@ public sealed class Enemy : Component
 			attackReadyAt += dt;
 		if ( bleedUntil > 0f )
 			bleedUntil += dt;
+		if ( nextBleed > 0f )
+			nextBleed += dt;
 		if ( flankUntil > 0f )
 			flankUntil += dt;
 
@@ -681,6 +703,9 @@ public sealed class Enemy : Component
 
 	void Paint()
 	{
+		if ( !Alive )
+			return;
+
 		RebuildVisuals();
 
 		var flash = MathF.Max( 0f, 1f - (Time.Now - hitAt) * 6f );
@@ -875,6 +900,8 @@ public sealed class Enemy : Component
 
 		var ratio = MaxHealth <= 0 ? 0f : Math.Clamp( Health / (float)MaxHealth, 0f, 1f );
 		var tint = Color.Lerp( HealthTint( ratio ), HurtTint, flash );
+		if ( Bleeding )
+			tint = Color.Lerp( tint, new Color( 0.85f, 0.05f, 0.08f ), 0.7f );
 		var camera = Scene.Camera;
 		var rot = camera.IsValid() ? camera.WorldRotation : Rotation.Identity;
 		var boss = Locations.IsBoss( Kind );

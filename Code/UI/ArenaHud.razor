@@ -26,14 +26,35 @@
 		@if ( !Loop.InCity && !Loop.InMenu && Loop.Inventory.IsValid() )
 		{
 			<div class="run-left">
-				<div class="hud-panel lap-panel">
-					<img class="lap-back" src="ui/Arena UI/element_back_double.png" />
-					<div class="lap-face">
-						<label class="place">@(Loop.InBossFight ? Loop.BossName : "ROUND")</label>
-						<label class="lap-value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
+				<div class="run-stack">
+					<div class="hud-panel lap-panel">
+						<img class="lap-back" src="ui/Arena UI/element_back_double.png" />
+						<div class="lap-face">
+							<label class="place">@(Loop.InBossFight ? Loop.BossName : "ROUND")</label>
+							<label class="lap-value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
+						</div>
+						<div class="lap-side">
+							<label class="lap-clock">@TimeText</label>
+						</div>
 					</div>
-					<div class="lap-side">
-						<label class="lap-clock">@TimeText</label>
+
+					<div class="hud-panel upgrades-panel">
+						<img class="upgrades-back" src="ui/Arena UI/element_back_three_floors.png" />
+						<div class="upgrades-title">
+							<label>Upgrades</label>
+						</div>
+						<div class="upgrades-weapons">
+							@foreach ( var chip in WeaponChips )
+							{
+								<label class="upgrade-chip" @key="chip.Id">@chip.Label</label>
+							}
+						</div>
+						<div class="upgrades-gear">
+							@foreach ( var chip in GearChips )
+							{
+								<label class="upgrade-chip" @key="chip.Id">@chip.Label</label>
+							}
+						</div>
 					</div>
 				</div>
 
@@ -610,24 +631,27 @@
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.Won )
 		{
 			<div class="overlay menu victory">
-				<label class="kicker">@(Loop.Ascend > 0 ? GameSettings.Text.F(GameSettings.Text.Decide.WonKickerAscend, Loop.Ascend) : GameSettings.Text.Decide.WonKicker)</label>
 				<label class="overlay-title">@GameSettings.Text.Decide.Won</label>
-				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.WonBlurb, Loop.FedBiomass)</label>
+				<label class="blurb won-blurb">@GameSettings.Text.F(GameSettings.Text.Decide.WonBlurb, Loop.FedBiomass)</label>
 				<div class="cards">
 					<div class="card" onclick="@ChooseAscend">
-						<label class="key">@GameSettings.Text.Decide.Key1</label>
-						<label class="title">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscend, Loop.Ascend + 1)</label>
-						<label class="blurb">@GameSettings.Text.Decide.WonAscendBlurb</label>
-						<div class="stats">
-							<label class="stat down">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscendHealth, Progression.AscendHealth(Loop.Ascend + 1))</label>
-							<label class="stat up">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscendReward, Progression.AscendReward(Loop.Ascend + 1))</label>
-							<label class="stat note">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscendFeed, Progression.WinNeed(Loop.Ascend + 1))</label>
+						<img class="won-plate" src="ui/Arena UI/buttons_right.png" />
+						<div class="won-copy">
+							<label class="title">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscend, Loop.Ascend + 1)</label>
+							<label class="blurb">@GameSettings.Text.Decide.WonAscendBlurb</label>
+							<div class="stats">
+								<label class="stat down">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscendHealth, Progression.AscendHealth(Loop.Ascend + 1))</label>
+								<label class="stat up">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscendReward, Progression.AscendReward(Loop.Ascend + 1))</label>
+								<label class="stat note">@GameSettings.Text.F(GameSettings.Text.Decide.WonAscendFeed, Progression.WinNeed(Loop.Ascend + 1))</label>
+							</div>
 						</div>
 					</div>
 					<div class="card" onclick="@ChooseKeep">
-						<label class="key">@GameSettings.Text.Decide.Key2</label>
-						<label class="title">@GameSettings.Text.Decide.WonKeep</label>
-						<label class="blurb">@GameSettings.Text.Decide.WonKeepBlurb</label>
+						<img class="won-plate" src="ui/Arena UI/buttons_right.png" />
+						<div class="won-copy">
+							<label class="title">@GameSettings.Text.Decide.WonKeep</label>
+							<label class="blurb">@GameSettings.Text.Decide.WonKeepBlurb</label>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -960,6 +984,40 @@
 	}
 
 	int TraitLevel( TrinketDef trait ) => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Loadout.TraitLevel( trait ) : 0;
+
+	List<OwnedChip> WeaponChips => OwnedChips( true );
+	List<OwnedChip> GearChips => OwnedChips( false );
+
+	List<OwnedChip> OwnedChips( bool weapons )
+	{
+		var chips = new List<OwnedChip>();
+		if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
+			return chips;
+
+		foreach ( var pair in Loop.Inventory.Loadout.Owned() )
+		{
+			var card = pair.Key;
+			if ( card is null || Trinkets.IsWeapon( card ) != weapons )
+				continue;
+
+			var label = pair.Value > 1 ? $"{card.ShownTitle} {pair.Value}" : card.ShownTitle;
+			chips.Add( new OwnedChip( card.Id, label ) );
+		}
+
+		return chips;
+	}
+
+	readonly struct OwnedChip
+	{
+		public string Id { get; }
+		public string Label { get; }
+
+		public OwnedChip( string id, string label )
+		{
+			Id = id;
+			Label = label;
+		}
+	}
 
 	string HelpText
 	{
@@ -3154,6 +3212,85 @@
 		color: #ff7a4a;
 	}
 
+	.overlay.victory .won-blurb {
+		max-width: 1100px;
+		text-align: center;
+		white-space: normal;
+		font-size: 42px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #ffffff;
+		margin-bottom: 28px;
+	}
+
+	.overlay.victory .card {
+		position: relative;
+		width: 560px;
+		height: 235px;
+		aspect-ratio: 272 / 114;
+		padding: 0px;
+		background-color: transparent;
+		border-width: 0px;
+		border-radius: 0px;
+		align-items: center;
+		justify-content: center;
+		overflow: visible;
+		flex-shrink: 0;
+	}
+
+	.overlay.victory .won-plate {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.overlay.victory .won-copy {
+		position: absolute;
+		left: 8%;
+		top: 0px;
+		width: 84%;
+		height: 100%;
+		z-index: 1;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.overlay.victory .card .title,
+	.overlay.victory .card .blurb,
+	.overlay.victory .card .stats {
+		width: 100%;
+		align-items: center;
+		text-align: center;
+	}
+
+	.overlay.victory .card .title {
+		margin-top: 0px;
+		font-size: 34px;
+	}
+
+	.overlay.victory .card .blurb {
+		margin-top: 4px;
+		font-size: 20px;
+		color: #cdc6ba;
+	}
+
+	.overlay.victory .card .stats {
+		margin-top: 4px;
+	}
+
+	.overlay.victory .card .stat {
+		font-size: 22px;
+	}
+
+	.overlay.victory .card:hover,
+	.overlay.victory .card.hot {
+		border-color: transparent;
+		background-color: transparent;
+	}
+
 	.overlay .kicker {
 		font-size: 18px;
 		font-weight: 600;
@@ -3799,10 +3936,16 @@
 		position: absolute;
 		left: 26px;
 		top: 24px;
+		flex-direction: row;
+		align-items: flex-start;
+		font-family: "Barlow Condensed";
+	}
+
+	.run-stack {
 		width: 400px;
 		flex-direction: column;
 		align-items: stretch;
-		font-family: "Barlow Condensed";
+		flex-shrink: 0;
 	}
 
 	.run-right {
@@ -3845,7 +3988,7 @@
 	}
 
 	.lap-panel {
-		width: 100%;
+		width: 400px;
 		aspect-ratio: 477 / 217;
 		padding: 0px;
 		border: 0px solid transparent;
@@ -3906,6 +4049,72 @@
 		color: #8e8b86;
 	}
 
+	.upgrades-panel {
+		width: 400px;
+		aspect-ratio: 477 / 448;
+		padding: 0px;
+		margin-bottom: 0px;
+		border: 0px solid transparent;
+		border-radius: 0px;
+		background-color: transparent;
+		overflow: hidden;
+	}
+
+	.upgrades-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.upgrades-title,
+	.upgrades-weapons,
+	.upgrades-gear {
+		position: absolute;
+		left: 12%;
+		width: 75%;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		align-content: flex-start;
+		overflow: hidden;
+	}
+
+	.upgrades-title {
+		top: 10.5%;
+		height: 12.5%;
+		justify-content: center;
+		align-content: center;
+	}
+
+	.upgrades-title label {
+		font-size: 24px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #f4ece0;
+	}
+
+	.upgrades-weapons {
+		top: 31.5%;
+		height: 21.5%;
+	}
+
+	.upgrades-gear {
+		top: 62.8%;
+		height: 28.2%;
+	}
+
+	.upgrade-chip {
+		margin-right: 12px;
+		margin-bottom: 2px;
+		font-size: 18px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		white-space: nowrap;
+		color: #f4ece0;
+	}
+
 	.bar {
 		height: 12px;
 		margin-top: 12px;
@@ -3944,6 +4153,12 @@
 
 	.bar-fill.slow.on {
 		background-color: #b48cff;
+	}
+
+	.run-left .brief-panel {
+		width: 400px;
+		margin-left: 12px;
+		margin-bottom: 0px;
 	}
 
 	.brief-panel {
