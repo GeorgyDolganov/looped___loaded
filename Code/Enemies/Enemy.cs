@@ -621,7 +621,7 @@ public sealed class Enemy : Component
 
 	void ThinkMelee()
 	{
-		if ( !Melee || !hobo.IsValid() || !Loop.IsValid() || !Loop.Runner.IsValid() )
+		if ( !Melee || !hobo.IsValid() || !hobo.Active || !Loop.IsValid() || !Loop.Runner.IsValid() )
 			return;
 
 		if ( Time.Now < freezeUntil || Time.Now < attackUntil || Time.Now < attackReadyAt )

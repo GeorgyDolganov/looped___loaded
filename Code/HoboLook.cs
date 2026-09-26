@@ -96,7 +96,7 @@ public static class HoboLook
 		overlay.Sequence.Name = sequence;
 		overlay.Sequence.Looping = false;
 		Hide( overlay );
-		var duration = overlay.Sequence.Duration;
+		var duration = overlay.SceneModel.IsValid() ? overlay.Sequence.Duration : 0f;
 		return duration > 0.05f ? duration : fallback;
 	}
 
