@@ -18,7 +18,7 @@
       "Op": "Mul",
       "Growth": "Flat",
       "Order": 800,
-      "Value": 0.75
+      "Value": 0.9
     }
   ],
   "__references": [

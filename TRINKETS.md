@@ -171,6 +171,7 @@
 | Pierce Set | 1 / 1 / 2 @600 |
 | Reload Add | 0.35 x rank @700 |
 | BoreWait Set | 0.35 x rank @700 |
+| Speed Mul | 0.95 @800 |
 
 ## Rifle
 
@@ -369,18 +370,6 @@
 
 ## Rail
 
-### DEEP
-
-| Field | Value |
-| --- | --- |
-| Id | DEEP |
-| Pack | Rail |
-| InPool | yes |
-| MaxLevel | 1 |
-| Excludes | KEEL |
-| Pierce Add | 2 @601 |
-| Reload Add | 0.25 @700 |
-
 ### AWL
 
 | Field | Value |
@@ -406,7 +395,7 @@
 | Blurb | Each body you punch through hits the next HARDER.  |
 | Excludes | KEEL |
 | Flag | RampPierce |
-| Speed Mul | 0.75 @800 |
+| Speed Mul | 0.9 @800 |
 
 ### KEEL
 
@@ -417,7 +406,7 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Removes richochet. |
-| Excludes | DEEP, AWL, RAM |
+| Excludes | AWL, RAM |
 | Damage Add | 5 @900 |
 | Speed Mul | 0.6 @800 |
 | Bounces Set | 0 @510 |
@@ -561,32 +550,6 @@
 | Requires | LASH |
 | BeamTicks Add | 2 @1510 |
 | Reload Add | 0.1 @720 |
-
-## Rocket
-
-### JACK
-
-| Field | Value |
-| --- | --- |
-| Id | JACK |
-| Pack | Rocket |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | WARHEAD |
-| Reload Mul | 0.8 @730 |
-| Splash Mul | 0.8 @1206 |
-
-### SLAP
-
-| Field | Value |
-| --- | --- |
-| Id | SLAP |
-| Pack | Rocket |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | WARHEAD, JACK |
-| Reload Mul | 0.85 @730 |
-| Speed Mul | 0.85 @800 |
 
 ## Rail
 

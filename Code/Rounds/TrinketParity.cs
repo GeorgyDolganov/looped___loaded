@@ -28,15 +28,14 @@ public static class TrinketParity
 		fails += Run( Levels( ("LASH", 1), ("BORE", 1) ), 0, ref shown );
 		fails += Run( Levels( ("LASH", 1), ("SEAR", 1), ("KILN", 1), ("FORK", 1), ("LINGER", 1), ("CELL", 1) ), 0, ref shown );
 		fails += Run( Levels( ("LASH", 1), ("SNAP", 3) ), 0, ref shown );
-		fails += Run( Levels( ("JACK", 1), ("SNAP", 1) ), 0, ref shown );
 		fails += Run( Levels( ("WARHEAD", 1), ("MIRV", 1), ("BLOOM", 1), ("LANCE", 1) ), 0, ref shown );
-		fails += Run( Levels( ("WARHEAD", 1), ("SPOT", 1), ("JACK", 1), ("SCORCH", 1) ), 0, ref shown );
+		fails += Run( Levels( ("WARHEAD", 1), ("SPOT", 1), ("SCORCH", 1) ), 0, ref shown );
 		fails += Run( Levels( ("DRUM", 1), ("BELT", 1), ("DOUBLE", 1) ), 0, ref shown );
 		fails += Run( Levels( ("SLUG", 1), ("SPLIT", 4), ("SLAM", 1) ), 0, ref shown );
 		fails += Run( Levels( ("BUCK", 1), ("SHUCK", 1), ("SLAM", 1) ), 0, ref shown );
 		fails += Run( Levels( ("MEAT", 2), ("BUCK", 3) ), 0, ref shown );
 		fails += Run( Levels( ("DODGE", 3) ), 0, ref shown );
-		fails += Run( Levels( ("KEEL", 1), ("BORE", 3), ("DEEP", 1), ("DRAW", 1), ("RACK", 1) ), 0, ref shown );
+		fails += Run( Levels( ("KEEL", 1), ("BORE", 3), ("DRAW", 1), ("RACK", 1) ), 0, ref shown );
 		fails += Run( Levels( ("LASH", 3), ("SEAR", 1), ("KILN", 1), ("CELL", 1), ("VENT", 1), ("COOL", 1) ), 0, ref shown );
 		fails += Run( Levels( ("DRUM", 3), ("BELT", 1), ("SPOOL", 1) ), 0, ref shown );
 		fails += Run( Levels( ("BUCK", 1), ("SIGHT", 1) ), 0, ref shown );
@@ -68,7 +67,6 @@ public static class TrinketParity
 		fails += Blocked( Set( "WARHEAD", "MIRV" ), ref shown );
 		fails += Blocked( Set( "WARHEAD", "LANCE" ), ref shown );
 		fails += Blocked( Set( "BORE", "KEEL" ), ref shown );
-		fails += Blocked( Set( "BORE", "DEEP" ), ref shown );
 		fails += Blocked( Set( "DRUM", "BELT" ), ref shown );
 		fails += Blocked( Set( "DRUM", "SPOOL" ), ref shown );
 		fails += Blocked( Set( "LASH", "SEAR" ), ref shown );
@@ -77,7 +75,6 @@ public static class TrinketParity
 		fails += Blocked( Set( "DRUM", "LASH" ), ref shown );
 		fails += Blocked( Set( "LASH", "VENT" ), ref shown );
 		fails += Blocked( Set( "DRUM", "BITE" ), ref shown );
-		fails += Blocked( Set( "WARHEAD", "JACK" ), ref shown );
 		fails += Blocked( Set( "BORE", "RACK" ), ref shown );
 		for ( var i = 0; i < 200; i++ )
 		{
@@ -99,10 +96,10 @@ public static class TrinketParity
 		"SPLIT", "FAN", "CHOKE", "MEAT", "RICO", "DOUBLE", "KICK", "STUN", "SLUG",
 		"BUCK", "BORE", "DRUM", "WARHEAD", "LASH", "PIN", "RUSH", "DODGE", "SNAP",
 		"MIRV", "BLOOM", "SCORCH", "LANCE", "CRATER", "SPOT",
-		"DEEP", "AWL", "RAM", "KEEL",
+		"AWL", "RAM", "KEEL",
 		"BELT", "SPOOL", "SIGHT", "BITE",
 		"SEAR", "KILN", "ARC", "FORK", "SHUNT", "LINGER", "CELL",
-		"JACK", "SLAP", "RACK", "DRAW", "VENT", "COOL", "SHUCK", "SLAM"
+		"RACK", "DRAW", "VENT", "COOL", "SHUCK", "SLAM"
 	};
 
 	static readonly Tier4 SplitPellets = new( 1f, 2f, 4f, 7f );
@@ -137,6 +134,7 @@ public static class TrinketParity
 	const int SlugDamage = 2;
 	const float SlugPad = 120f;
 	const float BoreReload = 0.35f;
+	const float BoreSpeed = 0.95f;
 	const float DrumReload = 0.45f;
 	const float MirvRadius = 0.55f;
 	const float MirvSpeed = 0.8f;
@@ -155,11 +153,9 @@ public static class TrinketParity
 	const float SpotSpeed = 0.85f;
 	const float SpotSplash = 40f;
 	const int SpotSplashDamage = 1;
-	const int DeepPierce = 2;
-	const float DeepReload = 0.25f;
 	const float AwlSpeed = 0.85f;
 	const float AwlReload = 0.12f;
-	const float RamSpeed = 0.75f;
+	const float RamSpeed = 0.9f;
 	const int KeelDamage = 5;
 	const float KeelSpeed = 0.6f;
 	const int BeltBurst = 3;
@@ -182,10 +178,6 @@ public static class TrinketParity
 	const float LingerReload = 0.12f;
 	const int CellTicks = 2;
 	const float CellReload = 0.1f;
-	const float JackReload = 0.8f;
-	const float JackSplash = 0.8f;
-	const float SlapReload = 0.85f;
-	const float SlapSpeed = 0.85f;
 	const float RackReload = 0.75f;
 	const float RackSpeed = 0.85f;
 	const float DrawReload = 0.85f;
@@ -384,8 +376,6 @@ public static class TrinketParity
 			bounces = 0;
 
 		var pierce = bore <= 0 ? 0 : (int)BorePierce.At( bore );
-		if ( Has( levels, "DEEP" ) )
-			pierce += DeepPierce;
 		if ( Has( levels, "DRAW" ) )
 			pierce = Math.Max( 0, pierce - DrawPierce );
 
@@ -410,8 +400,6 @@ public static class TrinketParity
 			reload += ScorchReload;
 		if ( Has( levels, "LANCE" ) )
 			reload += LanceReload;
-		if ( Has( levels, "DEEP" ) )
-			reload += DeepReload;
 		if ( Has( levels, "AWL" ) )
 			reload += AwlReload;
 		if ( Has( levels, "BELT" ) )
@@ -434,10 +422,6 @@ public static class TrinketParity
 				reload += CellReload;
 		}
 
-		if ( Has( levels, "JACK" ) )
-			reload *= JackReload;
-		if ( Has( levels, "SLAP" ) )
-			reload *= SlapReload;
 		if ( Has( levels, "RACK" ) )
 			reload *= RackReload;
 		if ( Has( levels, "DRAW" ) )
@@ -456,6 +440,8 @@ public static class TrinketParity
 			reload *= SnapReload.At( snap );
 
 		var speed = 1f;
+		if ( bore > 0 )
+			speed *= BoreSpeed;
 		if ( warhead > 0 )
 			speed *= WarheadSpeed.At( warhead );
 		if ( Has( levels, "MIRV" ) )
@@ -480,8 +466,6 @@ public static class TrinketParity
 			speed *= SightSpeed;
 		if ( Has( levels, "BITE" ) )
 			speed *= BiteSpeed;
-		if ( Has( levels, "SLAP" ) )
-			speed *= SlapSpeed;
 		if ( Has( levels, "RACK" ) )
 			speed *= RackSpeed;
 
@@ -522,8 +506,6 @@ public static class TrinketParity
 			splash += CraterSplash;
 		if ( Has( levels, "SPOT" ) )
 			splash += SpotSplash;
-		if ( Has( levels, "JACK" ) )
-			splash *= JackSplash;
 
 		var splashDamage = splash > 1f ? 1 : 0;
 		if ( Has( levels, "SCORCH" ) && splash > 1f )
@@ -638,7 +620,7 @@ public static class TrinketParity
 
 		if ( (id == "SPLIT" || id == "SHUCK" || id == "SLAM" || id == "SIGHT") && !owned.Contains( "BUCK" ) )
 			return true;
-		if ( (id is "MIRV" or "BLOOM" or "SCORCH" or "LANCE" or "CRATER" or "SPOT" or "JACK" or "SLAP") && !owned.Contains( "WARHEAD" ) )
+		if ( (id is "MIRV" or "BLOOM" or "SCORCH" or "LANCE" or "CRATER" or "SPOT") && !owned.Contains( "WARHEAD" ) )
 			return true;
 		if ( id == "LASH" && owned.Contains( "DRUM" ) )
 			return true;
@@ -648,9 +630,9 @@ public static class TrinketParity
 			return true;
 		if ( (id is "LANCE" or "CRATER") && Owns( "MIRV", "BLOOM", "SCORCH" ) )
 			return true;
-		if ( (id is "DEEP" or "AWL" or "RAM") && owned.Contains( "KEEL" ) )
+		if ( (id is "AWL" or "RAM") && owned.Contains( "KEEL" ) )
 			return true;
-		if ( id == "KEEL" && Owns( "DEEP", "AWL", "RAM" ) )
+		if ( id == "KEEL" && Owns( "AWL", "RAM" ) )
 			return true;
 		if ( (id is "BELT" or "SPOOL" or "BITE") && !owned.Contains( "DRUM" ) )
 			return true;
@@ -663,8 +645,6 @@ public static class TrinketParity
 		if ( (id is "SEAR" or "KILN") && Owns( "ARC", "FORK" ) )
 			return true;
 		if ( (id is "ARC" or "FORK") && Owns( "SEAR", "KILN" ) )
-			return true;
-		if ( id == "SLAP" && !owned.Contains( "JACK" ) )
 			return true;
 		if ( id == "DRAW" && !owned.Contains( "RACK" ) )
 			return true;

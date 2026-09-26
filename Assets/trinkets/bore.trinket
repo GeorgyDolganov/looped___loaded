@@ -82,6 +82,27 @@
       "WhenMin": 0,
       "HasWhenMax": false,
       "WhenMax": 0
+    },
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Value": 0.95,
+      "Bias": 0,
+      "Tiers": null,
+      "Order": 800,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     }
   ],
   "Notes": [],

@@ -98,7 +98,7 @@ icons = {
     "Kick": "ui/traits/kick.png", "Stun": "ui/traits/freeze.png",
     "Slug": "ui/traits/heavy.png",
     "Buck": "ui/traits/heavy.png",
-    "Bore": "ui/traits/pierce.png", "Deep": "ui/traits/pierce.png", "Awl": "ui/traits/pierce.png",
+    "Bore": "ui/traits/pierce.png", "Awl": "ui/traits/pierce.png",
     "Ram": "ui/traits/pierce.png", "Keel": "ui/traits/pierce.png",
     "Drum": "ui/traits/accel.png", "Belt": "ui/traits/accel.png",
     "Spool": "ui/traits/accel.png", "Sight": "ui/traits/accel.png", "Bite": "ui/traits/accel.png",
@@ -108,7 +108,7 @@ icons = {
     "Lash": "ui/traits/electric.png", "Sear": "ui/traits/electric.png", "Kiln": "ui/traits/electric.png",
     "Arc": "ui/traits/electric.png", "Fork": "ui/traits/electric.png", "Shunt": "ui/traits/electric.png",
     "Linger": "ui/traits/electric.png", "Cell": "ui/traits/electric.png",
-    "Jack": "ui/traits/snap.png", "Slap": "ui/traits/snap.png", "Rack": "ui/traits/snap.png",
+    "Rack": "ui/traits/snap.png",
     "Draw": "ui/traits/snap.png", "Vent": "ui/traits/snap.png", "Cool": "ui/traits/snap.png", "Shuck": "ui/traits/snap.png",
     "Slam": "ui/traits/snap.png", "Snap": "ui/traits/snap.png",
     "Rush": "ui/traits/step.png", "Dodge": "ui/traits/graze.png",
@@ -198,6 +198,7 @@ add("Bore", "Rail", 10, 3, mods=[
     M("Pierce", "Set", 600, growth="Tiers", tiers=tiers_of("BorePierce")),
     M("Reload", "Add", 700, N("BoreReload"), growth="TraitRatio"),
     M("BoreWait", "Set", 700, N("BoreReload"), growth="TraitRatio", hidden=True),
+    M("Speed", "Mul", 800, 0.95),
 ])
 add("Drum", "Rifle", 11, 3, flags=["Auto"], mods=[
     M("Burst", "Set", 1400, growth="Tiers", tiers=tiers_of("DrumBurst")),
@@ -256,10 +257,6 @@ add("Spot", "Rocket", 23, 1, flags=["PointAim"], req=["Warhead"], notes=no_bounc
     M("SplashDamage", "Add", 1261, N("SpotSplashDamage"), when="Splash", wmin=1.001),
     M("Bounces", "Set", 510, 0, hidden=True),
 ])
-add("Deep", "Rail", 24, 1, mods=[
-    M("Pierce", "Add", 601, N("DeepPierce")),
-    M("Reload", "Add", 700, N("DeepReload")),
-])
 add("Awl", "Rail", 25, 1, flags=["IgnoreArmor"], mods=[
     M("Speed", "Mul", 800, N("AwlSpeed")),
     M("Reload", "Add", 700, N("AwlReload")),
@@ -299,14 +296,6 @@ add("Cell", "Laser", 40, 1, req=["Lash"], mods=[
     M("BeamTicks", "Add", 1510, N("CellTicks"), when="BeamTicks", wmin=1),
     M("Reload", "Add", 720, N("CellReload"), when="BeamRank", wmin=1),
 ])
-add("Jack", "Rocket", 41, 1, req=["Warhead"], mods=[
-    M("Reload", "Mul", 730, N("JackReload")),
-    M("Splash", "Mul", 1206, N("JackSplash")),
-])
-add("Slap", "Rocket", 42, 1, req=["Warhead", "Jack"], mods=[
-    M("Reload", "Mul", 730, N("SlapReload")),
-    M("Speed", "Mul", 800, N("SlapSpeed")),
-])
 add("Rack", "Rail", 43, 1, mods=[
     M("Reload", "Mul", 730, N("RackReload")),
     M("Speed", "Mul", 800, N("RackSpeed")),
@@ -336,13 +325,13 @@ add("Slam", "Shotgun", 50, 1, req=["Buck"], mods=[
 ])
 
 cross(["MIRV", "BLOOM", "SCORCH"], ["LANCE", "CRATER"])
-cross(["DEEP", "AWL", "RAM"], ["KEEL"])
+cross(["AWL", "RAM"], ["KEEL"])
 cross(["BELT"], ["SPOOL", "BITE"])
 cross(["SEAR", "KILN"], ["ARC", "FORK"])
 cross(["DRUM"], ["LASH"])
 
-if len(cards) != 47:
-    raise SystemExit(f"expected 47 cards, got {len(cards)}")
+if len(cards) != 44:
+    raise SystemExit(f"expected 44 cards, got {len(cards)}")
 
 INTS = {"Count", "Full", "Damage", "Pierce", "Bounces", "SplashDamage", "MeatBonus", "Burst", "BeamHit", "BeamTicks", "BeamRank"}
 G_RELOAD = float(N("ReloadBase"))
@@ -621,10 +610,10 @@ POOL = [
     "SPLIT", "FAN", "CHOKE", "MEAT", "RICO", "DOUBLE", "KICK", "STUN", "SLUG",
     "BUCK", "BORE", "DRUM", "WARHEAD", "LASH", "PIN", "RUSH", "DODGE", "SNAP",
     "MIRV", "BLOOM", "SCORCH", "LANCE", "CRATER", "SPOT",
-    "DEEP", "AWL", "RAM", "KEEL",
+    "AWL", "RAM", "KEEL",
     "BELT", "SPOOL", "SIGHT", "BITE",
     "SEAR", "KILN", "ARC", "FORK", "SHUNT", "LINGER", "CELL",
-    "JACK", "SLAP", "RACK", "DRAW", "VENT", "COOL", "SHUCK", "SLAM",
+    "RACK", "DRAW", "VENT", "COOL", "SHUCK", "SLAM",
 ]
 
 def lv(levels, ident):
@@ -670,8 +659,6 @@ def legacy(levels, bonus=0):
     if lash > 0 or has(levels, "LANCE") or has(levels, "CRATER") or has(levels, "SPOT") or has(levels, "KEEL"):
         bounces = 0
     pierce = 0 if bore <= 0 else int(at(tiers_of("BorePierce"), bore))
-    if has(levels, "DEEP"):
-        pierce += N("DeepPierce")
     if has(levels, "DRAW"):
         pierce = max(0, pierce - N("DrawPierce"))
     reload = G_RELOAD
@@ -693,8 +680,6 @@ def legacy(levels, bonus=0):
         reload += N("ScorchReload")
     if has(levels, "LANCE"):
         reload += N("LanceReload")
-    if has(levels, "DEEP"):
-        reload += N("DeepReload")
     if has(levels, "AWL"):
         reload += N("AwlReload")
     if has(levels, "BELT"):
@@ -714,7 +699,7 @@ def legacy(levels, bonus=0):
         if has(levels, "CELL"):
             reload += N("CellReload")
     for ident, key in (
-        ("JACK", "JackReload"), ("SLAP", "SlapReload"), ("RACK", "RackReload"), ("DRAW", "DrawReload"),
+        ("RACK", "RackReload"), ("DRAW", "DrawReload"),
         ("VENT", "VentReload"), ("COOL", "CoolReload"),
         ("SHUCK", "ShuckReload"), ("SLAM", "SlamReload"),
     ):
@@ -724,12 +709,14 @@ def legacy(levels, bonus=0):
     if snap > 0:
         reload *= at(tiers_of("SnapReload"), snap)
     speed = 1.0
+    if bore > 0:
+        speed *= 0.95
     if warhead > 0:
         speed *= at(tiers_of("WarheadSpeed"), warhead)
     for ident, key in (
         ("MIRV", "MirvSpeed"), ("SCORCH", "ScorchSpeed"), ("LANCE", "LanceSpeed"), ("CRATER", "CraterSpeed"),
         ("SPOT", "SpotSpeed"), ("AWL", "AwlSpeed"), ("RAM", "RamSpeed"), ("KEEL", "KeelSpeed"),
-        ("SIGHT", "SightSpeed"), ("BITE", "BiteSpeed"), ("SLAP", "SlapSpeed"), ("RACK", "RackSpeed"),
+        ("SIGHT", "SightSpeed"), ("BITE", "BiteSpeed"), ("RACK", "RackSpeed"),
     ):
         if has(levels, ident):
             speed *= N(key)
@@ -767,8 +754,6 @@ def legacy(levels, bonus=0):
         splash += N("CraterSplash")
     if has(levels, "SPOT"):
         splash += N("SpotSplash")
-    if has(levels, "JACK"):
-        splash *= N("JackSplash")
     splash_damage = 1 if splash > 1 else 0
     if has(levels, "SCORCH") and splash > 1:
         splash_damage = max(splash_damage, N("ScorchDamage"))
@@ -858,7 +843,7 @@ def legacy(levels, bonus=0):
 
 CLUSTER = {"MIRV", "BLOOM", "SCORCH"}
 LANCE = {"LANCE", "CRATER"}
-DEEP = {"DEEP", "AWL", "RAM"}
+RAIL = {"AWL", "RAM"}
 SWEEP = {"BELT"}
 TRACK = {"SPOOL", "BITE"}
 BRAND = {"SEAR", "KILN"}
@@ -869,7 +854,7 @@ def old_blocked(ident, owned):
         return any(item in owned for item in group)
     if ident in {"SPLIT", "SHUCK", "SLAM", "SIGHT"} and "BUCK" not in owned:
         return True
-    if ident in CLUSTER | LANCE | {"SPOT", "JACK", "SLAP"} and "WARHEAD" not in owned:
+    if ident in CLUSTER | LANCE | {"SPOT"} and "WARHEAD" not in owned:
         return True
     if ident == "LASH" and "DRUM" in owned:
         return True
@@ -879,9 +864,9 @@ def old_blocked(ident, owned):
         return True
     if ident in LANCE and owns(CLUSTER):
         return True
-    if ident in DEEP and "KEEL" in owned:
+    if ident in RAIL and "KEEL" in owned:
         return True
-    if ident == "KEEL" and owns(DEEP):
+    if ident == "KEEL" and owns(RAIL):
         return True
     if ident in SWEEP | TRACK and "DRUM" not in owned:
         return True
@@ -894,8 +879,6 @@ def old_blocked(ident, owned):
     if ident in BRAND and owns(ARC):
         return True
     if ident in ARC and owns(BRAND):
-        return True
-    if ident == "SLAP" and "JACK" not in owned:
         return True
     if ident == "DRAW" and "RACK" not in owned:
         return True
@@ -964,10 +947,9 @@ check({"LASH": 1, "BORE": 1}, reload=0.3, bore_wait=0.35, pierce=1, beam=True, b
 check({"LASH": 1, "SEAR": 1, "KILN": 1, "FORK": 1, "LINGER": 1, "CELL": 1}, reload=0.3 + 0.1 + 0.06 + 0.08 + 0.12 + 0.1)
 check({"BORE": 1}, pierce=1, bore_wait=0.35)
 check({"LASH": 1, "SNAP": 3}, reload=0.2)
-check({"JACK": 1, "SNAP": 1}, reload=0.7 * 0.8 * 0.8)
 check({"WARHEAD": 1, "MIRV": 1, "BLOOM": 1}, splash=90 * 0.55 + 80, per_pellet=True)
 check({"WARHEAD": 1, "MIRV": 1, "BLOOM": 1, "LANCE": 1}, splash=(90 * 0.55 + 80) * 0.7, friendly=False)
-check({"WARHEAD": 1, "SPOT": 1, "JACK": 1}, splash=(90 + 40) * 0.8, splash_damage=2, point=True)
+check({"WARHEAD": 1, "SPOT": 1}, splash=90 + 40, splash_damage=2, point=True)
 check({"WARHEAD": 1, "SCORCH": 1, "SPOT": 1}, splash_damage=3)
 check({"WARHEAD": 1}, splash=90, splash_damage=1, friendly=True, speed=0.78)
 check({"DRUM": 1, "BELT": 1}, burst=6, auto=True)
@@ -990,12 +972,11 @@ check({}, bonus=4, damage=5)
 check({"SLUG": 1}, damage=1, radius=22, range_pad=120)
 check({"DRUM": 1, "BELT": 1}, burst=6)
 check({"LASH": 3, "SEAR": 1, "KILN": 1, "CELL": 1, "VENT": 1, "COOL": 1})
-check({"BORE": 3, "DEEP": 1, "RACK": 1, "DRAW": 1})
-check({"WARHEAD": 3, "MIRV": 1, "BLOOM": 1, "SCORCH": 1, "SPOT": 1, "JACK": 1, "SLAP": 1})
+check({"BORE": 3, "RACK": 1, "DRAW": 1})
+check({"WARHEAD": 3, "MIRV": 1, "BLOOM": 1, "SCORCH": 1, "SPOT": 1})
 check({"DRUM": 3, "BELT": 1, "SPOOL": 1})
 check({"BUCK": 1, "SIGHT": 1})
 check({"PIN": 3, "SLUG": 1})
-check({"SNAP": 3, "JACK": 1, "SLAP": 1})
 check({"MEAT": 2, "BUCK": 3})
 
 for ident in POOL:
@@ -1037,7 +1018,6 @@ check_blocked(["BUCK", "SHUCK"])
 check_blocked(["MIRV", "WARHEAD"])
 check_blocked(["LANCE", "WARHEAD"])
 check_blocked(["BORE", "KEEL"])
-check_blocked(["BORE", "DEEP"])
 check_blocked(["DRUM", "BELT"])
 check_blocked(["DRUM", "SPOOL"])
 check_blocked(["LASH", "SEAR"])
@@ -1046,12 +1026,11 @@ check_blocked(["BORE", "LASH"])
 check_blocked(["DRUM", "LASH"])
 check_blocked(["LASH", "VENT"])
 check_blocked(["DRUM", "BITE"])
-check_blocked(["WARHEAD", "JACK"])
 check_blocked(["BORE", "RACK"])
 for _ in range(200):
     check_blocked(rng.sample(POOL, rng.randint(0, 10)))
 
-if len(POOL) != 47:
+if len(POOL) != 44:
     fails.append(({}, 0, [f"pool {len(POOL)}"]))
 
 if fails or blocked_fail:
