@@ -13,8 +13,7 @@
     "trinkets/drum.trinket"
   ],
   "Excludes": [
-    "trinkets/belt.trinket",
-    "trinkets/walk.trinket"
+    "trinkets/belt.trinket"
   ],
   "Mods": [
     {
@@ -27,8 +26,7 @@
   ],
   "__references": [
     "trinkets/drum.trinket",
-    "trinkets/belt.trinket",
-    "trinkets/walk.trinket"
+    "trinkets/belt.trinket"
   ],
   "__version": 0
 }

@@ -433,22 +433,9 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Requires | DRUM |
-| Excludes | SPOOL, SIGHT, BITE |
+| Excludes | SPOOL, BITE |
 | Burst Add | 3 @1410 |
 | Reload Add | 0.3 @700 |
-
-### WALK
-
-| Field | Value |
-| --- | --- |
-| Id | WALK |
-| Pack | Rifle |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | DRUM |
-| Excludes | SPOOL, SIGHT, BITE |
-| WalkStep Add | 3 @900 |
-| Reload Add | 0.12 @700 |
 
 ### SPOOL
 
@@ -459,23 +446,9 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Requires | DRUM |
-| Excludes | BELT, WALK |
+| Excludes | BELT |
 | Cycle Mul | 0.65 @1400 |
 | Reload Add | 0.15 @700 |
-
-### SIGHT
-
-| Field | Value |
-| --- | --- |
-| Id | SIGHT |
-| Pack | Rifle |
-| InPool | yes |
-| MaxLevel | 1 |
-| Blurb | Later shots in a burst use half spread. |
-| Requires | DRUM |
-| Excludes | BELT, WALK |
-| Flag | Sight |
-| Speed Mul | 0.9 @800 |
 
 ### BITE
 
@@ -487,7 +460,7 @@
 | MaxLevel | 1 |
 | Blurb | +damage on a body this burst already hit.  |
 | Requires | DRUM |
-| Excludes | BELT, WALK |
+| Excludes | BELT |
 | Flag | Bite |
 | Speed Mul | 0.8 @800 |
 
@@ -641,33 +614,6 @@
 | Pierce Add | -1 @610 |
 | Pierce Max | 0 @611 |
 
-## Rifle
-
-### FEED
-
-| Field | Value |
-| --- | --- |
-| Id | FEED |
-| Pack | Rifle |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | DRUM |
-| Reload Mul | 0.75 @730 |
-| Cycle Mul | 1.2 @1400 |
-
-### EJECT
-
-| Field | Value |
-| --- | --- |
-| Id | EJECT |
-| Pack | Rifle |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | DRUM, FEED |
-| Reload Mul | 0.85 @730 |
-| Burst Add | -1 @1420 |
-| Burst Max | 1 @1421 |
-
 ## Laser
 
 ### VENT
@@ -696,6 +642,19 @@
 
 ## Shotgun
 
+### SIGHT
+
+| Field | Value |
+| --- | --- |
+| Id | SIGHT |
+| Pack | Shotgun |
+| InPool | yes |
+| MaxLevel | 1 |
+| Blurb | Later shots in a burst use half spread. |
+| Requires | BUCK |
+| Flag | Sight |
+| Speed Mul | 0.9 @800 |
+
 ### SHUCK
 
 | Field | Value |
@@ -716,7 +675,7 @@
 | Pack | Shotgun |
 | InPool | yes |
 | MaxLevel | 1 |
-| Requires | BUCK, SHUCK |
+| Requires | BUCK |
 | Count Add | -1 @410 |
 | Count Max | 1 @411 |
 | Reload Mul | 0.85 @730 |
