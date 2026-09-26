@@ -19,6 +19,7 @@ public sealed class Enemy : Component
 
 	public EnemyKind Kind { get; private set; }
 	public bool Alive { get; private set; }
+	public bool Bleeding => Time.Now < bleedUntil;
 	public int Health { get; private set; }
 	public float Radius { get; private set; } = 52f;
 	public Vector2 Flat { get; private set; }
@@ -59,6 +60,7 @@ public sealed class Enemy : Component
 	float barWidth;
 	Vector2 moveVelocity;
 	float hitAt = -99f;
+	float bleedUntil = -99f;
 	readonly List<(ModelRenderer Renderer, Color Tint)> dressed = new();
 	readonly List<Vector3> circle = new( 21 );
 	readonly List<Vector3> span = new( 2 );
@@ -282,8 +284,29 @@ public sealed class Enemy : Component
 			return;
 		}
 
+		if ( amount > 0 )
+			RefreshBleed();
+
 		ArenaSounds.Flesh( world );
 		ImpactFlash.Spawn( Scene, world, HurtTint, 1.1f );
+	}
+
+	void RefreshBleed()
+	{
+		if ( !Loop.IsValid() || !Loop.Inventory.IsValid() || Loop.Inventory.Loadout is null )
+			return;
+
+		var level = Loop.Inventory.Loadout.TraitLevel( Trinkets.Find( "PIN" ) );
+		if ( level <= 0 )
+			return;
+
+		var seconds = level switch
+		{
+			>= 3 => 8f,
+			2 => 5f,
+			_ => 3f
+		};
+		bleedUntil = Time.Now + seconds;
 	}
 
 	void Die()
@@ -369,6 +392,8 @@ public sealed class Enemy : Component
 				continue;
 
 			mesh.Renderer.Tint = Color.Lerp( mesh.Tint, overlay, blend );
+			if ( Bleeding )
+				mesh.Renderer.Tint = Color.Lerp( mesh.Renderer.Tint, new Color( 0.42f, 0.02f, 0.05f ), 0.55f );
 		}
 	}
 
@@ -416,6 +441,8 @@ public sealed class Enemy : Component
 			attackUntil += dt;
 		if ( attackReadyAt > 0f )
 			attackReadyAt += dt;
+		if ( bleedUntil > 0f )
+			bleedUntil += dt;
 		if ( flankUntil > 0f )
 			flankUntil += dt;
 

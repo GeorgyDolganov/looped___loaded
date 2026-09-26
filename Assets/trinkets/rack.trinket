@@ -5,9 +5,6 @@
   "MaxLevel": 1,
   "Sort": 43,
   "Icon": "ui/traits/snap.png",
-  "Requires": [
-    "trinkets/bore.trinket"
-  ],
   "Mods": [
     {
       "Stat": "Reload",
@@ -24,8 +21,6 @@
       "Value": 0.85
     }
   ],
-  "__references": [
-    "trinkets/bore.trinket"
-  ],
+  "__references": [],
   "__version": 0
 }

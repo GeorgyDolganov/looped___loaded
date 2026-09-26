@@ -9,6 +9,9 @@
   "Flags": [
     "Auto"
   ],
+  "Excludes": [
+    "trinkets/lash.trinket"
+  ],
   "Mods": [
     {
       "Stat": "Burst",
@@ -29,6 +32,8 @@
       "Value": 0.45
     }
   ],
-  "__references": [],
+  "__references": [
+    "trinkets/lash.trinket"
+  ],
   "__version": 0
 }

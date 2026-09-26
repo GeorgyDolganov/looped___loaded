@@ -13,12 +13,11 @@ ratio = float(prog["TraitRatio"])
 copy = text["Traits"]
 
 defaults = {
-    "FanCone": 14, "PumpPellets": 1, "PumpReload": 0.25, "LoadPellets": 2, "LoadReload": 0.15,
+    "FanCone": 14,
     "ChokeCone": 10, "ChokeFloor": 6, "MeatRange": 140, "MeatBonus": 1, "MeatRangeCut": 1,
-    "RicoBounces": 1, "GapeCone": 14, "DoubleGap": 0.12, "DoubleReload": 0.35,
+    "RicoBounces": 1, "DoubleGap": 0.12, "DoubleReload": 0.35,
     "KickForce": 110, "KickRange": 180, "StunTime": 0.45, "StunRange": 160,
-    "HeapPellets": 3, "HeapReload": 0.40, "WasteRange": 80, "WasteBonus": 1, "WasteRangeCut": 1,
-    "BreachPierce": 1, "SlugRadius": 22, "SlugDamage": 2, "SlugFalloffPad": 120,
+    "SlugRadius": 22, "SlugDamage": 2, "SlugFalloffPad": 120,
     "LashHit": 1, "ProjectileRadius": 13,
 }
 
@@ -93,18 +92,16 @@ def M(stat, op, order, value=0, growth="Flat", tiers=None, bias=0, hidden=False,
     return mod
 
 icons = {
-    "Split": "ui/traits/bounce.png", "Fan": "ui/traits/swipe.png", "Pump": "ui/traits/latemag.png",
-    "Load": "ui/traits/cue.png", "Choke": "ui/traits/incurve.png", "Meat": "ui/traits/heavy.png",
-    "Rico": "ui/traits/pinball.png", "Gape": "ui/traits/redirect.png", "Double": "ui/traits/echo.png",
-    "Kick": "ui/traits/kick.png", "Stun": "ui/traits/freeze.png", "Heap": "ui/traits/shred.png",
-    "Waste": "ui/traits/rim.png", "Breach": "ui/traits/hook.png", "Slug": "ui/traits/heavy.png",
+    "Split": "ui/traits/bounce.png", "Fan": "ui/traits/swipe.png",
+    "Choke": "ui/traits/incurve.png", "Meat": "ui/traits/heavy.png",
+    "Rico": "ui/traits/pinball.png", "Double": "ui/traits/echo.png",
+    "Kick": "ui/traits/kick.png", "Stun": "ui/traits/freeze.png",
+    "Slug": "ui/traits/heavy.png",
     "Buck": "ui/traits/heavy.png",
     "Bore": "ui/traits/pierce.png", "Deep": "ui/traits/pierce.png", "Awl": "ui/traits/pierce.png",
-    "Ram": "ui/traits/pierce.png", "Mass": "ui/traits/pierce.png", "Keel": "ui/traits/pierce.png",
-    "Trace": "ui/traits/pierce.png",
+    "Ram": "ui/traits/pierce.png", "Keel": "ui/traits/pierce.png",
     "Drum": "ui/traits/accel.png", "Belt": "ui/traits/accel.png", "Walk": "ui/traits/accel.png",
     "Spool": "ui/traits/accel.png", "Sight": "ui/traits/accel.png", "Bite": "ui/traits/accel.png",
-    "Link": "ui/traits/accel.png",
     "Warhead": "ui/traits/explosive.png", "Mirv": "ui/traits/explosive.png", "Bloom": "ui/traits/explosive.png",
     "Scorch": "ui/traits/explosive.png", "Lance": "ui/traits/explosive.png", "Crater": "ui/traits/explosive.png",
     "Spot": "ui/traits/explosive.png",
@@ -115,7 +112,7 @@ icons = {
     "Draw": "ui/traits/snap.png", "Feed": "ui/traits/snap.png", "Eject": "ui/traits/snap.png",
     "Vent": "ui/traits/snap.png", "Cool": "ui/traits/snap.png", "Shuck": "ui/traits/snap.png",
     "Slam": "ui/traits/snap.png", "Snap": "ui/traits/snap.png",
-    "Spin": "ui/traits/clockwise.png", "Rush": "ui/traits/step.png", "Dodge": "ui/traits/graze.png",
+    "Rush": "ui/traits/step.png", "Dodge": "ui/traits/graze.png",
     "Pin": "ui/traits/stick.png",
 }
 
@@ -161,19 +158,11 @@ ticks_when = ("BeamTicks", 1)
 splash_when = ("Splash", 1.001)
 burst_when = ("Burst", 2)
 
-add("Split", "Entry", 0, 4, mods=[
+add("Split", "Entry", 0, 4, req=["Buck"], mods=[
     M("Count", "Add", 100, growth="Tiers", tiers=tiers_of("SplitPellets")),
     M("Reload", "Add", 700, growth="Tiers", tiers=tiers_of("SplitReload")),
 ])
 add("Fan", "Entry", 1, 1, mods=[M("Cone", "Add", 200, N("FanCone"))])
-add("Pump", "Entry", 60, 1, pool=False, mods=[
-    M("Count", "Add", 100, N("PumpPellets")),
-    M("Reload", "Add", 700, N("PumpReload")),
-])
-add("Load", "Junior", 61, 1, pool=False, mods=[
-    M("Count", "Add", 100, N("LoadPellets")),
-    M("Reload", "Add", 700, N("LoadReload")),
-])
 add("Choke", "Junior", 2, 1, mods=[
     M("Cone", "Add", 210, -N("ChokeCone")),
     M("Cone", "Max", 211, N("ChokeFloor")),
@@ -184,7 +173,6 @@ add("Meat", "Junior", 3, 2, mods=[
     M("RangeCut", "Add", 0, N("MeatRangeCut"), growth="Linear"),
 ])
 add("Rico", "Junior", 4, 1, mods=[M("Bounces", "Add", 500, N("RicoBounces"))])
-add("Gape", "Warrior", 62, 1, pool=False, mods=[M("Cone", "Add", 220, N("GapeCone"))])
 add("Double", "Warrior", 5, 1, flags=["DoublePump"], mods=[
     M("Reload", "Add", 700, N("DoubleReload")),
     M("Gap", "Set", 700, N("DoubleGap")),
@@ -197,16 +185,6 @@ add("Stun", "Warrior", 7, 1, mods=[
     M("StunTime", "Add", 900, N("StunTime")),
     M("StunRange", "Set", 0, N("StunRange"), passive=True),
 ])
-add("Heap", "Abomination", 63, 1, pool=False, mods=[
-    M("Count", "Add", 100, N("HeapPellets")),
-    M("Reload", "Add", 700, N("HeapReload")),
-])
-add("Waste", "Abomination", 64, 1, pool=False, mods=[
-    M("MeatRange", "Max", 900, N("WasteRange")),
-    M("MeatBonus", "Add", 900, N("WasteBonus"), growth="Linear"),
-    M("RangeCut", "Add", 0, N("WasteRangeCut"), growth="Linear"),
-])
-add("Breach", "Abomination", 65, 1, pool=False, mods=[M("Pierce", "Add", 600, N("BreachPierce"))])
 add("Slug", "Abomination", 8, 1, hook="Slug", flags=["NoNail"], notes=[note("One shot")], mods=[
     M("Damage", "Add", 1000, N("SlugDamage"), growth="PerRemoved"),
     M("Radius", "Max", 1100, N("SlugRadius")),
@@ -238,13 +216,7 @@ add("Lash", "Laser", 13, 3, flags=["Beam"], weight=N("LashRankWeight"), notes=no
     M("BeamHit", "Set", 1500, max(1, N("LashHit"))),
     M("BeamRank", "Set", 705, 1, growth="Linear", hidden=True),
 ])
-add("Pin", "Nailgun", 14, 3, hook="Pin", flags=["Nail"], mods=[
-    M("Count", "Set", 110, growth="Tiers", tiers=tiers_of("PinNails"), byhook=True, role="nails"),
-    M("Cone", "Set", 310, growth="Tiers", tiers=tiers_of("PinCone"), byhook=True, role="cone"),
-    M("Bounces", "Add", 500, growth="Tiers", tiers=tiers_of("PinBounce")),
-    M("Radius", "Set", 1050, N("PinRadius")),
-    M("StickTime", "Set", 1050, N("PinStick")),
-])
+add("Pin", "Nailgun", 14, 3)
 add("Rush", "Rifle", 15, 3, mods=[
     M("Speed", "Mul", 800, growth="Tiers", tiers=tiers_of("RushSpeed")),
     M("Reload", "Add", 700, N("RushReload"), growth="TraitRatio"),
@@ -285,28 +257,19 @@ add("Spot", "Rocket", 23, 1, flags=["PointAim"], req=["Warhead"], notes=no_bounc
     M("SplashDamage", "Add", 1261, N("SpotSplashDamage"), when="Splash", wmin=1.001),
     M("Bounces", "Set", 510, 0, hidden=True),
 ])
-add("Deep", "Rail", 24, 1, req=["Bore"], mods=[
+add("Deep", "Rail", 24, 1, mods=[
     M("Pierce", "Add", 601, N("DeepPierce")),
     M("Reload", "Add", 700, N("DeepReload")),
 ])
-add("Awl", "Rail", 25, 1, flags=["IgnoreArmor"], req=["Bore"], mods=[
+add("Awl", "Rail", 25, 1, flags=["IgnoreArmor"], mods=[
     M("Speed", "Mul", 800, N("AwlSpeed")),
     M("Reload", "Add", 700, N("AwlReload")),
 ])
-add("Ram", "Rail", 26, 1, flags=["RampPierce"], req=["Bore"], mods=[M("Speed", "Mul", 800, N("RamSpeed"))])
-add("Mass", "Rail", 66, 3, pool=False, hook="Slug", flags=["NoNail"], notes=[note("One shot")], mods=[
-    M("Damage", "Add", 1000, N("MassDamage"), growth="PerRemoved"),
-    M("Speed", "Mul", 800, N("MassSpeed")),
-    M("Reload", "Add", 700, N("MassReload")),
-])
-add("Keel", "Rail", 27, 1, req=["Bore"], notes=no_bounce, mods=[
+add("Ram", "Rail", 26, 1, flags=["RampPierce"], mods=[M("Speed", "Mul", 800, N("RamSpeed"))])
+add("Keel", "Rail", 27, 1, notes=no_bounce, mods=[
     M("Damage", "Add", 900, N("KeelDamage")),
     M("Speed", "Mul", 800, N("KeelSpeed")),
     M("Bounces", "Set", 510, 0, hidden=True),
-])
-add("Trace", "Rail", 67, 3, pool=False, mods=[
-    M("Speed", "Mul", 800, N("TraceSpeed")),
-    M("Reload", "Add", 700, N("TraceReload")),
 ])
 add("Belt", "Rifle", 28, 1, req=["Drum"], mods=[
     M("Burst", "Add", 1410, N("BeltBurst"), when="Burst", wmin=2),
@@ -322,10 +285,6 @@ add("Spool", "Rifle", 30, 1, req=["Drum"], mods=[
 ])
 add("Sight", "Rifle", 31, 1, flags=["Sight"], req=["Drum"], mods=[M("Speed", "Mul", 800, N("SightSpeed"))])
 add("Bite", "Rifle", 32, 1, flags=["Bite"], req=["Drum"], mods=[M("Speed", "Mul", 800, N("BiteSpeed"))])
-add("Link", "Rifle", 33, 1, pool=False, flags=["CommitBurst"], req=["Drum"], mods=[
-    M("Reload", "Add", 700, N("LinkReload")),
-    M("Cycle", "Mul", 1400, N("LinkCycle")),
-])
 add("Sear", "Laser", 34, 1, flags=["BeamSear"], req=["Lash"], mods=[M("Reload", "Add", 720, N("SearReload"), when="BeamRank", wmin=1)])
 add("Kiln", "Laser", 35, 1, req=["Lash"], mods=[
     M("BeamKiln", "Set", 1500, N("KilnTick")),
@@ -354,11 +313,11 @@ add("Slap", "Rocket", 42, 1, req=["Warhead", "Jack"], mods=[
     M("Reload", "Mul", 730, N("SlapReload")),
     M("Speed", "Mul", 800, N("SlapSpeed")),
 ])
-add("Rack", "Rail", 43, 1, req=["Bore"], mods=[
+add("Rack", "Rail", 43, 1, mods=[
     M("Reload", "Mul", 730, N("RackReload")),
     M("Speed", "Mul", 800, N("RackSpeed")),
 ])
-add("Draw", "Rail", 44, 1, req=["Bore", "Rack"], mods=[
+add("Draw", "Rail", 44, 1, req=["Rack"], mods=[
     M("Reload", "Mul", 730, N("DrawReload")),
     M("Pierce", "Add", 610, -N("DrawPierce")),
     M("Pierce", "Max", 611, 0),
@@ -389,21 +348,15 @@ add("Slam", "Shotgun", 50, 1, req=["Buck", "Shuck"], mods=[
     M("Count", "Max", 411, 1, also=True),
     M("Reload", "Mul", 730, N("SlamReload")),
 ])
-add("Spin", "Nailgun", 68, 3, pool=False, mods=[
-    M("SpinSpeed", "Add", 800, N("SpinBase")),
-    M("SpinSpeed", "Add", 801, growth="Tiers", tiers=tiers_of("SpinBoost")),
-    M("Reload", "Add", 700, N("SpinReload"), growth="TraitRatio"),
-])
 
 cross(["MIRV", "BLOOM", "SCORCH"], ["LANCE", "CRATER"])
 cross(["DEEP", "AWL", "RAM"], ["KEEL"])
 cross(["BELT", "WALK"], ["SPOOL", "SIGHT", "BITE"])
 cross(["SEAR", "KILN"], ["ARC", "FORK"])
-cross(["BORE"], ["LASH"])
-cross(["MASS"], ["DEEP", "AWL", "RAM"])
+cross(["DRUM"], ["LASH"])
 
-if len(cards) != 60:
-    raise SystemExit(f"expected 60 cards, got {len(cards)}")
+if len(cards) != 50:
+    raise SystemExit(f"expected 50 cards, got {len(cards)}")
 
 INTS = {"Count", "Full", "Damage", "Pierce", "Bounces", "SplashDamage", "MeatBonus", "Burst", "BeamHit", "BeamTicks", "BeamRank"}
 G_RELOAD = float(N("ReloadBase"))
@@ -496,7 +449,6 @@ class State:
         self.stick = 0.0
         self.dodge = 0.0
         self.gap = 0.0
-        self.spin = 0.0
         self.energy = G_ENERGY
 
     def get(self, stat):
@@ -509,7 +461,7 @@ class State:
             "Cycle": self.cycle, "Burst": self.burst, "WalkStep": self.walk, "BeamHit": self.beam_hit,
             "BeamTick": self.beam_tick, "BeamTicks": self.beam_ticks, "BeamWidth": self.beam_width, "BeamArc": self.beam_arc,
             "BeamKiln": self.beam_kiln, "BeamRank": self.beam_rank, "StickTime": self.stick, "Dodge": self.dodge,
-            "Gap": self.gap, "SpinSpeed": self.spin, "Energy": self.energy,
+            "Gap": self.gap, "Energy": self.energy,
         }[stat]
 
     def set(self, stat, value):
@@ -546,7 +498,6 @@ class State:
         elif stat == "StickTime": self.stick = value
         elif stat == "Dodge": self.dodge = value
         elif stat == "Gap": self.gap = value
-        elif stat == "SpinSpeed": self.spin = value
         else: self.energy = value
 
     def apply(self, mod, level):
@@ -581,7 +532,6 @@ class State:
             "bounces": self.bounces,
             "energy": self.energy,
             "speed": self.speed,
-            "spin": self.spin,
             "radius": self.radius,
             "splash": self.splash,
             "splash_damage": self.splash_damage,
@@ -606,7 +556,6 @@ class State:
             "walk": self.walk,
             "sight": "Sight" in self.mask,
             "bite": "Bite" in self.mask,
-            "commit": "CommitBurst" in self.mask,
             "reload": max(G_MIN, self.reload),
             "bore_wait": self.bore_wait,
             "beam_pad": G_PAD,
@@ -682,7 +631,6 @@ def pipe(levels, bonus=0):
             state.splash_damage = 1 if state.splash > 1 else 0
     return state.recipe()
 
-OFF = {"LINK", "PUMP", "LOAD", "GAPE", "HEAP", "WASTE", "BREACH", "MASS", "TRACE"}
 POOL = [
     "SPLIT", "FAN", "CHOKE", "MEAT", "RICO", "DOUBLE", "KICK", "STUN", "SLUG",
     "BUCK", "BORE", "DRUM", "WARHEAD", "LASH", "PIN", "RUSH", "DODGE", "SNAP",
@@ -694,8 +642,6 @@ POOL = [
 ]
 
 def lv(levels, ident):
-    if ident in OFF:
-        return 0
     return levels.get(ident, 0)
 
 def has(levels, ident):
@@ -707,7 +653,6 @@ def legacy(levels, bonus=0):
     drum = lv(levels, "DRUM")
     warhead = lv(levels, "WARHEAD")
     lash = lv(levels, "LASH")
-    pin = lv(levels, "PIN")
     rush = lv(levels, "RUSH")
     split = lv(levels, "SPLIT")
     slug = has(levels, "SLUG")
@@ -718,8 +663,6 @@ def legacy(levels, bonus=0):
     if buck > 0:
         count += max(0, int(at(tiers_of("BuckPellets"), buck)) - 1)
     full = count
-    if count <= 1 and pin > 0:
-        full = max(1, int(at(tiers_of("PinNails"), pin)))
     cone = 0.0
     if has(levels, "FAN"):
         cone += N("FanCone")
@@ -730,17 +673,12 @@ def legacy(levels, bonus=0):
     if slug:
         count = 1
         cone = 0
-    elif count <= 1 and pin > 0:
-        count = full
-        cone = at(tiers_of("PinCone"), pin)
     if has(levels, "SHUCK"):
         cone += N("ShuckCone")
     if has(levels, "SLAM"):
         count = max(1, count - N("SlamPellets"))
         full = max(1, full - N("SlamPellets"))
     bounces = G_BOUNCE
-    if pin > 0:
-        bounces += int(at(tiers_of("PinBounce"), pin))
     if has(levels, "RICO"):
         bounces += N("RicoBounces")
     if lash > 0 or has(levels, "LANCE") or has(levels, "CRATER") or has(levels, "SPOT") or has(levels, "KEEL"):
@@ -779,8 +717,6 @@ def legacy(levels, bonus=0):
         reload += N("WalkReload")
     if has(levels, "SPOOL"):
         reload += N("SpoolReload")
-    if has(levels, "LINK"):
-        reload += N("LinkReload")
     if lash > 0:
         reload = N("LashReload")
         if has(levels, "SEAR"):
@@ -831,7 +767,7 @@ def legacy(levels, bonus=0):
         damage += N("LanceDamage")
     if has(levels, "KEEL"):
         damage += N("KeelDamage")
-    radius = N("PinRadius") if pin > 0 else G_RADIUS
+    radius = G_RADIUS
     if slug:
         radius = max(radius, N("SlugRadius"))
     if has(levels, "CRATER"):
@@ -857,8 +793,6 @@ def legacy(levels, bonus=0):
     cycle = G_CYCLE
     if has(levels, "SPOOL"):
         cycle *= N("SpoolCycle")
-    if has(levels, "LINK"):
-        cycle *= N("LinkCycle")
     if has(levels, "FEED"):
         cycle *= N("FeedCycle")
     burst = 1 if drum <= 0 else max(1, int(at(tiers_of("DrumBurst"), drum)))
@@ -897,7 +831,6 @@ def legacy(levels, bonus=0):
         "bounces": bounces,
         "energy": G_ENERGY,
         "speed": speed,
-        "spin": 0.0,
         "radius": radius,
         "splash": splash,
         "splash_damage": splash_damage,
@@ -906,8 +839,8 @@ def legacy(levels, bonus=0):
         "point": has(levels, "SPOT"),
         "ignore": has(levels, "AWL"),
         "ramp": has(levels, "RAM"),
-        "nail": pin > 0 and not slug,
-        "stick": N("PinStick") if pin > 0 and not slug else 0,
+        "nail": False,
+        "stick": 0,
         "range_cut": max(0, range_cut),
         "range_pad": N("SlugFalloffPad") if slug else 0,
         "falloff": 0,
@@ -922,7 +855,6 @@ def legacy(levels, bonus=0):
         "walk": N("WalkCone") if has(levels, "WALK") else 0,
         "sight": has(levels, "SIGHT"),
         "bite": has(levels, "BITE"),
-        "commit": has(levels, "LINK"),
         "reload": max(G_MIN, reload),
         "bore_wait": bore_wait,
         "beam_pad": G_PAD,
@@ -953,29 +885,25 @@ BRAND = {"SEAR", "KILN"}
 ARC = {"ARC", "FORK"}
 
 def old_blocked(ident, owned):
-    if ident in OFF:
-        return True
     def owns(group):
         return any(item in owned for item in group)
-    if ident in {"SHUCK", "SLAM"} and "BUCK" not in owned:
+    if ident in {"SPLIT", "SHUCK", "SLAM"} and "BUCK" not in owned:
         return True
     if ident in CLUSTER | LANCE | {"SPOT", "JACK", "SLAP"} and "WARHEAD" not in owned:
         return True
-    if ident == "LASH" and "BORE" in owned:
+    if ident == "LASH" and "DRUM" in owned:
         return True
-    if ident == "BORE" and "LASH" in owned:
+    if ident == "DRUM" and "LASH" in owned:
         return True
     if ident in CLUSTER and owns(LANCE):
         return True
     if ident in LANCE and owns(CLUSTER):
         return True
-    if ident in DEEP | {"KEEL", "RACK", "DRAW"} and "BORE" not in owned:
-        return True
     if ident in DEEP and "KEEL" in owned:
         return True
     if ident == "KEEL" and owns(DEEP):
         return True
-    if ident in SWEEP | TRACK | {"LINK", "FEED", "EJECT"} and "DRUM" not in owned:
+    if ident in SWEEP | TRACK | {"FEED", "EJECT"} and "DRUM" not in owned:
         return True
     if ident in SWEEP and owns(TRACK):
         return True
@@ -1051,11 +979,11 @@ check({"CHOKE": 1}, cone=6)
 check({"FAN": 1, "CHOKE": 1, "BUCK": 1}, count=2, cone=16)
 check({"FAN": 1, "CHOKE": 1}, cone=6)
 check({"SPLIT": 4, "SLUG": 1}, count=1, damage=15, radius=22, cone=0)
-check({"PIN": 1}, count=2, cone=8, bounces=2, radius=6, stick=0.6, nail=True)
-check({"PIN": 1, "SLUG": 1}, count=1, damage=3, radius=22, nail=False, stick=0, cone=0)
-check({"PIN": 1, "SPLIT": 1}, count=2, radius=6, bounces=2, cone=0)
-check({"PIN": 1, "FAN": 1}, cone=8, count=2)
-check({"PIN": 1, "SHUCK": 1}, cone=16, count=2)
+check({"PIN": 1}, count=1, cone=0, bounces=1, radius=13, stick=0, nail=False)
+check({"PIN": 1, "SLUG": 1}, count=1, damage=1, radius=22, nail=False, stick=0, cone=0)
+check({"PIN": 1, "SPLIT": 1}, count=2, radius=13, bounces=1, cone=0)
+check({"PIN": 1, "FAN": 1}, cone=14, count=1)
+check({"PIN": 1, "SHUCK": 1}, cone=8, count=1)
 check({"LASH": 1, "BORE": 1}, reload=0.3, bore_wait=0.35, pierce=1, beam=True, bounces=0)
 check({"LASH": 1, "SEAR": 1, "KILN": 1, "FORK": 1, "LINGER": 1, "CELL": 1}, reload=0.3 + 0.1 + 0.06 + 0.08 + 0.12 + 0.1)
 check({"BORE": 1}, pierce=1, bore_wait=0.35)
@@ -1138,16 +1066,13 @@ check_blocked(["DRUM", "SPOOL"])
 check_blocked(["LASH", "SEAR"])
 check_blocked(["LASH", "ARC"])
 check_blocked(["BORE", "LASH"])
+check_blocked(["DRUM", "LASH"])
 check_blocked(["LASH", "VENT"])
 check_blocked(["DRUM", "FEED"])
 check_blocked(["WARHEAD", "JACK"])
 check_blocked(["BORE", "RACK"])
 for _ in range(200):
     check_blocked(rng.sample(POOL, rng.randint(0, 10)))
-
-for ident in OFF:
-    if not new_blocked(ident, set()):
-        blocked_fail.append(([], ident, True, False))
 
 if len(POOL) != 50:
     fails.append(({}, 0, [f"pool {len(POOL)}"]))

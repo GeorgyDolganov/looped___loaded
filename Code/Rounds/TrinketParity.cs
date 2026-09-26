@@ -73,6 +73,7 @@ public static class TrinketParity
 		fails += Blocked( Set( "LASH", "SEAR" ), ref shown );
 		fails += Blocked( Set( "LASH", "ARC" ), ref shown );
 		fails += Blocked( Set( "BORE", "LASH" ), ref shown );
+		fails += Blocked( Set( "DRUM", "LASH" ), ref shown );
 		fails += Blocked( Set( "LASH", "VENT" ), ref shown );
 		fails += Blocked( Set( "DRUM", "FEED" ), ref shown );
 		fails += Blocked( Set( "WARHEAD", "JACK" ), ref shown );
@@ -84,19 +85,6 @@ public static class TrinketParity
 			while ( owned.Count < count )
 				owned.Add( Pool[rng.Next( Pool.Length )] );
 			fails += Blocked( owned, ref shown );
-		}
-
-		foreach ( var id in Off )
-		{
-			if ( !Trinkets.Blocked( Trinkets.Find( id ), new RunLoadout() ) )
-			{
-				fails++;
-				if ( shown < 12 )
-				{
-					Log.Warning( $"trinket parity {id} should stay out of the pool" );
-					shown++;
-				}
-			}
 		}
 
 		if ( fails == 0 )
@@ -116,8 +104,6 @@ public static class TrinketParity
 		"JACK", "SLAP", "RACK", "DRAW", "FEED", "EJECT", "VENT", "COOL", "SHUCK", "SLAM"
 	};
 
-	static readonly string[] Off = { "LINK", "PUMP", "LOAD", "GAPE", "HEAP", "WASTE", "BREACH", "MASS", "TRACE" };
-
 	static readonly Tier4 SplitPellets = new( 1f, 2f, 4f, 7f );
 	static readonly Tier4 SplitReload = new( 0f, 0.15f, 0.25f, 0.5f );
 	static readonly Tier4 BuckPellets = new( 2f, 3f, 5f );
@@ -129,9 +115,6 @@ public static class TrinketParity
 	static readonly Tier4 WarheadSpeed = new( 0.78f, 0.68f, 0.58f );
 	static readonly Tier4 LashTick = new( 0.6f, 0.4f, 0.2f );
 	static readonly Tier4 LashTicks = new( 4f, 6f, 8f );
-	static readonly Tier4 PinNails = new( 2f, 3f, 5f );
-	static readonly Tier4 PinBounce = new( 1f, 2f, 3f );
-	static readonly Tier4 PinCone = new( 8f, 10f, 12f );
 	static readonly Tier4 RushSpeed = new( 1.2f, 1.4f, 1.65f );
 	static readonly Tier4 DodgeChance = new( 0.1f, 0.2f, 0.32f );
 	static readonly Tier4 SnapReload = new( 0.8f, 0.64f, 0.5f );
@@ -220,8 +203,6 @@ public static class TrinketParity
 	const float ShuckCone = 8f;
 	const float SlamReload = 0.85f;
 	const int SlamPellets = 1;
-	const float PinRadius = 6f;
-	const float PinStick = 0.6f;
 	const float RushReload = 0.12f;
 
 	static int Run( Dictionary<string, int> levels, int bonus, ref int shown )
@@ -239,7 +220,6 @@ public static class TrinketParity
 		Whole( bad, "Bounces", live.Bounces, old.Bounces );
 		Float( bad, "Energy", live.Energy, old.Energy );
 		Float( bad, "SpeedScale", live.SpeedScale, old.SpeedScale );
-		Float( bad, "SpinSpeed", live.SpinSpeed, old.SpinSpeed );
 		Float( bad, "Radius", live.Radius, old.Radius );
 		Float( bad, "Splash", live.Splash, old.Splash );
 		Whole( bad, "SplashDamage", live.SplashDamage, old.SplashDamage );
@@ -264,7 +244,6 @@ public static class TrinketParity
 		Float( bad, "WalkStep", live.WalkStep, old.WalkStep );
 		Flag( bad, "Sight", live.Sight, old.Sight );
 		Flag( bad, "Bite", live.Bite, old.Bite );
-		Flag( bad, "CommitBurst", live.CommitBurst, old.CommitBurst );
 		Float( bad, "Reload", live.Reload, old.Reload );
 		Float( bad, "BoreWait", live.BoreWait, old.BoreWait );
 		Float( bad, "BeamPad", live.BeamPad, old.BeamPad );
@@ -357,15 +336,7 @@ public static class TrinketParity
 	}
 
 	static int Lv( Dictionary<string, int> levels, string id )
-	{
-		for ( var i = 0; i < Off.Length; i++ )
-		{
-			if ( Off[i] == id )
-				return 0;
-		}
-
-		return levels.TryGetValue( id, out var level ) ? level : 0;
-	}
+		=> levels.TryGetValue( id, out var level ) ? level : 0;
 
 	static bool Has( Dictionary<string, int> levels, string id ) => Lv( levels, id ) > 0;
 
@@ -377,7 +348,6 @@ public static class TrinketParity
 		var drum = Lv( levels, "DRUM" );
 		var warhead = Lv( levels, "WARHEAD" );
 		var lash = Lv( levels, "LASH" );
-		var pin = Lv( levels, "PIN" );
 		var rush = Lv( levels, "RUSH" );
 		var split = Lv( levels, "SPLIT" );
 		var slug = Has( levels, "SLUG" );
@@ -389,8 +359,6 @@ public static class TrinketParity
 			count += Math.Max( 0, (int)BuckPellets.At( buck ) - 1 );
 
 		var full = count;
-		if ( count <= 1 && pin > 0 )
-			full = Math.Max( 1, (int)PinNails.At( pin ) );
 
 		var cone = 0f;
 		if ( Has( levels, "FAN" ) )
@@ -405,11 +373,6 @@ public static class TrinketParity
 			count = 1;
 			cone = 0f;
 		}
-		else if ( count <= 1 && pin > 0 )
-		{
-			count = full;
-			cone = PinCone.At( pin );
-		}
 
 		if ( Has( levels, "SHUCK" ) )
 			cone += ShuckCone;
@@ -420,8 +383,6 @@ public static class TrinketParity
 		}
 
 		var bounces = t.MaxBouncesBase;
-		if ( pin > 0 )
-			bounces += (int)PinBounce.At( pin );
 		if ( Has( levels, "RICO" ) )
 			bounces += RicoBounces;
 		if ( lash > 0 || Has( levels, "LANCE" ) || Has( levels, "CRATER" ) || Has( levels, "SPOT" ) || Has( levels, "KEEL" ) )
@@ -555,7 +516,7 @@ public static class TrinketParity
 		if ( Has( levels, "KEEL" ) )
 			damage += KeelDamage;
 
-		var radius = pin > 0 ? PinRadius : t.ProjectileRadius;
+		var radius = t.ProjectileRadius;
 		if ( slug )
 			radius = MathF.Max( radius, SlugRadius );
 		if ( Has( levels, "CRATER" ) )
@@ -631,7 +592,6 @@ public static class TrinketParity
 			Bounces = bounces,
 			Energy = t.EnergyBase,
 			SpeedScale = speed,
-			SpinSpeed = 0f,
 			Radius = radius,
 			Splash = splash,
 			SplashDamage = splashDamage,
@@ -640,8 +600,8 @@ public static class TrinketParity
 			PointAim = Has( levels, "SPOT" ),
 			IgnoreArmor = Has( levels, "AWL" ),
 			RampPierce = Has( levels, "RAM" ),
-			Nail = pin > 0 && !slug,
-			StickTime = pin > 0 && !slug ? PinStick : 0f,
+			Nail = false,
+			StickTime = 0f,
 			RangeCut = MathF.Max( 0f, rangeCut ),
 			RangePad = slug ? SlugPad : 0f,
 			Falloff = 0f,
@@ -656,7 +616,6 @@ public static class TrinketParity
 			WalkStep = Has( levels, "WALK" ) ? WalkCone : 0f,
 			Sight = Has( levels, "SIGHT" ),
 			Bite = Has( levels, "BITE" ),
-			CommitBurst = false,
 			Reload = MathF.Max( t.ReloadMin, reload ),
 			BoreWait = boreWait,
 			BeamPad = t.LashPad,
@@ -681,12 +640,6 @@ public static class TrinketParity
 
 	static bool LegacyBlocked( string id, HashSet<string> owned )
 	{
-		for ( var i = 0; i < Off.Length; i++ )
-		{
-			if ( Off[i] == id )
-				return true;
-		}
-
 		bool Owns( params string[] group )
 		{
 			foreach ( var item in group )
@@ -698,19 +651,17 @@ public static class TrinketParity
 			return false;
 		}
 
-		if ( (id == "SHUCK" || id == "SLAM") && !owned.Contains( "BUCK" ) )
+		if ( (id == "SPLIT" || id == "SHUCK" || id == "SLAM") && !owned.Contains( "BUCK" ) )
 			return true;
 		if ( (id is "MIRV" or "BLOOM" or "SCORCH" or "LANCE" or "CRATER" or "SPOT" or "JACK" or "SLAP") && !owned.Contains( "WARHEAD" ) )
 			return true;
-		if ( id == "LASH" && owned.Contains( "BORE" ) )
+		if ( id == "LASH" && owned.Contains( "DRUM" ) )
 			return true;
-		if ( id == "BORE" && owned.Contains( "LASH" ) )
+		if ( id == "DRUM" && owned.Contains( "LASH" ) )
 			return true;
 		if ( (id is "MIRV" or "BLOOM" or "SCORCH") && Owns( "LANCE", "CRATER" ) )
 			return true;
 		if ( (id is "LANCE" or "CRATER") && Owns( "MIRV", "BLOOM", "SCORCH" ) )
-			return true;
-		if ( (id is "DEEP" or "AWL" or "RAM" or "KEEL" or "RACK" or "DRAW") && !owned.Contains( "BORE" ) )
 			return true;
 		if ( (id is "DEEP" or "AWL" or "RAM") && owned.Contains( "KEEL" ) )
 			return true;

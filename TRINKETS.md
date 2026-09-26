@@ -39,6 +39,7 @@
 | Pack | Entry |
 | InPool | yes |
 | MaxLevel | 4 |
+| Requires | BUCK |
 | Count Add | 1 / 2 / 4 / 7 @100 |
 | Reload Add | 0.15 / 0.25 / 0.5 @700 |
 
@@ -167,7 +168,6 @@
 | InPool | yes |
 | MaxLevel | 3 |
 | Blurb | Did somebody say "RAILGUN"? |
-| Excludes | LASH |
 | Pierce Set | 1 / 1 / 2 @600 |
 | Reload Add | 0.35 x rank @700 |
 | BoreWait Set | 0.35 x rank @700 |
@@ -183,6 +183,7 @@
 | InPool | yes |
 | MaxLevel | 3 |
 | Blurb | HOLD TO SHOOT MULTIPLE ROUNDS ONE AFTER ANOTHER |
+| Excludes | LASH |
 | Flag | Auto |
 | Burst Set | 3 / 4 / 6 @1400 |
 | Reload Add | 0.45 x rank @700 |
@@ -214,7 +215,7 @@
 | MaxLevel | 3 |
 | OwnedWeight | 12 |
 | Blurb | HOLD TO ZAP. Short reload. |
-| Excludes | BORE |
+| Excludes | DRUM |
 | Flag | Beam |
 | Reload Set | 0.3 @710 |
 | Bounces Set | 0 @510 |
@@ -233,14 +234,7 @@
 | Pack | Nailgun |
 | InPool | yes |
 | MaxLevel | 3 |
-| Hook | Pin |
-| Blurb | Nails that damage after time. Why they are exactly nine inch? |
-| Flag | Nail |
-| Count Set | 2 / 3 / 5 hook @110 |
-| Cone Set | 8 / 10 / 12 hook @310 |
-| Bounces Add | 1 / 2 / 3 @500 |
-| Radius Set | 6 @1050 |
-| StickTime Set | 0.6 @1050 |
+| Blurb | Any damage marks the body. The bleed lasts 3s / 5s / 8s and adds no damage. |
 
 ## Rifle
 
@@ -383,8 +377,7 @@
 | Pack | Rail |
 | InPool | yes |
 | MaxLevel | 1 |
-| Requires | BORE |
-| Excludes | KEEL, MASS |
+| Excludes | KEEL |
 | Pierce Add | 2 @601 |
 | Reload Add | 0.25 @700 |
 
@@ -397,8 +390,7 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Ignores boss armor. |
-| Requires | BORE |
-| Excludes | KEEL, MASS |
+| Excludes | KEEL |
 | Flag | IgnoreArmor |
 | Speed Mul | 0.85 @800 |
 | Reload Add | 0.12 @700 |
@@ -412,8 +404,7 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Each body you punch through hits the next HARDER.  |
-| Requires | BORE |
-| Excludes | KEEL, MASS |
+| Excludes | KEEL |
 | Flag | RampPierce |
 | Speed Mul | 0.75 @800 |
 
@@ -426,7 +417,6 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Removes richochet. |
-| Requires | BORE |
 | Excludes | DEEP, AWL, RAM |
 | Damage Add | 5 @900 |
 | Speed Mul | 0.6 @800 |
@@ -500,20 +490,6 @@
 | Excludes | BELT, WALK |
 | Flag | Bite |
 | Speed Mul | 0.8 @800 |
-
-### LINK
-
-| Field | Value |
-| --- | --- |
-| Id | LINK |
-| Pack | Rifle |
-| InPool | no |
-| MaxLevel | 1 |
-| Blurb | The burst finishes if you release. |
-| Requires | DRUM |
-| Flag | CommitBurst |
-| Reload Add | 0.2 @700 |
-| Cycle Mul | 1.1 @1400 |
 
 ## Laser
 
@@ -649,7 +625,6 @@
 | Pack | Rail |
 | InPool | yes |
 | MaxLevel | 1 |
-| Requires | BORE |
 | Reload Mul | 0.75 @730 |
 | Speed Mul | 0.85 @800 |
 
@@ -661,7 +636,7 @@
 | Pack | Rail |
 | InPool | yes |
 | MaxLevel | 1 |
-| Requires | BORE, RACK |
+| Requires | RACK |
 | Reload Mul | 0.85 @730 |
 | Pierce Add | -1 @610 |
 | Pierce Max | 0 @611 |
@@ -745,121 +720,3 @@
 | Count Add | -1 @410 |
 | Count Max | 1 @411 |
 | Reload Mul | 0.85 @730 |
-
-## Entry
-
-### PUMP
-
-| Field | Value |
-| --- | --- |
-| Id | PUMP |
-| Pack | Entry |
-| InPool | no |
-| MaxLevel | 1 |
-| Count Add | 1 @100 |
-| Reload Add | 0.25 @700 |
-
-## Junior
-
-### LOAD
-
-| Field | Value |
-| --- | --- |
-| Id | LOAD |
-| Pack | Junior |
-| InPool | no |
-| MaxLevel | 1 |
-| Count Add | 2 @100 |
-| Reload Add | 0.15 @700 |
-
-## Warrior
-
-### GAPE
-
-| Field | Value |
-| --- | --- |
-| Id | GAPE |
-| Pack | Warrior |
-| InPool | no |
-| MaxLevel | 1 |
-| Cone Add | 14 @220 |
-
-## Abomination
-
-### HEAP
-
-| Field | Value |
-| --- | --- |
-| Id | HEAP |
-| Pack | Abomination |
-| InPool | no |
-| MaxLevel | 1 |
-| Count Add | 3 @100 |
-| Reload Add | 0.4 @700 |
-
-### WASTE
-
-| Field | Value |
-| --- | --- |
-| Id | WASTE |
-| Pack | Abomination |
-| InPool | no |
-| MaxLevel | 1 |
-| MeatRange Max | 80 @900 |
-| MeatBonus Add | 1 x level @900 |
-| RangeCut Add | 1 x level @0 |
-
-### BREACH
-
-| Field | Value |
-| --- | --- |
-| Id | BREACH |
-| Pack | Abomination |
-| InPool | no |
-| MaxLevel | 1 |
-| Pierce Add | 1 @600 |
-
-## Rail
-
-### MASS
-
-| Field | Value |
-| --- | --- |
-| Id | MASS |
-| Pack | Rail |
-| InPool | no |
-| MaxLevel | 3 |
-| Hook | Slug |
-| Blurb | One shot. For each removed projectile +damage.  |
-| Excludes | DEEP, AWL, RAM |
-| Flag | NoNail |
-| Damage Add | 3 per removed @1000 |
-| Speed Mul | 0.7 @800 |
-| Reload Add | 0.45 @700 |
-
-### TRACE
-
-| Field | Value |
-| --- | --- |
-| Id | TRACE |
-| Pack | Rail |
-| InPool | no |
-| MaxLevel | 3 |
-| Blurb | = |
-| Speed Mul | 1.6 @800 |
-| Reload Add | 0.25 @700 |
-
-## Nailgun
-
-### SPIN
-
-| Field | Value |
-| --- | --- |
-| Id | SPIN |
-| Pack | Nailgun |
-| InPool | no |
-| MaxLevel | 3 |
-| Blurb | Shots sweep harder against the clock. Longer reload. |
-| SpinSpeed Add | 220 @800 |
-| SpinSpeed Add | 140 / 260 / 420 @801 |
-| Reload Add | 0.12 x rank @700 |

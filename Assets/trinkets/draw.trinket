@@ -6,7 +6,6 @@
   "Sort": 44,
   "Icon": "ui/traits/snap.png",
   "Requires": [
-    "trinkets/bore.trinket",
     "trinkets/rack.trinket"
   ],
   "Mods": [
@@ -33,7 +32,6 @@
     }
   ],
   "__references": [
-    "trinkets/bore.trinket",
     "trinkets/rack.trinket"
   ],
   "__version": 0

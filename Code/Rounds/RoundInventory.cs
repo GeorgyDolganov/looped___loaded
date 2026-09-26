@@ -196,8 +196,7 @@ public sealed class RoundInventory : Component
 
 		if ( recipe.Auto )
 		{
-			var finishing = recipe.CommitBurst && BurstLeft > 0 && BurstLeft < recipe.Burst && MagLoaded > 0;
-			if ( (down || finishing) && Ready && cycleLeft <= 0.001f )
+			if ( down && Ready && cycleLeft <= 0.001f )
 			{
 				if ( BurstLeft <= 0 )
 				{
@@ -212,7 +211,7 @@ public sealed class RoundInventory : Component
 				if ( BurstLeft <= 0 || MagLoaded <= 0 )
 					BeginReload( recipe.Reload );
 			}
-			else if ( BurstLeft > 0 && BurstLeft < recipe.Burst && ((!down && !recipe.CommitBurst) || MagLoaded <= 0) )
+			else if ( BurstLeft > 0 && BurstLeft < recipe.Burst && (!down || MagLoaded <= 0) )
 			{
 				BurstLeft = 0;
 				BeginReload( recipe.Reload );
@@ -532,7 +531,6 @@ public sealed class RoundInventory : Component
 		MaxBounces = recipe.Bounces,
 		Energy = recipe.Energy,
 		SpeedScale = recipe.SpeedScale,
-		SpinSpeed = recipe.SpinSpeed,
 		ExplosiveRadius = recipe.Splash,
 		SplashDamage = recipe.SplashDamage,
 		FriendlySplash = recipe.FriendlySplash,

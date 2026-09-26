@@ -9,12 +9,8 @@
   "Flags": [
     "RampPierce"
   ],
-  "Requires": [
-    "trinkets/bore.trinket"
-  ],
   "Excludes": [
-    "trinkets/keel.trinket",
-    "trinkets/mass.trinket"
+    "trinkets/keel.trinket"
   ],
   "Mods": [
     {
@@ -26,9 +22,7 @@
     }
   ],
   "__references": [
-    "trinkets/bore.trinket",
-    "trinkets/keel.trinket",
-    "trinkets/mass.trinket"
+    "trinkets/keel.trinket"
   ],
   "__version": 0
 }

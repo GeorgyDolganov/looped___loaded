@@ -11,7 +11,7 @@
     "Beam"
   ],
   "Excludes": [
-    "trinkets/bore.trinket"
+    "trinkets/drum.trinket"
   ],
   "Mods": [
     {
@@ -74,7 +74,7 @@
     }
   ],
   "__references": [
-    "trinkets/bore.trinket"
+    "trinkets/drum.trinket"
   ],
   "__version": 0
 }

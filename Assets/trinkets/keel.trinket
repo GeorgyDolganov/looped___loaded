@@ -6,9 +6,6 @@
   "Sort": 27,
   "Icon": "ui/traits/pierce.png",
   "Blurb": "Removes richochet.",
-  "Requires": [
-    "trinkets/bore.trinket"
-  ],
   "Excludes": [
     "trinkets/deep.trinket",
     "trinkets/awl.trinket",
@@ -45,7 +42,6 @@
     }
   ],
   "__references": [
-    "trinkets/bore.trinket",
     "trinkets/deep.trinket",
     "trinkets/awl.trinket",
     "trinkets/ram.trinket"

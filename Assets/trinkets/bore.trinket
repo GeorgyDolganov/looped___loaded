@@ -1,44 +1,99 @@
 {
   "Id": "BORE",
-  "Title": "BORE",
+  "Title": "PIERCE",
+  "Blurb": "Fill them with holes.",
+  "Icon": "ui/traits/pierce.png",
   "Pack": "Rail",
   "MaxLevel": 3,
+  "InPool": true,
   "Sort": 10,
-  "Icon": "ui/traits/pierce.png",
-  "Blurb": "Did somebody say \"RAILGUN\"?",
+  "UnlockLap": 0,
+  "Price": 0,
+  "OwnedWeight": 0,
+  "Hook": "None",
+  "Flags": [],
+  "Requires": [],
   "Excludes": [
-    "trinkets/lash.trinket"
+    {
+      "Id": "668c5335-9638-4f47-af8d-991ea35c25bb",
+      "Path": "trinkets/lash.trinket"
+    }
   ],
   "Mods": [
     {
       "Stat": "Pierce",
       "Op": "Set",
       "Growth": "Tiers",
-      "Order": 600,
+      "Value": 0,
+      "Bias": 0,
       "Tiers": {
         "Level1": 1,
         "Level2": 1,
-        "Level3": 2
-      }
+        "Level3": 2,
+        "Level4": 0
+      },
+      "Order": 600,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "Reload",
       "Op": "Add",
       "Growth": "TraitRatio",
+      "Value": 0.35,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 700,
-      "Value": 0.35
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "BoreWait",
       "Op": "Set",
       "Growth": "TraitRatio",
-      "Order": 700,
       "Value": 0.35,
-      "Hidden": true
+      "Bias": 0,
+      "Tiers": null,
+      "Order": 700,
+      "Hidden": true,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     }
   ],
-  "__references": [
-    "trinkets/lash.trinket"
-  ],
+  "Notes": [],
+  "Cap": 3,
+  "ShownTitle": "PIERCE",
+  "ShownBlurb": "Fill them with holes.",
+  "IconPath": "ui/traits/pierce.png",
+  "__references": [],
   "__version": 0
 }

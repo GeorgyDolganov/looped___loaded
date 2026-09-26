@@ -215,8 +215,6 @@ public sealed class LaserBeam : Component
 				damage += 1;
 
 			enemy.Damage( damage, 0f, 1f );
-			if ( recipe.StickTime > 0.01f )
-				PinLinger.Hang( enemy, 1, recipe.StickTime );
 
 			staged.Add( (latch.Bolt, enemy, prior + 1) );
 			if ( latch.Bolt < 100 && !mains.Contains( enemy ) )
@@ -597,43 +595,5 @@ public static class LightningPath
 		var n = seed * 16777619 ^ salt * 374761393;
 		n = (n ^ (n >> 13)) * 1274126177;
 		return n & 0x7fffffff;
-	}
-}
-
-public sealed class PinLinger : Component
-{
-	Enemy target;
-	int damage;
-	float due;
-
-	public static void Hang( Enemy enemy, int amount, float delay )
-	{
-		if ( !enemy.IsValid() || amount <= 0 || delay <= 0.01f )
-			return;
-
-		foreach ( var child in enemy.GameObject.Children )
-		{
-			if ( child.GetComponent<PinLinger>().IsValid() )
-				return;
-		}
-
-		var go = enemy.Scene.CreateObject();
-		go.Name = "Pin";
-		go.Parent = enemy.GameObject;
-		var hang = go.AddComponent<PinLinger>();
-		hang.target = enemy;
-		hang.damage = amount;
-		hang.due = RealTime.Now + delay;
-	}
-
-	protected override void OnUpdate()
-	{
-		if ( RealTime.Now < due )
-			return;
-
-		if ( target.IsValid() && target.Alive )
-			target.Damage( damage, 0f, 1f );
-
-		GameObject.Destroy();
 	}
 }

@@ -348,8 +348,6 @@ public sealed class RoundProjectile : Component
 				target.Damage( damage, this );
 
 			TargetsHit++;
-			if ( Flight.StickTime > 0.01f )
-				PinLinger.Hang( target, 1, Flight.StickTime );
 
 			if ( Flight.Volley is { } crowd && crowd.TryCrowd( target ) )
 			{

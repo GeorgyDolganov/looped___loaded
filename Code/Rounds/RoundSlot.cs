@@ -77,7 +77,6 @@ public struct GunRecipe
 	public int Bounces;
 	public float Energy;
 	public float SpeedScale;
-	public float SpinSpeed;
 	public float Radius;
 	public float Splash;
 	public int SplashDamage;
@@ -102,7 +101,6 @@ public struct GunRecipe
 	public float WalkStep;
 	public bool Sight;
 	public bool Bite;
-	public bool CommitBurst;
 	public float Reload;
 	public float BoreWait;
 	public float BeamPad;
@@ -132,7 +130,6 @@ public struct RoundFlight
 	public int MaxBounces;
 	public float Energy;
 	public float SpeedScale;
-	public float SpinSpeed;
 	public float ExplosiveRadius;
 	public int SplashDamage;
 	public bool FriendlySplash;

@@ -56,7 +56,6 @@ public enum GunStat
 	StickTime,
 	Dodge,
 	Gap,
-	SpinSpeed,
 	Energy
 }
 
@@ -97,7 +96,6 @@ public enum GunFlag
 	RampPierce = 1 << 5,
 	Sight = 1 << 6,
 	Bite = 1 << 7,
-	CommitBurst = 1 << 8,
 	PerPelletSplash = 1 << 9,
 	FriendlySplash = 1 << 10,
 	NoFriendlySplash = 1 << 11,

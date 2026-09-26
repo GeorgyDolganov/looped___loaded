@@ -38,7 +38,6 @@ public sealed class BuildState
 	public float StickTime;
 	public float Dodge;
 	public float Gap;
-	public float SpinSpeed;
 	public float Energy;
 	public float BeamPad;
 	public float BeamPerSecond;
@@ -99,7 +98,6 @@ public sealed class BuildState
 		GunStat.StickTime => StickTime,
 		GunStat.Dodge => Dodge,
 		GunStat.Gap => Gap,
-		GunStat.SpinSpeed => SpinSpeed,
 		_ => Energy
 	};
 
@@ -140,7 +138,6 @@ public sealed class BuildState
 			case GunStat.StickTime: StickTime = value; break;
 			case GunStat.Dodge: Dodge = value; break;
 			case GunStat.Gap: Gap = value; break;
-			case GunStat.SpinSpeed: SpinSpeed = value; break;
 			default: Energy = value; break;
 		}
 	}
@@ -192,7 +189,6 @@ public sealed class BuildState
 			Bounces = Bounces,
 			Energy = Energy,
 			SpeedScale = Speed,
-			SpinSpeed = SpinSpeed,
 			Radius = Radius,
 			Splash = Splash,
 			SplashDamage = SplashDamage,
@@ -217,7 +213,6 @@ public sealed class BuildState
 			WalkStep = WalkStep,
 			Sight = Has( GunFlag.Sight ),
 			Bite = Has( GunFlag.Bite ),
-			CommitBurst = Has( GunFlag.CommitBurst ),
 			Reload = MathF.Max( GameSettings.Traits.ReloadMin, Reload ),
 			BoreWait = BoreWait,
 			BeamPad = BeamPad,

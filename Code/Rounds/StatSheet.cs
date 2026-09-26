@@ -259,7 +259,6 @@ public static class StatSheet
 		GunStat.StickTime => new( "Stick", null, "s", true, false ),
 		GunStat.Dodge => new( "Dodge", null, "", true, false ),
 		GunStat.Gap => new( "Gap", null, "s", null, false ),
-		GunStat.SpinSpeed => new( "Spin", null, "", true, false ),
 		_ => new( stat.ToString(), null, "", null, true )
 	};
 
@@ -293,7 +292,6 @@ public static class StatSheet
 		GunFlag.RampPierce => "+1 damage per body already pierced",
 		GunFlag.Sight => "Later volleys use half spread",
 		GunFlag.Bite => "+1 damage on a body this burst already hit",
-		GunFlag.CommitBurst => "Burst finishes on release",
 		GunFlag.PerPelletSplash => "Splash per pellet",
 		GunFlag.FriendlySplash => "You take splash damage",
 		GunFlag.NoFriendlySplash => "Friendly splash off",
@@ -357,8 +355,6 @@ public static class StatSheet
 			AddText( rows, "Sight", now.Sight ? "Half" : "Full", next.Sight ? "Half" : "Full", preview, true );
 		if ( now.Bite || next.Bite )
 			AddText( rows, "Bite", now.Bite ? "+1" : "Flat", next.Bite ? "+1" : "Flat", preview );
-		if ( now.CommitBurst || next.CommitBurst )
-			AddText( rows, "Queue", now.CommitBurst ? "Finish" : "Hold", next.CommitBurst ? "Finish" : "Hold", preview );
 		if ( now.Beam || next.Beam )
 		{
 			AddInt( rows, "Bolt Dmg", now.BeamHit, next.BeamHit, preview, true, true );
