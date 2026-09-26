@@ -1234,7 +1234,7 @@
 	const int ReloadMarks = 24;
 	Sandbox.UI.Panel trayPanel;
 	Sandbox.UI.Panel shopSheet;
-	Sandbox.UI.Panel healthPanel;
+	Sandbox.UI.Panel healthRow;
 	Sandbox.UI.Panel dashSlot;
 	Sandbox.UI.Panel hotCard;
 	int shopHover = -1;
@@ -1242,6 +1242,10 @@
 	const float TrayArtHeight = 286f;
 	const float ChargeMeterWidth = 131f;
 	const float ChargeMeterHeight = 24f;
+	const float HealthIconAspect = 30f / 39f;
+	const float HealthStackFill = 0.8f;
+	const float HealthGapX = 0.18f;
+	const float HealthGapY = 0.12f;
 
 	float OrganLift
 	{
@@ -1295,25 +1299,44 @@
 
 	void PlaceHealthIcons()
 	{
-		if ( !healthPanel.IsValid() )
-			healthPanel = FindHud( "health-slot" );
+		if ( !healthRow.IsValid() )
+			healthRow = FindHud( "hp-row" );
 
-		if ( !healthPanel.IsValid() )
+		if ( !healthRow.IsValid() )
 			return;
 
-		var slotH = healthPanel.Box.Rect.Height;
-		if ( slotH <= 1f )
+		var rowW = healthRow.Box.Rect.Width;
+		var rowH = healthRow.Box.Rect.Height;
+		if ( rowW <= 1f || rowH <= 1f )
 			return;
 
-		var iconH = MathF.Max( 8f, (slotH * 0.9f - 4f) / 2f );
-		var iconW = iconH * (30f / 39f);
-		foreach ( var child in healthPanel.Descendants )
+		var ratio = rowW / rowH;
+		var count = Math.Max( Loop.HeartMax, 1 );
+		var size = 0f;
+		for ( var rows = 1; rows <= count; rows++ )
+		{
+			var perRow = (count + rows - 1) / rows;
+			var byHeight = HealthStackFill / (rows * (1f + HealthGapY));
+			var byWidth = ratio * 0.98f / (perRow * (HealthIconAspect + HealthGapX));
+			size = MathF.Max( size, MathF.Min( byHeight, byWidth ) );
+		}
+
+		size = MathF.Min( size, HealthStackFill / (2f * (1f + HealthGapY)) );
+
+		var height = Sandbox.UI.Length.Percent( size * 100f );
+		var width = Sandbox.UI.Length.Percent( size * HealthIconAspect / ratio * 100f );
+		var gapX = Sandbox.UI.Length.Percent( size * HealthGapX / ratio * 100f );
+		var gapY = Sandbox.UI.Length.Percent( size * HealthGapY * 0.5f / ratio * 100f );
+		foreach ( var child in healthRow.Children )
 		{
 			if ( !child.HasClass( "hp" ) )
 				continue;
 
-			child.Style.Width = Sandbox.UI.Length.Pixels( iconW );
-			child.Style.Height = Sandbox.UI.Length.Pixels( iconH );
+			child.Style.Width = width;
+			child.Style.Height = height;
+			child.Style.MarginRight = gapX;
+			child.Style.MarginTop = gapY;
+			child.Style.MarginBottom = gapY;
 			child.Style.Dirty();
 		}
 	}
