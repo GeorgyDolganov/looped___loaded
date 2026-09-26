@@ -12,8 +12,8 @@ public sealed class RingRunner : Component
 	[Property] public float SlowDrain { get; set; } = 0.55f;
 	[Property] public float SlowRegen { get; set; } = 0.28f;
 	[Property] public float PlayerRadius { get; set; } = 48f;
-	[Property] public float ClearSpeedScale { get; set; } = 3f;
-	[Property] public float ClearSpeedRamp { get; set; } = 1.2f;
+	[Property] public float ClearSpeedScale { get; set; } = 4.5f;
+	[Property] public float ClearSpeedRamp { get; set; } = 0.5f;
 
 	public float Angle { get; private set; }
 	public float TravelledArc { get; private set; }
