@@ -10,7 +10,6 @@
   ],
   "Excludes": [
     "trinkets/spool.trinket",
-    "trinkets/sight.trinket",
     "trinkets/bite.trinket"
   ],
   "Mods": [
@@ -36,7 +35,6 @@
   "__references": [
     "trinkets/drum.trinket",
     "trinkets/spool.trinket",
-    "trinkets/sight.trinket",
     "trinkets/bite.trinket"
   ],
   "__version": 0

@@ -31,14 +31,15 @@ public static class TrinketParity
 		fails += Run( Levels( ("JACK", 1), ("SNAP", 1) ), 0, ref shown );
 		fails += Run( Levels( ("WARHEAD", 1), ("MIRV", 1), ("BLOOM", 1), ("LANCE", 1) ), 0, ref shown );
 		fails += Run( Levels( ("WARHEAD", 1), ("SPOT", 1), ("JACK", 1), ("SCORCH", 1) ), 0, ref shown );
-		fails += Run( Levels( ("DRUM", 1), ("BELT", 1), ("EJECT", 1), ("DOUBLE", 1) ), 0, ref shown );
+		fails += Run( Levels( ("DRUM", 1), ("BELT", 1), ("DOUBLE", 1) ), 0, ref shown );
 		fails += Run( Levels( ("SLUG", 1), ("SPLIT", 4), ("SLAM", 1) ), 0, ref shown );
 		fails += Run( Levels( ("BUCK", 1), ("SHUCK", 1), ("SLAM", 1) ), 0, ref shown );
 		fails += Run( Levels( ("MEAT", 2), ("BUCK", 3) ), 0, ref shown );
 		fails += Run( Levels( ("DODGE", 3) ), 0, ref shown );
 		fails += Run( Levels( ("KEEL", 1), ("BORE", 3), ("DEEP", 1), ("DRAW", 1), ("RACK", 1) ), 0, ref shown );
 		fails += Run( Levels( ("LASH", 3), ("SEAR", 1), ("KILN", 1), ("CELL", 1), ("VENT", 1), ("COOL", 1) ), 0, ref shown );
-		fails += Run( Levels( ("DRUM", 3), ("BELT", 1), ("FEED", 1), ("SPOOL", 1), ("SIGHT", 1) ), 0, ref shown );
+		fails += Run( Levels( ("DRUM", 3), ("BELT", 1), ("SPOOL", 1) ), 0, ref shown );
+		fails += Run( Levels( ("BUCK", 1), ("SIGHT", 1) ), 0, ref shown );
 		fails += Run( new Dictionary<string, int>(), 4, ref shown );
 
 		var all = new Dictionary<string, int>();
@@ -75,7 +76,7 @@ public static class TrinketParity
 		fails += Blocked( Set( "BORE", "LASH" ), ref shown );
 		fails += Blocked( Set( "DRUM", "LASH" ), ref shown );
 		fails += Blocked( Set( "LASH", "VENT" ), ref shown );
-		fails += Blocked( Set( "DRUM", "FEED" ), ref shown );
+		fails += Blocked( Set( "DRUM", "BITE" ), ref shown );
 		fails += Blocked( Set( "WARHEAD", "JACK" ), ref shown );
 		fails += Blocked( Set( "BORE", "RACK" ), ref shown );
 		for ( var i = 0; i < 200; i++ )
@@ -99,9 +100,9 @@ public static class TrinketParity
 		"BUCK", "BORE", "DRUM", "WARHEAD", "LASH", "PIN", "RUSH", "DODGE", "SNAP",
 		"MIRV", "BLOOM", "SCORCH", "LANCE", "CRATER", "SPOT",
 		"DEEP", "AWL", "RAM", "KEEL",
-		"BELT", "WALK", "SPOOL", "SIGHT", "BITE",
+		"BELT", "SPOOL", "SIGHT", "BITE",
 		"SEAR", "KILN", "ARC", "FORK", "SHUNT", "LINGER", "CELL",
-		"JACK", "SLAP", "RACK", "DRAW", "FEED", "EJECT", "VENT", "COOL", "SHUCK", "SLAM"
+		"JACK", "SLAP", "RACK", "DRAW", "VENT", "COOL", "SHUCK", "SLAM"
 	};
 
 	static readonly Tier4 SplitPellets = new( 1f, 2f, 4f, 7f );
@@ -163,8 +164,6 @@ public static class TrinketParity
 	const float KeelSpeed = 0.6f;
 	const int BeltBurst = 3;
 	const float BeltReload = 0.3f;
-	const float WalkCone = 3f;
-	const float WalkReload = 0.12f;
 	const float SpoolCycle = 0.65f;
 	const float SpoolReload = 0.15f;
 	const float SightSpeed = 0.9f;
@@ -191,10 +190,6 @@ public static class TrinketParity
 	const float RackSpeed = 0.85f;
 	const float DrawReload = 0.85f;
 	const int DrawPierce = 1;
-	const float FeedReload = 0.75f;
-	const float FeedCycle = 1.2f;
-	const float EjectReload = 0.85f;
-	const int EjectBurst = 1;
 	const float VentReload = 0.8f;
 	const float VentTick = 1.2f;
 	const float CoolReload = 0.85f;
@@ -421,8 +416,6 @@ public static class TrinketParity
 			reload += AwlReload;
 		if ( Has( levels, "BELT" ) )
 			reload += BeltReload;
-		if ( Has( levels, "WALK" ) )
-			reload += WalkReload;
 		if ( Has( levels, "SPOOL" ) )
 			reload += SpoolReload;
 
@@ -449,10 +442,6 @@ public static class TrinketParity
 			reload *= RackReload;
 		if ( Has( levels, "DRAW" ) )
 			reload *= DrawReload;
-		if ( Has( levels, "FEED" ) )
-			reload *= FeedReload;
-		if ( Has( levels, "EJECT" ) )
-			reload *= EjectReload;
 		if ( Has( levels, "VENT" ) )
 			reload *= VentReload;
 		if ( Has( levels, "COOL" ) )
@@ -545,14 +534,10 @@ public static class TrinketParity
 		var cycle = t.DrumCycle;
 		if ( Has( levels, "SPOOL" ) )
 			cycle *= SpoolCycle;
-		if ( Has( levels, "FEED" ) )
-			cycle *= FeedCycle;
 
 		var burst = drum <= 0 ? 1 : Math.Max( 1, (int)DrumBurst.At( drum ) );
 		if ( drum > 0 && Has( levels, "BELT" ) )
 			burst += BeltBurst;
-		if ( drum > 0 && Has( levels, "EJECT" ) )
-			burst = Math.Max( 1, burst - EjectBurst );
 
 		var beamTicks = 0;
 		var beamTick = 1f;
@@ -613,7 +598,7 @@ public static class TrinketParity
 			StunRange = StunRange,
 			Cycle = cycle,
 			Burst = burst,
-			WalkStep = Has( levels, "WALK" ) ? WalkCone : 0f,
+			WalkStep = 0f,
 			Sight = Has( levels, "SIGHT" ),
 			Bite = Has( levels, "BITE" ),
 			Reload = MathF.Max( t.ReloadMin, reload ),
@@ -651,7 +636,7 @@ public static class TrinketParity
 			return false;
 		}
 
-		if ( (id == "SPLIT" || id == "SHUCK" || id == "SLAM") && !owned.Contains( "BUCK" ) )
+		if ( (id == "SPLIT" || id == "SHUCK" || id == "SLAM" || id == "SIGHT") && !owned.Contains( "BUCK" ) )
 			return true;
 		if ( (id is "MIRV" or "BLOOM" or "SCORCH" or "LANCE" or "CRATER" or "SPOT" or "JACK" or "SLAP") && !owned.Contains( "WARHEAD" ) )
 			return true;
@@ -667,11 +652,11 @@ public static class TrinketParity
 			return true;
 		if ( id == "KEEL" && Owns( "DEEP", "AWL", "RAM" ) )
 			return true;
-		if ( (id is "BELT" or "WALK" or "SPOOL" or "SIGHT" or "BITE" or "FEED" or "EJECT") && !owned.Contains( "DRUM" ) )
+		if ( (id is "BELT" or "SPOOL" or "BITE") && !owned.Contains( "DRUM" ) )
 			return true;
-		if ( (id is "BELT" or "WALK") && Owns( "SPOOL", "SIGHT", "BITE" ) )
+		if ( id == "BELT" && Owns( "SPOOL", "BITE" ) )
 			return true;
-		if ( (id is "SPOOL" or "SIGHT" or "BITE") && Owns( "BELT", "WALK" ) )
+		if ( (id is "SPOOL" or "BITE") && owned.Contains( "BELT" ) )
 			return true;
 		if ( (id is "SEAR" or "KILN" or "ARC" or "FORK" or "SHUNT" or "LINGER" or "CELL" or "VENT" or "COOL") && !owned.Contains( "LASH" ) )
 			return true;
@@ -679,13 +664,9 @@ public static class TrinketParity
 			return true;
 		if ( (id is "ARC" or "FORK") && Owns( "SEAR", "KILN" ) )
 			return true;
-		if ( id == "SLAM" && !owned.Contains( "SHUCK" ) )
-			return true;
 		if ( id == "SLAP" && !owned.Contains( "JACK" ) )
 			return true;
 		if ( id == "DRAW" && !owned.Contains( "RACK" ) )
-			return true;
-		if ( id == "EJECT" && !owned.Contains( "FEED" ) )
 			return true;
 		if ( id == "COOL" && !owned.Contains( "VENT" ) )
 			return true;

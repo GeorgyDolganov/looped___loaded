@@ -1,20 +1,16 @@
 {
   "Id": "SIGHT",
   "Title": "SIGHT",
-  "Pack": "Rifle",
+  "Pack": "Shotgun",
   "MaxLevel": 1,
-  "Sort": 31,
+  "Sort": 48,
   "Icon": "ui/traits/accel.png",
   "Blurb": "Later shots in a burst use half spread.",
   "Flags": [
     "Sight"
   ],
   "Requires": [
-    "trinkets/drum.trinket"
-  ],
-  "Excludes": [
-    "trinkets/belt.trinket",
-    "trinkets/walk.trinket"
+    "trinkets/buck.trinket"
   ],
   "Mods": [
     {
@@ -26,9 +22,7 @@
     }
   ],
   "__references": [
-    "trinkets/drum.trinket",
-    "trinkets/belt.trinket",
-    "trinkets/walk.trinket"
+    "trinkets/buck.trinket"
   ],
   "__version": 0
 }
