@@ -52,7 +52,7 @@ public static class Trinkets
 	public static string Unlocks( TrinketDef card )
 	{
 		Refresh();
-		if ( card is null || card.Id == "BORE" )
+		if ( card is null )
 			return "";
 
 		var names = new List<string>();
@@ -91,9 +91,6 @@ public static class Trinkets
 
 		foreach ( var req in Live( card.Requires ) )
 		{
-			if ( req.Id == "BORE" )
-				continue;
-
 			if ( !loadout.Has( req ) )
 				return true;
 		}
@@ -279,9 +276,6 @@ public static class Trinkets
 		{
 			foreach ( var req in Live( card.Requires ) )
 			{
-				if ( req.Id == "BORE" )
-					continue;
-
 				if ( !index.dependents.TryGetValue( req, out var list ) )
 				{
 					list = new List<TrinketDef>();
