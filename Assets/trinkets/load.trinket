@@ -1,0 +1,27 @@
+{
+  "Id": "LOAD",
+  "Title": "LOAD",
+  "Pack": "Junior",
+  "MaxLevel": 1,
+  "Sort": 61,
+  "Icon": "ui/traits/cue.png",
+  "InPool": false,
+  "Mods": [
+    {
+      "Stat": "Count",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 100,
+      "Value": 2
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.15
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

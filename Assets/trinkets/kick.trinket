@@ -1,0 +1,27 @@
+{
+  "Id": "KICK",
+  "Title": "KICK",
+  "Pack": "Warrior",
+  "MaxLevel": 1,
+  "Sort": 6,
+  "Icon": "ui/traits/kick.png",
+  "Mods": [
+    {
+      "Stat": "KickForce",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 900,
+      "Value": 110
+    },
+    {
+      "Stat": "KickRange",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 0,
+      "Value": 180,
+      "Passive": true
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

@@ -1,0 +1,31 @@
+{
+  "Id": "SHUCK",
+  "Title": "SHUCK",
+  "Pack": "Shotgun",
+  "MaxLevel": 1,
+  "Sort": 49,
+  "Icon": "ui/traits/snap.png",
+  "Requires": [
+    "trinkets/buck.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Cone",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 400,
+      "Value": 8
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 730,
+      "Value": 0.8
+    }
+  ],
+  "__references": [
+    "trinkets/buck.trinket"
+  ],
+  "__version": 0
+}

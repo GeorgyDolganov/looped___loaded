@@ -1,0 +1,26 @@
+{
+  "Id": "CHOKE",
+  "Title": "CHOKE",
+  "Pack": "Junior",
+  "MaxLevel": 1,
+  "Sort": 2,
+  "Icon": "ui/traits/incurve.png",
+  "Mods": [
+    {
+      "Stat": "Cone",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 210,
+      "Value": -10
+    },
+    {
+      "Stat": "Cone",
+      "Op": "Max",
+      "Growth": "Flat",
+      "Order": 211,
+      "Value": 6
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

@@ -1,0 +1,41 @@
+{
+  "Id": "MIRV",
+  "Title": "MIRV",
+  "Pack": "Rocket",
+  "MaxLevel": 1,
+  "Sort": 18,
+  "Icon": "ui/traits/explosive.png",
+  "Blurb": "Explosions not only on first contact!",
+  "Flags": [
+    "PerPelletSplash"
+  ],
+  "Requires": [
+    "trinkets/warhead.trinket"
+  ],
+  "Excludes": [
+    "trinkets/lance.trinket",
+    "trinkets/crater.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Splash",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 1201,
+      "Value": 0.55
+    },
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.8
+    }
+  ],
+  "__references": [
+    "trinkets/warhead.trinket",
+    "trinkets/lance.trinket",
+    "trinkets/crater.trinket"
+  ],
+  "__version": 0
+}

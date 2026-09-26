@@ -1,0 +1,35 @@
+{
+  "Id": "SPLIT",
+  "Title": "SPLIT",
+  "Pack": "Entry",
+  "MaxLevel": 4,
+  "Sort": 0,
+  "Icon": "ui/traits/bounce.png",
+  "Mods": [
+    {
+      "Stat": "Count",
+      "Op": "Add",
+      "Growth": "Tiers",
+      "Order": 100,
+      "Tiers": {
+        "Level1": 1,
+        "Level2": 2,
+        "Level3": 4,
+        "Level4": 7
+      }
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Tiers",
+      "Order": 700,
+      "Tiers": {
+        "Level2": 0.15,
+        "Level3": 0.25,
+        "Level4": 0.5
+      }
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

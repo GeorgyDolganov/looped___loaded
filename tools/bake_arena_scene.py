@@ -481,7 +481,7 @@ def main():
                 "Player",
                 guid=player_id,
                 components=[
-                    {"__type": "LoopedLoaded.RingRunner", "__guid": runner_id, "Speed": 330, "DashDistance": 430, "DashCooldown": 1.1, "DashDuration": 0.17, "SlowSpeedScale": 0.38, "SlowDrain": 0.55, "SlowRegen": 0.28, "PlayerRadius": 48},
+                    {"__type": "LoopedLoaded.RingRunner", "__guid": runner_id, "Speed": 255, "DashDistance": 280, "DashCooldown": 1.1, "DashDuration": 0.17, "SlowSpeedScale": 0.38, "SlowDrain": 0.55, "SlowRegen": 0.28, "PlayerRadius": 48},
                     {"__type": "LoopedLoaded.PlayerAim", "__guid": aim_id, "MuzzleOffset": 82, "PreviewLength": 1500, "PreviewBounceLength": 340, "RoundRadius": 13},
                     {"__type": "LoopedLoaded.RoundInventory", "__guid": inv_id},
                 ],

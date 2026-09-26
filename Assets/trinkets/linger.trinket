@@ -1,0 +1,32 @@
+{
+  "Id": "LINGER",
+  "Title": "LINGER",
+  "Pack": "Laser",
+  "MaxLevel": 1,
+  "Sort": 39,
+  "Icon": "ui/traits/electric.png",
+  "Blurb": "Remaining ticks finish where you let go.",
+  "Flags": [
+    "BeamLinger"
+  ],
+  "Requires": [
+    "trinkets/lash.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 720,
+      "Value": 0.12,
+      "UseWhen": true,
+      "WhenStat": "BeamRank",
+      "HasWhenMin": true,
+      "WhenMin": 1
+    }
+  ],
+  "__references": [
+    "trinkets/lash.trinket"
+  ],
+  "__version": 0
+}

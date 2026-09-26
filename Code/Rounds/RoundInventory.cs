@@ -237,7 +237,7 @@ public sealed class RoundInventory : Component
 			doubleVolley = Live.Count > 0 ? Live[^1].Flight.Volley : null;
 			if ( doubleVolley is not null )
 				doubleVolley.Hold = true;
-			doubleLeft = MathF.Max( 0.05f, GameSettings.Traits.DoubleGap );
+			doubleLeft = MathF.Max( 0.05f, recipe.Gap );
 			return;
 		}
 

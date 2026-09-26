@@ -1,0 +1,34 @@
+{
+  "Id": "DRUM",
+  "Title": "DRUM",
+  "Pack": "Rifle",
+  "MaxLevel": 3,
+  "Sort": 11,
+  "Icon": "ui/traits/accel.png",
+  "Blurb": "HOLD TO SHOOT MULTIPLE ROUNDS ONE AFTER ANOTHER",
+  "Flags": [
+    "Auto"
+  ],
+  "Mods": [
+    {
+      "Stat": "Burst",
+      "Op": "Set",
+      "Growth": "Tiers",
+      "Order": 1400,
+      "Tiers": {
+        "Level1": 3,
+        "Level2": 4,
+        "Level3": 6
+      }
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "TraitRatio",
+      "Order": 700,
+      "Value": 0.45
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

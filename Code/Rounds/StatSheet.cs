@@ -38,352 +38,292 @@ public readonly struct SheetRow
 
 public static class StatSheet
 {
-	public static List<StatLine> Effects( RoundTrait trait, int rank )
+	public static List<StatLine> Effects( TrinketDef card, int rank )
 	{
-		var t = GameSettings.Traits;
 		var lines = new List<StatLine>();
+		if ( card is null )
+			return lines;
+
 		rank = Math.Max( 1, rank );
-
-		void Up( string text ) => lines.Add( new StatLine( text, 1 ) );
-		void Down( string text ) => lines.Add( new StatLine( text, -1 ) );
-		void Note( string text ) => lines.Add( new StatLine( text, 0 ) );
-		void Mixed( string text ) => lines.Add( new StatLine( text, 0, true ) );
-
-		switch ( trait )
+		if ( card.Mods is not null )
 		{
-			case RoundTrait.Buck:
+			foreach ( var mod in card.Mods )
 			{
-				var pellets = rank <= 1
-					? Math.Max( 0, (int)t.BuckPellets.At( 1 ) - 1 )
-					: (int)Gain( t.BuckPellets, rank );
-				var cone = Gain( t.BuckCone, rank );
-				if ( pellets > 0 )
-					Up( pellets == 1 ? "+1 Projectile" : $"+{pellets} Projectiles" );
-				if ( cone > 0.001f )
-					Mixed( $"+{Fmt( cone )}° Spread" );
-				var cut = t.BuckRangeCut.At( rank );
-				var prev = rank <= 1 ? 0f : t.BuckRangeCut.At( rank - 1 );
-				var delta = cut - prev;
-				if ( delta > 0.001f )
-					Down( $"-{PctPoints( delta )} Range" );
-				else if ( delta < -0.001f )
-					Up( $"+{PctPoints( -delta )} Range" );
-				break;
-			}
-			case RoundTrait.Split:
-			{
-				var pellets = t.SplitPellets is null ? 0 : (int)Gain( t.SplitPellets, rank );
-				var reload = t.SplitReload is null ? 0f : Gain( t.SplitReload, rank );
-				if ( pellets > 0 )
-					Up( pellets == 1 ? "+1 Projectile" : $"+{pellets} Projectiles" );
-				if ( reload > 0.001f )
-					Down( $"+{Fmt( reload )}s Reload" );
-				break;
-			}
-			case RoundTrait.Fan:
-				Mixed( $"+{Fmt( t.FanCone )}° Spread" );
-				break;
-			case RoundTrait.Choke:
-				Mixed( $"-{Fmt( t.ChokeCone )}° Spread" );
-				Mixed( $"Spread min {Fmt( t.ChokeFloor )}°" );
-				break;
-			case RoundTrait.Meat:
-				Up( $"+{t.MeatBonus} Damage within {Fmt( t.MeatRange )}" );
-				Down( $"-{PctPoints( t.MeatRangeCut )} Shot distance" );
-				break;
-			case RoundTrait.Rico:
-				Up( $"+{t.RicoBounces} Bounce" );
-				break;
-			case RoundTrait.Double:
-				Note( "Two volleys per mag" );
-				Note( $"Gap {Fmt( t.DoubleGap )}s" );
-				Down( $"+{Fmt( t.DoubleReload )}s Reload" );
-				break;
-			case RoundTrait.Kick:
-				Up( $"+{Fmt( t.KickForce )} Knockback within {Fmt( t.KickRange )}" );
-				break;
-			case RoundTrait.Stun:
-				Up( $"+{Fmt( t.StunTime )}s Stun within {Fmt( t.StunRange )}" );
-				break;
-			case RoundTrait.Slug:
-				Up( $"+{t.SlugDamage} Damage per removed projectile" );
-				Note( $"Body radius {Fmt( t.SlugRadius )}" );
-				Up( $"Flies +{Fmt( t.SlugFalloffPad )} farther" );
-				break;
-			case RoundTrait.Bore:
-			{
-				var pierce = Gain( t.BorePierce, rank );
-				if ( pierce > 0f )
-					Up( $"+{(int)pierce} Pierce" );
-				Down( $"+{Fmt( ReloadGain( t.BoreReload, rank ) )}s Reload" );
-				if ( rank <= 1 )
-					Down( "Locks out LASH" );
-				break;
-			}
-			case RoundTrait.Drum:
-			{
-				var burst = Gain( t.DrumBurst, rank );
-				if ( burst > 0f )
-					Up( $"+{(int)burst} Burst" );
-				if ( rank <= 1 )
-					Note( $"Cycle {Fmt( t.DrumCycle )}s" );
-				Down( $"+{Fmt( ReloadGain( t.DrumReload, rank ) )}s Reload" );
-				break;
-			}
-			case RoundTrait.Warhead:
-			{
-				var radius = Gain( t.WarheadRadius, rank );
-				if ( radius > 0f )
-					Up( $"+{Fmt( radius )} Splash Radius" );
-				Down( $"{PctDelta( SpeedAt( t.WarheadSpeed, rank ) )} Projectile Speed" );
-				if ( rank <= 1 )
-					Down( "You take splash damage" );
-				break;
-			}
-			case RoundTrait.Mirv:
-				Note( "Splash per pellet" );
-				Down( $"{PctDelta( t.MirvRadiusScale )} Splash Radius" );
-				Down( $"{PctDelta( t.MirvSpeed )} Projectile Speed" );
-				Down( "Locks out LANCE" );
-				break;
-			case RoundTrait.Bloom:
-				Up( $"+{Fmt( t.BloomRadius )} Splash Radius" );
-				Down( $"+{Fmt( t.BloomReload )}s Reload" );
-				Down( "Locks out LANCE" );
-				break;
-			case RoundTrait.Scorch:
-				Up( $"Splash Damage {t.ScorchDamage}" );
-				Down( $"{PctDelta( t.ScorchSpeed )} Projectile Speed" );
-				Down( $"+{Fmt( t.ScorchReload )}s Reload" );
-				Down( "Locks out LANCE" );
-				break;
-			case RoundTrait.Lance:
-				Up( $"+{t.LanceDamage} Damage" );
-				Up( "Friendly splash off" );
-				Down( $"{PctDelta( t.LanceRadiusScale )} Splash Radius" );
-				Down( $"{PctDelta( t.LanceSpeed )} Projectile Speed" );
-				Down( $"+{Fmt( t.LanceReload )}s Reload" );
-				Down( "Bounces 0" );
-				Down( "Locks out CLUSTER" );
-				break;
-			case RoundTrait.Crater:
-				Up( $"+{Fmt( t.CraterSplash )} Splash Radius" );
-				Up( $"Body radius {Fmt( t.CraterBody )}" );
-				Down( $"{PctDelta( t.CraterSpeed )} Projectile Speed" );
-				Down( "Bounces 0" );
-				Down( "Locks out CLUSTER" );
-				break;
-			case RoundTrait.Spot:
-				Note( "Aim at a point" );
-				Up( $"+{Fmt( t.SpotSplash )} Splash Radius" );
-				Up( $"+{t.SpotSplashDamage} Splash Damage" );
-				Down( $"{PctDelta( t.SpotSpeed )} Projectile Speed" );
-				Down( "Bounces 0" );
-				break;
-			case RoundTrait.Deep:
-				Up( $"+{t.DeepPierce} Pierce" );
-				Down( $"+{Fmt( t.DeepReload )}s Reload" );
-				Down( "Locks out KEEL" );
-				break;
-			case RoundTrait.Awl:
-				Note( "Ignores armor" );
-				Down( $"{PctDelta( t.AwlSpeed )} Projectile Speed" );
-				Down( $"+{Fmt( t.AwlReload )}s Reload" );
-				Down( "Locks out KEEL" );
-				break;
-			case RoundTrait.Ram:
-				Note( "+1 damage per body already pierced" );
-				Down( $"{PctDelta( t.RamSpeed )} Projectile Speed" );
-				Down( "Locks out KEEL" );
-				break;
-			case RoundTrait.Keel:
-				Up( $"+{t.KeelDamage} Damage" );
-				Down( $"{PctDelta( t.KeelSpeed )} Projectile Speed" );
-				Down( "Bounces 0" );
-				Down( "Locks out DEEP" );
-				break;
-			case RoundTrait.Belt:
-				Up( $"+{t.BeltBurst} Burst" );
-				Down( $"+{Fmt( t.BeltReload )}s Reload" );
-				Down( "Locks out TRACK" );
-				break;
-			case RoundTrait.Walk:
-				Mixed( $"+{Fmt( t.WalkCone )}° spread per later volley" );
-				Down( $"+{Fmt( t.WalkReload )}s Reload" );
-				Down( "Locks out TRACK" );
-				break;
-			case RoundTrait.Spool:
-				Up( $"Cycle ×{Fmt( t.SpoolCycle )}" );
-				Down( $"+{Fmt( t.SpoolReload )}s Reload" );
-				Down( "Locks out SWEEP" );
-				break;
-			case RoundTrait.Sight:
-				Mixed( "Later volleys use half spread" );
-				Down( $"{PctDelta( t.SightSpeed )} Projectile Speed" );
-				Down( "Locks out SWEEP" );
-				break;
-			case RoundTrait.Bite:
-				Note( "+1 damage on a body this burst already hit" );
-				Down( $"{PctDelta( t.BiteSpeed )} Projectile Speed" );
-				Down( "Locks out SWEEP" );
-				break;
-			case RoundTrait.Link:
-				Note( "Burst finishes on release" );
-				Down( $"{PctDelta( t.LinkCycle )} Cycle" );
-				Down( $"+{Fmt( t.LinkReload )}s Reload" );
-				break;
-			case RoundTrait.Lash:
-			{
-				var ticks = t.LashTicks is null ? 0 : (int)t.LashTicks.At( rank );
-				if ( rank <= 1 )
-				{
-					Note( "Hold to fire lightning" );
-					Up( $"{ticks} Ticks" );
-					Note( $"Tick {Fmt( t.LashTick.At( 1 ) )}s" );
-					Up( $"Reload {Fmt( t.LashReload )}s" );
-					Down( "Locks out BORE" );
-				}
-				else
-				{
-					Note( "Lightning forks" );
-					var prev = (int)t.LashTicks.At( rank - 1 );
-					if ( ticks > prev )
-						Up( $"+{ticks - prev} Ticks" );
-					var tick = t.LashTick.At( rank ) - t.LashTick.At( rank - 1 );
-					if ( tick < -0.001f )
-						Up( $"{Fmt( tick )}s Bolt Tick" );
-					else if ( tick > 0.001f )
-						Down( $"+{Fmt( tick )}s Bolt Tick" );
-				}
-				break;
-			}
-			case RoundTrait.Sear:
-				Note( "+1 damage while the beam stays" );
-				Down( $"+{Fmt( t.SearReload )}s Reload" );
-				Down( "Locks out ARC" );
-				break;
-			case RoundTrait.Kiln:
-				Note( $"Tick ×{Fmt( t.KilnTick )} while latched" );
-				Down( $"{PctDelta( t.KilnWidth )} Beam Width" );
-				Down( $"+{Fmt( t.KilnReload )}s Reload" );
-				Down( "Locks out ARC" );
-				break;
-			case RoundTrait.Arc:
-				Note( $"Jump {Fmt( t.ArcRange )}" );
-				Down( $"{PctDelta( t.ArcTick )} Bolt Tick" );
-				Down( "Locks out BRAND" );
-				break;
-			case RoundTrait.Fork:
-				Note( "Side bolts hit" );
-				Down( $"+{Fmt( t.ForkReload )}s Reload" );
-				Down( "Locks out BRAND" );
-				break;
-			case RoundTrait.Shunt:
-				Note( "Ignores shields" );
-				Down( $"{PctDelta( t.ShuntTick )} Bolt Tick" );
-				Down( $"{PctDelta( t.ShuntWidth )} Beam Width" );
-				break;
-			case RoundTrait.Linger:
-				Note( "Remaining ticks finish" );
-				Down( $"+{Fmt( t.LingerReload )}s Reload" );
-				break;
-			case RoundTrait.Cell:
-				Up( $"+{t.CellTicks} Ticks" );
-				Down( $"+{Fmt( t.CellReload )}s Reload" );
-				break;
-			case RoundTrait.Jack:
-				Up( $"{PctDelta( t.JackReload )} Reload" );
-				Down( $"{PctDelta( t.JackSplash )} Splash Radius" );
-				break;
-			case RoundTrait.Slap:
-				Up( $"{PctDelta( t.SlapReload )} Reload" );
-				Down( $"{PctDelta( t.SlapSpeed )} Projectile Speed" );
-				break;
-			case RoundTrait.Rack:
-				Up( $"{PctDelta( t.RackReload )} Reload" );
-				Down( $"{PctDelta( t.RackSpeed )} Projectile Speed" );
-				break;
-			case RoundTrait.Draw:
-				Up( $"{PctDelta( t.DrawReload )} Reload" );
-				Down( $"-{t.DrawPierce} Pierce" );
-				break;
-			case RoundTrait.Feed:
-				Up( $"{PctDelta( t.FeedReload )} Reload" );
-				Down( $"{PctDelta( t.FeedCycle )} Cycle" );
-				break;
-			case RoundTrait.Eject:
-				Up( $"{PctDelta( t.EjectReload )} Reload" );
-				Down( $"-{t.EjectBurst} Burst" );
-				break;
-			case RoundTrait.Vent:
-				Up( $"{PctDelta( t.VentReload )} Reload" );
-				Down( $"{PctDelta( t.VentTick )} Bolt Tick" );
-				break;
-			case RoundTrait.Cool:
-				Up( $"{PctDelta( t.CoolReload )} Reload" );
-				Down( $"{PctDelta( t.CoolWidth )} Beam Width" );
-				break;
-			case RoundTrait.Shuck:
-				Up( $"{PctDelta( t.ShuckReload )} Reload" );
-				Mixed( $"+{Fmt( t.ShuckCone )}° Spread" );
-				break;
-			case RoundTrait.Slam:
-				Up( $"{PctDelta( t.SlamReload )} Reload" );
-				Down( $"-{t.SlamPellets} Projectile" );
-				break;
-			case RoundTrait.Pin:
-			{
-				var nails = Gain( t.PinNails, rank );
-				var bounce = Gain( t.PinBounce, rank );
-				var cone = Gain( t.PinCone, rank );
-				if ( nails > 0f )
-					Up( $"+{(int)nails} Projectile" );
-				if ( bounce > 0f )
-					Up( $"+{(int)bounce} Bounce" );
-				if ( cone > 0.001f )
-					Mixed( $"+{Fmt( cone )}° Spread" );
-				if ( rank <= 1 )
-					Note( $"Stick {Fmt( t.PinStick )}s" );
-				break;
-			}
-			case RoundTrait.Rush:
-				Up( $"{PctDelta( SpeedAt( t.RushSpeed, rank ) )} Projectile Speed" );
-				Down( $"+{Fmt( ReloadGain( t.RushReload, rank ) )}s Reload" );
-				break;
-			case RoundTrait.Dodge:
-			{
-				var chance = Gain( t.DodgeChance, rank );
-				if ( chance > 0.001f )
-					Up( $"+{PctPoints( chance )} Dodge" );
-				break;
-			}
-			case RoundTrait.Snap:
-			{
-				if ( t.SnapReload is null )
-					break;
+				if ( mod is null || mod.Hidden )
+					continue;
 
-				var before = rank <= 1 ? 1f : t.SnapReload.At( rank - 1 );
-				var cut = before - t.SnapReload.At( rank );
-				if ( cut > 0.001f )
-					Up( $"-{PctPoints( cut )} Reload" );
-				break;
+				if ( Describe( mod, rank ) is { } line )
+					lines.Add( line );
 			}
+		}
+
+		if ( card.Notes is not null )
+		{
+			foreach ( var note in card.Notes )
+			{
+				if ( note is null || string.IsNullOrWhiteSpace( note.Text ) )
+					continue;
+
+				if ( note.When == NoteWhen.First && rank > 1 )
+					continue;
+
+				if ( note.When == NoteWhen.Later && rank <= 1 )
+					continue;
+
+				lines.Add( new StatLine( note.Text, note.Sign, note.Mixed ) );
+			}
+		}
+
+		if ( rank <= 1 && card.Flags is not null )
+		{
+			foreach ( var flag in card.Flags )
+			{
+				var text = FlagText( flag );
+				if ( text is null )
+					continue;
+
+				lines.Add( new StatLine( text, FlagSign( flag ) ) );
+			}
+		}
+
+		if ( rank <= 1 )
+		{
+			var names = new List<string>();
+			foreach ( var ex in Trinkets.ExcludesOf( card ) )
+				names.Add( ex.Id );
+
+			if ( names.Count > 0 )
+				lines.Add( new StatLine( "Locks out " + string.Join( ", ", names ), -1 ) );
 		}
 
 		return lines;
 	}
 
-	public static List<SheetRow> Weapon( GameLoop loop, RoundTrait? hover )
+	static StatLine? Describe( TrinketMod mod, int rank )
+	{
+		var meta = MetaOf( mod.Stat );
+		if ( mod.ByHook && mod.Op == ModOp.Set )
+		{
+			var amount = mod.Amount( rank, 0 );
+			if ( rank <= 1 )
+			{
+				var number = NearlyInt( amount ) ? ((int)MathF.Round( amount )).ToString() : Fmt( amount );
+				var label = meta.Plural is not null && MathF.Abs( amount - 1f ) > 0.001f ? meta.Plural : meta.Label;
+				var text = string.IsNullOrEmpty( meta.Suffix ) ? $"{number} {label}" : $"{meta.Label} {number}{meta.Suffix}";
+				return new StatLine( text, 1 );
+			}
+
+			return DescribeDelta( mod.Stat, meta, amount - mod.Amount( rank - 1, 0 ) );
+		}
+
+		if ( mod.Growth == ModGrowth.PerRemoved )
+		{
+			if ( rank > 1 )
+				return null;
+
+			return new StatLine( $"+{Fmt( mod.Value )} {meta.Label} per removed projectile", 1 );
+		}
+
+		if ( mod.Op == ModOp.Mul )
+			return DescribeMul( mod, meta, rank );
+
+		if ( mod.Op == ModOp.Max )
+		{
+			if ( rank > 1 )
+				return null;
+
+			return new StatLine( $"{meta.Label} min {Fmt( mod.Amount( 1, 0 ) )}{meta.Suffix}", 0, true );
+		}
+
+		if ( mod.Op == ModOp.Min )
+		{
+			if ( rank > 1 )
+				return null;
+
+			return new StatLine( $"{meta.Label} max {Fmt( mod.Amount( 1, 0 ) )}{meta.Suffix}", 0, true );
+		}
+
+		if ( mod.Op == ModOp.Set && mod.Growth == ModGrowth.Flat )
+			return DescribeSet( mod, meta, rank );
+
+		var now = mod.Amount( rank, 0 );
+		var prev = rank <= 1 ? 0f : mod.Amount( rank - 1, 0 );
+		return DescribeDelta( mod.Stat, meta, now - prev );
+	}
+
+	static StatLine? DescribeMul( TrinketMod mod, StatMeta meta, int rank )
+	{
+		var now = mod.Amount( rank, 0 );
+		var prev = rank <= 1 ? 1f : mod.Amount( rank - 1, 0 );
+		if ( mod.Points )
+		{
+			var cut = prev - now;
+			if ( MathF.Abs( cut ) < 0.001f )
+				return null;
+
+			var helpful = meta.HigherIsGood == false;
+			var sign = (cut > 0) == helpful ? 1 : -1;
+			if ( meta.Mixed || meta.HigherIsGood is null )
+				sign = 0;
+
+			var lead = cut > 0 ? "-" : "+";
+			return new StatLine( $"{lead}{PctPoints( MathF.Abs( cut ) )} {meta.Label}", sign, meta.Mixed );
+		}
+
+		var factor = now / MathF.Max( 0.01f, prev );
+		if ( MathF.Abs( factor - 1f ) < 0.001f )
+			return null;
+
+		var better = meta.HigherIsGood == false ? factor < 1f : factor > 1f;
+		var mulSign = meta.HigherIsGood is null || meta.Mixed ? 0 : better ? 1 : -1;
+		return new StatLine( $"{PctDelta( factor )} {meta.Label}", mulSign, meta.Mixed || meta.HigherIsGood is null );
+	}
+
+	static StatLine? DescribeSet( TrinketMod mod, StatMeta meta, int rank )
+	{
+		if ( rank > 1 )
+			return null;
+
+		var amount = mod.Amount( 1, 0 );
+		var delta = amount - BaseOf( mod.Stat );
+		if ( MathF.Abs( delta ) < 0.001f )
+			return null;
+
+		var sign = 0;
+		var mixed = meta.Mixed || meta.HigherIsGood is null;
+		if ( !mixed && meta.HigherIsGood is bool good )
+			sign = (delta > 0) == good ? 1 : -1;
+
+		var number = NearlyInt( amount ) ? ((int)MathF.Round( amount )).ToString() : Fmt( amount );
+		var text = string.IsNullOrEmpty( meta.Suffix ) ? $"{meta.Label} {number}" : $"{meta.Label} {number}{meta.Suffix}";
+		return new StatLine( text, sign, mixed );
+	}
+
+	static StatLine? DescribeDelta( GunStat stat, StatMeta meta, float delta )
+	{
+		if ( MathF.Abs( delta ) < 0.001f )
+			return null;
+
+		if ( stat == GunStat.RangeCut )
+			return delta > 0
+				? new StatLine( $"-{PctPoints( delta )} Range", -1 )
+				: new StatLine( $"+{PctPoints( -delta )} Range", 1 );
+
+		if ( stat == GunStat.Dodge )
+			return new StatLine( $"+{PctPoints( delta )} Dodge", delta >= 0 ? 1 : -1 );
+
+		var abs = MathF.Abs( delta );
+		var shown = NearlyInt( abs ) ? ((int)MathF.Round( abs )).ToString() : Fmt( abs );
+		var label = meta.Plural is not null && MathF.Abs( abs - 1f ) > 0.001f ? meta.Plural : meta.Label;
+		var lead = delta > 0 ? "+" : "-";
+		var text = string.IsNullOrEmpty( meta.Suffix ) ? $"{lead}{shown} {label}" : $"{lead}{shown}{meta.Suffix} {label}";
+		var mixed = meta.Mixed || meta.HigherIsGood is null;
+		var sign = 0;
+		if ( !mixed && meta.HigherIsGood is bool good )
+			sign = (delta > 0) == good ? 1 : -1;
+
+		return new StatLine( text, sign, mixed );
+	}
+
+	readonly record struct StatMeta( string Label, string Plural, string Suffix, bool? HigherIsGood, bool Mixed );
+
+	static StatMeta MetaOf( GunStat stat ) => stat switch
+	{
+		GunStat.Count => new( "Projectile", "Projectiles", "", true, false ),
+		GunStat.Cone => new( "Spread", null, "°", null, true ),
+		GunStat.Damage => new( "Damage", null, "", true, false ),
+		GunStat.Pierce => new( "Pierce", null, "", true, false ),
+		GunStat.Bounces => new( "Bounce", "Bounces", "", true, false ),
+		GunStat.Reload => new( "Reload", null, "s", false, false ),
+		GunStat.Speed => new( "Projectile Speed", null, "", true, false ),
+		GunStat.Radius => new( "Body radius", null, "", true, false ),
+		GunStat.Splash => new( "Splash Radius", null, "", true, false ),
+		GunStat.SplashDamage => new( "Splash Damage", null, "", true, false ),
+		GunStat.RangeCut => new( "Range", null, "", false, false ),
+		GunStat.RangePad => new( "Range", null, "", true, false ),
+		GunStat.MeatRange => new( "Damage within", null, "", true, false ),
+		GunStat.MeatBonus => new( "Damage", null, "", true, false ),
+		GunStat.KickForce => new( "Knockback", null, "", true, false ),
+		GunStat.KickRange => new( "Knockback range", null, "", true, false ),
+		GunStat.StunTime => new( "Stun", null, "s", true, false ),
+		GunStat.StunRange => new( "Stun range", null, "", true, false ),
+		GunStat.Cycle => new( "Cycle", null, "s", false, false ),
+		GunStat.Burst => new( "Burst", null, "", true, false ),
+		GunStat.WalkStep => new( "Spread per later volley", null, "°", null, true ),
+		GunStat.BeamHit => new( "Bolt Damage", null, "", true, false ),
+		GunStat.BeamTick => new( "Bolt Tick", null, "s", false, false ),
+		GunStat.BeamTicks => new( "Tick", "Ticks", "", true, false ),
+		GunStat.BeamWidth => new( "Beam Width", null, "", true, false ),
+		GunStat.BeamArc => new( "Jump", null, "", true, false ),
+		GunStat.BeamKiln => new( "Latch tick", null, "", false, false ),
+		GunStat.StickTime => new( "Stick", null, "s", true, false ),
+		GunStat.Dodge => new( "Dodge", null, "", true, false ),
+		GunStat.Gap => new( "Gap", null, "s", null, false ),
+		GunStat.SpinSpeed => new( "Spin", null, "", true, false ),
+		_ => new( stat.ToString(), null, "", null, true )
+	};
+
+	static float BaseOf( GunStat stat )
+	{
+		var traits = GameSettings.Traits;
+		return stat switch
+		{
+			GunStat.Reload => traits.ReloadBase,
+			GunStat.Bounces => traits.MaxBouncesBase,
+			GunStat.Speed => 1f,
+			GunStat.BeamTick => 1f,
+			GunStat.BeamKiln => 1f,
+			GunStat.BeamWidth => traits.LashWidth,
+			GunStat.Radius => traits.ProjectileRadius,
+			GunStat.Cycle => traits.DrumCycle,
+			GunStat.Burst => 1f,
+			GunStat.Count => 1f,
+			GunStat.Damage => traits.BaseDamage,
+			_ => 0f
+		};
+	}
+
+	static string FlagText( GunFlag flag ) => flag switch
+	{
+		GunFlag.Beam => "Hold to fire lightning",
+		GunFlag.Auto => "Hold to fire a burst",
+		GunFlag.DoublePump => "Two volleys per mag",
+		GunFlag.PointAim => "Aim at a point",
+		GunFlag.IgnoreArmor => "Ignores armor",
+		GunFlag.RampPierce => "+1 damage per body already pierced",
+		GunFlag.Sight => "Later volleys use half spread",
+		GunFlag.Bite => "+1 damage on a body this burst already hit",
+		GunFlag.CommitBurst => "Burst finishes on release",
+		GunFlag.PerPelletSplash => "Splash per pellet",
+		GunFlag.FriendlySplash => "You take splash damage",
+		GunFlag.NoFriendlySplash => "Friendly splash off",
+		GunFlag.Nail => "Nails that stick",
+		GunFlag.BeamSear => "+1 damage while the beam stays",
+		GunFlag.BeamFork => "Side bolts hit",
+		GunFlag.BeamShunt => "Ignores shields",
+		GunFlag.BeamLinger => "Remaining ticks finish",
+		_ => null
+	};
+
+	static int FlagSign( GunFlag flag ) => flag switch
+	{
+		GunFlag.FriendlySplash => -1,
+		_ => 1
+	};
+
+	static bool NearlyInt( float value ) => MathF.Abs( value - MathF.Round( value ) ) < 0.001f;
+
+	public static List<SheetRow> Weapon( GameLoop loop, TrinketDef hover )
 	{
 		if ( loop is null || !loop.Inventory.IsValid() )
 			return [];
 
 		var loadout = loop.Inventory.Loadout;
 		var now = loadout.Recipe();
-		var next = hover is { } trait ? loadout.Peek( trait ) : now;
+		var next = hover is not null ? loadout.Peek( hover ) : now;
 		ShotRange.Apply( ref now, loop );
 		ShotRange.Apply( ref next, loop );
-		var preview = hover.HasValue;
+		var preview = hover is not null;
 		var rows = new List<SheetRow>();
 
 		AddInt( rows, "Damage", now.Damage, next.Damage, preview, true, true );
@@ -515,24 +455,6 @@ public static class StatSheet
 		var better = next > now;
 		var sign = better == good ? 1 : -1;
 		return new SheetRow( label, nowText, nextText, sign );
-	}
-
-	static float Gain( TraitTiers tiers, int rank )
-	{
-		var now = rank <= 1 ? 0f : tiers.At( rank - 1 );
-		return tiers.At( rank ) - now;
-	}
-
-	static float SpeedAt( TraitTiers tiers, int rank )
-	{
-		var now = rank <= 1 ? 1f : tiers.At( rank - 1 );
-		return tiers.At( rank ) / MathF.Max( 0.01f, now );
-	}
-
-	static float ReloadGain( float add, int rank )
-	{
-		var before = rank <= 1 ? 0f : add * Progression.TraitMul( rank - 1 );
-		return add * Progression.TraitMul( rank ) - before;
 	}
 
 	static string Flag( bool on ) => on ? "Yes" : "No";

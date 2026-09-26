@@ -409,7 +409,7 @@
           "ClearSpeedRamp": 1.2,
           "ClearSpeedScale": 3,
           "DashCooldown": 1.1,
-          "DashDistance": 430,
+          "DashDistance": 280,
           "DashDuration": 0.17,
           "Loop": {
             "_type": "component",
@@ -427,7 +427,7 @@
           "SlowDrain": 0.55,
           "SlowRegen": 0.28,
           "SlowSpeedScale": 0.38,
-          "Speed": 330
+          "Speed": 255
         },
         {
           "__type": "LoopedLoaded.PlayerAim",

@@ -57,79 +57,6 @@ public class TextConfig : GameResource
 		}
 	}
 
-	public TraitCopy Trait( RoundTrait trait )
-	{
-		var pack = Traits ??= new();
-		return trait switch
-		{
-			RoundTrait.Buck => pack.Buck ??= new(),
-			RoundTrait.Bore => pack.Bore ??= new(),
-			RoundTrait.Drum => pack.Drum ??= new(),
-			RoundTrait.Warhead => pack.Warhead ??= new(),
-			RoundTrait.Lash => pack.Lash ??= new(),
-			RoundTrait.Pin => pack.Pin ??= new(),
-			RoundTrait.Spin => pack.Spin ??= new(),
-			RoundTrait.Rush => pack.Rush ??= new(),
-			RoundTrait.Dodge => pack.Dodge ??= new(),
-			RoundTrait.Snap => pack.Snap ??= new(),
-			RoundTrait.Split => pack.Split ??= new(),
-			RoundTrait.Fan => pack.Fan ??= new(),
-			RoundTrait.Pump => pack.Pump ??= new(),
-			RoundTrait.Load => pack.Load ??= new(),
-			RoundTrait.Choke => pack.Choke ??= new(),
-			RoundTrait.Meat => pack.Meat ??= new(),
-			RoundTrait.Rico => pack.Rico ??= new(),
-			RoundTrait.Gape => pack.Gape ??= new(),
-			RoundTrait.Double => pack.Double ??= new(),
-			RoundTrait.Kick => pack.Kick ??= new(),
-			RoundTrait.Stun => pack.Stun ??= new(),
-			RoundTrait.Heap => pack.Heap ??= new(),
-			RoundTrait.Waste => pack.Waste ??= new(),
-			RoundTrait.Breach => pack.Breach ??= new(),
-			RoundTrait.Slug => pack.Slug ??= new(),
-			RoundTrait.Mirv => pack.Mirv ??= new(),
-			RoundTrait.Bloom => pack.Bloom ??= new(),
-			RoundTrait.Scorch => pack.Scorch ??= new(),
-			RoundTrait.Lance => pack.Lance ??= new(),
-			RoundTrait.Crater => pack.Crater ??= new(),
-			RoundTrait.Spot => pack.Spot ??= new(),
-			RoundTrait.Deep => pack.Deep ??= new(),
-			RoundTrait.Awl => pack.Awl ??= new(),
-			RoundTrait.Ram => pack.Ram ??= new(),
-			RoundTrait.Mass => pack.Mass ??= new(),
-			RoundTrait.Keel => pack.Keel ??= new(),
-			RoundTrait.Trace => pack.Trace ??= new(),
-			RoundTrait.Belt => pack.Belt ??= new(),
-			RoundTrait.Walk => pack.Walk ??= new(),
-			RoundTrait.Spool => pack.Spool ??= new(),
-			RoundTrait.Sight => pack.Sight ??= new(),
-			RoundTrait.Bite => pack.Bite ??= new(),
-			RoundTrait.Link => pack.Link ??= new(),
-			RoundTrait.Sear => pack.Sear ??= new(),
-			RoundTrait.Kiln => pack.Kiln ??= new(),
-			RoundTrait.Arc => pack.Arc ??= new(),
-			RoundTrait.Fork => pack.Fork ??= new(),
-			RoundTrait.Shunt => pack.Shunt ??= new(),
-			RoundTrait.Linger => pack.Linger ??= new(),
-			RoundTrait.Cell => pack.Cell ??= new(),
-			RoundTrait.Jack => pack.Jack ??= new(),
-			RoundTrait.Slap => pack.Slap ??= new(),
-			RoundTrait.Rack => pack.Rack ??= new(),
-			RoundTrait.Draw => pack.Draw ??= new(),
-			RoundTrait.Feed => pack.Feed ??= new(),
-			RoundTrait.Eject => pack.Eject ??= new(),
-			RoundTrait.Vent => pack.Vent ??= new(),
-			RoundTrait.Cool => pack.Cool ??= new(),
-			RoundTrait.Shuck => pack.Shuck ??= new(),
-			RoundTrait.Slam => pack.Slam ??= new(),
-			_ => pack.Slug ??= new()
-		};
-	}
-
-	public string TraitCode( RoundTrait trait ) => Or( Trait( trait ).Code, trait.ToString().ToUpperInvariant() );
-	public string TraitTitle( RoundTrait trait ) => Or( Trait( trait ).Title, trait.ToString().ToUpperInvariant() );
-	public string TraitBlurb( RoundTrait trait ) => Or( Trait( trait ).Blurb, "" );
-
 	public string RarityOf( TraitPack pack )
 	{
 		var rarity = (Traits ??= new()).Rarity ??= new();
@@ -246,13 +173,6 @@ public class TextConfig : GameResource
 	static string Or( string value, string fallback ) => string.IsNullOrWhiteSpace( value ) ? fallback : value;
 }
 
-public class TraitCopy
-{
-	[Property] public string Code { get; set; }
-	[Property] public string Title { get; set; }
-	[Property] public string Blurb { get; set; }
-}
-
 public class BuildingCopy
 {
 	[Property] public string Title { get; set; }
@@ -286,66 +206,6 @@ public class RarityCopy
 public class TraitsCopy
 {
 	[Property] public RarityCopy Rarity { get; set; } = new();
-	[Property] public TraitCopy Buck { get; set; } = new() { Code = "BUCK", Title = "BUCK", Blurb = "A couple of pellets. Full spread at rank 3. Shotgun DNA." };
-	[Property] public TraitCopy Bore { get; set; } = new() { Code = "BORE", Title = "BORE", Blurb = "One punch-through. Rail at rank 3. Locks out LASH." };
-	[Property] public TraitCopy Drum { get; set; } = new() { Code = "DRUM", Title = "DRUM", Blurb = "A short burst. Rifle dump at rank 3. Long reload." };
-	[Property] public TraitCopy Warhead { get; set; } = new() { Code = "WARHEAD", Title = "WARHEAD", Blurb = "A small clap. Slow rocket. Hurts you." };
-	[Property] public TraitCopy Lash { get; set; } = new() { Code = "LASH", Title = "LASH", Blurb = "A charge of ticks. Short reload. Turquoise to red. Locks out BORE." };
-	[Property] public TraitCopy Pin { get; set; } = new() { Code = "PIN", Title = "PIN", Blurb = "A couple of nails. Full spray at rank 3. Stick and tick." };
-	[Property] public TraitCopy Spin { get; set; } = new() { Code = "SPIN", Title = "SPIN", Blurb = "Shots sweep harder against the clock. Longer reload." };
-	[Property] public TraitCopy Rush { get; set; } = new() { Code = "RUSH", Title = "RUSH", Blurb = "Shots fly faster. Longer reload." };
-	[Property] public TraitCopy Dodge { get; set; } = new() { Code = "DODGE", Title = "DODGE", Blurb = "Slip a hit. 10% / 20% / 32%." };
-	[Property] public TraitCopy Snap { get; set; } = new() { Code = "SNAP", Title = "SNAP", Blurb = "Reload only. −20% / −36% / −50%." };
-	[Property] public TraitCopy Split { get; set; } = new() { Code = "SPLIT", Title = "SPLIT", Blurb = "" };
-	[Property] public TraitCopy Fan { get; set; } = new() { Code = "FAN", Title = "FAN", Blurb = "Pellets spread 14°." };
-	[Property] public TraitCopy Pump { get; set; } = new() { Code = "PUMP", Title = "PUMP", Blurb = "" };
-	[Property] public TraitCopy Load { get; set; } = new() { Code = "LOAD", Title = "LOAD", Blurb = "" };
-	[Property] public TraitCopy Choke { get; set; } = new() { Code = "CHOKE", Title = "CHOKE", Blurb = "Cone −10°. Floor 6°." };
-	[Property] public TraitCopy Meat { get; set; } = new() { Code = "MEAT", Title = "MEAT", Blurb = "+1 dmg inside 140. -100% range." };
-	[Property] public TraitCopy Rico { get; set; } = new() { Code = "RICO", Title = "RICO", Blurb = "Pellets bounce +1." };
-	[Property] public TraitCopy Gape { get; set; } = new() { Code = "GAPE", Title = "GAPE", Blurb = "Cone +14°." };
-	[Property] public TraitCopy Double { get; set; } = new() { Code = "DOUBLE", Title = "DOUBLE", Blurb = "Two fans, 0.12s apart. Reload +0.55s. One mag." };
-	[Property] public TraitCopy Kick { get; set; } = new() { Code = "KICK", Title = "KICK", Blurb = "Shove 110 inside 180." };
-	[Property] public TraitCopy Stun { get; set; } = new() { Code = "STUN", Title = "STUN", Blurb = "0.45s stagger inside 160. No bosses." };
-	[Property] public TraitCopy Heap { get; set; } = new() { Code = "HEAP", Title = "HEAP", Blurb = "+3 pellets. Reload +0.40s." };
-	[Property] public TraitCopy Waste { get; set; } = new() { Code = "WASTE", Title = "WASTE", Blurb = "+1 dmg inside 80. -100% range." };
-	[Property] public TraitCopy Breach { get; set; } = new() { Code = "BREACH", Title = "BREACH", Blurb = "Pellets punch 1 body." };
-	[Property] public TraitCopy Slug { get; set; } = new() { Code = "SLUG", Title = "SLUG", Blurb = "One fat slug. +2 damage for each projectile it removes." };
-	[Property] public TraitCopy Mirv { get; set; } = new() { Code = "MIRV", Title = "MIRV", Blurb = "Each pellet splashes. Radius ×0.55. Slower. Locks out LANCE." };
-	[Property] public TraitCopy Bloom { get; set; } = new() { Code = "BLOOM", Title = "BLOOM", Blurb = "+80 splash radius. Reload +0.30s. Locks out LANCE." };
-	[Property] public TraitCopy Scorch { get; set; } = new() { Code = "SCORCH", Title = "SCORCH", Blurb = "Splash damage 2. Slower. Reload +0.20s. Locks out LANCE." };
-	[Property] public TraitCopy Lance { get; set; } = new() { Code = "LANCE", Title = "LANCE", Blurb = "No friendly splash. +2 direct hit. Smaller radius. No bounce. Locks out CLUSTER." };
-	[Property] public TraitCopy Crater { get; set; } = new() { Code = "CRATER", Title = "CRATER", Blurb = "Fat body. +56 splash. No bounce. Slower. Locks out CLUSTER." };
-	[Property] public TraitCopy Spot { get; set; } = new() { Code = "SPOT", Title = "SPOT", Blurb = "Shots fly to the cursor and burst there. +40 splash radius. +1 splash damage. No bounce. Slower." };
-	[Property] public TraitCopy Deep { get; set; } = new() { Code = "DEEP", Title = "DEEP", Blurb = "+2 pierce. Reload +0.40s. Locks out MASS." };
-	[Property] public TraitCopy Awl { get; set; } = new() { Code = "AWL", Title = "AWL", Blurb = "Ignores the core face. Slower. Reload +0.20s. Locks out MASS." };
-	[Property] public TraitCopy Ram { get; set; } = new() { Code = "RAM", Title = "RAM", Blurb = "Each body you punch through hits the next harder. Slower. Locks out MASS." };
-	[Property] public TraitCopy Mass { get; set; } = new() { Code = "MASS", Title = "MASS", Blurb = "One shot. No fan. +3 damage, plus +3 per projectile it removes. Slower. Reload +0.45s. Locks out DEEP." };
-	[Property] public TraitCopy Keel { get; set; } = new() { Code = "KEEL", Title = "KEEL", Blurb = "No bounce. +2 damage. Stops on the first wall. Slower. Locks out DEEP." };
-	[Property] public TraitCopy Trace { get; set; } = new() { Code = "TRACE", Title = "TRACE", Blurb = "Shots fly faster. Reload +0.25s." };
-	[Property] public TraitCopy Belt { get; set; } = new() { Code = "BELT", Title = "BELT", Blurb = "+3 burst. Reload +0.45s. Locks out TRACK." };
-	[Property] public TraitCopy Walk { get; set; } = new() { Code = "WALK", Title = "WALK", Blurb = "Later volleys spread +3° each. Reload +0.20s. Locks out TRACK." };
-	[Property] public TraitCopy Spool { get; set; } = new() { Code = "SPOOL", Title = "SPOOL", Blurb = "Cycle ×0.65. Reload +0.25s. Locks out SWEEP." };
-	[Property] public TraitCopy Sight { get; set; } = new() { Code = "SIGHT", Title = "SIGHT", Blurb = "Later volleys use half spread. Slower. Locks out SWEEP." };
-	[Property] public TraitCopy Bite { get; set; } = new() { Code = "BITE", Title = "BITE", Blurb = "+1 damage on a body this burst already hit. Slower. Locks out SWEEP." };
-	[Property] public TraitCopy Link { get; set; } = new() { Code = "LINK", Title = "LINK", Blurb = "The burst finishes if you release. Cycle ×1.10. Reload +0.20s." };
-	[Property] public TraitCopy Sear { get; set; } = new() { Code = "SEAR", Title = "SEAR", Blurb = "+1 damage while the beam stays on a body. Reload +0.15s. Locks out ARC." };
-	[Property] public TraitCopy Kiln { get; set; } = new() { Code = "KILN", Title = "KILN", Blurb = "Tick ×0.75 while latched. Narrower. Reload +0.10s. Locks out ARC." };
-	[Property] public TraitCopy Arc { get; set; } = new() { Code = "ARC", Title = "ARC", Blurb = "Jumps once to a neighbor within 220. Slower tick. Locks out BRAND." };
-	[Property] public TraitCopy Fork { get; set; } = new() { Code = "FORK", Title = "FORK", Blurb = "Side bolts hit on their own. Reload +0.12s. Locks out BRAND." };
-	[Property] public TraitCopy Shunt { get; set; } = new() { Code = "SHUNT", Title = "SHUNT", Blurb = "Ignores shields and plates. Slower tick. Narrower." };
-	[Property] public TraitCopy Linger { get; set; } = new() { Code = "LINGER", Title = "LINGER", Blurb = "Remaining ticks finish where you let go. Reload +0.20s." };
-	[Property] public TraitCopy Cell { get; set; } = new() { Code = "CELL", Title = "CELL", Blurb = "+2 ticks per charge. Reload +0.15s." };
-	[Property] public TraitCopy Jack { get; set; } = new() { Code = "JACK", Title = "JACK", Blurb = "Reload ×0.80. Splash ×0.80." };
-	[Property] public TraitCopy Slap { get; set; } = new() { Code = "SLAP", Title = "SLAP", Blurb = "Reload ×0.85. Speed ×0.85." };
-	[Property] public TraitCopy Rack { get; set; } = new() { Code = "RACK", Title = "RACK", Blurb = "Reload ×0.75. Speed ×0.85." };
-	[Property] public TraitCopy Draw { get; set; } = new() { Code = "DRAW", Title = "DRAW", Blurb = "Reload ×0.85. −1 pierce." };
-	[Property] public TraitCopy Feed { get; set; } = new() { Code = "FEED", Title = "FEED", Blurb = "Reload ×0.75. Cycle ×1.20." };
-	[Property] public TraitCopy Eject { get; set; } = new() { Code = "EJECT", Title = "EJECT", Blurb = "Reload ×0.85. Burst −1." };
-	[Property] public TraitCopy Vent { get; set; } = new() { Code = "VENT", Title = "VENT", Blurb = "Reload ×0.80. Tick ×1.20." };
-	[Property] public TraitCopy Cool { get; set; } = new() { Code = "COOL", Title = "COOL", Blurb = "Reload ×0.85. Width ×0.80." };
-	[Property] public TraitCopy Shuck { get; set; } = new() { Code = "SHUCK", Title = "SHUCK", Blurb = "Reload ×0.80. Spread +8°." };
-	[Property] public TraitCopy Slam { get; set; } = new() { Code = "SLAM", Title = "SLAM", Blurb = "Reload ×0.85. −1 projectile." };
 }
 
 public class BuildingsCopy

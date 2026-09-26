@@ -1,0 +1,47 @@
+{
+  "Id": "BUCK",
+  "Title": "BUCK",
+  "Pack": "Shotgun",
+  "MaxLevel": 3,
+  "Sort": 9,
+  "Icon": "ui/traits/heavy.png",
+  "Blurb": "Say hello to my little friend",
+  "Mods": [
+    {
+      "Stat": "Count",
+      "Op": "Add",
+      "Growth": "Tiers",
+      "Order": 100,
+      "Tiers": {
+        "Level1": 2,
+        "Level2": 3,
+        "Level3": 5
+      },
+      "Bias": -1
+    },
+    {
+      "Stat": "Cone",
+      "Op": "Add",
+      "Growth": "Tiers",
+      "Order": 220,
+      "Tiers": {
+        "Level1": 10,
+        "Level2": 16,
+        "Level3": 24
+      }
+    },
+    {
+      "Stat": "RangeCut",
+      "Op": "Add",
+      "Growth": "Tiers",
+      "Order": 0,
+      "Tiers": {
+        "Level1": 0.83,
+        "Level2": 0.94,
+        "Level3": 1
+      }
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

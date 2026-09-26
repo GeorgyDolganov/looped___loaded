@@ -1,0 +1,26 @@
+{
+  "Id": "SNAP",
+  "Title": "SNAP",
+  "Pack": "Nailgun",
+  "MaxLevel": 3,
+  "Sort": 17,
+  "Icon": "ui/traits/snap.png",
+  "Price": 4,
+  "UnlockLap": 3,
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Mul",
+      "Growth": "Tiers",
+      "Order": 740,
+      "Tiers": {
+        "Level1": 0.8,
+        "Level2": 0.64,
+        "Level3": 0.5
+      },
+      "Points": true
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

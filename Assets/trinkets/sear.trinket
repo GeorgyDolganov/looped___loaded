@@ -1,0 +1,38 @@
+{
+  "Id": "SEAR",
+  "Title": "SEAR",
+  "Pack": "Laser",
+  "MaxLevel": 1,
+  "Sort": 34,
+  "Icon": "ui/traits/electric.png",
+  "Blurb": "+1 damage while the beam stays on a body.",
+  "Flags": [
+    "BeamSear"
+  ],
+  "Requires": [
+    "trinkets/lash.trinket"
+  ],
+  "Excludes": [
+    "trinkets/arc.trinket",
+    "trinkets/fork.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 720,
+      "Value": 0.1,
+      "UseWhen": true,
+      "WhenStat": "BeamRank",
+      "HasWhenMin": true,
+      "WhenMin": 1
+    }
+  ],
+  "__references": [
+    "trinkets/lash.trinket",
+    "trinkets/arc.trinket",
+    "trinkets/fork.trinket"
+  ],
+  "__version": 0
+}

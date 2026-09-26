@@ -1,0 +1,35 @@
+{
+  "Id": "VENT",
+  "Title": "VENT",
+  "Pack": "Laser",
+  "MaxLevel": 1,
+  "Sort": 47,
+  "Icon": "ui/traits/snap.png",
+  "Requires": [
+    "trinkets/lash.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 730,
+      "Value": 0.8
+    },
+    {
+      "Stat": "BeamTick",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 1510,
+      "Value": 1.2,
+      "UseWhen": true,
+      "WhenStat": "BeamTicks",
+      "HasWhenMin": true,
+      "WhenMin": 1
+    }
+  ],
+  "__references": [
+    "trinkets/lash.trinket"
+  ],
+  "__version": 0
+}

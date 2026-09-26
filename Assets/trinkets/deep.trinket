@@ -1,0 +1,37 @@
+{
+  "Id": "DEEP",
+  "Title": "DEEP",
+  "Pack": "Rail",
+  "MaxLevel": 1,
+  "Sort": 24,
+  "Icon": "ui/traits/pierce.png",
+  "Requires": [
+    "trinkets/bore.trinket"
+  ],
+  "Excludes": [
+    "trinkets/keel.trinket",
+    "trinkets/mass.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Pierce",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 601,
+      "Value": 2
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.25
+    }
+  ],
+  "__references": [
+    "trinkets/bore.trinket",
+    "trinkets/keel.trinket",
+    "trinkets/mass.trinket"
+  ],
+  "__version": 0
+}

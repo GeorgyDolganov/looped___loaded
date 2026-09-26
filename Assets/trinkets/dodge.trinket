@@ -1,0 +1,24 @@
+{
+  "Id": "DODGE",
+  "Title": "DODGE",
+  "Pack": "Nailgun",
+  "MaxLevel": 3,
+  "Sort": 16,
+  "Icon": "ui/traits/graze.png",
+  "Blurb": "Improve your chance of ignoring damage",
+  "Mods": [
+    {
+      "Stat": "Dodge",
+      "Op": "Set",
+      "Growth": "Tiers",
+      "Order": 900,
+      "Tiers": {
+        "Level1": 0.1,
+        "Level2": 0.2,
+        "Level3": 0.32
+      }
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

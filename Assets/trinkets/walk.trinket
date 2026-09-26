@@ -1,0 +1,39 @@
+{
+  "Id": "WALK",
+  "Title": "WALK",
+  "Pack": "Rifle",
+  "MaxLevel": 1,
+  "Sort": 29,
+  "Icon": "ui/traits/accel.png",
+  "Requires": [
+    "trinkets/drum.trinket"
+  ],
+  "Excludes": [
+    "trinkets/spool.trinket",
+    "trinkets/sight.trinket",
+    "trinkets/bite.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "WalkStep",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 900,
+      "Value": 3
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.12
+    }
+  ],
+  "__references": [
+    "trinkets/drum.trinket",
+    "trinkets/spool.trinket",
+    "trinkets/sight.trinket",
+    "trinkets/bite.trinket"
+  ],
+  "__version": 0
+}

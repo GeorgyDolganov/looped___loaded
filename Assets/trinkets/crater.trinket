@@ -1,0 +1,60 @@
+{
+  "Id": "CRATER",
+  "Title": "CRATER",
+  "Pack": "Rocket",
+  "MaxLevel": 1,
+  "Sort": 22,
+  "Icon": "ui/traits/explosive.png",
+  "Requires": [
+    "trinkets/warhead.trinket"
+  ],
+  "Excludes": [
+    "trinkets/mirv.trinket",
+    "trinkets/bloom.trinket",
+    "trinkets/scorch.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Radius",
+      "Op": "Max",
+      "Growth": "Flat",
+      "Order": 1110,
+      "Value": 22
+    },
+    {
+      "Stat": "Splash",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 1204,
+      "Value": 56
+    },
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.65
+    },
+    {
+      "Stat": "Bounces",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 510,
+      "Value": 0,
+      "Hidden": true
+    }
+  ],
+  "Notes": [
+    {
+      "Text": "No bounces",
+      "Sign": -1
+    }
+  ],
+  "__references": [
+    "trinkets/warhead.trinket",
+    "trinkets/mirv.trinket",
+    "trinkets/bloom.trinket",
+    "trinkets/scorch.trinket"
+  ],
+  "__version": 0
+}

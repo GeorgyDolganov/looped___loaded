@@ -1,0 +1,30 @@
+{
+  "Id": "RUSH",
+  "Title": "RUSH",
+  "Pack": "Rifle",
+  "MaxLevel": 3,
+  "Sort": 15,
+  "Icon": "ui/traits/step.png",
+  "Mods": [
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Tiers",
+      "Order": 800,
+      "Tiers": {
+        "Level1": 1.2,
+        "Level2": 1.4,
+        "Level3": 1.65
+      }
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "TraitRatio",
+      "Order": 700,
+      "Value": 0.12
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

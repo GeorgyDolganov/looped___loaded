@@ -1,0 +1,42 @@
+{
+  "Id": "SLAM",
+  "Title": "SLAM",
+  "Pack": "Shotgun",
+  "MaxLevel": 1,
+  "Sort": 50,
+  "Icon": "ui/traits/snap.png",
+  "Requires": [
+    "trinkets/buck.trinket",
+    "trinkets/shuck.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Count",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 410,
+      "Value": -1,
+      "AlsoFull": true
+    },
+    {
+      "Stat": "Count",
+      "Op": "Max",
+      "Growth": "Flat",
+      "Order": 411,
+      "Value": 1,
+      "AlsoFull": true
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 730,
+      "Value": 0.85
+    }
+  ],
+  "__references": [
+    "trinkets/buck.trinket",
+    "trinkets/shuck.trinket"
+  ],
+  "__version": 0
+}

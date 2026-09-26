@@ -1,0 +1,43 @@
+{
+  "Id": "BELT",
+  "Title": "BELT",
+  "Pack": "Rifle",
+  "MaxLevel": 1,
+  "Sort": 28,
+  "Icon": "ui/traits/accel.png",
+  "Requires": [
+    "trinkets/drum.trinket"
+  ],
+  "Excludes": [
+    "trinkets/spool.trinket",
+    "trinkets/sight.trinket",
+    "trinkets/bite.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Burst",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 1410,
+      "Value": 3,
+      "UseWhen": true,
+      "WhenStat": "Burst",
+      "HasWhenMin": true,
+      "WhenMin": 2
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.3
+    }
+  ],
+  "__references": [
+    "trinkets/drum.trinket",
+    "trinkets/spool.trinket",
+    "trinkets/sight.trinket",
+    "trinkets/bite.trinket"
+  ],
+  "__version": 0
+}

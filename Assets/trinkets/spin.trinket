@@ -1,0 +1,39 @@
+{
+  "Id": "SPIN",
+  "Title": "SPIN",
+  "Pack": "Nailgun",
+  "MaxLevel": 3,
+  "Sort": 68,
+  "Icon": "ui/traits/clockwise.png",
+  "Blurb": "Shots sweep harder against the clock. Longer reload.",
+  "InPool": false,
+  "Mods": [
+    {
+      "Stat": "SpinSpeed",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 220
+    },
+    {
+      "Stat": "SpinSpeed",
+      "Op": "Add",
+      "Growth": "Tiers",
+      "Order": 801,
+      "Tiers": {
+        "Level1": 140,
+        "Level2": 260,
+        "Level3": 420
+      }
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "TraitRatio",
+      "Order": 700,
+      "Value": 0.12
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

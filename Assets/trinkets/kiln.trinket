@@ -1,0 +1,49 @@
+{
+  "Id": "KILN",
+  "Title": "KILN",
+  "Pack": "Laser",
+  "MaxLevel": 1,
+  "Sort": 35,
+  "Icon": "ui/traits/electric.png",
+  "Blurb": "Tick ×0.75 while latched. ",
+  "Requires": [
+    "trinkets/lash.trinket"
+  ],
+  "Excludes": [
+    "trinkets/arc.trinket",
+    "trinkets/fork.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "BeamKiln",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 1500,
+      "Value": 0.75
+    },
+    {
+      "Stat": "BeamWidth",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 1600,
+      "Value": 0.75
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 720,
+      "Value": 0.06,
+      "UseWhen": true,
+      "WhenStat": "BeamRank",
+      "HasWhenMin": true,
+      "WhenMin": 1
+    }
+  ],
+  "__references": [
+    "trinkets/lash.trinket",
+    "trinkets/arc.trinket",
+    "trinkets/fork.trinket"
+  ],
+  "__version": 0
+}

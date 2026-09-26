@@ -1,0 +1,54 @@
+{
+  "Id": "KEEL",
+  "Title": "KEEL",
+  "Pack": "Rail",
+  "MaxLevel": 1,
+  "Sort": 27,
+  "Icon": "ui/traits/pierce.png",
+  "Blurb": "Removes richochet.",
+  "Requires": [
+    "trinkets/bore.trinket"
+  ],
+  "Excludes": [
+    "trinkets/deep.trinket",
+    "trinkets/awl.trinket",
+    "trinkets/ram.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Damage",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 900,
+      "Value": 5
+    },
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.6
+    },
+    {
+      "Stat": "Bounces",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 510,
+      "Value": 0,
+      "Hidden": true
+    }
+  ],
+  "Notes": [
+    {
+      "Text": "No bounces",
+      "Sign": -1
+    }
+  ],
+  "__references": [
+    "trinkets/bore.trinket",
+    "trinkets/deep.trinket",
+    "trinkets/awl.trinket",
+    "trinkets/ram.trinket"
+  ],
+  "__version": 0
+}

@@ -490,18 +490,21 @@
 					{
 						var index = i;
 						var trait = Loop.Offers[index].Trait;
+						if ( trait is null )
+							continue;
+
 						var bought = Loop.Offers[index].Bought;
-						<div class="card shop-offer @OfferClass(trait, bought)" style="border-color: @TraitBorder(trait)" @key="@((int)trait)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
+						<div class="card shop-offer @OfferClass(trait, bought)" style="border-color: @TraitBorder(trait)" @key="@(trait?.Id)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
 							<img class="shop-plate" src="@(Loop.Offers[index].LeftPlate ? "ui/Arena UI/element_shop_left_btn.png" : "ui/Arena UI/element_shop_right_btn.png")" />
 							<div class="shop-body">
 								<div class="shop-name">
-									<label class="title">@RoundTraits.Title(trait)</label>
-									@if ( RoundTraits.BranchOf( trait ) is not null )
+									<label class="title">@trait.ShownTitle</label>
+									@if ( Trinkets.IsWeapon( trait ) )
 									{
 										<label class="weapon">@GameSettings.Text.Shop.Weapon</label>
 									}
 								</div>
-								<label class="rarity" style="color: @TraitInk(trait)">@RoundTraits.Rarity(trait)</label>
+								<label class="rarity" style="color: @TraitInk(trait)">@GameSettings.Text.RarityOf(trait.Pack)</label>
 								@if ( OfferBlurb( trait ) is { Length: > 0 } blurb )
 								{
 									<label class="blurb">@blurb</label>
@@ -944,11 +947,11 @@
 		{
 			if ( !Loop.IsValid() || !Loop.Inventory.IsValid() ) return GameSettings.Text.Hud.Plain;
 			var parts = new List<string>();
-			foreach ( var trait in RoundTraits.All )
+			foreach ( var trait in Trinkets.Every )
 			{
 				var level = Loop.Inventory.Loadout.TraitLevel( trait );
 				if ( level > 0 )
-					parts.Add( $"{RoundTraits.Code( trait )}{level}" );
+					parts.Add( $"{trait.Id}{level}" );
 			}
 
 			var body = parts.Count == 0 ? GameSettings.Text.Hud.Plain : string.Join( "  ", parts );
@@ -956,7 +959,7 @@
 		}
 	}
 
-	int TraitLevel( RoundTrait trait ) => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Loadout.TraitLevel( trait ) : 0;
+	int TraitLevel( TrinketDef trait ) => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Loadout.TraitLevel( trait ) : 0;
 
 	string HelpText
 	{
@@ -1057,36 +1060,36 @@
 		? GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankOne, stash )
 		: GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankMany, stash );
 
-	List<StatLine> OfferStats( RoundTrait trait, bool bought )
+	List<StatLine> OfferStats( TrinketDef trait, bool bought )
 	{
 		var level = TraitLevel( trait );
-		var rank = bought ? Math.Max( 1, level ) : Math.Min( RoundTraits.MaxLevel( trait ), level + 1 );
+		var rank = bought ? Math.Max( 1, level ) : Math.Min( trait.Cap, level + 1 );
 		return StatSheet.Effects( trait, rank );
 	}
 
-	string OfferBlurb( RoundTrait trait )
+	string OfferBlurb( TrinketDef trait )
 	{
-		var text = RoundTraits.Blurb( trait );
+		var text = trait?.ShownBlurb;
 		return string.IsNullOrWhiteSpace( text ) ? "" : text;
 	}
 
-	string OfferUnlocks( RoundTrait trait )
+	string OfferUnlocks( TrinketDef trait )
 	{
-		var names = RoundTraits.UnlockList( trait );
+		var names = Trinkets.Unlocks( trait );
 		return names.Length == 0 ? "" : GameSettings.Text.F( GameSettings.Text.Shop.Unlocks, names );
 	}
 
-	string OfferRank( RoundTrait trait, bool bought )
+	string OfferRank( TrinketDef trait, bool bought )
 	{
-		if ( RoundTraits.OneShot( trait ) && !RoundTraits.Generic( trait ) )
+		if ( !Trinkets.ShowRank( trait ) )
 			return "";
 
 		var level = TraitLevel( trait );
-		var shown = bought ? Math.Max( 1, level ) : Math.Min( RoundTraits.MaxLevel( trait ), level + 1 );
+		var shown = bought ? Math.Max( 1, level ) : Math.Min( trait.Cap, level + 1 );
 		return GameSettings.Text.F( GameSettings.Text.Shop.OfferRank, shown );
 	}
 
-	RoundTrait? ShopPreview
+	TrinketDef ShopPreview
 	{
 		get
 		{
@@ -1107,7 +1110,7 @@
 	List<SheetRow> ShopWeapon => StatSheet.Weapon( Loop, ShopPreview );
 	List<SheetRow> ShopHero => StatSheet.Hero( Loop );
 
-	string OfferCost( RoundTrait trait, bool bought )
+	string OfferCost( TrinketDef trait, bool bought )
 	{
 		if ( bought )
 			return GameSettings.Text.Shop.Bought;
@@ -1123,7 +1126,7 @@
 
 	string RefreshClass => Loop.IsValid() && Loop.Scrap < Loop.ShopRefreshCost ? "poor" : "";
 
-	string OfferClass( RoundTrait trait, bool bought )
+	string OfferClass( TrinketDef trait, bool bought )
 	{
 		if ( bought )
 			return "upgrade bought";
@@ -1137,22 +1140,22 @@
 		return "upgrade";
 	}
 
-	string TraitBorder( RoundTrait trait )
+	string TraitBorder( TrinketDef trait )
 	{
-		var c = RoundTraits.Color( trait );
+		var c = Trinkets.PackColor( trait );
 		return $"rgba({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)}, 0.85)";
 	}
 
-	string TraitInk( RoundTrait trait )
+	string TraitInk( TrinketDef trait )
 	{
-		var pack = RoundTraits.Pack( trait );
+		var pack = trait.Pack;
 		if ( pack is TraitPack.Rifle or TraitPack.Shotgun or TraitPack.Entry )
 			return "rgb(245, 245, 245)";
 
 		if ( pack == TraitPack.Abomination )
 			return "rgb(226, 182, 255)";
 
-		var c = RoundTraits.Color( trait );
+		var c = Trinkets.PackColor( trait );
 		if ( c.b > 0.7f && c.r < 0.1f && c.g < 0.6f )
 			c = Color.Lerp( c, Color.White, 0.42f );
 		else

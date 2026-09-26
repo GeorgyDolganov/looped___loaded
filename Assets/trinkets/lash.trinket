@@ -1,0 +1,80 @@
+{
+  "Id": "LASH",
+  "Title": "LASH",
+  "Pack": "Laser",
+  "MaxLevel": 3,
+  "Sort": 13,
+  "Icon": "ui/traits/electric.png",
+  "Blurb": "HOLD TO ZAP. Short reload.",
+  "OwnedWeight": 12,
+  "Flags": [
+    "Beam"
+  ],
+  "Excludes": [
+    "trinkets/bore.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 710,
+      "Value": 0.3
+    },
+    {
+      "Stat": "Bounces",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 510,
+      "Value": 0,
+      "Hidden": true
+    },
+    {
+      "Stat": "BeamTick",
+      "Op": "Set",
+      "Growth": "Tiers",
+      "Order": 1500,
+      "Tiers": {
+        "Level1": 0.6,
+        "Level2": 0.4,
+        "Level3": 0.2
+      }
+    },
+    {
+      "Stat": "BeamTicks",
+      "Op": "Set",
+      "Growth": "Tiers",
+      "Order": 1500,
+      "Tiers": {
+        "Level1": 4,
+        "Level2": 6,
+        "Level3": 8
+      }
+    },
+    {
+      "Stat": "BeamHit",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 1500,
+      "Value": 1
+    },
+    {
+      "Stat": "BeamRank",
+      "Op": "Set",
+      "Growth": "Linear",
+      "Order": 705,
+      "Value": 1,
+      "Hidden": true
+    }
+  ],
+  "Notes": [
+    {
+      "Text": "No bounces",
+      "Sign": -1
+    }
+  ],
+  "__references": [
+    "trinkets/bore.trinket"
+  ],
+  "__version": 0
+}

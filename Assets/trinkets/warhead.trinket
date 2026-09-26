@@ -1,0 +1,38 @@
+{
+  "Id": "WARHEAD",
+  "Title": "WARHEAD",
+  "Pack": "Rocket",
+  "MaxLevel": 3,
+  "Sort": 12,
+  "Icon": "ui/traits/explosive.png",
+  "Blurb": "SLOW BUT AREAL. Also damages you! PS No rocket jump!",
+  "Flags": [
+    "FriendlySplash"
+  ],
+  "Mods": [
+    {
+      "Stat": "Splash",
+      "Op": "Set",
+      "Growth": "Tiers",
+      "Order": 1200,
+      "Tiers": {
+        "Level1": 90,
+        "Level2": 126,
+        "Level3": 176
+      }
+    },
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Tiers",
+      "Order": 800,
+      "Tiers": {
+        "Level1": 0.78,
+        "Level2": 0.68,
+        "Level3": 0.58
+      }
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

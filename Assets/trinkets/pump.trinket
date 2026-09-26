@@ -1,0 +1,27 @@
+{
+  "Id": "PUMP",
+  "Title": "PUMP",
+  "Pack": "Entry",
+  "MaxLevel": 1,
+  "Sort": 60,
+  "Icon": "ui/traits/latemag.png",
+  "InPool": false,
+  "Mods": [
+    {
+      "Stat": "Count",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 100,
+      "Value": 1
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.25
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

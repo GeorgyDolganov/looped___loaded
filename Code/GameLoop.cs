@@ -60,11 +60,10 @@ public sealed class GameLoop : Component
 	{
 		get
 		{
-			var level = Inventory.IsValid() ? Inventory.Loadout.TraitLevel( RoundTrait.Dodge ) : 0;
-			if ( level <= 0 )
+			if ( !Inventory.IsValid() )
 				return 0f;
 
-			return Math.Clamp( GameSettings.Traits.DodgeChance.At( level ), 0f, 0.95f );
+			return Math.Clamp( Inventory.Loadout.Recipe().Dodge, 0f, 0.95f );
 		}
 	}
 	public int Health { get; private set; }
@@ -95,7 +94,7 @@ public sealed class GameLoop : Component
 		{
 			var hash = offers.Count;
 			foreach ( var offer in offers )
-				hash = System.HashCode.Combine( hash, (int)offer.Trait, offer.Bought, TraitLocked( offer.Trait ) );
+				hash = System.HashCode.Combine( hash, offer.Trait?.Id, offer.Bought, TraitLocked( offer.Trait ) );
 
 			return hash;
 		}
@@ -1316,7 +1315,7 @@ public sealed class GameLoop : Component
 		ContinueBoss();
 	}
 
-	public void ChooseUpgrade( RoundTrait trait )
+	public void ChooseUpgrade( TrinketDef trait )
 	{
 		if ( Paused || Phase != RunPhase.PickTrait )
 			return;
@@ -1368,7 +1367,7 @@ public sealed class GameLoop : Component
 		Announce( T.F( T.Announce.ShopRefresh, ShopRefreshCost, Scrap ) );
 	}
 
-	public int PriceOf( RoundTrait trait )
+	public int PriceOf( TrinketDef trait )
 	{
 		if ( !Inventory.IsValid() )
 			return Progression.TraitPrice( trait, 0, Lap, LocationIndex );
@@ -1376,8 +1375,8 @@ public sealed class GameLoop : Component
 		return Progression.TraitPrice( trait, Inventory.Loadout.TraitLevel( trait ), Lap, LocationIndex );
 	}
 
-	public bool TraitLocked( RoundTrait trait )
-		=> Inventory.IsValid() && RoundTraits.Blocked( trait, Inventory.Loadout );
+	public bool TraitLocked( TrinketDef trait )
+		=> Inventory.IsValid() && Trinkets.Blocked( trait, Inventory.Loadout );
 
 	public void ChooseCity()
 	{
@@ -1531,16 +1530,16 @@ public sealed class GameLoop : Component
 	void RollShop()
 	{
 		var loadout = Inventory.Loadout;
-		var available = new List<RoundTrait>();
-		foreach ( var trait in RoundTraits.All )
+		var available = new List<TrinketDef>();
+		foreach ( var trait in Trinkets.All )
 		{
-			if ( RoundTraits.Blocked( trait, loadout ) )
+			if ( Trinkets.Blocked( trait, loadout ) )
 				continue;
 
-			if ( loadout.TraitLevel( trait ) <= 0 && RoundTraits.TooEarly( trait, Lap ) )
+			if ( loadout.TraitLevel( trait ) <= 0 && Trinkets.TooEarly( trait, Lap ) )
 				continue;
 
-			if ( loadout.TraitLevel( trait ) >= RoundTraits.MaxLevel( trait ) )
+			if ( loadout.TraitLevel( trait ) >= trait.Cap )
 				continue;
 
 			available.Add( trait );
@@ -1550,7 +1549,7 @@ public sealed class GameLoop : Component
 		count = Math.Clamp( count, GameSettings.City.MinOffers, GameSettings.City.MaxOffers );
 
 		offers.Clear();
-		var taken = new List<RoundTrait>();
+		var taken = new List<TrinketDef>();
 		for ( var i = 0; i < count; i++ )
 		{
 			if ( !TryTakeTrait( available, loadout, Scrap, taken, out var trait ) )
@@ -1561,23 +1560,23 @@ public sealed class GameLoop : Component
 		}
 	}
 
-	bool TryTakeTrait( List<RoundTrait> available, RunLoadout loadout, int budget, List<RoundTrait> taken, out RoundTrait pick )
+	bool TryTakeTrait( List<TrinketDef> available, RunLoadout loadout, int budget, List<TrinketDef> taken, out TrinketDef pick )
 	{
-		bool Used( RoundTrait trait )
+		bool Used( TrinketDef trait )
 		{
 			foreach ( var skip in taken )
 			{
 				if ( skip == trait )
 					return true;
 
-				if ( RoundTraits.Pack( skip ) == TraitPack.Abomination && RoundTraits.Pack( trait ) == TraitPack.Abomination )
+				if ( skip.Pack == trait.Pack && GameSettings.Traits.PackOf( trait.Pack ).Single )
 					return true;
 			}
 
 			return false;
 		}
 
-		var pool = new List<RoundTrait>();
+		var pool = new List<TrinketDef>();
 		foreach ( var trait in available )
 		{
 			if ( !Used( trait ) )
@@ -1586,13 +1585,13 @@ public sealed class GameLoop : Component
 
 		if ( pool.Count == 0 )
 		{
-			pick = default;
+			pick = null;
 			return false;
 		}
 
 		if ( budget > 0 )
 		{
-			var cheap = new List<RoundTrait>();
+			var cheap = new List<TrinketDef>();
 			foreach ( var trait in pool )
 			{
 				var level = loadout is null ? 0 : loadout.TraitLevel( trait );
@@ -1609,7 +1608,7 @@ public sealed class GameLoop : Component
 		return true;
 	}
 
-	static RoundTrait WeightedTrait( List<RoundTrait> pool, RunLoadout loadout )
+	static TrinketDef WeightedTrait( List<TrinketDef> pool, RunLoadout loadout )
 	{
 		var total = 0;
 		foreach ( var trait in pool )
@@ -1630,16 +1629,9 @@ public sealed class GameLoop : Component
 		return pool[0];
 	}
 
-	static int DrawWeight( RoundTrait trait, RunLoadout loadout )
-	{
-		var weight = RoundTraits.Weight( trait );
-		if ( trait != RoundTrait.Lash || loadout is null || loadout.TraitLevel( trait ) <= 0 )
-			return weight;
+	static int DrawWeight( TrinketDef trait, RunLoadout loadout ) => Trinkets.Weight( trait, loadout );
 
-		return Math.Max( weight, GameSettings.Traits.LashRankWeight );
-	}
-
-	void TryBuyOffer( RoundTrait trait )
+	void TryBuyOffer( TrinketDef trait )
 	{
 		for ( var i = 0; i < offers.Count; i++ )
 		{
@@ -1680,7 +1672,7 @@ public sealed class GameLoop : Component
 		Scrap -= price;
 		Inventory.Loadout.Install( trait );
 		offers[index].Bought = true;
-		var added = owned <= 0 ? RoundTraits.UnlockList( trait ) : "";
+		var added = owned <= 0 ? Trinkets.Unlocks( trait ) : "";
 		if ( added.Length > 0 )
 			Announce( T.F( T.Announce.ShopAdded, added ) );
 		ArenaSounds.Pickup();
@@ -1752,86 +1744,15 @@ public sealed class GameLoop : Component
 
 	int RemainingOfferCost()
 	{
+		var scratch = Inventory.IsValid() ? Inventory.Loadout.Clone() : new RunLoadout();
 		var sum = 0;
-		var loadout = Inventory.IsValid() ? Inventory.Loadout : null;
-		var hasLash = loadout is not null && loadout.Has( RoundTrait.Lash );
-		var hasBore = loadout is not null && loadout.Has( RoundTrait.Bore );
-		var cluster = RoundTraits.OwnsCluster( loadout );
-		var lance = RoundTraits.OwnsLance( loadout );
-		var deep = RoundTraits.OwnsDeep( loadout );
-		var mass = RoundTraits.OwnsMass( loadout );
-		var hasDrum = loadout is not null && loadout.Has( RoundTrait.Drum );
-		var sweep = RoundTraits.OwnsSweep( loadout );
-		var track = RoundTraits.OwnsTrack( loadout );
-		var brand = RoundTraits.OwnsBrand( loadout );
-		var arc = RoundTraits.OwnsArc( loadout );
 		foreach ( var offer in offers )
 		{
-			if ( offer.Bought )
+			if ( offer.Bought || offer.Trait is null || Trinkets.Blocked( offer.Trait, scratch ) )
 				continue;
 
-			if ( offer.Trait == RoundTrait.Lash && hasBore )
-				continue;
-
-			if ( offer.Trait == RoundTrait.Bore && hasLash )
-				continue;
-
-			if ( RoundTraits.IsCluster( offer.Trait ) && lance )
-				continue;
-
-			if ( RoundTraits.IsLance( offer.Trait ) && cluster )
-				continue;
-
-			if ( RoundTraits.NeedsBore( offer.Trait ) && !hasBore )
-				continue;
-
-			if ( RoundTraits.IsDeep( offer.Trait ) && mass )
-				continue;
-
-			if ( RoundTraits.IsMass( offer.Trait ) && deep )
-				continue;
-
-			if ( RoundTraits.NeedsDrum( offer.Trait ) && !hasDrum )
-				continue;
-
-			if ( RoundTraits.IsSweep( offer.Trait ) && track )
-				continue;
-
-			if ( RoundTraits.IsTrack( offer.Trait ) && sweep )
-				continue;
-
-			if ( RoundTraits.NeedsLash( offer.Trait ) && !hasLash )
-				continue;
-
-			if ( RoundTraits.IsBrand( offer.Trait ) && arc )
-				continue;
-
-			if ( RoundTraits.IsArc( offer.Trait ) && brand )
-				continue;
-
-			sum += PriceOf( offer.Trait );
-			if ( offer.Trait == RoundTrait.Lash )
-				hasLash = true;
-			if ( offer.Trait == RoundTrait.Bore )
-				hasBore = true;
-			if ( RoundTraits.IsCluster( offer.Trait ) )
-				cluster = true;
-			if ( RoundTraits.IsLance( offer.Trait ) )
-				lance = true;
-			if ( RoundTraits.IsDeep( offer.Trait ) )
-				deep = true;
-			if ( RoundTraits.IsMass( offer.Trait ) )
-				mass = true;
-			if ( offer.Trait == RoundTrait.Drum )
-				hasDrum = true;
-			if ( RoundTraits.IsSweep( offer.Trait ) )
-				sweep = true;
-			if ( RoundTraits.IsTrack( offer.Trait ) )
-				track = true;
-			if ( RoundTraits.IsBrand( offer.Trait ) )
-				brand = true;
-			if ( RoundTraits.IsArc( offer.Trait ) )
-				arc = true;
+			sum += Progression.TraitPrice( offer.Trait, scratch.TraitLevel( offer.Trait ), Lap, LocationIndex );
+			scratch.Install( offer.Trait );
 		}
 
 		return sum;
@@ -2205,7 +2126,7 @@ public sealed class GameLoop : Component
 
 public sealed class ShopOffer
 {
-	public RoundTrait Trait { get; set; }
+	public TrinketDef Trait { get; set; }
 	public bool Bought { get; set; }
 	public bool LeftPlate { get; set; }
 }

@@ -1,0 +1,158 @@
+{
+  "Id": "LANCE",
+  "Title": "LANCE",
+  "Blurb": "Are you tiered from hitting yourself? Try this! Disables Ricochet.",
+  "Icon": "ui/traits/explosive.png",
+  "Pack": "Rocket",
+  "MaxLevel": 1,
+  "InPool": true,
+  "Sort": 21,
+  "UnlockLap": 0,
+  "Price": 0,
+  "OwnedWeight": 0,
+  "Hook": "None",
+  "Flags": [
+    "NoFriendlySplash"
+  ],
+  "Requires": [
+    {
+      "Id": "30308845-c98d-4206-b545-0e2baf6f468e",
+      "Path": "trinkets/warhead.trinket"
+    }
+  ],
+  "Excludes": [
+    {
+      "Id": "22d9997b-11ab-4829-9a67-8d5c9837a967",
+      "Path": "trinkets/mirv.trinket"
+    },
+    {
+      "Id": "03ed09b4-401e-4b79-8079-a5f371aa1093",
+      "Path": "trinkets/bloom.trinket"
+    },
+    {
+      "Id": "eae951c8-f49d-4e04-891d-38616721d542",
+      "Path": "trinkets/scorch.trinket"
+    }
+  ],
+  "Mods": [
+    {
+      "Stat": "Damage",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Value": 2,
+      "Bias": 0,
+      "Tiers": null,
+      "Order": 900,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
+    },
+    {
+      "Stat": "Splash",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Value": 0.7,
+      "Bias": 0,
+      "Tiers": null,
+      "Order": 1203,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
+    },
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Value": 0.7,
+      "Bias": 0,
+      "Tiers": null,
+      "Order": 800,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Value": 0.3,
+      "Bias": 0,
+      "Tiers": null,
+      "Order": 700,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
+    },
+    {
+      "Stat": "Bounces",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Value": 0,
+      "Bias": 0,
+      "Tiers": null,
+      "Order": 510,
+      "Hidden": true,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
+    }
+  ],
+  "Notes": [
+    {
+      "Text": "No bounces",
+      "Sign": -1,
+      "Mixed": false,
+      "When": "Always"
+    }
+  ],
+  "Cap": 1,
+  "ShownTitle": "LANCE",
+  "ShownBlurb": "Are you tiered from hitting yourself? Try this! Disables Ricochet.",
+  "IconPath": "ui/traits/explosive.png",
+  "__references": [],
+  "__version": 0
+}

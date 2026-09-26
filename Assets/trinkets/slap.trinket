@@ -1,0 +1,33 @@
+{
+  "Id": "SLAP",
+  "Title": "SLAP",
+  "Pack": "Rocket",
+  "MaxLevel": 1,
+  "Sort": 42,
+  "Icon": "ui/traits/snap.png",
+  "Requires": [
+    "trinkets/warhead.trinket",
+    "trinkets/jack.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 730,
+      "Value": 0.85
+    },
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.85
+    }
+  ],
+  "__references": [
+    "trinkets/warhead.trinket",
+    "trinkets/jack.trinket"
+  ],
+  "__version": 0
+}

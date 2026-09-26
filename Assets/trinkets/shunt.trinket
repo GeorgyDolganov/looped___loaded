@@ -1,0 +1,39 @@
+{
+  "Id": "SHUNT",
+  "Title": "SHUNT",
+  "Pack": "Laser",
+  "MaxLevel": 1,
+  "Sort": 38,
+  "Icon": "ui/traits/electric.png",
+  "Blurb": "Ignores shields and plates.",
+  "Flags": [
+    "BeamShunt"
+  ],
+  "Requires": [
+    "trinkets/lash.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "BeamTick",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 1510,
+      "Value": 1.25,
+      "UseWhen": true,
+      "WhenStat": "BeamTicks",
+      "HasWhenMin": true,
+      "WhenMin": 1
+    },
+    {
+      "Stat": "BeamWidth",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 1600,
+      "Value": 0.85
+    }
+  ],
+  "__references": [
+    "trinkets/lash.trinket"
+  ],
+  "__version": 0
+}

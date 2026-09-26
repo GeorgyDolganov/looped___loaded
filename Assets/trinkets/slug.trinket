@@ -1,0 +1,43 @@
+{
+  "Id": "SLUG",
+  "Title": "SLUG",
+  "Pack": "Abomination",
+  "MaxLevel": 1,
+  "Sort": 8,
+  "Icon": "ui/traits/heavy.png",
+  "Blurb": "Get +damage for each removed projectile",
+  "Hook": "Slug",
+  "Flags": [
+    "NoNail"
+  ],
+  "Mods": [
+    {
+      "Stat": "Damage",
+      "Op": "Add",
+      "Growth": "PerRemoved",
+      "Order": 1000,
+      "Value": 2
+    },
+    {
+      "Stat": "Radius",
+      "Op": "Max",
+      "Growth": "Flat",
+      "Order": 1100,
+      "Value": 22
+    },
+    {
+      "Stat": "RangePad",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 900,
+      "Value": 120
+    }
+  ],
+  "Notes": [
+    {
+      "Text": "One shot"
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

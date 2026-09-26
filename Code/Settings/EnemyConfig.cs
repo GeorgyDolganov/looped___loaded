@@ -9,23 +9,23 @@ public class EnemyConfig : GameResource
 	[Property] public float MeleeReachPad { get; set; } = 36f;
 	[Property] public float GlimmerReveal { get; set; } = 160f;
 	[Property] public float ShoveInnerPad { get; set; } = 160f;
-	[Property] public EnemyKindStats Chaser { get; set; } = new() { Radius = 64f, Scrap = 4, SeekSpeed = 185f, Lead = 160f, LeadPressure = 50f };
-	[Property] public EnemyKindStats Splinter { get; set; } = new() { Radius = 60f, Scrap = 6, SeekSpeed = 185f, Lead = 160f, LeadPressure = 50f };
-	[Property] public EnemyKindStats Glimmer { get; set; } = new() { Radius = 56f, Scrap = 7, SeekSpeed = 155f, Lead = 120f, LeadPressure = 40f };
-	[Property] public EnemyKindStats Shield { get; set; } = new() { Radius = 72f, Scrap = 7, SeekSpeed = 170f };
-	[Property] public EnemyKindStats Shardguard { get; set; } = new() { Radius = 72f, Scrap = 8, SeekSpeed = 170f };
-	[Property] public EnemyKindStats ShooterBody { get; set; } = new() { Radius = 64f, Scrap = 7 };
+	[Property] public EnemyKindStats Chaser { get; set; } = new() { Radius = 64f, Scrap = 4, SeekSpeed = 142f, Lead = 160f, LeadPressure = 50f };
+	[Property] public EnemyKindStats Splinter { get; set; } = new() { Radius = 60f, Scrap = 6, SeekSpeed = 142f, Lead = 160f, LeadPressure = 50f };
+	[Property] public EnemyKindStats Glimmer { get; set; } = new() { Radius = 56f, Scrap = 7, SeekSpeed = 119f, Lead = 120f, LeadPressure = 40f };
+	[Property] public EnemyKindStats Shield { get; set; } = new() { Radius = 72f, Scrap = 7, SeekSpeed = 131f };
+	[Property] public EnemyKindStats Shardguard { get; set; } = new() { Radius = 72f, Scrap = 8, SeekSpeed = 131f };
+	[Property] public EnemyKindStats ShooterBody { get; set; } = new() { Radius = 64f, Scrap = 7, SeekSpeed = 142f };
 	[Property] public ShooterStats Shooter { get; set; } = new();
 	[Property] public WaveLayout Wave { get; set; } = new();
 
 	public EnemyKindStats Of( EnemyKind kind ) => kind switch
 	{
-		EnemyKind.Splinter => Splinter ??= new() { Radius = 60f, Scrap = 6, SeekSpeed = 185f, Lead = 160f, LeadPressure = 50f },
-		EnemyKind.Glimmer => Glimmer ??= new() { Radius = 56f, Scrap = 7, SeekSpeed = 155f, Lead = 120f, LeadPressure = 40f },
-		EnemyKind.Shield => Shield ??= new() { Radius = 72f, Scrap = 7, SeekSpeed = 170f },
-		EnemyKind.Shardguard => Shardguard ??= new() { Radius = 72f, Scrap = 8, SeekSpeed = 170f },
-		EnemyKind.Shooter => ShooterBody ??= new() { Radius = 64f, Scrap = 7 },
-		_ => Chaser ??= new() { Radius = 64f, Scrap = 4, SeekSpeed = 185f, Lead = 160f, LeadPressure = 50f }
+		EnemyKind.Splinter => Splinter ??= new() { Radius = 60f, Scrap = 6, SeekSpeed = 142f, Lead = 160f, LeadPressure = 50f },
+		EnemyKind.Glimmer => Glimmer ??= new() { Radius = 56f, Scrap = 7, SeekSpeed = 119f, Lead = 120f, LeadPressure = 40f },
+		EnemyKind.Shield => Shield ??= new() { Radius = 72f, Scrap = 7, SeekSpeed = 131f },
+		EnemyKind.Shardguard => Shardguard ??= new() { Radius = 72f, Scrap = 8, SeekSpeed = 131f },
+		EnemyKind.Shooter => ShooterBody ??= new() { Radius = 64f, Scrap = 7, SeekSpeed = 142f },
+		_ => Chaser ??= new() { Radius = 64f, Scrap = 4, SeekSpeed = 142f, Lead = 160f, LeadPressure = 50f }
 	};
 
 	public float RadiusOf( EnemyKind kind ) => Of( kind ).Radius;
@@ -43,14 +43,14 @@ public class EnemyKindStats
 {
 	[Property] public float Radius { get; set; } = 64f;
 	[Property] public int Scrap { get; set; } = 4;
-	[Property] public float SeekSpeed { get; set; } = 185f;
+	[Property] public float SeekSpeed { get; set; } = 142f;
 	[Property] public float Lead { get; set; } = 0f;
 	[Property] public float LeadPressure { get; set; } = 0f;
 }
 
 public class ShooterStats
 {
-	[Property] public float Speed { get; set; } = 175f;
+	[Property] public float Speed { get; set; } = 135f;
 	[Property] public float SpeedPressureFloor { get; set; } = 0.8f;
 	[Property] public float BandInnerPad { get; set; } = 30f;
 	[Property] public float BandOuterPad { get; set; } = 140f;

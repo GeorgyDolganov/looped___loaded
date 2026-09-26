@@ -8,47 +8,47 @@
   "Chaser": {
     "Radius": 64,
     "Scrap": 4,
-    "SeekSpeed": 185,
+    "SeekSpeed": 142,
     "Lead": 160,
     "LeadPressure": 50
   },
   "Splinter": {
     "Radius": 60,
     "Scrap": 6,
-    "SeekSpeed": 185,
+    "SeekSpeed": 142,
     "Lead": 160,
     "LeadPressure": 50
   },
   "Glimmer": {
     "Radius": 56,
     "Scrap": 7,
-    "SeekSpeed": 155,
+    "SeekSpeed": 119,
     "Lead": 120,
     "LeadPressure": 40
   },
   "Shield": {
     "Radius": 72,
     "Scrap": 7,
-    "SeekSpeed": 170,
+    "SeekSpeed": 131,
     "Lead": 0,
     "LeadPressure": 0
   },
   "Shardguard": {
     "Radius": 72,
     "Scrap": 8,
-    "SeekSpeed": 170,
+    "SeekSpeed": 131,
     "Lead": 0,
     "LeadPressure": 0
   },
   "ShooterBody": {
     "Radius": 64,
     "Scrap": 7,
-    "SeekSpeed": 185,
+    "SeekSpeed": 142,
     "Lead": 0,
     "LeadPressure": 0
   },
   "Shooter": {
-    "Speed": 175,
+    "Speed": 135,
     "SpeedPressureFloor": 0.8,
     "BandInnerPad": 30,
     "BandOuterPad": 140,

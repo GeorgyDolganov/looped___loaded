@@ -1,0 +1,48 @@
+{
+  "Id": "SCORCH",
+  "Title": "SCORCH",
+  "Pack": "Rocket",
+  "MaxLevel": 1,
+  "Sort": 20,
+  "Icon": "ui/traits/explosive.png",
+  "Requires": [
+    "trinkets/warhead.trinket"
+  ],
+  "Excludes": [
+    "trinkets/lance.trinket",
+    "trinkets/crater.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.75
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.12
+    },
+    {
+      "Stat": "SplashDamage",
+      "Op": "Max",
+      "Growth": "Flat",
+      "Order": 1260,
+      "Value": 2,
+      "UseWhen": true,
+      "WhenStat": "Splash",
+      "HasWhenMin": true,
+      "WhenMin": 1.001
+    }
+  ],
+  "__references": [
+    "trinkets/warhead.trinket",
+    "trinkets/lance.trinket",
+    "trinkets/crater.trinket"
+  ],
+  "__version": 0
+}

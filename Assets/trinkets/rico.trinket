@@ -1,0 +1,19 @@
+{
+  "Id": "RICO",
+  "Title": "RICO",
+  "Pack": "Junior",
+  "MaxLevel": 1,
+  "Sort": 4,
+  "Icon": "ui/traits/pinball.png",
+  "Mods": [
+    {
+      "Stat": "Bounces",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 500,
+      "Value": 1
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

@@ -1,0 +1,53 @@
+{
+  "Id": "MASS",
+  "Title": "MASS",
+  "Pack": "Rail",
+  "MaxLevel": 3,
+  "Sort": 66,
+  "Icon": "ui/traits/pierce.png",
+  "Blurb": "One shot. For each removed projectile +damage. ",
+  "InPool": false,
+  "Hook": "Slug",
+  "Flags": [
+    "NoNail"
+  ],
+  "Excludes": [
+    "trinkets/deep.trinket",
+    "trinkets/awl.trinket",
+    "trinkets/ram.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Damage",
+      "Op": "Add",
+      "Growth": "PerRemoved",
+      "Order": 1000,
+      "Value": 3
+    },
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.7
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.45
+    }
+  ],
+  "Notes": [
+    {
+      "Text": "One shot"
+    }
+  ],
+  "__references": [
+    "trinkets/deep.trinket",
+    "trinkets/awl.trinket",
+    "trinkets/ram.trinket"
+  ],
+  "__version": 0
+}

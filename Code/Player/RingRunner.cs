@@ -4,8 +4,8 @@ public sealed class RingRunner : Component
 {
 	[Property] public ArenaBuilder Arena { get; set; }
 	[Property] public GameLoop Loop { get; set; }
-	[Property] public float Speed { get; set; } = 330f;
-	[Property] public float DashDistance { get; set; } = 430f;
+	[Property] public float Speed { get; set; } = 255f;
+	[Property] public float DashDistance { get; set; } = 280f;
 	[Property] public float DashCooldown { get; set; } = 1.1f;
 	[Property] public float DashDuration { get; set; } = 0.17f;
 	[Property] public float SlowSpeedScale { get; set; } = 0.38f;

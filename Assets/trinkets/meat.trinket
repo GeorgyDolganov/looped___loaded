@@ -1,0 +1,33 @@
+{
+  "Id": "MEAT",
+  "Title": "MEAT",
+  "Pack": "Junior",
+  "MaxLevel": 2,
+  "Sort": 3,
+  "Icon": "ui/traits/heavy.png",
+  "Mods": [
+    {
+      "Stat": "MeatRange",
+      "Op": "Max",
+      "Growth": "Flat",
+      "Order": 900,
+      "Value": 140
+    },
+    {
+      "Stat": "MeatBonus",
+      "Op": "Add",
+      "Growth": "Linear",
+      "Order": 900,
+      "Value": 1
+    },
+    {
+      "Stat": "RangeCut",
+      "Op": "Add",
+      "Growth": "Linear",
+      "Order": 0,
+      "Value": 1
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

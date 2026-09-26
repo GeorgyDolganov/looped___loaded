@@ -1,0 +1,38 @@
+{
+  "Id": "FORK",
+  "Title": "FORK",
+  "Pack": "Laser",
+  "MaxLevel": 1,
+  "Sort": 37,
+  "Icon": "ui/traits/electric.png",
+  "Blurb": "Side bolts hit on their own.",
+  "Flags": [
+    "BeamFork"
+  ],
+  "Requires": [
+    "trinkets/lash.trinket"
+  ],
+  "Excludes": [
+    "trinkets/sear.trinket",
+    "trinkets/kiln.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 720,
+      "Value": 0.08,
+      "UseWhen": true,
+      "WhenStat": "BeamRank",
+      "HasWhenMin": true,
+      "WhenMin": 1
+    }
+  ],
+  "__references": [
+    "trinkets/lash.trinket",
+    "trinkets/sear.trinket",
+    "trinkets/kiln.trinket"
+  ],
+  "__version": 0
+}

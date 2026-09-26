@@ -1,0 +1,36 @@
+{
+  "Id": "LINK",
+  "Title": "LINK",
+  "Pack": "Rifle",
+  "MaxLevel": 1,
+  "Sort": 33,
+  "Icon": "ui/traits/accel.png",
+  "Blurb": "The burst finishes if you release.",
+  "InPool": false,
+  "Flags": [
+    "CommitBurst"
+  ],
+  "Requires": [
+    "trinkets/drum.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.2
+    },
+    {
+      "Stat": "Cycle",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 1400,
+      "Value": 1.1
+    }
+  ],
+  "__references": [
+    "trinkets/drum.trinket"
+  ],
+  "__version": 0
+}

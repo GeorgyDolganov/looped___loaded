@@ -1,0 +1,28 @@
+{
+  "Id": "TRACE",
+  "Title": "TRACE",
+  "Pack": "Rail",
+  "MaxLevel": 3,
+  "Sort": 67,
+  "Icon": "ui/traits/pierce.png",
+  "Blurb": "=",
+  "InPool": false,
+  "Mods": [
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 1.6
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.25
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

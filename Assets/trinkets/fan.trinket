@@ -1,0 +1,19 @@
+{
+  "Id": "FAN",
+  "Title": "FAN",
+  "Pack": "Entry",
+  "MaxLevel": 1,
+  "Sort": 1,
+  "Icon": "ui/traits/swipe.png",
+  "Mods": [
+    {
+      "Stat": "Cone",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 200,
+      "Value": 14
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

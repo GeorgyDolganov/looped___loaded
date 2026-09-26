@@ -52,11 +52,12 @@ public static class Progression
 
 	public static int PackPrice( TraitPack pack ) => GameSettings.Traits.PackPrice( pack );
 
-	public static int TraitPrice( RoundTrait trait, int ownedLevel, int lap = 1, int location = 0 )
+	public static int TraitPrice( TrinketDef card, int ownedLevel, int lap = 1, int location = 0 )
 	{
-		var first = trait == RoundTrait.Snap
-			? Math.Max( 1, GameSettings.Traits.SnapPrice )
-			: PackPrice( RoundTraits.Pack( trait ) );
+		if ( card is null )
+			return 1;
+
+		var first = card.Price > 0 ? card.Price : PackPrice( card.Pack );
 		return Math.Max( 1, Whole( Cost( first, Math.Max( 0, ownedLevel ) ) * Swarm( lap, location ) ) );
 	}
 

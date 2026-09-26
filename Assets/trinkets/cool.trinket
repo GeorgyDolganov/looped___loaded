@@ -1,0 +1,33 @@
+{
+  "Id": "COOL",
+  "Title": "COOL",
+  "Pack": "Laser",
+  "MaxLevel": 1,
+  "Sort": 48,
+  "Icon": "ui/traits/snap.png",
+  "Requires": [
+    "trinkets/lash.trinket",
+    "trinkets/vent.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 730,
+      "Value": 0.85
+    },
+    {
+      "Stat": "BeamWidth",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 1600,
+      "Value": 0.8
+    }
+  ],
+  "__references": [
+    "trinkets/lash.trinket",
+    "trinkets/vent.trinket"
+  ],
+  "__version": 0
+}

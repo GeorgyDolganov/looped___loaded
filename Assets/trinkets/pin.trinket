@@ -1,0 +1,68 @@
+{
+  "Id": "PIN",
+  "Title": "PIN",
+  "Pack": "Nailgun",
+  "MaxLevel": 3,
+  "Sort": 14,
+  "Icon": "ui/traits/stick.png",
+  "Blurb": "Nails that damage after time. Why they are exactly nine inch?",
+  "Hook": "Pin",
+  "Flags": [
+    "Nail"
+  ],
+  "Mods": [
+    {
+      "Stat": "Count",
+      "Op": "Set",
+      "Growth": "Tiers",
+      "Order": 110,
+      "Tiers": {
+        "Level1": 2,
+        "Level2": 3,
+        "Level3": 5
+      },
+      "ByHook": true,
+      "Role": "nails"
+    },
+    {
+      "Stat": "Cone",
+      "Op": "Set",
+      "Growth": "Tiers",
+      "Order": 310,
+      "Tiers": {
+        "Level1": 8,
+        "Level2": 10,
+        "Level3": 12
+      },
+      "ByHook": true,
+      "Role": "cone"
+    },
+    {
+      "Stat": "Bounces",
+      "Op": "Add",
+      "Growth": "Tiers",
+      "Order": 500,
+      "Tiers": {
+        "Level1": 1,
+        "Level2": 2,
+        "Level3": 3
+      }
+    },
+    {
+      "Stat": "Radius",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 1050,
+      "Value": 6
+    },
+    {
+      "Stat": "StickTime",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 1050,
+      "Value": 0.6
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

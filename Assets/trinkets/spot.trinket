@@ -1,0 +1,60 @@
+{
+  "Id": "SPOT",
+  "Title": "SPOT",
+  "Pack": "Rocket",
+  "MaxLevel": 1,
+  "Sort": 23,
+  "Icon": "ui/traits/explosive.png",
+  "Blurb": "AIM TO BOOOOM",
+  "Flags": [
+    "PointAim"
+  ],
+  "Requires": [
+    "trinkets/warhead.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.85
+    },
+    {
+      "Stat": "Splash",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 1205,
+      "Value": 40
+    },
+    {
+      "Stat": "SplashDamage",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 1261,
+      "Value": 1,
+      "UseWhen": true,
+      "WhenStat": "Splash",
+      "HasWhenMin": true,
+      "WhenMin": 1.001
+    },
+    {
+      "Stat": "Bounces",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 510,
+      "Value": 0,
+      "Hidden": true
+    }
+  ],
+  "Notes": [
+    {
+      "Text": "No bounces",
+      "Sign": -1
+    }
+  ],
+  "__references": [
+    "trinkets/warhead.trinket"
+  ],
+  "__version": 0
+}

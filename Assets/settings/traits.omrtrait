@@ -7,6 +7,7 @@
   "EnergyBase": 5500,
   "ReloadBase": 0.7,
   "ReloadMin": 0.2,
+  "ProjectileRadius": 13,
   "Rifle": {
     "Price": 2,
     "Weight": 5
@@ -45,191 +46,15 @@
   },
   "Abomination": {
     "Price": 8,
-    "Weight": 1
-  },
-  "SplitPellets": {
-    "Level1": 1,
-    "Level2": 2,
-    "Level3": 4,
-    "Level4": 7
-  },
-  "SplitReload": {
-    "Level1": 0,
-    "Level2": 0.15,
-    "Level3": 0.25,
-    "Level4": 0.5
-  },
-  "BuckPellets": {
-    "Level1": 2,
-    "Level2": 3,
-    "Level3": 5
-  },
-  "BuckCone": {
-    "Level1": 10,
-    "Level2": 16,
-    "Level3": 24
-  },
-  "BuckRangeCut": {
-    "Level1": 0.83,
-    "Level2": 0.94,
-    "Level3": 1
-  },
-  "MeatRangeCut": 1,
-  "WasteRangeCut": 1,
-  "BorePierce": {
-    "Level1": 1,
-    "Level2": 1,
-    "Level3": 2
-  },
-  "BoreReload": 0.35,
-  "DrumBurst": {
-    "Level1": 3,
-    "Level2": 4,
-    "Level3": 6
+    "Weight": 1,
+    "Single": true
   },
   "DrumCycle": 0.16,
-  "DrumReload": 0.45,
-  "WarheadRadius": {
-    "Level1": 90,
-    "Level2": 126,
-    "Level3": 176
-  },
-  "WarheadSpeed": {
-    "Level1": 0.78,
-    "Level2": 0.68,
-    "Level3": 0.58
-  },
-  "MirvRadiusScale": 0.55,
-  "MirvSpeed": 0.8,
-  "BloomRadius": 80,
-  "BloomReload": 0.2,
-  "ScorchDamage": 2,
-  "ScorchSpeed": 0.75,
-  "ScorchReload": 0.12,
-  "LanceDamage": 2,
-  "LanceRadiusScale": 0.7,
-  "LanceSpeed": 0.7,
-  "LanceReload": 0.3,
-  "CraterBody": 22,
-  "CraterSplash": 56,
-  "CraterSpeed": 0.65,
-  "SpotSpeed": 0.85,
-  "SpotSplash": 40,
-  "SpotSplashDamage": 1,
-  "DeepPierce": 2,
-  "DeepReload": 0.25,
-  "AwlSpeed": 0.85,
-  "AwlReload": 0.12,
-  "RamSpeed": 0.75,
-  "MassDamage": 3,
-  "MassSpeed": 0.7,
-  "MassReload": 0.45,
-  "KeelDamage": 5,
-  "KeelSpeed": 0.6,
-  "TraceSpeed": 1.6,
-  "TraceReload": 0.25,
-  "BeltBurst": 3,
-  "BeltReload": 0.3,
-  "WalkCone": 3,
-  "WalkReload": 0.12,
-  "SpoolCycle": 0.65,
-  "SpoolReload": 0.15,
-  "SightSpeed": 0.9,
-  "BiteSpeed": 0.8,
-  "LinkCycle": 1.1,
-  "LinkReload": 0.2,
   "LashPad": 0.4,
   "LashPerSecond": 0.5,
   "LashMaxHold": 1.1,
-  "LashHit": 1,
-  "LashTick": {
-    "Level1": 0.6,
-    "Level2": 0.4,
-    "Level3": 0.2
-  },
-  "LashTicks": {
-    "Level1": 4,
-    "Level2": 6,
-    "Level3": 8
-  },
-  "LashReload": 0.3,
-  "LashRankWeight": 12,
   "LashRange": 1600,
   "LashWidth": 8,
-  "SearReload": 0.1,
-  "KilnTick": 0.75,
-  "KilnWidth": 0.75,
-  "KilnReload": 0.06,
-  "ArcRange": 220,
-  "ArcTick": 1.15,
-  "ForkReload": 0.08,
-  "ShuntTick": 1.25,
-  "ShuntWidth": 0.85,
-  "LingerReload": 0.12,
-  "CellTicks": 2,
-  "CellReload": 0.1,
-  "JackReload": 0.8,
-  "JackSplash": 0.8,
-  "SlapReload": 0.85,
-  "SlapSpeed": 0.85,
-  "RackReload": 0.75,
-  "RackSpeed": 0.85,
-  "DrawReload": 0.85,
-  "DrawPierce": 1,
-  "FeedReload": 0.75,
-  "FeedCycle": 1.2,
-  "EjectReload": 0.85,
-  "EjectBurst": 1,
-  "VentReload": 0.8,
-  "VentTick": 1.2,
-  "CoolReload": 0.85,
-  "CoolWidth": 0.8,
-  "ShuckReload": 0.8,
-  "ShuckCone": 8,
-  "SlamReload": 0.85,
-  "SlamPellets": 1,
-  "PinNails": {
-    "Level1": 2,
-    "Level2": 3,
-    "Level3": 5
-  },
-  "PinBounce": {
-    "Level1": 1,
-    "Level2": 2,
-    "Level3": 3
-  },
-  "PinCone": {
-    "Level1": 8,
-    "Level2": 10,
-    "Level3": 12
-  },
-  "PinRadius": 6,
-  "PinStick": 0.6,
-  "SpinBase": 220,
-  "SpinBoost": {
-    "Level1": 140,
-    "Level2": 260,
-    "Level3": 420
-  },
-  "SpinReload": 0.12,
-  "RushSpeed": {
-    "Level1": 1.2,
-    "Level2": 1.4,
-    "Level3": 1.65
-  },
-  "RushReload": 0.12,
-  "DodgeChance": {
-    "Level1": 0.1,
-    "Level2": 0.2,
-    "Level3": 0.32
-  },
-  "SnapUnlockLap": 3,
-  "SnapPrice": 4,
-  "SnapReload": {
-    "Level1": 0.8,
-    "Level2": 0.64,
-    "Level3": 0.5
-  },
   "__references": [],
   "__version": 0
 }

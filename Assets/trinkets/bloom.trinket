@@ -1,0 +1,37 @@
+{
+  "Id": "BLOOM",
+  "Title": "BLOOM",
+  "Pack": "Rocket",
+  "MaxLevel": 1,
+  "Sort": 19,
+  "Icon": "ui/traits/explosive.png",
+  "Requires": [
+    "trinkets/warhead.trinket"
+  ],
+  "Excludes": [
+    "trinkets/lance.trinket",
+    "trinkets/crater.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Splash",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 1202,
+      "Value": 80
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.2
+    }
+  ],
+  "__references": [
+    "trinkets/warhead.trinket",
+    "trinkets/lance.trinket",
+    "trinkets/crater.trinket"
+  ],
+  "__version": 0
+}

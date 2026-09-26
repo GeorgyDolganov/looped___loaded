@@ -1,0 +1,28 @@
+{
+  "Id": "STUN",
+  "Title": "STUN",
+  "Pack": "Warrior",
+  "MaxLevel": 1,
+  "Sort": 7,
+  "Icon": "ui/traits/freeze.png",
+  "Blurb": "*Doesn't affect boss.",
+  "Mods": [
+    {
+      "Stat": "StunTime",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 900,
+      "Value": 0.45
+    },
+    {
+      "Stat": "StunRange",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 0,
+      "Value": 160,
+      "Passive": true
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

@@ -1,0 +1,44 @@
+{
+  "Id": "BORE",
+  "Title": "BORE",
+  "Pack": "Rail",
+  "MaxLevel": 3,
+  "Sort": 10,
+  "Icon": "ui/traits/pierce.png",
+  "Blurb": "Did somebody say \"RAILGUN\"?",
+  "Excludes": [
+    "trinkets/lash.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Pierce",
+      "Op": "Set",
+      "Growth": "Tiers",
+      "Order": 600,
+      "Tiers": {
+        "Level1": 1,
+        "Level2": 1,
+        "Level3": 2
+      }
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "TraitRatio",
+      "Order": 700,
+      "Value": 0.35
+    },
+    {
+      "Stat": "BoreWait",
+      "Op": "Set",
+      "Growth": "TraitRatio",
+      "Order": 700,
+      "Value": 0.35,
+      "Hidden": true
+    }
+  ],
+  "__references": [
+    "trinkets/lash.trinket"
+  ],
+  "__version": 0
+}

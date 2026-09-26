@@ -1,0 +1,34 @@
+{
+  "Id": "SIGHT",
+  "Title": "SIGHT",
+  "Pack": "Rifle",
+  "MaxLevel": 1,
+  "Sort": 31,
+  "Icon": "ui/traits/accel.png",
+  "Blurb": "Later shots in a burst use half spread.",
+  "Flags": [
+    "Sight"
+  ],
+  "Requires": [
+    "trinkets/drum.trinket"
+  ],
+  "Excludes": [
+    "trinkets/belt.trinket",
+    "trinkets/walk.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.9
+    }
+  ],
+  "__references": [
+    "trinkets/drum.trinket",
+    "trinkets/belt.trinket",
+    "trinkets/walk.trinket"
+  ],
+  "__version": 0
+}

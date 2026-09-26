@@ -1,0 +1,29 @@
+{
+  "Id": "DOUBLE",
+  "Title": "DOUBLE",
+  "Pack": "Warrior",
+  "MaxLevel": 1,
+  "Sort": 5,
+  "Icon": "ui/traits/echo.png",
+  "Flags": [
+    "DoublePump"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.35
+    },
+    {
+      "Stat": "Gap",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.12
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

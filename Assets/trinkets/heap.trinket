@@ -1,0 +1,27 @@
+{
+  "Id": "HEAP",
+  "Title": "HEAP",
+  "Pack": "Abomination",
+  "MaxLevel": 1,
+  "Sort": 63,
+  "Icon": "ui/traits/shred.png",
+  "InPool": false,
+  "Mods": [
+    {
+      "Stat": "Count",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 100,
+      "Value": 3
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.4
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

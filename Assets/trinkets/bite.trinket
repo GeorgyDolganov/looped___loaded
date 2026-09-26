@@ -1,0 +1,34 @@
+{
+  "Id": "BITE",
+  "Title": "BITE",
+  "Pack": "Rifle",
+  "MaxLevel": 1,
+  "Sort": 32,
+  "Icon": "ui/traits/accel.png",
+  "Blurb": "+damage on a body this burst already hit. ",
+  "Flags": [
+    "Bite"
+  ],
+  "Requires": [
+    "trinkets/drum.trinket"
+  ],
+  "Excludes": [
+    "trinkets/belt.trinket",
+    "trinkets/walk.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.8
+    }
+  ],
+  "__references": [
+    "trinkets/drum.trinket",
+    "trinkets/belt.trinket",
+    "trinkets/walk.trinket"
+  ],
+  "__version": 0
+}

@@ -1,0 +1,40 @@
+{
+  "Id": "DRAW",
+  "Title": "DRAW",
+  "Pack": "Rail",
+  "MaxLevel": 1,
+  "Sort": 44,
+  "Icon": "ui/traits/snap.png",
+  "Requires": [
+    "trinkets/bore.trinket",
+    "trinkets/rack.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 730,
+      "Value": 0.85
+    },
+    {
+      "Stat": "Pierce",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 610,
+      "Value": -1
+    },
+    {
+      "Stat": "Pierce",
+      "Op": "Max",
+      "Growth": "Flat",
+      "Order": 611,
+      "Value": 0
+    }
+  ],
+  "__references": [
+    "trinkets/bore.trinket",
+    "trinkets/rack.trinket"
+  ],
+  "__version": 0
+}

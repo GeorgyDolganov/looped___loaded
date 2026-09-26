@@ -1,0 +1,48 @@
+{
+  "Id": "EJECT",
+  "Title": "EJECT",
+  "Pack": "Rifle",
+  "MaxLevel": 1,
+  "Sort": 46,
+  "Icon": "ui/traits/snap.png",
+  "Requires": [
+    "trinkets/drum.trinket",
+    "trinkets/feed.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 730,
+      "Value": 0.85
+    },
+    {
+      "Stat": "Burst",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 1420,
+      "Value": -1,
+      "UseWhen": true,
+      "WhenStat": "Burst",
+      "HasWhenMin": true,
+      "WhenMin": 2
+    },
+    {
+      "Stat": "Burst",
+      "Op": "Max",
+      "Growth": "Flat",
+      "Order": 1421,
+      "Value": 1,
+      "UseWhen": true,
+      "WhenStat": "Burst",
+      "HasWhenMin": true,
+      "WhenMin": 2
+    }
+  ],
+  "__references": [
+    "trinkets/drum.trinket",
+    "trinkets/feed.trinket"
+  ],
+  "__version": 0
+}

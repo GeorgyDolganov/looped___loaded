@@ -1,0 +1,20 @@
+{
+  "Id": "BREACH",
+  "Title": "BREACH",
+  "Pack": "Abomination",
+  "MaxLevel": 1,
+  "Sort": 65,
+  "Icon": "ui/traits/hook.png",
+  "InPool": false,
+  "Mods": [
+    {
+      "Stat": "Pierce",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 600,
+      "Value": 1
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

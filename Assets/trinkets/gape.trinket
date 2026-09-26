@@ -1,0 +1,20 @@
+{
+  "Id": "GAPE",
+  "Title": "GAPE",
+  "Pack": "Warrior",
+  "MaxLevel": 1,
+  "Sort": 62,
+  "Icon": "ui/traits/redirect.png",
+  "InPool": false,
+  "Mods": [
+    {
+      "Stat": "Cone",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 220,
+      "Value": 14
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

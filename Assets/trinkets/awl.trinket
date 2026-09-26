@@ -1,0 +1,41 @@
+{
+  "Id": "AWL",
+  "Title": "AWL",
+  "Pack": "Rail",
+  "MaxLevel": 1,
+  "Sort": 25,
+  "Icon": "ui/traits/pierce.png",
+  "Blurb": "Ignores boss armor.",
+  "Flags": [
+    "IgnoreArmor"
+  ],
+  "Requires": [
+    "trinkets/bore.trinket"
+  ],
+  "Excludes": [
+    "trinkets/keel.trinket",
+    "trinkets/mass.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Speed",
+      "Op": "Mul",
+      "Growth": "Flat",
+      "Order": 800,
+      "Value": 0.85
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.12
+    }
+  ],
+  "__references": [
+    "trinkets/bore.trinket",
+    "trinkets/keel.trinket",
+    "trinkets/mass.trinket"
+  ],
+  "__version": 0
+}
