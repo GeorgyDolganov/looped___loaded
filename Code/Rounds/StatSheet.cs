@@ -64,6 +64,9 @@ public static class StatSheet
 				if ( note is null || string.IsNullOrWhiteSpace( note.Text ) )
 					continue;
 
+				if ( note.Text.StartsWith( "Locks out" ) )
+					continue;
+
 				if ( note.When == NoteWhen.First && rank > 1 )
 					continue;
 
@@ -84,16 +87,6 @@ public static class StatSheet
 
 				lines.Add( new StatLine( text, FlagSign( flag ) ) );
 			}
-		}
-
-		if ( rank <= 1 )
-		{
-			var names = new List<string>();
-			foreach ( var ex in Trinkets.ExcludesOf( card ) )
-				names.Add( ex.Id );
-
-			if ( names.Count > 0 )
-				lines.Add( new StatLine( "Locks out " + string.Join( ", ", names ), -1 ) );
 		}
 
 		return lines;
@@ -145,6 +138,17 @@ public static class StatSheet
 
 		if ( mod.Op == ModOp.Set && mod.Growth == ModGrowth.Flat )
 			return DescribeSet( mod, meta, rank );
+
+		if ( mod.Stat == GunStat.Burst && mod.Op == ModOp.Set )
+		{
+			var rounds = mod.Amount( rank, 0 );
+			if ( rank > 1 && MathF.Abs( rounds - mod.Amount( rank - 1, 0 ) ) < 0.001f )
+				return null;
+
+			var number = NearlyInt( rounds ) ? ((int)MathF.Round( rounds )).ToString() : Fmt( rounds );
+			var word = MathF.Abs( rounds - 1f ) > 0.001f ? "rounds" : "round";
+			return new StatLine( $"{number} {word} per shot", 1 );
+		}
 
 		var now = mod.Amount( rank, 0 );
 		var prev = rank <= 1 ? 0f : mod.Amount( rank - 1, 0 );
@@ -285,7 +289,6 @@ public static class StatSheet
 	static string FlagText( GunFlag flag ) => flag switch
 	{
 		GunFlag.Beam => "Hold to fire lightning",
-		GunFlag.Auto => "Hold to fire a burst",
 		GunFlag.DoublePump => "Two volleys per mag",
 		GunFlag.PointAim => "Aim at a point",
 		GunFlag.IgnoreArmor => "Ignores armor",
@@ -295,7 +298,7 @@ public static class StatSheet
 		GunFlag.PerPelletSplash => "Splash per pellet",
 		GunFlag.FriendlySplash => "You take splash damage",
 		GunFlag.NoFriendlySplash => "Friendly splash off",
-		GunFlag.Nail => "Nails that stick",
+		GunFlag.Nail => null,
 		GunFlag.BeamSear => "+1 damage while the beam stays",
 		GunFlag.BeamFork => "Side bolts hit",
 		GunFlag.BeamShunt => "Ignores shields",

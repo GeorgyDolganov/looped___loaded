@@ -167,7 +167,7 @@
 | Pack | Rail |
 | InPool | yes |
 | MaxLevel | 3 |
-| Blurb | Did somebody say "RAILGUN"? |
+| Blurb | Fill them with holes. |
 | Pierce Set | 1 / 1 / 2 @600 |
 | Reload Add | 0.35 x rank @700 |
 | BoreWait Set | 0.35 x rank @700 |
@@ -182,7 +182,7 @@
 | Pack | Rifle |
 | InPool | yes |
 | MaxLevel | 3 |
-| Blurb | HOLD TO SHOOT MULTIPLE ROUNDS ONE AFTER ANOTHER |
+| Blurb | Hold to shoot multiple rounds, one after another. |
 | Excludes | LASH |
 | Flag | Auto |
 | Burst Set | 3 / 4 / 6 @1400 |

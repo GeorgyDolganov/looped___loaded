@@ -5,7 +5,7 @@
   "MaxLevel": 3,
   "Sort": 11,
   "Icon": "ui/traits/accel.png",
-  "Blurb": "HOLD TO SHOOT MULTIPLE ROUNDS ONE AFTER ANOTHER",
+  "Blurb": "Hold to shoot multiple rounds, one after another.",
   "Flags": [
     "Auto"
   ],
@@ -30,6 +30,12 @@
       "Growth": "TraitRatio",
       "Order": 700,
       "Value": 0.45
+    }
+  ],
+  "Notes": [
+    {
+      "Text": "Locks out LASH",
+      "Sign": -1
     }
   ],
   "__references": [

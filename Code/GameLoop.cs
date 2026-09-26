@@ -1672,6 +1672,7 @@ public sealed class GameLoop : Component
 		Scrap -= price;
 		Inventory.Loadout.Install( trait );
 		offers[index].Bought = true;
+		DropBlockedOffers();
 		var added = owned <= 0 ? Trinkets.Unlocks( trait ) : "";
 		if ( added.Length > 0 )
 			Announce( T.F( T.Announce.ShopAdded, added ) );
@@ -1728,6 +1729,18 @@ public sealed class GameLoop : Component
 
 		if ( fight )
 			Announce( Locations.FightHint( Location ) );
+	}
+
+	void DropBlockedOffers()
+	{
+		for ( var i = offers.Count - 1; i >= 0; i-- )
+		{
+			if ( offers[i].Bought )
+				continue;
+
+			if ( TraitLocked( offers[i].Trait ) )
+				offers.RemoveAt( i );
+		}
 	}
 
 	int OpenOfferCount()

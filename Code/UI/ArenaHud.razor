@@ -511,7 +511,7 @@
 					{
 						var index = i;
 						var trait = Loop.Offers[index].Trait;
-						if ( trait is null )
+						if ( trait is null || (!Loop.Offers[index].Bought && Loop.TraitLocked( trait )) )
 							continue;
 
 						var bought = Loop.Offers[index].Bought;
@@ -529,6 +529,10 @@
 								@if ( OfferBlurb( trait ) is { Length: > 0 } blurb )
 								{
 									<label class="blurb">@blurb</label>
+								}
+								@if ( OfferLocks( trait ) is { Length: > 0 } locks )
+								{
+									<label class="blurb">@locks</label>
 								}
 								@if ( OfferUnlocks( trait ) is { Length: > 0 } opens )
 								{
@@ -1129,6 +1133,43 @@
 	{
 		var text = trait?.ShownBlurb;
 		return string.IsNullOrWhiteSpace( text ) ? "" : text;
+	}
+
+	string OfferLocks( TrinketDef trait )
+	{
+		if ( trait is null || trait.Id == "BORE" )
+			return "";
+
+		if ( trait.Notes is not null )
+		{
+			foreach ( var note in trait.Notes )
+			{
+				if ( note is not null && note.Text is { Length: > 0 } text && text.StartsWith( "Locks out" ) )
+					return text;
+			}
+		}
+
+		var names = new List<string>();
+		void Add( TrinketDef ex )
+		{
+			if ( ex is null )
+				return;
+
+			var name = ex.ShownTitle;
+			if ( name.Length > 0 && !names.Contains( name ) )
+				names.Add( name );
+		}
+
+		foreach ( var ex in Trinkets.ExcludesOf( trait ) )
+			Add( ex );
+
+		if ( trait.Excludes is not null )
+		{
+			foreach ( var ex in trait.Excludes )
+				Add( ex );
+		}
+
+		return names.Count == 0 ? "" : "Locks out " + string.Join( ", ", names );
 	}
 
 	string OfferUnlocks( TrinketDef trait )

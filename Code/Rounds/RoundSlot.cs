@@ -8,10 +8,28 @@ public sealed class RunLoadout
 
 	public int TraitLevel( TrinketDef card )
 	{
-		if ( card is null )
+		var key = Key( card );
+		if ( key is null )
 			return 0;
 
-		return levels.TryGetValue( card, out var level ) ? level : 0;
+		return levels.TryGetValue( key, out var level ) ? level : 0;
+	}
+
+	TrinketDef Key( TrinketDef card )
+	{
+		if ( card is null )
+			return null;
+
+		if ( levels.ContainsKey( card ) )
+			return card;
+
+		foreach ( var pair in levels )
+		{
+			if ( pair.Key is not null && pair.Key.Id == card.Id )
+				return pair.Key;
+		}
+
+		return card;
 	}
 
 	public bool Has( TrinketDef card ) => TraitLevel( card ) > 0;
@@ -36,7 +54,7 @@ public sealed class RunLoadout
 		if ( card is null )
 			return;
 
-		levels[card] = Math.Min( card.Cap, TraitLevel( card ) + 1 );
+		levels[Key( card )] = Math.Min( card.Cap, TraitLevel( card ) + 1 );
 	}
 
 	public RunLoadout Clone()
@@ -52,13 +70,14 @@ public sealed class RunLoadout
 		if ( card is null )
 			return Recipe();
 
+		var key = Key( card );
 		var old = TraitLevel( card );
-		levels[card] = Math.Min( card.Cap, old + 1 );
+		levels[key] = Math.Min( card.Cap, old + 1 );
 		var recipe = Recipe();
 		if ( old <= 0 )
-			levels.Remove( card );
+			levels.Remove( key );
 		else
-			levels[card] = old;
+			levels[key] = old;
 		return recipe;
 	}
 

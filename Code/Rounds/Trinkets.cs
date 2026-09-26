@@ -20,7 +20,8 @@ public static class Trinkets
 
 	public static bool IsWeapon( TrinketDef card )
 	{
-		if ( card is null || Live( card.Requires ).Count > 0 )
+		Refresh();
+		if ( card is null || card.Id == "BORE" || Live( card.Requires ).Count > 0 )
 			return false;
 
 		foreach ( var dep in Dependents( card ) )
@@ -50,10 +51,14 @@ public static class Trinkets
 
 	public static string Unlocks( TrinketDef card )
 	{
+		Refresh();
+		if ( card is null || card.Id == "BORE" )
+			return "";
+
 		var names = new List<string>();
 		foreach ( var dep in Dependents( card ) )
 		{
-			if ( !dep.InPool )
+			if ( !dep.InPool || !Present( dep ) )
 				continue;
 
 			names.Add( dep.ShownTitle );
@@ -86,6 +91,9 @@ public static class Trinkets
 
 		foreach ( var req in Live( card.Requires ) )
 		{
+			if ( req.Id == "BORE" )
+				continue;
+
 			if ( !loadout.Has( req ) )
 				return true;
 		}
@@ -94,6 +102,15 @@ public static class Trinkets
 		{
 			if ( loadout.Has( ex ) )
 				return true;
+		}
+
+		foreach ( var owned in loadout.Owned() )
+		{
+			foreach ( var ex in Live( owned.Key.Excludes ) )
+			{
+				if ( ex == card || ex.Id == card.Id )
+					return true;
+			}
 		}
 
 		return false;
@@ -237,6 +254,9 @@ public static class Trinkets
 				continue;
 			}
 
+			if ( !Present( card ) )
+				continue;
+
 			if ( !index.byId.TryAdd( card.Id, card ) )
 			{
 				Log.Warning( $"Duplicate trinket id {card.Id}" );
@@ -259,6 +279,9 @@ public static class Trinkets
 		{
 			foreach ( var req in Live( card.Requires ) )
 			{
+				if ( req.Id == "BORE" )
+					continue;
+
 				if ( !index.dependents.TryGetValue( req, out var list ) )
 				{
 					list = new List<TrinketDef>();
@@ -295,6 +318,22 @@ public static class Trinkets
 
 		ready = index;
 		return index;
+	}
+
+	static bool Present( TrinketDef card )
+	{
+		if ( card is null )
+			return false;
+
+		var path = card.ResourcePath;
+		if ( string.IsNullOrWhiteSpace( path ) )
+			return true;
+
+		var fs = FileSystem.Mounted;
+		if ( fs is null )
+			return true;
+
+		return fs.FileExists( path );
 	}
 
 	static void Link( Dictionary<TrinketDef, HashSet<TrinketDef>> map, TrinketDef card, TrinketDef other )

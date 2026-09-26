@@ -13,12 +13,7 @@
   "Hook": "None",
   "Flags": [],
   "Requires": [],
-  "Excludes": [
-    {
-      "Id": "668c5335-9638-4f47-af8d-991ea35c25bb",
-      "Path": "trinkets/lash.trinket"
-    }
-  ],
+  "Excludes": [],
   "Mods": [
     {
       "Stat": "Pierce",
