@@ -15,7 +15,7 @@
 						[
 							{
 								from = "center.vmat"
-								to = "materials/arena/arena center.vmat"
+								to = "materials/arena/arena.vmat"
 							},
 							{
 								from = "material.001.vmat"
@@ -27,7 +27,15 @@
 							},
 							{
 								from = "material.vmat"
-								to = "materials/arena/arena.vmat"
+								to = "materials/arena/pipe.vmat"
+							},
+							{
+								from = "material.003.vmat"
+								to = "materials/arena/exterior.vmat"
+							},
+							{
+								from = "pipe.vmat"
+								to = "materials/arena/pipe.vmat"
 							},
 						]
 						use_global_default = false
@@ -75,6 +83,19 @@
 								"bars_001",
 								"base",
 								"egg",
+								"Torus",
+								"Cylinder",
+								"Cylinder_011",
+								"Cylinder_010",
+								"Cylinder_009",
+								"Cylinder_008",
+								"Cylinder_007",
+								"Cylinder_006",
+								"Cylinder_004",
+								"Cylinder_005",
+								"Cylinder_003",
+								"Cylinder_001",
+								"Cylinder_002",
 							]
 						}
 					},
