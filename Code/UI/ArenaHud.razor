@@ -27,14 +27,19 @@
 		{
 			<div class="run-left">
 				<div class="run-stack">
-					<div class="hud-panel lap-panel">
-						<img class="lap-back" src="ui/Arena UI/element_back_double.png" />
-						<div class="lap-face">
-							<label class="place">@(Loop.InBossFight ? Loop.BossName : "ROUND")</label>
-							<label class="lap-value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
+					<div class="hud-panel brief-panel">
+						<img class="brief-back" src="ui/Arena UI/element_back_two_floors.png" />
+						<div class="brief-face">
+							@if ( Loop.HasTask )
+							{
+								<label class="brief-kicker">@GameSettings.Text.Hud.Objective</label>
+								<label class="brief-title">@Loop.TaskTitle</label>
+								<label class="brief-blurb">@Loop.TaskBlurb</label>
+							}
 						</div>
-						<div class="lap-side">
-							<label class="lap-clock">@TimeText</label>
+						<div class="brief-floor">
+							<label class="key">@GameSettings.Text.Hud.Fed</label>
+							<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
 						</div>
 					</div>
 
@@ -58,19 +63,14 @@
 					</div>
 				</div>
 
-				<div class="hud-panel brief-panel">
-					<img class="brief-back" src="ui/Arena UI/element_back_two_floors.png" />
-					<div class="brief-face">
-						@if ( Loop.HasTask )
-						{
-							<label class="brief-kicker">@GameSettings.Text.Hud.Objective</label>
-							<label class="brief-title">@Loop.TaskTitle</label>
-							<label class="brief-blurb">@Loop.TaskBlurb</label>
-						}
+				<div class="hud-panel lap-panel">
+					<img class="lap-back" src="ui/Arena UI/element_back_double.png" />
+					<div class="lap-face">
+						<label class="place">@(Loop.InBossFight ? Loop.BossName : "ROUND")</label>
+						<label class="lap-value">@(Loop.InBossFight ? Loop.BossHealth : Loop.Lap)</label>
 					</div>
-					<div class="brief-floor">
-						<label class="key">@GameSettings.Text.Hud.Fed</label>
-						<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+					<div class="lap-side">
+						<label class="lap-clock">@TimeText</label>
 					</div>
 				</div>
 			</div>
@@ -3934,8 +3934,8 @@
 
 	.run-left {
 		position: absolute;
-		left: 26px;
-		top: 24px;
+		left: 12px;
+		top: 12px;
 		flex-direction: row;
 		align-items: flex-start;
 		font-family: "Barlow Condensed";
@@ -3950,8 +3950,8 @@
 
 	.run-right {
 		position: absolute;
-		right: 26px;
-		top: 76px;
+		right: 12px;
+		top: 12px;
 		width: 360px;
 		flex-direction: column;
 		align-items: stretch;
@@ -4155,10 +4155,13 @@
 		background-color: #b48cff;
 	}
 
+	.run-left .lap-panel {
+		margin-left: 12px;
+	}
+
 	.run-left .brief-panel {
 		width: 400px;
-		margin-left: 12px;
-		margin-bottom: 0px;
+		margin-bottom: 12px;
 	}
 
 	.brief-panel {
