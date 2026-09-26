@@ -3,9 +3,13 @@ namespace LoopedLoaded;
 public static class HoboLook
 {
 	public const string ModelPath = "models/hobo.vmdl";
+	public const string ShooterModelPath = "models/hoboshoot.vmdl";
 	public const float Size = 1.7f;
 
 	const string OverlayName = "Hobo Overlay";
+	const string AttackSequence = "attack";
+	const string ShootSequence = "shoot";
+	const string UpperRoot = "spine_1";
 
 	static readonly string[] UpperBones =
 	{
@@ -16,9 +20,9 @@ public static class HoboLook
 		"elbow_pole_L", "elbow_pole_R"
 	};
 
-	public static SkinnedModelRenderer Attach( GameObject parent, float height )
+	public static SkinnedModelRenderer Attach( GameObject parent, float height, string path = ModelPath )
 	{
-		var model = Model.Load( ModelPath );
+		var model = Model.Load( path );
 		var scale = ScaleOf( height );
 		var lift = -model.Bounds.Mins.z * scale;
 
@@ -32,7 +36,7 @@ public static class HoboLook
 		return longest > 0.001f ? height * Size / longest : 1f;
 	}
 
-	public static float TopOf( float height ) => Model.Load( ModelPath ).Bounds.Size.z * ScaleOf( height );
+	public static float TopOf( float height, string path = ModelPath ) => Model.Load( path ).Bounds.Size.z * ScaleOf( height );
 
 	static SkinnedModelRenderer MakeSkin( GameObject parent, string name, Model model, float scale, float lift, bool hide )
 	{
@@ -78,18 +82,22 @@ public static class HoboLook
 		return null;
 	}
 
-	public static float PlayAttack( SkinnedModelRenderer skin )
+	public static float PlayAttack( SkinnedModelRenderer skin ) => PlayOverlay( skin, AttackSequence, 16f / 24f );
+
+	public static float PlayShoot( SkinnedModelRenderer skin ) => PlayOverlay( skin, ShootSequence, 8f / 24f );
+
+	static float PlayOverlay( SkinnedModelRenderer skin, string sequence, float fallback )
 	{
 		var overlay = EnsureOverlay( skin );
 		if ( !overlay.IsValid() )
 			return 0f;
 
 		overlay.UseAnimGraph = false;
-		overlay.Sequence.Name = "attack";
+		overlay.Sequence.Name = sequence;
 		overlay.Sequence.Looping = false;
 		Hide( overlay );
 		var duration = overlay.Sequence.Duration;
-		return duration > 0.05f ? duration : 16f / 24f;
+		return duration > 0.05f ? duration : fallback;
 	}
 
 	public static void Drive( SkinnedModelRenderer skin, Vector3 velocity, Vector3 look, bool attacking )
@@ -142,16 +150,37 @@ public static class HoboLook
 		Hide( overlay );
 		overlay.WorldTransform = body.WorldTransform;
 
+		if ( overlay.Sequence.Name == ShootSequence )
+		{
+			CopyTree( body, overlay, overlay.Model?.Bones.GetBone( UpperRoot ) );
+			return;
+		}
+
 		foreach ( var name in UpperBones )
 		{
 			var bone = overlay.Model?.Bones.GetBone( name );
 			if ( bone is null )
 				continue;
 
-			if ( !overlay.TryGetBoneTransformAnimation( bone, out var world ) )
-				continue;
-
-			body.SetBoneTransform( bone, body.WorldTransform.ToLocal( world ) );
+			CopyBone( body, overlay, bone );
 		}
+	}
+
+	static void CopyTree( SkinnedModelRenderer body, SkinnedModelRenderer overlay, BoneCollection.Bone bone )
+	{
+		if ( bone is null )
+			return;
+
+		CopyBone( body, overlay, bone );
+		foreach ( var child in bone.Children )
+			CopyTree( body, overlay, child );
+	}
+
+	static void CopyBone( SkinnedModelRenderer body, SkinnedModelRenderer overlay, BoneCollection.Bone bone )
+	{
+		if ( !overlay.TryGetBoneTransformAnimation( bone, out var world ) )
+			return;
+
+		body.SetBoneTransform( bone, body.WorldTransform.ToLocal( world ) );
 	}
 }

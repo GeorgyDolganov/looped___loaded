@@ -122,6 +122,7 @@ public sealed class Enemy : Component
 			var pos = Flat;
 			Arena.Geometry.Eject( ref pos, Radius, true, pos );
 			Flat = pos;
+			Separate();
 		}
 
 		var toPlayer = Loop.IsValid() && Loop.Runner.IsValid() ? Loop.Runner.Flat - Flat : -Flat;
@@ -467,6 +468,7 @@ public sealed class Enemy : Component
 				break;
 		}
 
+		Separate();
 		moveVelocity = drive.Velocity;
 		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
 	}
@@ -474,6 +476,53 @@ public sealed class Enemy : Component
 	void Seek( Vector2 goal, float speed, float minRadius, float maxRadius )
 	{
 		Flat = drive.Step( Arena.Geometry, Flat, goal, Radius, speed, minRadius, maxRadius, Loop.Enemies.Count );
+	}
+
+	void Separate()
+	{
+		if ( Locations.IsBoss( Kind ) || !Loop.IsValid() || !Arena.IsValid() )
+			return;
+
+		foreach ( var other in Loop.Enemies )
+		{
+			if ( other == this || !other.IsValid() || !other.Alive || Locations.IsBoss( other.Kind ) )
+				continue;
+
+			var gap = Flat - other.Flat;
+			var reach = Radius + other.Radius;
+			var dist = gap.Length;
+			if ( dist >= reach )
+				continue;
+
+			var away = dist > 0.5f
+				? gap / dist
+				: Flat.Length > 1f ? new Vector2( -Flat.y, Flat.x ).Normal : Vector2.Right;
+			var overlap = reach - dist;
+			var moved = Nudge( away * (overlap * 0.5f) );
+			other.Nudge( -away * MathF.Max( 0f, overlap - moved ) );
+		}
+	}
+
+	float Nudge( Vector2 delta )
+	{
+		var length = delta.Length;
+		if ( length < 0.01f || !Arena.IsValid() )
+			return 0f;
+
+		var from = Flat;
+		var pos = from;
+		Arena.Geometry.MoveBody( ref pos, delta, Radius, true );
+
+		var cfg = GameSettings.Enemies;
+		var min = MathF.Min( Arena.Geometry.CoreRadius + cfg.InnerPad, from.Length );
+		var max = MathF.Max( Arena.Geometry.TrackRadius - cfg.TrackPad, from.Length );
+		var span = pos.Length;
+		if ( span > 1f && (span < min || span > max) )
+			pos = pos.Normal * Math.Clamp( span, min, max );
+
+		Flat = pos;
+		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
+		return MathF.Max( 0f, ArenaGeometry.Dot( pos - from, delta / length ) );
 	}
 
 	void MoveShooter( float scale, float inner )
@@ -566,6 +615,7 @@ public sealed class Enemy : Component
 
 			shotAt = Time.Now + interval;
 			EnemyShot.Fire( Loop, Flat, LeadDirection(), GameSettings.Enemies.Shooter.ShotSpeed * Pressure );
+			attackUntil = Time.Now + HoboLook.PlayShoot( hobo );
 		}
 	}
 
@@ -741,8 +791,9 @@ public sealed class Enemy : Component
 			: Kind == EnemyKind.Lens
 				? TerryLook.CitizenHeight * 4.6f
 				: TerryLook.Height( false );
-		hobo = HoboLook.Attach( body, height );
-		headTop = HoboLook.TopOf( height );
+		var hoboModel = Kind == EnemyKind.Shooter ? HoboLook.ShooterModelPath : HoboLook.ModelPath;
+		hobo = HoboLook.Attach( body, height, hoboModel );
+		headTop = HoboLook.TopOf( height, hoboModel );
 
 		if ( Kind == EnemyKind.Shield || Kind == EnemyKind.Shardguard )
 			BuildShield();
