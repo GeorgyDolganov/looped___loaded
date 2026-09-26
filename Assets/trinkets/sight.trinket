@@ -10,7 +10,7 @@
     "Sight"
   ],
   "Requires": [
-    "trinkets/buck.trinket"
+    "trinkets/drum.trinket"
   ],
   "Mods": [
     {
@@ -22,7 +22,7 @@
     }
   ],
   "__references": [
-    "trinkets/buck.trinket"
+    "trinkets/drum.trinket"
   ],
   "__version": 0
 }

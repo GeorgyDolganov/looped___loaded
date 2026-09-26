@@ -618,7 +618,9 @@ public static class TrinketParity
 			return false;
 		}
 
-		if ( (id == "SPLIT" || id == "SHUCK" || id == "SLAM" || id == "SIGHT") && !owned.Contains( "BUCK" ) )
+		if ( (id == "SPLIT" || id == "SHUCK" || id == "SLAM") && !owned.Contains( "BUCK" ) )
+			return true;
+		if ( id == "SIGHT" && !owned.Contains( "DRUM" ) )
 			return true;
 		if ( (id is "MIRV" or "BLOOM" or "SCORCH" or "LANCE" or "CRATER" or "SPOT") && !owned.Contains( "WARHEAD" ) )
 			return true;

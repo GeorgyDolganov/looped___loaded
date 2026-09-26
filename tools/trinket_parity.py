@@ -313,7 +313,7 @@ add("Cool", "Laser", 48, 1, req=["Lash", "Vent"], mods=[
     M("Reload", "Mul", 730, N("CoolReload")),
     M("BeamWidth", "Mul", 1600, N("CoolWidth")),
 ])
-add("Sight", "Shotgun", 48, 1, flags=["Sight"], req=["Buck"], mods=[M("Speed", "Mul", 800, N("SightSpeed"))])
+add("Sight", "Shotgun", 48, 1, flags=["Sight"], req=["Drum"], mods=[M("Speed", "Mul", 800, N("SightSpeed"))])
 add("Shuck", "Shotgun", 49, 1, req=["Buck"], mods=[
     M("Cone", "Add", 400, N("ShuckCone")),
     M("Reload", "Mul", 730, N("ShuckReload")),
@@ -852,7 +852,9 @@ ARC = {"ARC", "FORK"}
 def old_blocked(ident, owned):
     def owns(group):
         return any(item in owned for item in group)
-    if ident in {"SPLIT", "SHUCK", "SLAM", "SIGHT"} and "BUCK" not in owned:
+    if ident in {"SPLIT", "SHUCK", "SLAM"} and "BUCK" not in owned:
+        return True
+    if ident == "SIGHT" and "DRUM" not in owned:
         return True
     if ident in CLUSTER | LANCE | {"SPOT"} and "WARHEAD" not in owned:
         return True

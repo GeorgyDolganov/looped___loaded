@@ -614,7 +614,7 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Later shots in a burst use half spread. |
-| Requires | BUCK |
+| Requires | DRUM |
 | Flag | Sight |
 | Speed Mul | 0.9 @800 |
 
