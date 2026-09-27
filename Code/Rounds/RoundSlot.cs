@@ -57,6 +57,19 @@ public sealed class RunLoadout
 		levels[Key( card )] = Math.Min( card.Cap, TraitLevel( card ) + 1 );
 	}
 
+	public void Remove( TrinketDef card )
+	{
+		if ( card is null )
+			return;
+
+		var key = Key( card );
+		var level = TraitLevel( card ) - 1;
+		if ( level > 0 )
+			levels[key] = level;
+		else
+			levels.Remove( key );
+	}
+
 	public RunLoadout Clone()
 	{
 		var copy = new RunLoadout { BonusDamage = BonusDamage };

@@ -325,6 +325,9 @@ public static class Trinkets
 		if ( card is null )
 			return false;
 
+		if ( !Game.IsEditor )
+			return true;
+
 		var path = card.ResourcePath;
 		if ( string.IsNullOrWhiteSpace( path ) )
 			return true;

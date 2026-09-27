@@ -101,44 +101,19 @@ public sealed class LaserBeam : Component
 			}
 
 			var storm = LightningPath.Storm( origin, end, rank, seed + i * 31, recipe.BeamFork ? 1 : 0 );
-			Enemy mainBody = null;
-			var mainAt = end;
-			var hitMain = false;
+			List<Contact> line;
 			if ( recipe.BeamFork && storm.Count > 0 )
 			{
-				if ( TouchOne( storm[0], width, out var body, out var touch ) )
-				{
-					CutOne( storm[0], heading, touch );
-					mainBody = body;
-					mainAt = touch;
-					end = touch;
-					hitMain = true;
-					latches.Add( new Latch { Body = body, At = touch, Bolt = i } );
-				}
-
+				line = BurnOne( storm[0], heading, width, i, null );
 				for ( var f = 1; f < storm.Count; f++ )
-				{
-					if ( !TouchOne( storm[f], width, out var forkBody, out var forkAt ) )
-						continue;
-
-					CutOne( storm[f], heading, forkAt );
-					if ( forkBody == mainBody )
-						continue;
-
-					latches.Add( new Latch { Body = forkBody, At = forkAt, Bolt = 100 + i * 8 + f } );
-				}
+					BurnOne( storm[f], heading, width, 100 + i * 8 + f, line );
 			}
-			else if ( FirstTouch( loop, storm, origin, width, out var body, out var touch ) )
-			{
-				CutPast( storm, origin, heading, touch );
-				mainBody = body;
-				mainAt = touch;
-				end = touch;
-				hitMain = true;
-				latches.Add( new Latch { Body = body, At = touch, Bolt = i } );
-			}
+			else
+				line = Burn( storm, heading, width, i, null );
 
-			if ( !hitMain && blocked && loop.Arena.IsValid() )
+			var hitMain = line.Count > 0;
+			var stopped = line.Count > Math.Max( 0, recipe.Pierce );
+			if ( !stopped && blocked && loop.Arena.IsValid() )
 			{
 				if ( wall.Kind == WallKind.Panel )
 					loop.Arena.StrikeBoard( wall.WallIndex, wall.Position, wall.Normal, 0f, false );
@@ -147,11 +122,11 @@ public sealed class LaserBeam : Component
 			}
 
 			if ( hitMain && recipe.BeamArc > 1f )
-				Jump( mainAt, mainBody, i, seed, bolts );
+				Jump( line[^1].At, line, i, seed, bolts );
 
 			if ( i == count / 2 )
 			{
-				splashAt = end;
+				splashAt = hitMain ? line[0].At : end;
 				splashLive = recipe.Splash > 1f;
 			}
 
@@ -177,6 +152,7 @@ public sealed class LaserBeam : Component
 		var hit = Math.Max( 1, recipe.BeamHit );
 		var staged = new List<(int Bolt, Enemy Body, int Next)>();
 		var mains = new List<Enemy>();
+		var shielded = new HashSet<int>();
 		Enemy nearest = null;
 		var nearestDist = float.MaxValue;
 		Vector2 nearestAt = default;
@@ -185,6 +161,9 @@ public sealed class LaserBeam : Component
 		{
 			var enemy = latch.Body;
 			if ( !enemy.IsValid() || !enemy.Alive )
+				continue;
+
+			if ( latch.Depth > 0 && shielded.Contains( latch.Bolt ) )
 				continue;
 
 			var incoming = latch.At - origin;
@@ -197,6 +176,7 @@ public sealed class LaserBeam : Component
 			{
 				if ( Locations.IsBoss( enemy.Kind ) )
 					loop.NoteArmor();
+				shielded.Add( latch.Bolt );
 				continue;
 			}
 
@@ -213,6 +193,8 @@ public sealed class LaserBeam : Component
 			var damage = hit;
 			if ( recipe.BeamSear && prior > 0 )
 				damage += 1;
+			if ( recipe.RampPierce )
+				damage += latch.Depth;
 
 			enemy.Damage( damage, 0f, 1f );
 
@@ -254,27 +236,60 @@ public sealed class LaserBeam : Component
 		return true;
 	}
 
-	bool TouchOne( List<Vector2> bolt, float width, out Enemy enemy, out Vector2 at )
+	List<Contact> Burn( List<List<Vector2>> bolts, Vector2 heading, float width, int bolt, List<Contact> skip )
 	{
-		var wrap = new List<List<Vector2>> { bolt };
-		return FirstTouch( loop, wrap, origin, width, out enemy, out at );
+		var pierce = Math.Max( 0, recipe.Pierce );
+		var line = Touches( loop, bolts, origin, width, pierce + 1 );
+		if ( line.Count > pierce )
+		{
+			var stop = line[0].At;
+			foreach ( var contact in line )
+			{
+				if ( ArenaGeometry.Dot( contact.At - origin, heading ) > ArenaGeometry.Dot( stop - origin, heading ) )
+					stop = contact.At;
+			}
+
+			CutPast( bolts, origin, heading, stop );
+		}
+
+		for ( var k = 0; k < line.Count; k++ )
+		{
+			if ( skip is not null && Holds( skip, line[k].Body ) )
+				continue;
+
+			latches.Add( new Latch { Body = line[k].Body, At = line[k].At, Bolt = bolt, Depth = k } );
+		}
+
+		return line;
 	}
 
-	void CutOne( List<Vector2> bolt, Vector2 heading, Vector2 stop )
+	List<Contact> BurnOne( List<Vector2> bolt, Vector2 heading, float width, int id, List<Contact> skip )
 	{
 		var wrap = new List<List<Vector2>> { bolt };
-		CutPast( wrap, origin, heading, stop );
+		var line = Burn( wrap, heading, width, id, skip );
 		if ( wrap.Count == 0 )
 			bolt.Clear();
+		return line;
 	}
 
-	void Jump( Vector2 from, Enemy main, int bolt, int seed, List<List<Vector2>> drawn )
+	static bool Holds( List<Contact> line, Enemy body )
+	{
+		foreach ( var contact in line )
+		{
+			if ( contact.Body == body )
+				return true;
+		}
+
+		return false;
+	}
+
+	void Jump( Vector2 from, List<Contact> line, int bolt, int seed, List<List<Vector2>> drawn )
 	{
 		Enemy pick = null;
 		var best = recipe.BeamArc;
 		foreach ( var candidate in loop.Enemies )
 		{
-			if ( !candidate.IsValid() || !candidate.Alive || candidate == main )
+			if ( !candidate.IsValid() || !candidate.Alive || Holds( line, candidate ) )
 				continue;
 
 			var dist = (candidate.Flat - from).Length;
@@ -418,14 +433,12 @@ public sealed class LaserBeam : Component
 		return enemy.IsValid() ? at : to;
 	}
 
-	static bool FirstTouch( GameLoop loop, List<List<Vector2>> bolts, Vector2 origin, float width, out Enemy enemy, out Vector2 at )
+	static List<Contact> Touches( GameLoop loop, List<List<Vector2>> bolts, Vector2 origin, float width, int limit )
 	{
-		enemy = null;
-		at = default;
-		if ( !loop.IsValid() )
-			return false;
+		var found = new List<Contact>();
+		if ( !loop.IsValid() || limit <= 0 )
+			return found;
 
-		var best = float.MaxValue;
 		foreach ( var bolt in bolts )
 		{
 			for ( var i = 1; i < bolt.Count; i++ )
@@ -463,17 +476,19 @@ public sealed class LaserBeam : Component
 
 					var touch = a + dir * entry;
 					var dist = (touch - origin).Length;
-					if ( dist >= best )
-						continue;
-
-					best = dist;
-					enemy = candidate;
-					at = touch;
+					var seen = found.FindIndex( c => c.Body == candidate );
+					if ( seen < 0 )
+						found.Add( new Contact { Body = candidate, At = touch, Dist = dist } );
+					else if ( dist < found[seen].Dist )
+						found[seen] = new Contact { Body = candidate, At = touch, Dist = dist };
 				}
 			}
 		}
 
-		return enemy.IsValid();
+		found.Sort( ( x, y ) => x.Dist.CompareTo( y.Dist ) );
+		if ( found.Count > limit )
+			found.RemoveRange( limit, found.Count - limit );
+		return found;
 	}
 
 	struct Latch
@@ -481,6 +496,14 @@ public sealed class LaserBeam : Component
 		public Enemy Body;
 		public Vector2 At;
 		public int Bolt;
+		public int Depth;
+	}
+
+	struct Contact
+	{
+		public Enemy Body;
+		public Vector2 At;
+		public float Dist;
 	}
 
 	static void CutPast( List<List<Vector2>> bolts, Vector2 origin, Vector2 heading, Vector2 stop )
