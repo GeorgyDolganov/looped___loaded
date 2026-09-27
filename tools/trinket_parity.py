@@ -13,8 +13,7 @@ ratio = float(prog["TraitRatio"])
 copy = text["Traits"]
 
 defaults = {
-    "FanCone": 14,
-    "ChokeCone": 10, "ChokeFloor": 6, "MeatRange": 140, "MeatBonus": 1, "MeatRangeCut": 1,
+    "MeatRange": 140, "MeatBonus": 1, "MeatRangeCut": 1,
     "RicoBounces": 1, "DoubleGap": 0.12, "DoubleReload": 0.35,
     "KickForce": 110, "KickRange": 180, "StunTime": 0.45, "StunRange": 160,
     "SlugRadius": 22, "SlugDamage": 2, "SlugFalloffPad": 120,
@@ -92,8 +91,8 @@ def M(stat, op, order, value=0, growth="Flat", tiers=None, bias=0, hidden=False,
     return mod
 
 icons = {
-    "Split": "ui/traits/bounce.png", "Fan": "ui/traits/swipe.png",
-    "Choke": "ui/traits/incurve.png", "Meat": "ui/traits/heavy.png",
+    "Split": "ui/traits/bounce.png",
+    "Meat": "ui/traits/heavy.png",
     "Rico": "ui/traits/pinball.png", "Double": "ui/traits/echo.png",
     "Kick": "ui/traits/kick.png", "Stun": "ui/traits/freeze.png",
     "Slug": "ui/traits/heavy.png",
@@ -160,11 +159,6 @@ burst_when = ("Burst", 2)
 add("Split", "Entry", 0, 4, req=["Buck"], mods=[
     M("Count", "Add", 100, growth="Tiers", tiers=tiers_of("SplitPellets")),
     M("Reload", "Add", 700, growth="Tiers", tiers=tiers_of("SplitReload")),
-])
-add("Fan", "Entry", 1, 1, mods=[M("Cone", "Add", 200, N("FanCone"))])
-add("Choke", "Junior", 2, 1, mods=[
-    M("Cone", "Add", 210, -N("ChokeCone")),
-    M("Cone", "Max", 211, N("ChokeFloor")),
 ])
 add("Meat", "Junior", 3, 2, mods=[
     M("MeatRange", "Max", 900, N("MeatRange")),
@@ -261,7 +255,7 @@ add("Awl", "Rail", 25, 1, flags=["IgnoreArmor"], mods=[
     M("Speed", "Mul", 800, N("AwlSpeed")),
     M("Reload", "Add", 700, N("AwlReload")),
 ])
-add("Ram", "Rail", 26, 1, flags=["RampPierce"], mods=[M("Speed", "Mul", 800, N("RamSpeed"))])
+add("Ram", "Rail", 26, 1, flags=["RampPierce"], req=["Bore"], mods=[M("Speed", "Mul", 800, 0.9)])
 add("Keel", "Rail", 27, 1, notes=no_bounce, mods=[
     M("Damage", "Add", 900, N("KeelDamage")),
     M("Speed", "Mul", 800, N("KeelSpeed")),
@@ -330,8 +324,8 @@ cross(["BELT"], ["SPOOL", "BITE"])
 cross(["SEAR", "KILN"], ["ARC", "FORK"])
 cross(["DRUM"], ["LASH"])
 
-if len(cards) != 44:
-    raise SystemExit(f"expected 44 cards, got {len(cards)}")
+if len(cards) != 42:
+    raise SystemExit(f"expected 42 cards, got {len(cards)}")
 
 INTS = {"Count", "Full", "Damage", "Pierce", "Bounces", "SplashDamage", "MeatBonus", "Burst", "BeamHit", "BeamTicks", "BeamRank"}
 G_RELOAD = float(N("ReloadBase"))
@@ -607,7 +601,7 @@ def pipe(levels, bonus=0):
     return state.recipe()
 
 POOL = [
-    "SPLIT", "FAN", "CHOKE", "MEAT", "RICO", "DOUBLE", "KICK", "STUN", "SLUG",
+    "SPLIT", "MEAT", "RICO", "DOUBLE", "KICK", "STUN", "SLUG",
     "BUCK", "BORE", "DRUM", "WARHEAD", "LASH", "PIN", "RUSH", "DODGE", "SNAP",
     "MIRV", "BLOOM", "SCORCH", "LANCE", "CRATER", "SPOT",
     "AWL", "RAM", "KEEL",
@@ -639,10 +633,6 @@ def legacy(levels, bonus=0):
         count += max(0, int(at(tiers_of("BuckPellets"), buck)) - 1)
     full = count
     cone = 0.0
-    if has(levels, "FAN"):
-        cone += N("FanCone")
-    if has(levels, "CHOKE"):
-        cone = max(N("ChokeFloor"), cone - N("ChokeCone"))
     if buck > 0:
         cone += at(tiers_of("BuckCone"), buck)
     if slug:
@@ -856,6 +846,8 @@ def old_blocked(ident, owned):
         return True
     if ident == "SIGHT" and "DRUM" not in owned:
         return True
+    if ident == "RAM" and "BORE" not in owned:
+        return True
     if ident in CLUSTER | LANCE | {"SPOT"} and "WARHEAD" not in owned:
         return True
     if ident == "LASH" and "DRUM" in owned:
@@ -936,14 +928,10 @@ def check(levels, bonus=0, **expect):
 
 check({})
 check({}, kick_range=180, stun_range=160, kick_force=0, count=1, reload=0.7, radius=13, burst=1, beam_tick=1, beam_kiln=1, beam_width=8)
-check({"CHOKE": 1}, cone=6)
-check({"FAN": 1, "CHOKE": 1, "BUCK": 1}, count=2, cone=16)
-check({"FAN": 1, "CHOKE": 1}, cone=6)
 check({"SPLIT": 4, "SLUG": 1}, count=1, damage=15, radius=22, cone=0)
 check({"PIN": 1}, count=1, cone=0, bounces=1, radius=13, stick=0, nail=False)
 check({"PIN": 1, "SLUG": 1}, count=1, damage=1, radius=22, nail=False, stick=0, cone=0)
 check({"PIN": 1, "SPLIT": 1}, count=2, radius=13, bounces=1, cone=0)
-check({"PIN": 1, "FAN": 1}, cone=14, count=1)
 check({"PIN": 1, "SHUCK": 1}, cone=8, count=1)
 check({"LASH": 1, "BORE": 1}, reload=0.3, bore_wait=0.35, pierce=1, beam=True, bounces=0)
 check({"LASH": 1, "SEAR": 1, "KILN": 1, "FORK": 1, "LINGER": 1, "CELL": 1}, reload=0.3 + 0.1 + 0.06 + 0.08 + 0.12 + 0.1)
@@ -1032,7 +1020,7 @@ check_blocked(["BORE", "RACK"])
 for _ in range(200):
     check_blocked(rng.sample(POOL, rng.randint(0, 10)))
 
-if len(POOL) != 44:
+if len(POOL) != 42:
     fails.append(({}, 0, [f"pool {len(POOL)}"]))
 
 if fails or blocked_fail:

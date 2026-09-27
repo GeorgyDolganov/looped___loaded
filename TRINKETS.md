@@ -43,28 +43,7 @@
 | Count Add | 1 / 2 / 4 / 7 @100 |
 | Reload Add | 0.15 / 0.25 / 0.5 @700 |
 
-### FAN
-
-| Field | Value |
-| --- | --- |
-| Id | FAN |
-| Pack | Entry |
-| InPool | yes |
-| MaxLevel | 1 |
-| Cone Add | 14 @200 |
-
 ## Junior
-
-### CHOKE
-
-| Field | Value |
-| --- | --- |
-| Id | CHOKE |
-| Pack | Junior |
-| InPool | yes |
-| MaxLevel | 1 |
-| Cone Add | -10 @210 |
-| Cone Max | 6 @211 |
 
 ### MEAT
 
@@ -393,6 +372,7 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Each body you punch through hits the next HARDER.  |
+| Requires | BORE |
 | Excludes | KEEL |
 | Flag | RampPierce |
 | Speed Mul | 0.9 @800 |

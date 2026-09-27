@@ -18,8 +18,6 @@ public static class TrinketParity
 		var fails = 0;
 		var shown = 0;
 		fails += Run( new Dictionary<string, int>(), 0, ref shown );
-		fails += Run( Levels( ("CHOKE", 1) ), 0, ref shown );
-		fails += Run( Levels( ("FAN", 1), ("CHOKE", 1), ("BUCK", 1) ), 0, ref shown );
 		fails += Run( Levels( ("SPLIT", 4), ("SLUG", 1) ), 0, ref shown );
 		fails += Run( Levels( ("PIN", 1) ), 0, ref shown );
 		fails += Run( Levels( ("PIN", 1), ("SLUG", 1) ), 0, ref shown );
@@ -93,7 +91,7 @@ public static class TrinketParity
 
 	static readonly string[] Pool =
 	{
-		"SPLIT", "FAN", "CHOKE", "MEAT", "RICO", "DOUBLE", "KICK", "STUN", "SLUG",
+		"SPLIT", "MEAT", "RICO", "DOUBLE", "KICK", "STUN", "SLUG",
 		"BUCK", "BORE", "DRUM", "WARHEAD", "LASH", "PIN", "RUSH", "DODGE", "SNAP",
 		"MIRV", "BLOOM", "SCORCH", "LANCE", "CRATER", "SPOT",
 		"AWL", "RAM", "KEEL",
@@ -117,9 +115,6 @@ public static class TrinketParity
 	static readonly Tier4 DodgeChance = new( 0.1f, 0.2f, 0.32f );
 	static readonly Tier4 SnapReload = new( 0.8f, 0.64f, 0.5f );
 
-	const float FanCone = 14f;
-	const float ChokeCone = 10f;
-	const float ChokeFloor = 6f;
 	const float MeatRange = 140f;
 	const float MeatBonus = 1f;
 	const float MeatCut = 1f;
@@ -348,10 +343,6 @@ public static class TrinketParity
 		var full = count;
 
 		var cone = 0f;
-		if ( Has( levels, "FAN" ) )
-			cone += FanCone;
-		if ( Has( levels, "CHOKE" ) )
-			cone = MathF.Max( ChokeFloor, cone - ChokeCone );
 		if ( buck > 0 )
 			cone += BuckCone.At( buck );
 
@@ -621,6 +612,8 @@ public static class TrinketParity
 		if ( (id == "SPLIT" || id == "SHUCK" || id == "SLAM") && !owned.Contains( "BUCK" ) )
 			return true;
 		if ( id == "SIGHT" && !owned.Contains( "DRUM" ) )
+			return true;
+		if ( id == "RAM" && !owned.Contains( "BORE" ) )
 			return true;
 		if ( (id is "MIRV" or "BLOOM" or "SCORCH" or "LANCE" or "CRATER" or "SPOT") && !owned.Contains( "WARHEAD" ) )
 			return true;
