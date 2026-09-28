@@ -79,7 +79,6 @@ public sealed class GameLoop : Component
 	public int BurnedRounds { get; private set; }
 	public int BestExtract { get; private set; }
 	public int Runs { get; private set; }
-	bool softEnemies;
 	public int FedBiomass { get; private set; }
 	public int Ascend { get; private set; }
 	public int WinNeed => Progression.WinNeed( Ascend );
@@ -306,7 +305,7 @@ public sealed class GameLoop : Component
 
 		BestExtract = save.BestExtract;
 		BestLine = save.BestLine;
-		Runs = save.Version >= SaveStore.CurrentVersion ? Math.Max( 0, save.Runs ) : Progression.SoftRuns;
+		Runs = Math.Max( 0, save.Runs );
 		Ascend = Math.Max( 0, save.Ascend );
 		City?.Apply( save );
 		FedBiomass = Math.Max( save.FedBiomass, City.IsValid() ? City.Warehouse : save.Warehouse );
@@ -715,7 +714,6 @@ public sealed class GameLoop : Component
 
 	public void Restart()
 	{
-		softEnemies = Runs < Progression.SoftRuns;
 		Runs++;
 		Autosave();
 
@@ -1415,7 +1413,6 @@ public sealed class GameLoop : Component
 		BestLine = -1;
 		Runs = 0;
 		Ascend = 0;
-		softEnemies = false;
 		FedBiomass = 0;
 		ExtractedRounds = 0;
 		progress.Clear();
@@ -1962,36 +1959,9 @@ public sealed class GameLoop : Component
 		}
 	}
 
-	int BodyHealth( int lap )
-	{
-		if ( softEnemies )
-			return ScaleHealth( SoftHealth( lap ) );
+	int BodyHealth( int lap ) => ScaleHealth( Progression.WaveHealth( WaveBodyHp( lap ), lap, LocationIndex ) );
 
-		return ScaleHealth( Progression.EnemyHealth( WaveBodyHp( lap ), lap, LocationIndex ) );
-	}
-
-	int ExtraHealth( int lap )
-	{
-		if ( softEnemies )
-			return ScaleHealth( SoftHealth( lap ) );
-
-		return ScaleHealth( Progression.EnemyHealth( WaveExtraHp( lap ), lap, LocationIndex ) );
-	}
-
-	int SoftHealth( int lap )
-	{
-		var hp = 5;
-		if ( lap <= 2 )
-			hp = 1;
-		else if ( lap == 3 )
-			hp = 2;
-		else if ( lap == 4 )
-			hp = 3;
-		else if ( lap == 5 )
-			hp = 4;
-
-		return Math.Max( 1, Progression.Whole( hp * Progression.LocationMul( LocationIndex ) ) );
-	}
+	int ExtraHealth( int lap ) => ScaleHealth( Progression.WaveHealth( WaveExtraHp( lap ), lap, LocationIndex ) );
 
 	static int WaveBodyHp( int lap )
 	{

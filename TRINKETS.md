@@ -64,8 +64,9 @@
 | Id | RICO |
 | Pack | Junior |
 | InPool | yes |
-| MaxLevel | 1 |
-| Bounces Add | 1 @500 |
+| MaxLevel | 3 |
+| Bounces Add | 1 / 3 / 5 @500 |
+| Energy Mul | 1.25 / 1.6 / 2 @500 |
 
 ## Warrior
 
@@ -308,7 +309,7 @@
 | MaxLevel | 1 |
 | Blurb | Are you tiered from hitting yourself? Try this! Disables Ricochet. |
 | Requires | WARHEAD |
-| Excludes | MIRV, BLOOM, SCORCH |
+| Excludes | MIRV, BLOOM, SCORCH, PINBALL |
 | Flag | NoFriendlySplash |
 | Damage Add | 2 @900 |
 | Splash Mul | 0.7 @1203 |
@@ -325,7 +326,7 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Requires | WARHEAD |
-| Excludes | MIRV, BLOOM, SCORCH |
+| Excludes | MIRV, BLOOM, SCORCH, PINBALL |
 | Radius Max | 22 @1110 |
 | Splash Add | 56 @1204 |
 | Speed Mul | 0.65 @800 |
@@ -341,6 +342,7 @@
 | MaxLevel | 1 |
 | Blurb | AIM TO BOOOOM |
 | Requires | WARHEAD |
+| Excludes | PINBALL |
 | Flag | PointAim |
 | Speed Mul | 0.85 @800 |
 | Splash Add | 40 @1205 |
@@ -386,7 +388,7 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Removes richochet. |
-| Excludes | AWL, RAM |
+| Excludes | AWL, RAM, PINBALL |
 | Damage Add | 5 @900 |
 | Speed Mul | 0.6 @800 |
 | Bounces Set | 0 @510 |
@@ -622,3 +624,18 @@
 | Count Add | -1 @410 |
 | Count Max | 1 @411 |
 | Reload Mul | 0.85 @730 |
+
+## Junior
+
+### PINBALL
+
+| Field | Value |
+| --- | --- |
+| Id | PINBALL |
+| Pack | Junior |
+| InPool | yes |
+| MaxLevel | 3 |
+| Blurb | Each ricochet hits HARDER and flies FASTER. |
+| Excludes | LANCE, CRATER, SPOT, KEEL |
+| BounceDamage Add | 1 / 1 / 2 @900 |
+| BounceSpeed Add | 0.1 / 0.2 / 0.3 @900 |

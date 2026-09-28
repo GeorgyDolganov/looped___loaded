@@ -529,6 +529,8 @@ public sealed class RoundInventory : Component
 		Damage = recipe.Damage,
 		PierceCharges = recipe.Pierce,
 		MaxBounces = recipe.Bounces,
+		BounceDamage = recipe.BounceDamage,
+		BounceSpeed = recipe.BounceSpeed,
 		Energy = recipe.Energy,
 		SpeedScale = recipe.SpeedScale,
 		ExplosiveRadius = recipe.Splash,

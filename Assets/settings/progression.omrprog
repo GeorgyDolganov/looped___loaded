@@ -18,7 +18,7 @@
   "KillScrapScale": 0.5,
   "RoundsGrantedMin": 1,
   "RoundsGrantedMax": 4,
-  "SoftRuns": 3,
+  "WaveHealthScale": 0.75,
   "SlowDrainBase": 0.55,
   "SlowDrainFloor": 0.22,
   "__references": [],

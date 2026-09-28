@@ -13,7 +13,6 @@ public static class Progression
 	public static float RoundRatio => C.RoundRatio;
 	public static int MaxSlots => C.MaxSlots;
 	public static int BossBaseHealth => C.BossBaseHealth;
-	public static int SoftRuns => Math.Max( 0, C.SoftRuns );
 
 	public static float LocationMul( int location ) => MathF.Pow( ThreatRatio, Math.Max( 0, location ) );
 
@@ -35,6 +34,9 @@ public static class Progression
 
 	public static int EnemyHealth( int template, int lap, int location = 0 )
 		=> Math.Max( 1, Whole( template * Threat( lap, location ) ) );
+
+	public static int WaveHealth( int template, int lap, int location = 0 )
+		=> lap <= 1 ? EnemyHealth( template, lap, location ) : Math.Max( 1, Whole( template * Threat( lap, location ) * C.WaveHealthScale ) );
 
 	public static int ExtraBodies( int lap, int location = 0 )
 		=> Math.Clamp( (int)MathF.Round( ( Swarm( lap, location ) - 1f ) * C.ExtraBodiesScale ) - C.ExtraBodiesOffset, 0, C.ExtraBodiesMax );

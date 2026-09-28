@@ -77,6 +77,7 @@ public sealed class RoundProjectile : Component
 	int bored;
 	bool lensInside;
 	float travelled;
+	float launchSpeed;
 
 	public void Launch( GameLoop loop, RoundFlight flight, Vector2 origin, Vector2 direction )
 	{
@@ -86,6 +87,7 @@ public sealed class RoundProjectile : Component
 		Flat = origin;
 		Direction = direction.Normal;
 		Speed = BaseSpeed * MathF.Max( 0.2f, flight.SpeedScale );
+		launchSpeed = Speed;
 		BouncesLeft = flight.MaxBounces;
 		EnergyLeft = flight.Energy;
 		pierceLeft = flight.PierceCharges;
@@ -239,8 +241,7 @@ public sealed class RoundProjectile : Component
 		var normal = hit.Normal;
 		Flat = hit.Position + normal * Radius;
 		Direction = ArenaGeometry.Reflect( incoming, normal ).Normal;
-		Ricochets++;
-		BouncesLeft--;
+		Rebound();
 
 		if ( hit.Kind == WallKind.Panel && Loop.Arena.IsValid() )
 		{
@@ -389,8 +390,7 @@ public sealed class RoundProjectile : Component
 		var incoming = Direction;
 		Flat = from + normal * (reach + 1f);
 		Direction = ArenaGeometry.Reflect( incoming, normal ).Normal;
-		BouncesLeft--;
-		Ricochets++;
+		Rebound();
 
 		var world = geometry.ToPlayWorld( Flat );
 		ArenaSounds.Ricochet( world );
@@ -405,6 +405,14 @@ public sealed class RoundProjectile : Component
 		return true;
 	}
 
+	void Rebound()
+	{
+		BouncesLeft--;
+		Ricochets++;
+		if ( Flight.BounceSpeed > 0f )
+			Speed = launchSpeed * (1f + Ricochets * Flight.BounceSpeed);
+	}
+
 	int ShotDamage()
 	{
 		if ( Flight.Falloff > 1f && travelled > Flight.Falloff )
@@ -413,6 +421,8 @@ public sealed class RoundProjectile : Component
 		var damage = Math.Max( 0, Flight.Damage );
 		if ( Flight.MeatBonus > 0 && Flight.MeatRange > 1f && travelled <= Flight.MeatRange )
 			damage += Flight.MeatBonus;
+		if ( Flight.BounceDamage > 0 )
+			damage += Ricochets * Flight.BounceDamage;
 
 		return damage;
 	}

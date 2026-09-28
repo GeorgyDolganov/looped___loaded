@@ -11,6 +11,8 @@ public sealed class BuildState
 	public int Damage = 1;
 	public int Pierce;
 	public int Bounces;
+	public int BounceDamage;
+	public float BounceSpeed;
 	public float Reload;
 	public float BoreWait;
 	public float Speed = 1f;
@@ -98,6 +100,8 @@ public sealed class BuildState
 		GunStat.StickTime => StickTime,
 		GunStat.Dodge => Dodge,
 		GunStat.Gap => Gap,
+		GunStat.BounceDamage => BounceDamage,
+		GunStat.BounceSpeed => BounceSpeed,
 		_ => Energy
 	};
 
@@ -138,6 +142,8 @@ public sealed class BuildState
 			case GunStat.StickTime: StickTime = value; break;
 			case GunStat.Dodge: Dodge = value; break;
 			case GunStat.Gap: Gap = value; break;
+			case GunStat.BounceDamage: BounceDamage = (int)value; break;
+			case GunStat.BounceSpeed: BounceSpeed = value; break;
 			default: Energy = value; break;
 		}
 	}
@@ -187,6 +193,8 @@ public sealed class BuildState
 			Damage = Math.Max( 1, Damage ),
 			Pierce = Pierce,
 			Bounces = Bounces,
+			BounceDamage = BounceDamage,
+			BounceSpeed = BounceSpeed,
 			Energy = Energy,
 			SpeedScale = Speed,
 			Radius = Radius,
@@ -235,7 +243,7 @@ public sealed class BuildState
 		};
 	}
 
-	public static bool IsInteger( GunStat stat ) => stat is GunStat.Count or GunStat.Full or GunStat.Damage or GunStat.Pierce or GunStat.Bounces or GunStat.SplashDamage or GunStat.MeatBonus or GunStat.Burst or GunStat.BeamHit or GunStat.BeamTicks or GunStat.BeamRank;
+	public static bool IsInteger( GunStat stat ) => stat is GunStat.Count or GunStat.Full or GunStat.Damage or GunStat.Pierce or GunStat.Bounces or GunStat.SplashDamage or GunStat.MeatBonus or GunStat.Burst or GunStat.BeamHit or GunStat.BeamTicks or GunStat.BeamRank or GunStat.BounceDamage;
 
 	public static float Operate( float current, ModOp op, float amount, bool integer )
 	{

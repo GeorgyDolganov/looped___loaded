@@ -56,7 +56,9 @@ public enum GunStat
 	StickTime,
 	Dodge,
 	Gap,
-	Energy
+	Energy,
+	BounceDamage,
+	BounceSpeed
 }
 
 public enum ModOp

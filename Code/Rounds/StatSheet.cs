@@ -216,6 +216,9 @@ public static class StatSheet
 		if ( stat == GunStat.Dodge )
 			return new StatLine( $"+{PctPoints( delta )} Dodge", delta >= 0 ? 1 : -1 );
 
+		if ( stat == GunStat.BounceSpeed )
+			return new StatLine( $"{(delta > 0 ? "+" : "-")}{PctPoints( MathF.Abs( delta ) )} {meta.Label}", delta > 0 ? 1 : -1 );
+
 		var abs = MathF.Abs( delta );
 		var shown = NearlyInt( abs ) ? ((int)MathF.Round( abs )).ToString() : Fmt( abs );
 		var label = meta.Plural is not null && MathF.Abs( abs - 1f ) > 0.001f ? meta.Plural : meta.Label;
@@ -238,6 +241,8 @@ public static class StatSheet
 		GunStat.Damage => new( "Damage", null, "", true, false ),
 		GunStat.Pierce => new( "Pierce", null, "", true, false ),
 		GunStat.Bounces => new( "Bounce", "Bounces", "", true, false ),
+		GunStat.BounceDamage => new( "Damage per bounce", null, "", true, false ),
+		GunStat.BounceSpeed => new( "Speed per bounce", null, "", true, false ),
 		GunStat.Reload => new( "Reload", null, "s", false, false ),
 		GunStat.Speed => new( "Projectile Speed", null, "", true, false ),
 		GunStat.Radius => new( "Body radius", null, "", true, false ),
@@ -263,6 +268,7 @@ public static class StatSheet
 		GunStat.StickTime => new( "Stick", null, "s", true, false ),
 		GunStat.Dodge => new( "Dodge", null, "", true, false ),
 		GunStat.Gap => new( "Gap", null, "s", null, false ),
+		GunStat.Energy => new( "Range", null, "", true, false ),
 		_ => new( stat.ToString(), null, "", null, true )
 	};
 
@@ -336,6 +342,9 @@ public static class StatSheet
 		if ( now.RampPierce || next.RampPierce )
 			AddText( rows, "Line", now.RampPierce ? "+1" : "Flat", next.RampPierce ? "+1" : "Flat", preview );
 		AddInt( rows, "Bounces", now.Bounces, next.Bounces, preview, true, false );
+		AddInt( rows, "Bounce Dmg", now.BounceDamage, next.BounceDamage, preview, true, false );
+		if ( now.BounceSpeed > 0.001f || next.BounceSpeed > 0.001f )
+			AddPct( rows, "Bounce Speed", now.BounceSpeed, next.BounceSpeed, preview, true );
 		AddFloat( rows, "Reload", now.Reload, next.Reload, preview, false, "s", true );
 		AddPct( rows, "Proj. Speed", now.SpeedScale, next.SpeedScale, preview, true );
 		AddRange( rows, now.Falloff, next.Falloff, preview );

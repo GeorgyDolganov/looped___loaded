@@ -107,6 +107,8 @@ public struct GunRecipe
 	public int Damage;
 	public int Pierce;
 	public int Bounces;
+	public int BounceDamage;
+	public float BounceSpeed;
 	public float Energy;
 	public float SpeedScale;
 	public float Radius;
@@ -160,6 +162,8 @@ public struct RoundFlight
 	public int Damage;
 	public int PierceCharges;
 	public int MaxBounces;
+	public int BounceDamage;
+	public float BounceSpeed;
 	public float Energy;
 	public float SpeedScale;
 	public float ExplosiveRadius;
@@ -224,7 +228,7 @@ public static class ShotRange
 		if ( recipe.RangeCut <= 0.0001f || recipe.Falloff > 1f )
 			return;
 
-		var range = recipe.Energy - recipe.RangeCut * Span( loop );
+		var range = GameSettings.Traits.EnergyBase - recipe.RangeCut * Span( loop );
 		range = MathF.Max( range, Floor( loop ) );
 		range += MathF.Max( 0f, recipe.RangePad );
 		recipe.Falloff = range;

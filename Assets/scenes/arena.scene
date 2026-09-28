@@ -2671,56 +2671,6 @@
               "Children": []
             },
             {
-              "__guid": "2c460854-255d-4037-8ec8-43ec937916df",
-              "__version": 2,
-              "Flags": 0,
-              "Name": "Ground",
-              "Position": "0,-180,-160",
-              "Rotation": "0,0,0,1",
-              "Scale": "55.9400406,100.266693,0.400000006",
-              "Tags": "",
-              "Enabled": true,
-              "NetworkMode": 2,
-              "NetworkFlags": 0,
-              "NetworkOrphaned": 0,
-              "NetworkTransmit": true,
-              "OwnerTransfer": 1,
-              "Components": [
-                {
-                  "__type": "Sandbox.ModelRenderer",
-                  "__guid": "0c60d2ff-ba62-414f-9bd5-7fa44f33306d",
-                  "__enabled": true,
-                  "Flags": 0,
-                  "BodyGroups": 18446744073709551615,
-                  "CreateAttachments": false,
-                  "LodOverride": null,
-                  "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
-                  "Materials": {
-                    "indexed": {
-                      "0": "materials/dev/primary_white.vmat"
-                    }
-                  },
-                  "Model": "models/dev/box.vmdl",
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "RenderOptions": {
-                    "GameLayer": true,
-                    "OverlayLayer": false,
-                    "BloomLayer": false,
-                    "AfterUILayer": false
-                  },
-                  "RenderType": "Off",
-                  "Tint": "0.05116,0,0,1"
-                }
-              ],
-              "Children": []
-            },
-            {
               "__guid": "29462783-1bc6-4c0a-b981-0a1ab334d257",
               "__version": 2,
               "Flags": 0,

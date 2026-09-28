@@ -37,6 +37,9 @@ public static class TrinketParity
 		fails += Run( Levels( ("LASH", 3), ("SEAR", 1), ("KILN", 1), ("CELL", 1), ("VENT", 1), ("COOL", 1) ), 0, ref shown );
 		fails += Run( Levels( ("DRUM", 3), ("BELT", 1), ("SPOOL", 1) ), 0, ref shown );
 		fails += Run( Levels( ("BUCK", 1), ("SIGHT", 1) ), 0, ref shown );
+		fails += Run( Levels( ("PINBALL", 3), ("RICO", 3) ), 0, ref shown );
+		fails += Run( Levels( ("RICO", 2), ("BUCK", 3), ("MEAT", 2) ), 0, ref shown );
+		fails += Run( Levels( ("PINBALL", 2), ("KEEL", 1) ), 0, ref shown );
 		fails += Run( new Dictionary<string, int>(), 4, ref shown );
 
 		var all = new Dictionary<string, int>();
@@ -74,6 +77,8 @@ public static class TrinketParity
 		fails += Blocked( Set( "LASH", "VENT" ), ref shown );
 		fails += Blocked( Set( "DRUM", "BITE" ), ref shown );
 		fails += Blocked( Set( "BORE", "RACK" ), ref shown );
+		fails += Blocked( Set( "WARHEAD", "PINBALL" ), ref shown );
+		fails += Blocked( Set( "KEEL" ), ref shown );
 		for ( var i = 0; i < 200; i++ )
 		{
 			var owned = new HashSet<string>();
@@ -97,7 +102,7 @@ public static class TrinketParity
 		"AWL", "RAM", "KEEL",
 		"BELT", "SPOOL", "SIGHT", "BITE",
 		"SEAR", "KILN", "ARC", "FORK", "SHUNT", "LINGER", "CELL",
-		"RACK", "DRAW", "VENT", "COOL", "SHUCK", "SLAM"
+		"RACK", "DRAW", "VENT", "COOL", "SHUCK", "SLAM", "PINBALL"
 	};
 
 	static readonly Tier4 SplitPellets = new( 1f, 2f, 4f, 7f );
@@ -114,11 +119,14 @@ public static class TrinketParity
 	static readonly Tier4 RushSpeed = new( 1.2f, 1.4f, 1.65f );
 	static readonly Tier4 DodgeChance = new( 0.1f, 0.2f, 0.32f );
 	static readonly Tier4 SnapReload = new( 0.8f, 0.64f, 0.5f );
+	static readonly Tier4 RicoBounces = new( 1f, 3f, 5f );
+	static readonly Tier4 RicoEnergy = new( 1.25f, 1.6f, 2f );
+	static readonly Tier4 PinballDamage = new( 1f, 1f, 2f );
+	static readonly Tier4 PinballSpeed = new( 0.1f, 0.2f, 0.3f );
 
 	const float MeatRange = 140f;
 	const float MeatBonus = 1f;
 	const float MeatCut = 1f;
-	const int RicoBounces = 1;
 	const float DoubleGap = 0.12f;
 	const float DoubleReload = 0.35f;
 	const float KickForce = 110f;
@@ -200,6 +208,8 @@ public static class TrinketParity
 		Whole( bad, "Damage", live.Damage, old.Damage );
 		Whole( bad, "Pierce", live.Pierce, old.Pierce );
 		Whole( bad, "Bounces", live.Bounces, old.Bounces );
+		Whole( bad, "BounceDamage", live.BounceDamage, old.BounceDamage );
+		Float( bad, "BounceSpeed", live.BounceSpeed, old.BounceSpeed );
 		Float( bad, "Energy", live.Energy, old.Energy );
 		Float( bad, "SpeedScale", live.SpeedScale, old.SpeedScale );
 		Float( bad, "Radius", live.Radius, old.Radius );
@@ -334,6 +344,8 @@ public static class TrinketParity
 		var split = Lv( levels, "SPLIT" );
 		var slug = Has( levels, "SLUG" );
 		var meat = Lv( levels, "MEAT" );
+		var pinball = Lv( levels, "PINBALL" );
+		var rico = Lv( levels, "RICO" );
 		var count = 1;
 		if ( split > 0 )
 			count += Math.Max( 0, (int)SplitPellets.At( split ) );
@@ -361,8 +373,8 @@ public static class TrinketParity
 		}
 
 		var bounces = t.MaxBouncesBase;
-		if ( Has( levels, "RICO" ) )
-			bounces += RicoBounces;
+		if ( rico > 0 )
+			bounces += (int)RicoBounces.At( rico );
 		if ( lash > 0 || Has( levels, "LANCE" ) || Has( levels, "CRATER" ) || Has( levels, "SPOT" ) || Has( levels, "KEEL" ) )
 			bounces = 0;
 
@@ -548,7 +560,9 @@ public static class TrinketParity
 			Damage = damage,
 			Pierce = pierce,
 			Bounces = bounces,
-			Energy = t.EnergyBase,
+			BounceDamage = (int)PinballDamage.At( pinball ),
+			BounceSpeed = PinballSpeed.At( pinball ),
+			Energy = rico > 0 ? t.EnergyBase * RicoEnergy.At( rico ) : t.EnergyBase,
 			SpeedScale = speed,
 			Radius = radius,
 			Splash = splash,
@@ -644,6 +658,10 @@ public static class TrinketParity
 		if ( id == "DRAW" && !owned.Contains( "RACK" ) )
 			return true;
 		if ( id == "COOL" && !owned.Contains( "VENT" ) )
+			return true;
+		if ( id == "PINBALL" && Owns( "LANCE", "CRATER", "SPOT", "KEEL" ) )
+			return true;
+		if ( (id is "LANCE" or "CRATER" or "SPOT" or "KEEL") && owned.Contains( "PINBALL" ) )
 			return true;
 		return false;
 	}
