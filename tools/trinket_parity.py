@@ -202,9 +202,8 @@ add("Warhead", "Rocket", 12, 3, flags=["FriendlySplash"], mods=[
     M("Splash", "Set", 1200, growth="Tiers", tiers=tiers_of("WarheadRadius")),
     M("Speed", "Mul", 800, growth="Tiers", tiers=tiers_of("WarheadSpeed")),
 ])
-add("Lash", "Laser", 13, 3, flags=["Beam"], weight=N("LashRankWeight"), notes=no_bounce, mods=[
+add("Lash", "Laser", 13, 3, flags=["Beam"], weight=N("LashRankWeight"), mods=[
     M("Reload", "Set", 710, N("LashReload")),
-    M("Bounces", "Set", 510, 0, hidden=True),
     M("BeamTick", "Set", 1500, growth="Tiers", tiers=tiers_of("LashTick")),
     M("BeamTicks", "Set", 1500, growth="Tiers", tiers=tiers_of("LashTicks")),
     M("BeamHit", "Set", 1500, max(1, N("LashHit"))),
@@ -646,7 +645,7 @@ def legacy(levels, bonus=0):
     bounces = G_BOUNCE
     if has(levels, "RICO"):
         bounces += N("RicoBounces")
-    if lash > 0 or has(levels, "LANCE") or has(levels, "CRATER") or has(levels, "SPOT") or has(levels, "KEEL"):
+    if has(levels, "LANCE") or has(levels, "CRATER") or has(levels, "SPOT") or has(levels, "KEEL"):
         bounces = 0
     pierce = 0 if bore <= 0 else int(at(tiers_of("BorePierce"), bore))
     if has(levels, "DRAW"):
@@ -933,7 +932,7 @@ check({"PIN": 1}, count=1, cone=0, bounces=1, radius=13, stick=0, nail=False)
 check({"PIN": 1, "SLUG": 1}, count=1, damage=1, radius=22, nail=False, stick=0, cone=0)
 check({"PIN": 1, "SPLIT": 1}, count=2, radius=13, bounces=1, cone=0)
 check({"PIN": 1, "SHUCK": 1}, cone=8, count=1)
-check({"LASH": 1, "BORE": 1}, reload=0.3, bore_wait=0.35, pierce=1, beam=True, bounces=0)
+check({"LASH": 1, "BORE": 1}, reload=0.3, bore_wait=0.35, pierce=1, beam=True, bounces=1)
 check({"LASH": 1, "SEAR": 1, "KILN": 1, "FORK": 1, "LINGER": 1, "CELL": 1}, reload=0.3 + 0.1 + 0.06 + 0.08 + 0.12 + 0.1)
 check({"BORE": 1}, pierce=1, bore_wait=0.35)
 check({"LASH": 1, "SNAP": 3}, reload=0.2)

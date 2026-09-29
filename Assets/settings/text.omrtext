@@ -84,6 +84,8 @@
     "Dead": "RUN OVER",
     "DeadBurnedOne": "{0} BIOMASS BURNED",
     "DeadBurnedMany": "{0} BIOMASSS BURNED",
+    "DeadReturnedOne": "{0} BIOMASS RETURNED",
+    "DeadReturnedMany": "{0} BIOMASS RETURNED",
     "DeadCityBlurb": "Leave the ARENA. Build with what you already banked.",
     "Exit": "Exit",
     "Extracted": "EXTRACTED",

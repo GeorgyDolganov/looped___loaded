@@ -375,7 +375,7 @@ public static class TrinketParity
 		var bounces = t.MaxBouncesBase;
 		if ( rico > 0 )
 			bounces += (int)RicoBounces.At( rico );
-		if ( lash > 0 || Has( levels, "LANCE" ) || Has( levels, "CRATER" ) || Has( levels, "SPOT" ) || Has( levels, "KEEL" ) )
+		if ( Has( levels, "LANCE" ) || Has( levels, "CRATER" ) || Has( levels, "SPOT" ) || Has( levels, "KEEL" ) )
 			bounces = 0;
 
 		var pierce = bore <= 0 ? 0 : (int)BorePierce.At( bore );

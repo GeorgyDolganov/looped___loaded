@@ -22,14 +22,6 @@
       "Value": 0.3
     },
     {
-      "Stat": "Bounces",
-      "Op": "Set",
-      "Growth": "Flat",
-      "Order": 510,
-      "Value": 0,
-      "Hidden": true
-    },
-    {
       "Stat": "BeamTick",
       "Op": "Set",
       "Growth": "Tiers",
@@ -65,12 +57,6 @@
       "Order": 705,
       "Value": 1,
       "Hidden": true
-    }
-  ],
-  "Notes": [
-    {
-      "Text": "No bounces",
-      "Sign": -1
     }
   ],
   "__references": [

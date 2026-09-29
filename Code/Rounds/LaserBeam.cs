@@ -77,7 +77,6 @@ public sealed class LaserBeam : Component
 		latches.Clear();
 		var count = Math.Max( 1, recipe.Count );
 		var cone = recipe.Cone;
-		var geometry = loop.Geometry;
 		var rank = Math.Max( 1, recipe.BeamRank );
 		var seed = (int)(RealTime.Now * (9f + rank * 7f));
 		var bolts = new List<List<Vector2>>();
@@ -89,49 +88,8 @@ public sealed class LaserBeam : Component
 
 		for ( var i = 0; i < count; i++ )
 		{
-			var yaw = ShotSpread.Yaw( i, count, cone );
-			var heading = ShotSpread.Turn( dir, yaw );
-			var end = origin + heading * range;
-			var blocked = false;
-			var wall = default( ArenaHit );
-			if ( geometry is not null && geometry.TraceRay( origin, heading, range, out wall ) )
-			{
-				end = wall.Position;
-				blocked = true;
-			}
-
-			var storm = LightningPath.Storm( origin, end, rank, seed + i * 31, recipe.BeamFork ? 1 : 0 );
-			List<Contact> line;
-			if ( recipe.BeamFork && storm.Count > 0 )
-			{
-				line = BurnOne( storm[0], heading, width, i, null );
-				for ( var f = 1; f < storm.Count; f++ )
-					BurnOne( storm[f], heading, width, 100 + i * 8 + f, line );
-			}
-			else
-				line = Burn( storm, heading, width, i, null );
-
-			var hitMain = line.Count > 0;
-			var stopped = line.Count > Math.Max( 0, recipe.Pierce );
-			if ( !stopped && blocked && loop.Arena.IsValid() )
-			{
-				if ( wall.Kind == WallKind.Panel )
-					loop.Arena.StrikeBoard( wall.WallIndex, wall.Position, wall.Normal, 0f, false );
-				else if ( wall.Kind == WallKind.Spin )
-					loop.Arena.PushSpinner( wall.WallIndex, wall.Position, heading );
-			}
-
-			if ( hitMain && recipe.BeamArc > 1f )
-				Jump( line[^1].At, line, i, seed, bolts );
-
-			if ( i == count / 2 )
-			{
-				splashAt = hitMain ? line[0].At : end;
-				splashLive = recipe.Splash > 1f;
-			}
-
-			foreach ( var bolt in storm )
-				bolts.Add( bolt );
+			var heading = ShotSpread.Turn( dir, ShotSpread.Yaw( i, count, cone ) );
+			March( i, heading, range, width, rank, seed, bolts, i == count / 2 );
 		}
 
 		foreach ( var bolt in bolts )
@@ -144,6 +102,247 @@ public sealed class LaserBeam : Component
 		PaintSplash();
 	}
 
+	void March( int bolt, Vector2 heading, float range, float width, int rank, int seed, List<List<Vector2>> bolts, bool markSplash )
+	{
+		var geometry = loop.Geometry;
+		var main = new List<Vector2> { origin };
+		var line = new List<Contact>();
+		var hurt = new HashSet<Enemy>();
+		var pos = origin;
+		var dir = heading.Length > 0.01f ? heading.Normal : Vector2.Right;
+		var budget = range;
+		var bouncesLeft = Math.Max( 0, recipe.Bounces );
+		var ricochets = 0;
+		var pierceLeft = Math.Max( 0, recipe.Pierce );
+		var arcRico = 0;
+		Enemy skipBody = null;
+
+		for ( var hop = 0; hop < 8 && budget > 1f; hop++ )
+		{
+			var skip = skipBody;
+			skipBody = null;
+			var end = pos + dir * budget;
+			var wall = default( ArenaHit );
+			var wallHit = geometry is not null && geometry.TraceRay( pos, dir, budget, out wall );
+			var span = wallHit ? wall.Distance : budget;
+			if ( wallHit )
+				end = wall.Position;
+
+			var hits = Straight( pos, dir, span, width, hurt, skip );
+			var stopped = false;
+			var stop = default( Contact );
+			var depth = 0;
+			foreach ( var contact in hits )
+			{
+				if ( contact.Body.BlocksFrom( dir, null, ricochets > 0, contact.At, recipe.BeamShunt ) )
+				{
+					if ( Locations.IsBoss( contact.Body.Kind ) )
+						loop.NoteArmor();
+
+					stopped = true;
+					stop = contact;
+					end = contact.At;
+					break;
+				}
+
+				latches.Add( new Latch
+				{
+					Body = contact.Body,
+					At = contact.At,
+					Bolt = bolt,
+					Depth = depth,
+					Ricochets = ricochets,
+					Segment = hop,
+					Incoming = dir
+				} );
+				line.Add( contact );
+				hurt.Add( contact.Body );
+				arcRico = ricochets;
+				depth++;
+
+				if ( pierceLeft <= 0 )
+				{
+					stopped = true;
+					stop = contact;
+					end = contact.At;
+					break;
+				}
+
+				pierceLeft--;
+			}
+
+			if ( (end - pos).Length < 1f && hop > 0 )
+				break;
+
+			List<List<Vector2>> storm;
+			if ( hop == 0 && recipe.BeamFork )
+				storm = LightningPath.Storm( pos, end, rank, seed + bolt * 31, 1 );
+			else
+				storm = new List<List<Vector2>> { LightningPath.Bolt( pos, end, rank, seed + bolt * 31 + hop * 17 ) };
+
+			if ( storm.Count == 0 || storm[0].Count == 0 )
+				break;
+
+			Join( main, storm[0] );
+			if ( hop == 0 && recipe.BeamFork )
+			{
+				for ( var f = 1; f < storm.Count; f++ )
+				{
+					BurnOne( storm[f], dir, width, 100 + bolt * 8 + f, line );
+					bolts.Add( storm[f] );
+				}
+			}
+
+			if ( stopped )
+			{
+				if ( !ReflectBody( stop, dir, width, ref pos, ref dir, ref budget, ref bouncesLeft, ref ricochets ) )
+					break;
+
+				skipBody = stop.Body;
+				if ( main.Count == 0 || (main[^1] - pos).LengthSquared > 4f )
+					main.Add( pos );
+				continue;
+			}
+
+			if ( !wallHit )
+				break;
+
+			TouchWall( wall, dir );
+			if ( !ReflectWall( wall, ref pos, ref dir, ref budget, ref bouncesLeft, ref ricochets ) )
+				break;
+		}
+
+		if ( main.Count >= 2 )
+			bolts.Add( main );
+
+		var tip = main.Count > 0 ? main[^1] : origin;
+		if ( markSplash )
+		{
+			splashAt = line.Count > 0 ? line[0].At : tip;
+			splashLive = recipe.Splash > 1f;
+		}
+
+		if ( line.Count > 0 && recipe.BeamArc > 1f )
+			Jump( line[^1].At, line, bolt, seed, bolts, arcRico );
+	}
+
+	bool ReflectBody( Contact stop, Vector2 incoming, float width, ref Vector2 pos, ref Vector2 dir, ref float budget, ref int bouncesLeft, ref int ricochets )
+	{
+		if ( bouncesLeft <= 0 || !stop.Body.IsValid() )
+			return false;
+
+		var travel = MathF.Max( 0f, ArenaGeometry.Dot( stop.At - pos, dir ) );
+		var normal = SurfaceNormal( stop.At, stop.Body.Flat, incoming );
+		var reflected = ArenaGeometry.Reflect( incoming, normal ).Normal;
+		if ( reflected.Length < 0.01f )
+			return false;
+
+		bouncesLeft--;
+		ricochets++;
+		budget -= MathF.Max( travel, 1f );
+		if ( budget <= 1f )
+			return false;
+
+		pos = stop.Body.Flat + normal * (stop.Body.Radius + width + 6f);
+		dir = reflected;
+		return true;
+	}
+
+	bool ReflectWall( ArenaHit wall, ref Vector2 pos, ref Vector2 dir, ref float budget, ref int bouncesLeft, ref int ricochets )
+	{
+		if ( bouncesLeft <= 0 || wall.Distance < 1f )
+			return false;
+
+		var reflected = ArenaGeometry.Reflect( dir, wall.Normal ).Normal;
+		if ( reflected.Length < 0.01f )
+			return false;
+
+		bouncesLeft--;
+		ricochets++;
+		budget -= MathF.Max( wall.Distance, 1f );
+		if ( budget <= 1f )
+			return false;
+
+		pos = wall.Position + reflected * 2f;
+		dir = reflected;
+		return true;
+	}
+
+	void TouchWall( ArenaHit wall, Vector2 incoming )
+	{
+		if ( !loop.Arena.IsValid() )
+			return;
+
+		if ( wall.Kind == WallKind.Panel )
+			loop.Arena.StrikeBoard( wall.WallIndex, wall.Position, wall.Normal, 0f, false );
+		else if ( wall.Kind == WallKind.Spin )
+			loop.Arena.PushSpinner( wall.WallIndex, wall.Position, incoming );
+	}
+
+	static void Join( List<Vector2> into, List<Vector2> leg )
+	{
+		if ( leg is null || leg.Count == 0 )
+			return;
+
+		var i = 0;
+		if ( into.Count > 0 && (into[^1] - leg[0]).LengthSquared < 4f )
+			i = 1;
+
+		for ( ; i < leg.Count; i++ )
+			into.Add( leg[i] );
+	}
+
+	List<Contact> Straight( Vector2 from, Vector2 dir, float length, float width, HashSet<Enemy> hurt, Enemy skip )
+	{
+		var found = new List<Contact>();
+		if ( !loop.IsValid() || length < 1f || dir.Length < 0.01f )
+			return found;
+
+		foreach ( var candidate in loop.Enemies )
+		{
+			if ( !candidate.IsValid() || !candidate.Alive || hurt.Contains( candidate ) || candidate == skip )
+				continue;
+
+			var reach = width + candidate.Radius;
+			var rel = candidate.Flat - from;
+			var along = ArenaGeometry.Dot( rel, dir );
+			var perp = (rel - dir * along).Length;
+			if ( perp > reach )
+				continue;
+
+			var offset = MathF.Sqrt( MathF.Max( 0f, reach * reach - perp * perp ) );
+			var entry = along - offset;
+			if ( entry < 0f )
+			{
+				if ( along + offset < 0f )
+					continue;
+				entry = 0f;
+			}
+
+			if ( entry > length )
+				continue;
+
+			found.Add( new Contact { Body = candidate, At = from + dir * entry, Dist = entry } );
+		}
+
+		found.Sort( ( a, b ) => a.Dist.CompareTo( b.Dist ) );
+		return found;
+	}
+
+	static Vector2 SurfaceNormal( Vector2 at, Vector2 center, Vector2 incoming )
+	{
+		var normal = at - center;
+		if ( normal.Length < 0.01f )
+			normal = -incoming;
+		else
+			normal = normal.Normal;
+
+		if ( ArenaGeometry.Dot( normal, incoming ) > 0f )
+			normal = -normal;
+
+		return normal;
+	}
+
 	void Strike()
 	{
 		if ( ticksLeft <= 0 || RealTime.Now < nextTick )
@@ -152,7 +351,7 @@ public sealed class LaserBeam : Component
 		var hit = Math.Max( 1, recipe.BeamHit );
 		var staged = new List<(int Bolt, Enemy Body, int Next)>();
 		var mains = new List<Enemy>();
-		var shielded = new HashSet<int>();
+		var shielded = new Dictionary<int, int>();
 		Enemy nearest = null;
 		var nearestDist = float.MaxValue;
 		Vector2 nearestAt = default;
@@ -163,20 +362,20 @@ public sealed class LaserBeam : Component
 			if ( !enemy.IsValid() || !enemy.Alive )
 				continue;
 
-			if ( latch.Depth > 0 && shielded.Contains( latch.Bolt ) )
+			if ( shielded.TryGetValue( latch.Bolt, out var blockedSeg ) && blockedSeg == latch.Segment && latch.Depth > 0 )
 				continue;
 
-			var incoming = latch.At - origin;
-			if ( incoming.Length < 1f )
+			var incoming = latch.Incoming;
+			if ( incoming.LengthSquared < 0.0001f )
 				incoming = aimDir;
 			else
 				incoming = incoming.Normal;
 
-			if ( enemy.BlocksFrom( incoming, null, recipe.Pierce > 0, latch.At, recipe.BeamShunt ) )
+			if ( enemy.BlocksFrom( incoming, null, latch.Ricochets > 0, latch.At, recipe.BeamShunt ) )
 			{
 				if ( Locations.IsBoss( enemy.Kind ) )
 					loop.NoteArmor();
-				shielded.Add( latch.Bolt );
+				shielded[latch.Bolt] = latch.Segment;
 				continue;
 			}
 
@@ -195,6 +394,8 @@ public sealed class LaserBeam : Component
 				damage += 1;
 			if ( recipe.RampPierce )
 				damage += latch.Depth;
+			if ( recipe.BounceDamage > 0 && latch.Ricochets > 0 )
+				damage += latch.Ricochets * recipe.BounceDamage;
 
 			enemy.Damage( damage, 0f, 1f );
 
@@ -257,7 +458,14 @@ public sealed class LaserBeam : Component
 			if ( skip is not null && Holds( skip, line[k].Body ) )
 				continue;
 
-			latches.Add( new Latch { Body = line[k].Body, At = line[k].At, Bolt = bolt, Depth = k } );
+			latches.Add( new Latch
+			{
+				Body = line[k].Body,
+				At = line[k].At,
+				Bolt = bolt,
+				Depth = k,
+				Incoming = heading
+			} );
 		}
 
 		return line;
@@ -283,7 +491,7 @@ public sealed class LaserBeam : Component
 		return false;
 	}
 
-	void Jump( Vector2 from, List<Contact> line, int bolt, int seed, List<List<Vector2>> drawn )
+	void Jump( Vector2 from, List<Contact> line, int bolt, int seed, List<List<Vector2>> drawn, int ricochets )
 	{
 		Enemy pick = null;
 		var best = recipe.BeamArc;
@@ -303,7 +511,15 @@ public sealed class LaserBeam : Component
 		if ( !pick.IsValid() )
 			return;
 
-		latches.Add( new Latch { Body = pick, At = pick.Flat, Bolt = bolt } );
+		var incoming = pick.Flat - from;
+		latches.Add( new Latch
+		{
+			Body = pick,
+			At = pick.Flat,
+			Bolt = bolt,
+			Ricochets = ricochets,
+			Incoming = incoming.Length > 0.01f ? incoming.Normal : aimDir
+		} );
 		drawn.Add( LightningPath.Jag( from, pick.Flat, seed + 90 + bolt, 4, 24f ) );
 	}
 
@@ -497,6 +713,9 @@ public sealed class LaserBeam : Component
 		public Vector2 At;
 		public int Bolt;
 		public int Depth;
+		public int Ricochets;
+		public int Segment;
+		public Vector2 Incoming;
 	}
 
 	struct Contact
@@ -555,9 +774,7 @@ public static class LightningPath
 	{
 		rank = Math.Clamp( rank, 1, 3 );
 		var bolts = new List<List<Vector2>>();
-		var steps = rank <= 1 ? 7 : rank == 2 ? 11 : 15;
-		var amp = rank <= 1 ? 52f : rank == 2 ? 92f : 140f;
-		var main = Jag( from, to, seed, steps, amp );
+		var main = Bolt( from, to, rank, seed );
 		bolts.Add( main );
 
 		var forks = rank <= 1 ? 0 : rank == 2 ? 1 : 2;
@@ -583,6 +800,14 @@ public static class LightningPath
 		}
 
 		return bolts;
+	}
+
+	public static List<Vector2> Bolt( Vector2 from, Vector2 to, int rank, int seed )
+	{
+		rank = Math.Clamp( rank, 1, 3 );
+		var steps = rank <= 1 ? 7 : rank == 2 ? 11 : 15;
+		var amp = rank <= 1 ? 52f : rank == 2 ? 92f : 140f;
+		return Jag( from, to, seed, steps, amp );
 	}
 
 	public static List<Vector2> Jag( Vector2 from, Vector2 to, int seed, int steps, float amp )

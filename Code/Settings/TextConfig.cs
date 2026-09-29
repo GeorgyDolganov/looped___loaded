@@ -468,6 +468,8 @@ public class DecideCopy
 	[Property] public string Dead { get; set; } = "RUN OVER";
 	[Property] public string DeadBurnedOne { get; set; } = "{0} ROUND BURNED";
 	[Property] public string DeadBurnedMany { get; set; } = "{0} ROUNDS BURNED";
+	[Property] public string DeadReturnedOne { get; set; } = "{0} BIOMASS RETURNED";
+	[Property] public string DeadReturnedMany { get; set; } = "{0} BIOMASS RETURNED";
 	[Property] public string DeadCityBlurb { get; set; } = "Leave the ring. Build with what you already banked.";
 	[Property] public string Exit { get; set; } = "Exit";
 	[Property] public string Extracted { get; set; } = "EXTRACTED";

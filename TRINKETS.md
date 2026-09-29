@@ -199,7 +199,6 @@
 | Excludes | DRUM |
 | Flag | Beam |
 | Reload Set | 0.3 @710 |
-| Bounces Set | 0 @510 |
 | BeamTick Set | 0.6 / 0.4 / 0.2 @1500 |
 | BeamTicks Set | 4 / 6 / 8 @1500 |
 | BeamHit Set | 1 @1500 |

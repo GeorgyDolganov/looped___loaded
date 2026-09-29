@@ -77,6 +77,7 @@ public sealed class GameLoop : Component
 	public int Losses { get; private set; }
 	public int ExtractedRounds { get; private set; }
 	public int BurnedRounds { get; private set; }
+	public int ReturnedBiomass { get; private set; }
 	public int BestExtract { get; private set; }
 	public int Runs { get; private set; }
 	public int FedBiomass { get; private set; }
@@ -164,6 +165,7 @@ public sealed class GameLoop : Component
 	static readonly string[] OfferSlots = { "Slot1", "Slot2", "Slot3", "Slot4", "Slot5", "Slot6", "Slot7", "Slot8", "Slot9" };
 	bool bossWon;
 	bool skipHinted;
+	bool feedClosedOnDeath;
 	public int BestLine { get; private set; } = -1;
 	readonly ProgressTrack progress = new();
 	public bool HasTask => progress.HasCurrent;
@@ -763,6 +765,8 @@ public sealed class GameLoop : Component
 		layoutSeed = Game.Random.Int( 1, int.MaxValue - 1 );
 		ExtractedRounds = 0;
 		BurnedRounds = 0;
+		ReturnedBiomass = 0;
+		feedClosedOnDeath = false;
 		invulnUntil = 0f;
 		lastHurtAt = -99f;
 		PainYaw = 0f;
@@ -1115,7 +1119,7 @@ public sealed class GameLoop : Component
 
 	void Hurt( Vector2 from )
 	{
-		if ( TryDodge() )
+		if ( Phase != RunPhase.Playing || TryDodge() )
 			return;
 
 		PainYaw = YawToward( from );
@@ -1138,8 +1142,20 @@ public sealed class GameLoop : Component
 		Inventory?.ChamberAll();
 		InBossFight = false;
 		Phase = RunPhase.Dead;
-		BurnedRounds = Stash;
+		var total = ScaleReward( Math.Max( 0, Stash ) );
+		ReturnedBiomass = total / 3;
+		BurnedRounds = total - ReturnedBiomass;
+		feedClosedOnDeath = false;
+		if ( ReturnedBiomass > 0 && City.IsValid() )
+		{
+			var before = FedBiomass;
+			City.Deposit( ReturnedBiomass );
+			FedBiomass += ReturnedBiomass;
+			feedClosedOnDeath = before < WinNeed && FedBiomass >= WinNeed;
+		}
+
 		Announce( T.Announce.RunOver );
+		Autosave();
 	}
 
 	bool TryDodge()
@@ -1391,6 +1407,7 @@ public sealed class GameLoop : Component
 
 		Ascend++;
 		FedBiomass = 0;
+		feedClosedOnDeath = false;
 		City?.Wipe();
 		Restart();
 		Announce( T.F( T.Announce.Ascended, Ascend, WinNeed ) );
@@ -1415,6 +1432,7 @@ public sealed class GameLoop : Component
 		Ascend = 0;
 		FedBiomass = 0;
 		ExtractedRounds = 0;
+		feedClosedOnDeath = false;
 		progress.Clear();
 		City?.Wipe();
 	}
@@ -1445,6 +1463,11 @@ public sealed class GameLoop : Component
 			FedBiomass += packed;
 			crossed = FedBiomass >= WinNeed;
 			NoteProgress( ProgressGoal.Extract );
+		}
+		else if ( !deposit && feedClosedOnDeath )
+		{
+			feedClosedOnDeath = false;
+			crossed = FedBiomass >= WinNeed;
 		}
 
 		if ( Inventory.IsValid() )
