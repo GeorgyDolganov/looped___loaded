@@ -2,16 +2,20 @@
   "Id": "KICK",
   "Title": "KICK",
   "Pack": "Warrior",
-  "MaxLevel": 1,
+  "MaxLevel": 3,
   "Sort": 6,
-  "Icon": "ui/traits/kick.png",
+  "Icon": "ui/traits/KICK-64x64.png",
   "Mods": [
     {
       "Stat": "KickForce",
       "Op": "Add",
-      "Growth": "Flat",
+      "Growth": "Tiers",
       "Order": 900,
-      "Value": 110
+      "Tiers": {
+        "Level1": 110,
+        "Level2": 160,
+        "Level3": 220
+      }
     },
     {
       "Stat": "KickRange",

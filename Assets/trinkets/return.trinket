@@ -1,0 +1,24 @@
+{
+  "Id": "RETURN",
+  "Title": "RETURN",
+  "Pack": "Junior",
+  "MaxLevel": 3,
+  "Sort": 52,
+  "Icon": "ui/traits/RETURN-64x64.png",
+  "Blurb": "Spent rounds chase you faster. Faster each rank.",
+  "Mods": [
+    {
+      "Stat": "Pickup",
+      "Op": "Mul",
+      "Growth": "Tiers",
+      "Order": 800,
+      "Tiers": {
+        "Level1": 1.35,
+        "Level2": 1.7,
+        "Level3": 2.15
+      }
+    }
+  ],
+  "__references": [],
+  "__version": 1
+}

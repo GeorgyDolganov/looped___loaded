@@ -23,7 +23,7 @@ public sealed class RoundInventory : Component
 	public bool Beaming { get; private set; }
 	public float BeamHeld { get; private set; }
 	bool beamTail;
-	public bool Ready => ReloadLeft <= 0.001f && !Beaming && MagLoaded > 0 && doubleLeft <= 0.001f;
+	public bool Ready => ReloadLeft <= 0.001f && !Beaming && MagLoaded > 0;
 	public float Reload01
 	{
 		get
@@ -42,9 +42,6 @@ public sealed class RoundInventory : Component
 	LaserBeam beam;
 	GameObject readyMarker;
 	bool recovering;
-	float doubleLeft;
-	GunRecipe doubleRecipe;
-	ShotVolley doubleVolley;
 
 	public void ResetLoadout()
 	{
@@ -57,8 +54,6 @@ public sealed class RoundInventory : Component
 		ReloadFor = 0f;
 		BurstLeft = 0;
 		cycleLeft = 0f;
-		doubleLeft = 0f;
-		doubleVolley = null;
 	}
 
 	public void GrowMag( int amount )
@@ -82,15 +77,11 @@ public sealed class RoundInventory : Component
 		ReloadFor = 0f;
 		BurstLeft = 0;
 		cycleLeft = 0f;
-		doubleLeft = 0f;
-		doubleVolley = null;
 		recovering = false;
 	}
 
 	public void ClearShots()
 	{
-		doubleLeft = 0f;
-		doubleVolley = null;
 		StopBeam();
 		foreach ( var shot in Live )
 		{
@@ -136,20 +127,6 @@ public sealed class RoundInventory : Component
 		var play = RealTime.Delta;
 		ReloadLeft = MathF.Max( 0f, ReloadLeft - play );
 		cycleLeft = MathF.Max( 0f, cycleLeft - play );
-
-		if ( doubleLeft > 0.001f )
-		{
-			doubleLeft = MathF.Max( 0f, doubleLeft - play );
-			if ( doubleLeft <= 0.001f && doubleVolley is not null )
-			{
-				doubleVolley.Hold = false;
-				FireVolley( doubleRecipe, false, doubleVolley );
-				doubleVolley = null;
-				BeginReload( doubleRecipe.Reload );
-			}
-
-			return;
-		}
 
 		if ( Loop.BlocksShot )
 			return;
@@ -230,16 +207,6 @@ public sealed class RoundInventory : Component
 		}
 
 		FireVolley( recipe );
-		if ( recipe.DoublePump )
-		{
-			doubleRecipe = recipe;
-			doubleVolley = Live.Count > 0 ? Live[^1].Flight.Volley : null;
-			if ( doubleVolley is not null )
-				doubleVolley.Hold = true;
-			doubleLeft = MathF.Max( 0.05f, recipe.Gap );
-			return;
-		}
-
 		BeginReload( recipe.Reload );
 	}
 
@@ -280,8 +247,12 @@ public sealed class RoundInventory : Component
 		if ( track < 1f )
 			return;
 
+		var pace = Loadout.Recipe().Pickup;
+		if ( pace <= 0f )
+			pace = 1f;
+
 		if ( dashArc > 0.001f )
-			CatchDashed( playerBefore, playerArc, dashArc, track );
+			CatchDashed( playerBefore, playerArc, dashArc, track, pace );
 
 		var player = Runner.Angle;
 		for ( var i = Dropped.Count - 1; i >= 0; i-- )
@@ -293,11 +264,11 @@ public sealed class RoundInventory : Component
 				continue;
 			}
 
-			drop.Roll( player, dashArc, track );
+			drop.Roll( player, dashArc, track, pace );
 		}
 	}
 
-	void CatchDashed( float playerBefore, float playerArc, float dashArc, float track )
+	void CatchDashed( float playerBefore, float playerArc, float dashArc, float track, float pace )
 	{
 		while ( true )
 		{
@@ -310,7 +281,7 @@ public sealed class RoundInventory : Component
 					continue;
 
 				var gap = drop.GapTo( playerBefore );
-				if ( gap >= bestGap || !drop.Crosses( gap, playerArc, dashArc, track ) )
+				if ( gap >= bestGap || !drop.Crosses( gap, playerArc, dashArc, track, pace ) )
 					continue;
 
 				best = i;
@@ -330,7 +301,7 @@ public sealed class RoundInventory : Component
 						continue;
 
 					var gap = drop.GapTo( playerBefore );
-					if ( drop.Crosses( gap, playerArc, dashArc, track ) )
+					if ( drop.Crosses( gap, playerArc, dashArc, track, pace ) )
 						drop.ParkShort( hold, track );
 				}
 
@@ -350,6 +321,17 @@ public sealed class RoundInventory : Component
 		Loop.NoteCatch();
 		ArenaSounds.Pickup();
 		drop.GameObject.Destroy();
+		return true;
+	}
+
+	public bool CatchRound()
+	{
+		if ( MagLoaded >= MagCap )
+			return false;
+
+		MagLoaded++;
+		Loop.NoteCatch();
+		ArenaSounds.Pickup();
 		return true;
 	}
 
@@ -469,13 +451,8 @@ public sealed class RoundInventory : Component
 
 		var count = Math.Max( 1, recipe.Count );
 		var cone = recipe.Cone;
-		if ( volleyIndex > 0 && recipe.Sight )
-			cone *= 0.5f;
 		if ( recipe.WalkStep > 0f )
 			cone += volleyIndex * recipe.WalkStep;
-		var reach = 0f;
-		if ( recipe.PointAim )
-			reach = (Aim.Cursor - Aim.Muzzle).Length;
 		volley ??= new ShotVolley { Alive = count, PerPellet = recipe.PerPelletSplash };
 		if ( !spendMag )
 			volley.Alive += count;
@@ -489,11 +466,6 @@ public sealed class RoundInventory : Component
 			flight.Bite = recipe.Bite;
 			flight.BurstId = BurstId;
 			flight.VolleyIndex = volleyIndex;
-			if ( recipe.PointAim )
-			{
-				flight.PointAim = true;
-				flight.Mark = Aim.Muzzle + heading * reach;
-			}
 
 			var go = Loop.Scene.CreateObject();
 			go.Name = "Shot";
@@ -535,18 +507,18 @@ public sealed class RoundInventory : Component
 		SpeedScale = recipe.SpeedScale,
 		ExplosiveRadius = recipe.Splash,
 		SplashDamage = recipe.SplashDamage,
+		ExtraSplashes = recipe.ExtraSplash,
 		FriendlySplash = recipe.FriendlySplash,
-		IgnoreArmor = recipe.IgnoreArmor,
 		RampPierce = recipe.RampPierce,
 		Falloff = recipe.Falloff,
-		MeatRange = recipe.MeatRange,
-		MeatBonus = recipe.MeatBonus,
 		KickForce = recipe.KickForce,
 		KickRange = recipe.KickRange,
 		StunTime = recipe.StunTime,
 		StunRange = recipe.StunRange,
 		StickTime = recipe.StickTime,
 		Nail = recipe.Nail,
+		Fetch = recipe.Fetch,
+		Ghost = recipe.Ghost,
 		Volley = volley
 	};
 

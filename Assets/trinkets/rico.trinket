@@ -4,7 +4,7 @@
   "Pack": "Junior",
   "MaxLevel": 3,
   "Sort": 4,
-  "Icon": "ui/traits/pinball.png",
+  "Icon": "ui/traits/RICO-extra-bounce-64x64.png",
   "Mods": [
     {
       "Stat": "Bounces",

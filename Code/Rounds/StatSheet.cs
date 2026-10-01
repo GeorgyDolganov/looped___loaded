@@ -245,13 +245,13 @@ public static class StatSheet
 		GunStat.BounceSpeed => new( "Speed per bounce", null, "", true, false ),
 		GunStat.Reload => new( "Reload", null, "s", false, false ),
 		GunStat.Speed => new( "Projectile Speed", null, "", true, false ),
-		GunStat.Radius => new( "Body radius", null, "", true, false ),
+		GunStat.Pickup => new( "Pickup", null, "", true, false ),
+		GunStat.Radius => new( "Size", null, "", true, false ),
 		GunStat.Splash => new( "Splash Radius", null, "", true, false ),
 		GunStat.SplashDamage => new( "Splash Damage", null, "", true, false ),
+		GunStat.ExtraSplash => new( "Extra explosion", "Extra explosions", "", true, false ),
 		GunStat.RangeCut => new( "Range", null, "", false, false ),
 		GunStat.RangePad => new( "Range", null, "", true, false ),
-		GunStat.MeatRange => new( "Damage within", null, "", true, false ),
-		GunStat.MeatBonus => new( "Damage", null, "", true, false ),
 		GunStat.KickForce => new( "Knockback", null, "", true, false ),
 		GunStat.KickRange => new( "Knockback range", null, "", true, false ),
 		GunStat.StunTime => new( "Stun", null, "s", true, false ),
@@ -264,10 +264,8 @@ public static class StatSheet
 		GunStat.BeamTicks => new( "Tick", "Ticks", "", true, false ),
 		GunStat.BeamWidth => new( "Beam Width", null, "", true, false ),
 		GunStat.BeamArc => new( "Jump", null, "", true, false ),
-		GunStat.BeamKiln => new( "Latch tick", null, "", false, false ),
 		GunStat.StickTime => new( "Stick", null, "s", true, false ),
 		GunStat.Dodge => new( "Dodge", null, "", true, false ),
-		GunStat.Gap => new( "Gap", null, "s", null, false ),
 		GunStat.Energy => new( "Range", null, "", true, false ),
 		_ => new( stat.ToString(), null, "", null, true )
 	};
@@ -280,8 +278,8 @@ public static class StatSheet
 			GunStat.Reload => traits.ReloadBase,
 			GunStat.Bounces => traits.MaxBouncesBase,
 			GunStat.Speed => 1f,
+			GunStat.Pickup => 1f,
 			GunStat.BeamTick => 1f,
-			GunStat.BeamKiln => 1f,
 			GunStat.BeamWidth => traits.LashWidth,
 			GunStat.Radius => traits.ProjectileRadius,
 			GunStat.Cycle => traits.DrumCycle,
@@ -295,20 +293,18 @@ public static class StatSheet
 	static string FlagText( GunFlag flag ) => flag switch
 	{
 		GunFlag.Beam => "Hold to fire lightning",
-		GunFlag.DoublePump => "Two volleys per mag",
-		GunFlag.PointAim => "Aim at a point",
-		GunFlag.IgnoreArmor => "Ignores armor",
 		GunFlag.RampPierce => "+1 damage per body already pierced",
-		GunFlag.Sight => "Later volleys use half spread",
 		GunFlag.Bite => "+1 damage on a body this burst already hit",
 		GunFlag.PerPelletSplash => "Splash per pellet",
 		GunFlag.FriendlySplash => "You take splash damage",
 		GunFlag.NoFriendlySplash => "Friendly splash off",
 		GunFlag.Nail => null,
 		GunFlag.BeamSear => "+1 damage while the beam stays",
-		GunFlag.BeamFork => "Side bolts hit",
 		GunFlag.BeamShunt => "Ignores shields",
 		GunFlag.BeamLinger => "Remaining ticks finish",
+		GunFlag.Fetch => "Flies straight back to you",
+		GunFlag.Return => "Spent rounds chase faster",
+		GunFlag.Ghost => "Passes through panels",
 		_ => null
 	};
 
@@ -337,8 +333,6 @@ public static class StatSheet
 		AddInt( rows, "Projectiles", now.Count, next.Count, preview, true, true );
 		AddFloat( rows, "Spread", now.Cone, next.Cone, preview, null, "°" );
 		AddInt( rows, "Pierce", now.Pierce, next.Pierce, preview, true, false );
-		if ( now.IgnoreArmor || next.IgnoreArmor )
-			AddText( rows, "Armor", now.IgnoreArmor ? "Ignored" : "Holds", next.IgnoreArmor ? "Ignored" : "Holds", preview );
 		if ( now.RampPierce || next.RampPierce )
 			AddText( rows, "Line", now.RampPierce ? "+1" : "Flat", next.RampPierce ? "+1" : "Flat", preview );
 		AddInt( rows, "Bounces", now.Bounces, next.Bounces, preview, true, false );
@@ -347,15 +341,15 @@ public static class StatSheet
 			AddPct( rows, "Bounce Speed", now.BounceSpeed, next.BounceSpeed, preview, true );
 		AddFloat( rows, "Reload", now.Reload, next.Reload, preview, false, "s", true );
 		AddPct( rows, "Proj. Speed", now.SpeedScale, next.SpeedScale, preview, true );
+		if ( now.Pickup > 1.001f || next.Pickup > 1.001f )
+			AddPct( rows, "Pickup", now.Pickup, next.Pickup, preview, true );
+		AddFloat( rows, "Size", now.Radius, next.Radius, preview, true );
 		AddRange( rows, now.Falloff, next.Falloff, preview );
-		AddFloat( rows, "Damage within", now.MeatRange, next.MeatRange, preview, true );
-		AddInt( rows, "Meat Damage", now.MeatBonus, next.MeatBonus, preview, true, false );
 		AddFloat( rows, "Splash", now.Splash, next.Splash, preview, true );
 		AddInt( rows, "Splash Dmg", now.SplashDamage, next.SplashDamage, preview, true, false );
+		AddInt( rows, "Extra blasts", now.ExtraSplash, next.ExtraSplash, preview, true, false );
 		if ( now.PerPelletSplash || next.PerPelletSplash )
 			AddText( rows, "Per Pellet", Flag( now.PerPelletSplash ), Flag( next.PerPelletSplash ), preview );
-		if ( now.PointAim || next.PointAim )
-			AddText( rows, "Aim", now.PointAim ? "Point" : "Direction", next.PointAim ? "Point" : "Direction", preview );
 		if ( now.Auto || next.Auto || now.Burst > 1 || next.Burst > 1 )
 		{
 			AddInt( rows, "Burst", now.Burst, next.Burst, preview, true, true );
@@ -363,10 +357,12 @@ public static class StatSheet
 		}
 		if ( now.WalkStep > 0f || next.WalkStep > 0f )
 			AddFloat( rows, "Walk", now.WalkStep, next.WalkStep, preview, null, "°" );
-		if ( now.Sight || next.Sight )
-			AddText( rows, "Sight", now.Sight ? "Half" : "Full", next.Sight ? "Half" : "Full", preview, true );
 		if ( now.Bite || next.Bite )
-			AddText( rows, "Bite", now.Bite ? "+1" : "Flat", next.Bite ? "+1" : "Flat", preview );
+			AddText( rows, "Frenzy", now.Bite ? "+1" : "Flat", next.Bite ? "+1" : "Flat", preview );
+		if ( now.Fetch || next.Fetch )
+			AddText( rows, "Return", Flag( now.Fetch ), Flag( next.Fetch ), preview );
+		if ( now.Ghost || next.Ghost )
+			AddText( rows, "Phase", Flag( now.Ghost ), Flag( next.Ghost ), preview );
 		if ( now.Beam || next.Beam )
 		{
 			AddInt( rows, "Bolt Dmg", now.BeamHit, next.BeamHit, preview, true, true );

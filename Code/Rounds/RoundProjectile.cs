@@ -75,7 +75,10 @@ public sealed class RoundProjectile : Component
 	bool shellReady;
 	int pierceLeft;
 	int bored;
+	int extraLeft;
+	bool exploded;
 	bool lensInside;
+	bool returning;
 	float travelled;
 	float launchSpeed;
 
@@ -92,6 +95,8 @@ public sealed class RoundProjectile : Component
 		EnergyLeft = flight.Energy;
 		pierceLeft = flight.PierceCharges;
 		bored = 0;
+		extraLeft = flight.ExtraSplashes;
+		exploded = false;
 		Ricochets = 0;
 		TargetsHit = 0;
 		Kills = 0;
@@ -106,7 +111,8 @@ public sealed class RoundProjectile : Component
 		EnsureShell();
 		EnsureSparks();
 
-		GraphicsApply.AddShotLight( GameObject, ShotColors.Player * (Flight.Nail ? 3.5f : 6f), Flight.Nail ? 260f : 420f );
+		var girth = MathF.Max( 0.2f, Radius / 13f );
+		GraphicsApply.AddShotLight( GameObject, ShotColors.Player * (Flight.Nail ? 3.5f : 6f), (Flight.Nail ? 260f : 420f) * girth );
 
 		var trailObject = Scene.CreateObject();
 		trailObject.Name = "Trail";
@@ -115,8 +121,8 @@ public sealed class RoundProjectile : Component
 		trailLine = trailObject.AddComponent<PolyLine>();
 		trailLine.HeadTint = ShotColors.Player.WithAlpha( 0.22f );
 		trailLine.TailTint = ShotColors.Player.WithAlpha( 0.03f );
-		trailLine.HeadWidth = Flight.Nail ? 6f : 12f;
-		trailLine.TailWidth = 1f;
+		trailLine.HeadWidth = (Flight.Nail ? 6f : 12f) * girth;
+		trailLine.TailWidth = girth;
 		trailLine.HardCaps = true;
 		trailLine.Apply();
 	}
@@ -143,7 +149,8 @@ public sealed class RoundProjectile : Component
 					return;
 			}
 
-			Contain();
+			if ( !returning )
+				Contain();
 			if ( HitTarget() )
 				return;
 
@@ -189,39 +196,48 @@ public sealed class RoundProjectile : Component
 
 	bool Step( float step )
 	{
-		var travel = step;
-		var arrive = false;
-		if ( Flight.PointAim )
-		{
-			var along = ArenaGeometry.Dot( Flight.Mark - Flat, Direction );
-			if ( along <= step )
-			{
-				travel = MathF.Max( 0f, along );
-				arrive = true;
-			}
-		}
+		if ( returning )
+			return Home( step );
 
-		if ( geometry.TraceRay( Flat, Direction, travel + Radius, out var hit ) )
+		var travel = step;
+		var guard = 0;
+		while ( travel > 0.001f && guard++ < 8 )
 		{
+			if ( !geometry.TraceRay( Flat, Direction, travel + Radius, out var hit ) )
+			{
+				EnergyLeft -= travel;
+				travelled += travel;
+				Flat += Direction * travel;
+				travel = 0f;
+				break;
+			}
+
+			if ( Flight.Ghost && ArenaGeometry.Obstacle( hit.Kind ) )
+			{
+				var skip = MathF.Min( travel, MathF.Max( 2f, hit.Distance + 2f ) );
+				EnergyLeft -= skip;
+				travelled += skip;
+				Flat += Direction * skip;
+				travel -= skip;
+				continue;
+			}
+
 			if ( !BounceWall( hit, Direction ) )
 				return false;
-		}
-		else
-		{
-			EnergyLeft -= travel;
-			travelled += travel;
-			Flat += Direction * travel;
-			if ( arrive )
-			{
-				Die( true );
-				return false;
-			}
+
+			break;
 		}
 
 		BendLens();
 		Contain();
 		if ( HitTarget() )
 			return false;
+
+		if ( EnergyLeft <= 0f && TurnAround( Direction ) )
+		{
+			Flat += Direction * (Radius + 4f);
+			return true;
+		}
 
 		if ( BouncesLeft < 0 || EnergyLeft <= 0f )
 		{
@@ -238,18 +254,30 @@ public sealed class RoundProjectile : Component
 		travelled += MathF.Max( 0f, hit.Distance );
 		PushTrail( geometry.ToPlayWorld( hit.Position ) );
 
+		if ( BouncesLeft <= 0 && !returning && TurnAround( incoming ) )
+		{
+			if ( !GameObject.IsValid() )
+				return false;
+
+			Flat = hit.Position + Direction * (Radius + 8f);
+			StrikeWall( hit, incoming );
+			return true;
+		}
+
+		if ( returning )
+		{
+			Flat += Direction * MathF.Max( Radius + 4f, hit.Distance + Radius + 4f );
+			return true;
+		}
+
 		var normal = hit.Normal;
 		Flat = hit.Position + normal * Radius;
 		Direction = ArenaGeometry.Reflect( incoming, normal ).Normal;
 		Rebound();
 
-		if ( hit.Kind == WallKind.Panel && Loop.Arena.IsValid() )
-		{
-			Loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, 0f, false );
+		StrikeWall( hit, incoming );
+		if ( hit.Kind == WallKind.Panel )
 			NudgeOut();
-		}
-		else if ( hit.Kind == WallKind.Spin && Loop.Arena.IsValid() )
-			Loop.Arena.PushSpinner( hit.WallIndex, hit.Position, incoming );
 
 		var world = geometry.ToPlayWorld( Flat );
 		ArenaSounds.Ricochet( world );
@@ -331,6 +359,13 @@ public sealed class RoundProjectile : Component
 				if ( Locations.IsBoss( target.Kind ) )
 					Loop.NoteArmor();
 
+				if ( Flight.Fetch )
+				{
+					struck.Add( target );
+					Flat = target.Flat + Direction * (reach + 4f);
+					continue;
+				}
+
 				if ( !BounceOff( target.Flat, normal, reach ) )
 					return true;
 
@@ -364,15 +399,21 @@ public sealed class RoundProjectile : Component
 					target.Stun( Flight.StunTime );
 			}
 
-			if ( Flight.ExplosiveRadius > 1f && (Flight.Volley is null || Flight.Volley.TrySplash()) )
-				RoundCombat.Blast( Loop, target.Flat, Flight.ExplosiveRadius, SplashDamage(), this, ShotColors.Player, Flight.FriendlySplash );
+			ExplodeAt( target.Flat );
 
 			if ( !target.Alive )
 				Kills++;
 
-			if ( pierceLeft > 0 )
+			if ( pierceLeft > 0 && !Flight.Fetch )
 			{
 				pierceLeft--;
+				bored++;
+				Flat = target.Flat + Direction * (reach + 4f);
+				continue;
+			}
+
+			if ( Flight.Fetch )
+			{
 				bored++;
 				Flat = target.Flat + Direction * (reach + 4f);
 				continue;
@@ -388,6 +429,18 @@ public sealed class RoundProjectile : Component
 	bool BounceOff( Vector2 from, Vector2 normal, float reach )
 	{
 		var incoming = Direction;
+		if ( BouncesLeft <= 0 && TurnAround( incoming ) )
+		{
+			Flat = from + Direction * (reach + 4f);
+			return false;
+		}
+
+		if ( returning )
+		{
+			Flat = from + Direction * (reach + 4f);
+			return true;
+		}
+
 		Flat = from + normal * (reach + 1f);
 		Direction = ArenaGeometry.Reflect( incoming, normal ).Normal;
 		Rebound();
@@ -405,6 +458,75 @@ public sealed class RoundProjectile : Component
 		return true;
 	}
 
+	bool TurnAround( Vector2 heading )
+	{
+		if ( !Flight.Fetch || returning || !Loop.IsValid() || !Loop.Runner.IsValid() )
+			return false;
+
+		var to = Loop.Runner.Flat - Flat;
+		returning = true;
+		EnergyLeft = MathF.Max( EnergyLeft, to.Length + 64f );
+		struck.Clear();
+		bored = 0;
+		Direction = to.Length > 1f ? to.Normal : (heading.Length > 0.01f ? -heading.Normal : Direction);
+		return true;
+	}
+
+	bool Home( float step )
+	{
+		if ( !Loop.IsValid() || !Loop.Runner.IsValid() )
+		{
+			Arrive();
+			return false;
+		}
+
+		var to = Loop.Runner.Flat - Flat;
+		var dist = to.Length;
+		var reach = Loop.Runner.PlayerRadius + Radius;
+		if ( dist <= reach )
+		{
+			Arrive();
+			return false;
+		}
+
+		Direction = to / dist;
+		var move = MathF.Min( step, dist - reach );
+		Flat += Direction * move;
+		travelled += move;
+		return true;
+	}
+
+	void Arrive()
+	{
+		if ( Flight.Volley is { } volley )
+		{
+			volley.LastFlat = Flat;
+			volley.Alive--;
+			if ( volley.Alive <= 0 && !volley.Closed )
+			{
+				volley.Closed = true;
+				if ( Loop.IsValid() && Loop.Inventory.IsValid() && !Loop.Inventory.CatchRound() )
+					Loop.Inventory.DropSpent( Flat );
+			}
+		}
+		else if ( Loop.IsValid() && Loop.Inventory.IsValid() && !Loop.Inventory.CatchRound() )
+			Loop.Inventory.DropSpent( Flat );
+
+		ReleaseSparks();
+		GameObject.Destroy();
+	}
+
+	void StrikeWall( ArenaHit hit, Vector2 incoming )
+	{
+		if ( !Loop.Arena.IsValid() )
+			return;
+
+		if ( hit.Kind == WallKind.Panel )
+			Loop.Arena.StrikeBoard( hit.WallIndex, hit.Position, hit.Normal, 0f, false );
+		else if ( hit.Kind == WallKind.Spin )
+			Loop.Arena.PushSpinner( hit.WallIndex, hit.Position, incoming );
+	}
+
 	void Rebound()
 	{
 		BouncesLeft--;
@@ -419,8 +541,6 @@ public sealed class RoundProjectile : Component
 			return 0;
 
 		var damage = Math.Max( 0, Flight.Damage );
-		if ( Flight.MeatBonus > 0 && Flight.MeatRange > 1f && travelled <= Flight.MeatRange )
-			damage += Flight.MeatBonus;
 		if ( Flight.BounceDamage > 0 )
 			damage += Ricochets * Flight.BounceDamage;
 
@@ -429,16 +549,54 @@ public sealed class RoundProjectile : Component
 
 	int SplashDamage() => Math.Max( 1, Flight.SplashDamage );
 
+	bool CanSplash()
+	{
+		if ( Flight.ExplosiveRadius <= 1f )
+			return false;
+
+		if ( exploded )
+			return extraLeft > 0;
+
+		if ( Flight.Volley is null )
+			return true;
+
+		return Flight.Volley.CanFirstSplash();
+	}
+
+	void ExplodeAt( Vector2 at )
+	{
+		if ( !CanSplash() )
+			return;
+
+		if ( !exploded )
+		{
+			if ( Flight.Volley is not null && !Flight.Volley.TrySplash() )
+				return;
+
+			exploded = true;
+		}
+		else
+			extraLeft--;
+
+		RoundCombat.Blast( Loop, at, Flight.ExplosiveRadius, SplashDamage(), this, ShotColors.Player, Flight.FriendlySplash );
+	}
+
 	void Die( bool spent = false )
 	{
-		if ( spent && Flight.ExplosiveRadius > 1f && (Flight.Volley is null || Flight.Volley.TrySplash()) )
-			RoundCombat.Blast( Loop, Flat, Flight.ExplosiveRadius, SplashDamage(), this, ShotColors.Player, Flight.FriendlySplash );
+		if ( TurnAround( Direction ) )
+		{
+			Flat += Direction * (Radius + 4f);
+			return;
+		}
+
+		if ( spent )
+			ExplodeAt( Flat );
 
 		if ( Flight.Volley is { } volley )
 		{
 			volley.LastFlat = Flat;
 			volley.Alive--;
-			if ( volley.Alive <= 0 && !volley.Closed && !volley.Hold )
+			if ( volley.Alive <= 0 && !volley.Closed )
 			{
 				volley.Closed = true;
 				if ( Loop.IsValid() )
@@ -561,7 +719,7 @@ public sealed class RoundProjectile : Component
 
 	void PaintSplash()
 	{
-		if ( !GraphicsProfile.SplashRings || Flight.ExplosiveRadius <= 1f || geometry is null )
+		if ( !GraphicsProfile.SplashRings || !CanSplash() || geometry is null )
 		{
 			splashRing?.Clear();
 			return;

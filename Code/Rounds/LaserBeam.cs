@@ -12,7 +12,6 @@ public sealed class LaserBeam : Component
 	readonly List<(Vector2 A, Vector2 B)> rays = new();
 	readonly List<Latch> latches = new();
 	readonly Dictionary<(int Bolt, Enemy Body), int> sear = new();
-	readonly HashSet<Enemy> lastMains = new();
 	int ticksLeft;
 	int tickBudget;
 	float nextTick;
@@ -35,7 +34,6 @@ public sealed class LaserBeam : Component
 		nextTick = RealTime.Now + MathF.Max( 0.05f, gun.BeamTick );
 		steer = true;
 		sear.Clear();
-		lastMains.Clear();
 	}
 
 	public void FreezeAim() => steer = false;
@@ -81,8 +79,6 @@ public sealed class LaserBeam : Component
 		var seed = (int)(RealTime.Now * (9f + rank * 7f));
 		var bolts = new List<List<Vector2>>();
 		var range = recipe.BeamRange;
-		if ( recipe.PointAim && loop.Aim.IsValid() )
-			range = MathF.Min( range, (loop.Aim.Cursor - origin).Length );
 		var width = MathF.Max( 8f, recipe.BeamWidth );
 		splashLive = false;
 
@@ -174,24 +170,11 @@ public sealed class LaserBeam : Component
 			if ( (end - pos).Length < 1f && hop > 0 )
 				break;
 
-			List<List<Vector2>> storm;
-			if ( hop == 0 && recipe.BeamFork )
-				storm = LightningPath.Storm( pos, end, rank, seed + bolt * 31, 1 );
-			else
-				storm = new List<List<Vector2>> { LightningPath.Bolt( pos, end, rank, seed + bolt * 31 + hop * 17 ) };
-
-			if ( storm.Count == 0 || storm[0].Count == 0 )
+			var path = LightningPath.Bolt( pos, end, rank, seed + bolt * 31 + hop * 17 );
+			if ( path.Count == 0 )
 				break;
 
-			Join( main, storm[0] );
-			if ( hop == 0 && recipe.BeamFork )
-			{
-				for ( var f = 1; f < storm.Count; f++ )
-				{
-					BurnOne( storm[f], dir, width, 100 + bolt * 8 + f, line );
-					bolts.Add( storm[f] );
-				}
-			}
+			Join( main, path );
 
 			if ( stopped )
 			{
@@ -350,7 +333,6 @@ public sealed class LaserBeam : Component
 
 		var hit = Math.Max( 1, recipe.BeamHit );
 		var staged = new List<(int Bolt, Enemy Body, int Next)>();
-		var mains = new List<Enemy>();
 		var shielded = new Dictionary<int, int>();
 		Enemy nearest = null;
 		var nearestDist = float.MaxValue;
@@ -400,84 +382,17 @@ public sealed class LaserBeam : Component
 			enemy.Damage( damage, 0f, 1f );
 
 			staged.Add( (latch.Bolt, enemy, prior + 1) );
-			if ( latch.Bolt < 100 && !mains.Contains( enemy ) )
-				mains.Add( enemy );
 		}
 
-		var kiln = recipe.BeamKiln > 0f && recipe.BeamKiln < 0.999f && MainsMatch( mains );
 		sear.Clear();
 		foreach ( var step in staged )
 			sear[(step.Bolt, step.Body)] = step.Next;
 
-		lastMains.Clear();
-		foreach ( var body in mains )
-			lastMains.Add( body );
-
 		ticksLeft--;
-		var gap = MathF.Max( 0.05f, recipe.BeamTick );
-		if ( kiln )
-			gap *= recipe.BeamKiln;
-		nextTick = RealTime.Now + gap;
+		nextTick = RealTime.Now + MathF.Max( 0.05f, recipe.BeamTick );
 
 		if ( recipe.Splash > 1f && nearest.IsValid() )
 			RoundCombat.Blast( loop, nearestAt, recipe.Splash, Math.Max( 1, recipe.SplashDamage ), null, ShotColors.Player, recipe.FriendlySplash );
-	}
-
-	bool MainsMatch( List<Enemy> mains )
-	{
-		if ( mains.Count == 0 || mains.Count != lastMains.Count )
-			return false;
-
-		foreach ( var body in mains )
-		{
-			if ( !lastMains.Contains( body ) )
-				return false;
-		}
-
-		return true;
-	}
-
-	List<Contact> Burn( List<List<Vector2>> bolts, Vector2 heading, float width, int bolt, List<Contact> skip )
-	{
-		var pierce = Math.Max( 0, recipe.Pierce );
-		var line = Touches( loop, bolts, origin, width, pierce + 1 );
-		if ( line.Count > pierce )
-		{
-			var stop = line[0].At;
-			foreach ( var contact in line )
-			{
-				if ( ArenaGeometry.Dot( contact.At - origin, heading ) > ArenaGeometry.Dot( stop - origin, heading ) )
-					stop = contact.At;
-			}
-
-			CutPast( bolts, origin, heading, stop );
-		}
-
-		for ( var k = 0; k < line.Count; k++ )
-		{
-			if ( skip is not null && Holds( skip, line[k].Body ) )
-				continue;
-
-			latches.Add( new Latch
-			{
-				Body = line[k].Body,
-				At = line[k].At,
-				Bolt = bolt,
-				Depth = k,
-				Incoming = heading
-			} );
-		}
-
-		return line;
-	}
-
-	List<Contact> BurnOne( List<Vector2> bolt, Vector2 heading, float width, int id, List<Contact> skip )
-	{
-		var wrap = new List<List<Vector2>> { bolt };
-		var line = Burn( wrap, heading, width, id, skip );
-		if ( wrap.Count == 0 )
-			bolt.Clear();
-		return line;
 	}
 
 	static bool Holds( List<Contact> line, Enemy body )
@@ -649,64 +564,6 @@ public sealed class LaserBeam : Component
 		return enemy.IsValid() ? at : to;
 	}
 
-	static List<Contact> Touches( GameLoop loop, List<List<Vector2>> bolts, Vector2 origin, float width, int limit )
-	{
-		var found = new List<Contact>();
-		if ( !loop.IsValid() || limit <= 0 )
-			return found;
-
-		foreach ( var bolt in bolts )
-		{
-			for ( var i = 1; i < bolt.Count; i++ )
-			{
-				var a = bolt[i - 1];
-				var b = bolt[i];
-				var span = b - a;
-				var length = span.Length;
-				if ( length < 0.001f )
-					continue;
-
-				var dir = span / length;
-				foreach ( var candidate in loop.Enemies )
-				{
-					if ( !candidate.IsValid() || !candidate.Alive )
-						continue;
-
-					var reach = width + candidate.Radius;
-					var rel = candidate.Flat - a;
-					var along = ArenaGeometry.Dot( rel, dir );
-					var perp = (rel - dir * along).Length;
-					if ( perp > reach )
-						continue;
-
-					var offset = MathF.Sqrt( MathF.Max( 0f, reach * reach - perp * perp ) );
-					var entry = along - offset;
-					if ( entry < 0f )
-					{
-						if ( along + offset < 0f )
-							continue;
-						entry = 0f;
-					}
-					else if ( entry > length )
-						continue;
-
-					var touch = a + dir * entry;
-					var dist = (touch - origin).Length;
-					var seen = found.FindIndex( c => c.Body == candidate );
-					if ( seen < 0 )
-						found.Add( new Contact { Body = candidate, At = touch, Dist = dist } );
-					else if ( dist < found[seen].Dist )
-						found[seen] = new Contact { Body = candidate, At = touch, Dist = dist };
-				}
-			}
-		}
-
-		found.Sort( ( x, y ) => x.Dist.CompareTo( y.Dist ) );
-		if ( found.Count > limit )
-			found.RemoveRange( limit, found.Count - limit );
-		return found;
-	}
-
 	struct Latch
 	{
 		public Enemy Body;
@@ -724,84 +581,10 @@ public sealed class LaserBeam : Component
 		public Vector2 At;
 		public float Dist;
 	}
-
-	static void CutPast( List<List<Vector2>> bolts, Vector2 origin, Vector2 heading, Vector2 stop )
-	{
-		var limit = ArenaGeometry.Dot( stop - origin, heading );
-		for ( var b = bolts.Count - 1; b >= 0; b-- )
-		{
-			var bolt = bolts[b];
-			if ( bolt.Count == 0 || ArenaGeometry.Dot( bolt[0] - origin, heading ) > limit + 0.75f )
-			{
-				bolts.RemoveAt( b );
-				continue;
-			}
-
-			var kept = new List<Vector2> { bolt[0] };
-			for ( var i = 1; i < bolt.Count; i++ )
-			{
-				var a = bolt[i - 1];
-				var point = bolt[i];
-				var alongA = ArenaGeometry.Dot( a - origin, heading );
-				var alongB = ArenaGeometry.Dot( point - origin, heading );
-				if ( alongB <= limit )
-				{
-					kept.Add( point );
-					continue;
-				}
-
-				var span = alongB - alongA;
-				var t = MathF.Abs( span ) > 0.001f ? (limit - alongA) / span : 0f;
-				kept.Add( a + (point - a) * Math.Clamp( t, 0f, 1f ) );
-				break;
-			}
-
-			if ( kept.Count < 2 )
-			{
-				bolts.RemoveAt( b );
-				continue;
-			}
-
-			bolt.Clear();
-			bolt.AddRange( kept );
-		}
-	}
 }
 
 public static class LightningPath
 {
-	public static List<List<Vector2>> Storm( Vector2 from, Vector2 to, int rank, int seed, int forkFloor = 0 )
-	{
-		rank = Math.Clamp( rank, 1, 3 );
-		var bolts = new List<List<Vector2>>();
-		var main = Bolt( from, to, rank, seed );
-		bolts.Add( main );
-
-		var forks = rank <= 1 ? 0 : rank == 2 ? 1 : 2;
-		if ( forks < forkFloor )
-			forks = forkFloor;
-		for ( var f = 0; f < forks; f++ )
-		{
-			if ( main.Count < 4 )
-				break;
-
-			var at = 2 + Hash( seed, 40 + f ) % (main.Count - 3);
-			var origin = main[at];
-			var along = to - from;
-			if ( along.Length < 8f )
-				continue;
-
-			var dir = along.Normal;
-			var perp = new Vector2( -dir.y, dir.x );
-			var side = Hash( seed, 70 + f ) % 2 == 0 ? 1f : -1f;
-			var reach = 90f + Hash( seed, 90 + f ) % 90;
-			var tip = origin + dir * (reach * 0.4f) + perp * side * reach;
-			bolts.Add( Jag( origin, tip, seed + 17 * (f + 1), 4 + rank, 40f + rank * 16f ) );
-		}
-
-		return bolts;
-	}
-
 	public static List<Vector2> Bolt( Vector2 from, Vector2 to, int rank, int seed )
 	{
 		rank = Math.Clamp( rank, 1, 3 );

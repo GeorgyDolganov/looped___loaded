@@ -16,13 +16,13 @@ public sealed class BuildState
 	public float Reload;
 	public float BoreWait;
 	public float Speed = 1f;
+	public float Pickup = 1f;
 	public float Radius = 13f;
 	public float Splash;
 	public int SplashDamage;
+	public int ExtraSplash;
 	public float RangeCut;
 	public float RangePad;
-	public float MeatRange;
-	public int MeatBonus;
 	public float KickForce;
 	public float KickRange;
 	public float StunTime;
@@ -35,11 +35,9 @@ public sealed class BuildState
 	public int BeamTicks;
 	public float BeamWidth;
 	public float BeamArc;
-	public float BeamKiln = 1f;
 	public int BeamRank;
 	public float StickTime;
 	public float Dodge;
-	public float Gap;
 	public float Energy;
 	public float BeamPad;
 	public float BeamPerSecond;
@@ -76,13 +74,13 @@ public sealed class BuildState
 		GunStat.Reload => Reload,
 		GunStat.BoreWait => BoreWait,
 		GunStat.Speed => Speed,
+		GunStat.Pickup => Pickup,
 		GunStat.Radius => Radius,
 		GunStat.Splash => Splash,
 		GunStat.SplashDamage => SplashDamage,
+		GunStat.ExtraSplash => ExtraSplash,
 		GunStat.RangeCut => RangeCut,
 		GunStat.RangePad => RangePad,
-		GunStat.MeatRange => MeatRange,
-		GunStat.MeatBonus => MeatBonus,
 		GunStat.KickForce => KickForce,
 		GunStat.KickRange => KickRange,
 		GunStat.StunTime => StunTime,
@@ -95,11 +93,9 @@ public sealed class BuildState
 		GunStat.BeamTicks => BeamTicks,
 		GunStat.BeamWidth => BeamWidth,
 		GunStat.BeamArc => BeamArc,
-		GunStat.BeamKiln => BeamKiln,
 		GunStat.BeamRank => BeamRank,
 		GunStat.StickTime => StickTime,
 		GunStat.Dodge => Dodge,
-		GunStat.Gap => Gap,
 		GunStat.BounceDamage => BounceDamage,
 		GunStat.BounceSpeed => BounceSpeed,
 		_ => Energy
@@ -118,13 +114,13 @@ public sealed class BuildState
 			case GunStat.Reload: Reload = value; break;
 			case GunStat.BoreWait: BoreWait = value; break;
 			case GunStat.Speed: Speed = value; break;
+			case GunStat.Pickup: Pickup = value; break;
 			case GunStat.Radius: Radius = value; break;
 			case GunStat.Splash: Splash = value; break;
 			case GunStat.SplashDamage: SplashDamage = (int)value; break;
+			case GunStat.ExtraSplash: ExtraSplash = (int)value; break;
 			case GunStat.RangeCut: RangeCut = value; break;
 			case GunStat.RangePad: RangePad = value; break;
-			case GunStat.MeatRange: MeatRange = value; break;
-			case GunStat.MeatBonus: MeatBonus = (int)value; break;
 			case GunStat.KickForce: KickForce = value; break;
 			case GunStat.KickRange: KickRange = value; break;
 			case GunStat.StunTime: StunTime = value; break;
@@ -137,11 +133,9 @@ public sealed class BuildState
 			case GunStat.BeamTicks: BeamTicks = (int)value; break;
 			case GunStat.BeamWidth: BeamWidth = value; break;
 			case GunStat.BeamArc: BeamArc = value; break;
-			case GunStat.BeamKiln: BeamKiln = value; break;
 			case GunStat.BeamRank: BeamRank = (int)value; break;
 			case GunStat.StickTime: StickTime = value; break;
 			case GunStat.Dodge: Dodge = value; break;
-			case GunStat.Gap: Gap = value; break;
 			case GunStat.BounceDamage: BounceDamage = (int)value; break;
 			case GunStat.BounceSpeed: BounceSpeed = value; break;
 			default: Energy = value; break;
@@ -187,7 +181,6 @@ public sealed class BuildState
 		{
 			Beam = beam,
 			Auto = auto,
-			DoublePump = Has( GunFlag.DoublePump ) && !auto && !beam,
 			Count = Count,
 			Cone = Cone,
 			Damage = Math.Max( 1, Damage ),
@@ -200,18 +193,15 @@ public sealed class BuildState
 			Radius = Radius,
 			Splash = Splash,
 			SplashDamage = SplashDamage,
+			ExtraSplash = ExtraSplash,
 			FriendlySplash = Has( GunFlag.FriendlySplash ) && !Has( GunFlag.NoFriendlySplash ),
 			PerPelletSplash = Has( GunFlag.PerPelletSplash ),
-			PointAim = Has( GunFlag.PointAim ),
-			IgnoreArmor = Has( GunFlag.IgnoreArmor ),
 			RampPierce = Has( GunFlag.RampPierce ),
 			Nail = nail,
 			StickTime = nail ? StickTime : 0f,
 			RangeCut = MathF.Max( 0f, RangeCut ),
 			RangePad = RangePad,
 			Falloff = Falloff,
-			MeatRange = MeatRange,
-			MeatBonus = MeatBonus,
 			KickForce = KickForce,
 			KickRange = KickRange,
 			StunTime = StunTime,
@@ -219,7 +209,6 @@ public sealed class BuildState
 			Cycle = Cycle,
 			Burst = Burst,
 			WalkStep = WalkStep,
-			Sight = Has( GunFlag.Sight ),
 			Bite = Has( GunFlag.Bite ),
 			Reload = MathF.Max( GameSettings.Traits.ReloadMin, Reload ),
 			BoreWait = BoreWait,
@@ -233,17 +222,17 @@ public sealed class BuildState
 			BeamWidth = BeamWidth,
 			BeamRank = BeamRank,
 			BeamSear = Has( GunFlag.BeamSear ),
-			BeamKiln = BeamKiln,
 			BeamArc = BeamArc,
-			BeamFork = Has( GunFlag.BeamFork ),
 			BeamShunt = Has( GunFlag.BeamShunt ),
 			BeamLinger = Has( GunFlag.BeamLinger ),
 			Dodge = Dodge,
-			Gap = Gap
+			Pickup = Pickup,
+			Fetch = Has( GunFlag.Fetch ),
+			Ghost = Has( GunFlag.Ghost )
 		};
 	}
 
-	public static bool IsInteger( GunStat stat ) => stat is GunStat.Count or GunStat.Full or GunStat.Damage or GunStat.Pierce or GunStat.Bounces or GunStat.SplashDamage or GunStat.MeatBonus or GunStat.Burst or GunStat.BeamHit or GunStat.BeamTicks or GunStat.BeamRank or GunStat.BounceDamage;
+	public static bool IsInteger( GunStat stat ) => stat is GunStat.Count or GunStat.Full or GunStat.Damage or GunStat.Pierce or GunStat.Bounces or GunStat.SplashDamage or GunStat.ExtraSplash or GunStat.Burst or GunStat.BeamHit or GunStat.BeamTicks or GunStat.BeamRank or GunStat.BounceDamage;
 
 	public static float Operate( float current, ModOp op, float amount, bool integer )
 	{

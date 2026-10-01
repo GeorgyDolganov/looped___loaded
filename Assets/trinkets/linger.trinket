@@ -4,13 +4,13 @@
   "Pack": "Laser",
   "MaxLevel": 1,
   "Sort": 39,
-  "Icon": "ui/traits/electric.png",
+  "Icon": "ui/traits/LINGER-64x64.png",
   "Blurb": "Remaining ticks finish where you let go.",
   "Flags": [
     "BeamLinger"
   ],
   "Requires": [
-    "trinkets/lash.trinket"
+    "trinkets/electrify.trinket"
   ],
   "Mods": [
     {
@@ -26,7 +26,7 @@
     }
   ],
   "__references": [
-    "trinkets/lash.trinket"
+    "trinkets/electrify.trinket"
   ],
   "__version": 0
 }

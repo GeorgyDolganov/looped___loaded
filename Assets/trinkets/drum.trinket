@@ -4,13 +4,13 @@
   "Pack": "Rifle",
   "MaxLevel": 3,
   "Sort": 11,
-  "Icon": "ui/traits/accel.png",
+  "Icon": "ui/traits/DRUM-three-bullets-64x64.png",
   "Blurb": "Hold to shoot multiple rounds, one after another.",
   "Flags": [
     "Auto"
   ],
   "Excludes": [
-    "trinkets/lash.trinket"
+    "trinkets/electrify.trinket"
   ],
   "Mods": [
     {
@@ -34,12 +34,12 @@
   ],
   "Notes": [
     {
-      "Text": "Locks out LASH",
+      "Text": "Locks out ELECTRIFY",
       "Sign": -1
     }
   ],
   "__references": [
-    "trinkets/lash.trinket"
+    "trinkets/electrify.trinket"
   ],
   "__version": 0
 }

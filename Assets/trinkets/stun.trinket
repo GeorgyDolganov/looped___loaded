@@ -4,7 +4,7 @@
   "Pack": "Warrior",
   "MaxLevel": 1,
   "Sort": 7,
-  "Icon": "ui/traits/freeze.png",
+  "Icon": "ui/traits/STUN-64x64.png",
   "Blurb": "*Doesn't affect boss.",
   "Mods": [
     {

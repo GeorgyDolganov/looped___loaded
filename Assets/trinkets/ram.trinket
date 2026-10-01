@@ -4,16 +4,13 @@
   "Pack": "Rail",
   "MaxLevel": 1,
   "Sort": 26,
-  "Icon": "ui/traits/pierce.png",
+  "Icon": "ui/traits/PIERCE-damage-up-64x64.png",
   "Blurb": "Each body you punch through hits the next HARDER. ",
   "Flags": [
     "RampPierce"
   ],
   "Requires": [
     "trinkets/bore.trinket"
-  ],
-  "Excludes": [
-    "trinkets/keel.trinket"
   ],
   "Mods": [
     {
@@ -25,8 +22,7 @@
     }
   ],
   "__references": [
-    "trinkets/bore.trinket",
-    "trinkets/keel.trinket"
+    "trinkets/bore.trinket"
   ],
   "__version": 0
 }

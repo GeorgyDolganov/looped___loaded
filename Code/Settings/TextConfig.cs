@@ -378,6 +378,7 @@ public class HudCopy
 	[Property] public string Dash { get; set; } = "DASH";
 	[Property] public string Slow { get; set; } = "SLOW";
 	[Property] public string HurtStamp { get; set; } = "-1";
+	[Property] public string DodgeStamp { get; set; } = "DODGED";
 	[Property] public string Task { get; set; } = "NEXT";
 	[Property] public string FeedCount { get; set; } = "TOTAL BIOMASS {0} / {1}";
 	[Property] public string Objective { get; set; } = "NEXT OBJECTIVE";
@@ -386,6 +387,7 @@ public class HudCopy
 	[Property] public string Health { get; set; } = "HEALTH";
 	[Property] public string Ammo { get; set; } = "AMMO";
 	[Property] public string DashKey { get; set; } = "SPACE";
+	[Property] public string DashCoach { get; set; } = "PRESS SPACE TO DASH  ·  NO DAMAGE";
 	[Property] public string SlowKey { get; set; } = "RMB";
 	[Property] public string Fed { get; set; } = "TOTAL BIOMASS";
 	[Property] public string Threat { get; set; } = "THREAT {0}";
@@ -424,6 +426,7 @@ public class MenuCopy
 	[Property] public string CityBlurb { get; set; } = "Build frames and spend warehouse ammo.";
 	[Property] public string Saves { get; set; } = "SAVES";
 	[Property] public string SavesBlurb { get; set; } = "Autosave slots. Load or delete an altar.";
+	[Property] public string Collection { get; set; } = "COLLECTION";
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
 	[Property] public string Key3 { get; set; } = "3";
@@ -576,6 +579,7 @@ public class HelpCopy
 {
 	[Property] public string Paused { get; set; } = "1 RESUME  ·  2 MENU  ·  3 QUIT";
 	[Property] public string Saves { get; set; } = "1-3 SELECT  ·  SPACE LOAD  ·  R DELETE  ·  ESC BACK";
+	[Property] public string Collection { get; set; } = "ARROWS BROWSE  ·  ESC BACK";
 	[Property] public string Menu { get; set; } = "1 PLAY  ·  2 ALTAR  ·  3 SAVES  ·  ESC QUIT";
 	[Property] public string CityBuild { get; set; } = "LMB PLACE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
 	[Property] public string CityShoot { get; set; } = "LMB INJECT  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
@@ -613,7 +617,6 @@ public class AnnounceCopy
 	[Property] public string Recovered { get; set; } = "RECOVERED";
 	[Property] public string Linked { get; set; } = "LINKED";
 	[Property] public string HealthLeft { get; set; } = "-1  ·  {0} LEFT";
-	[Property] public string Dodged { get; set; } = "DODGED";
 	[Property] public string RunOver { get; set; } = "RUN OVER";
 	[Property] public string RingClear { get; set; } = "RING CLEAR";
 	[Property] public string FinalClear { get; set; } = "NO MORE ROUNDS  ·  ×2";

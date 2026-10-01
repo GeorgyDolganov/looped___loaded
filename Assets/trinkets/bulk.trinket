@@ -1,0 +1,24 @@
+{
+  "Id": "BULK",
+  "Title": "BULK",
+  "Pack": "Warrior",
+  "MaxLevel": 3,
+  "Sort": 7,
+  "Icon": "ui/traits/BULK-64x64.png",
+  "Blurb": "Rounds get huge.",
+  "Mods": [
+    {
+      "Stat": "Radius",
+      "Op": "Mul",
+      "Growth": "Tiers",
+      "Order": 1150,
+      "Tiers": {
+        "Level1": 2,
+        "Level2": 4,
+        "Level3": 7
+      }
+    }
+  ],
+  "__references": [],
+  "__version": 0
+}

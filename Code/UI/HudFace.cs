@@ -17,7 +17,10 @@ public sealed class HudFace : ScenePanel
 	float nod;
 	float deadMix;
 	float flinchSide = 1f;
+	float sway;
+	float swaySide = 1f;
 	int seenHealth = -1;
+	int seenDodges = -1;
 	int seenMag = -1;
 	int faceFrame;
 
@@ -189,6 +192,18 @@ public sealed class HudFace : ScenePanel
 		seenHealth = hp;
 		kick = MathF.Max( 0f, kick - dt * 2.8f );
 
+		var dodges = Loop.Dodges;
+		if ( seenDodges >= 0 && dodges > seenDodges )
+		{
+			sway = 1f;
+			swaySide = -MathF.Sign( Loop.DodgeYaw );
+			if ( swaySide == 0f )
+				swaySide = Game.Random.Float( 0f, 1f ) < 0.5f ? -1f : 1f;
+		}
+
+		seenDodges = dodges;
+		sway = MathF.Max( 0f, sway - dt * 3.2f );
+
 		var mag = Loop.Inventory.IsValid() ? Loop.Inventory.MagLoaded : seenMag;
 		if ( seenMag >= 0 && mag < seenMag )
 			nod = 1f;
@@ -207,9 +222,10 @@ public sealed class HudFace : ScenePanel
 		var idlePitch = MathF.Sin( Time.Now * 0.9f ) * 1.2f;
 		var tremble = MathF.Sin( Time.Now * (9f + missing * 14f) ) * missing * 5.5f;
 
-		var yaw = (shownYaw + idleYaw) * (1f - deadMix);
+		var dodge = sway * sway * (3f - 2f * sway);
+		var yaw = (shownYaw + idleYaw + swaySide * dodge * 18f) * (1f - deadMix);
 		var pitch = MathX.Lerp( idlePitch + missing * 18f - kick * 24f + nod * 8f, 58f, deadMix );
-		var roll = MathX.Lerp( tremble - flinchSide * kick * 10f, flinchSide * 34f, deadMix );
+		var roll = MathX.Lerp( tremble - flinchSide * kick * 10f + swaySide * dodge * 12f, flinchSide * 34f, deadMix );
 		var rot = Rotation.FromYaw( yaw ) * Rotation.FromPitch( pitch ) * Rotation.FromRoll( roll );
 
 		body.WorldRotation = rot;
@@ -217,6 +233,7 @@ public sealed class HudFace : ScenePanel
 
 		var flash = MathF.Max( Loop.HurtAmount, missing * 0.72f );
 		var tint = Color.Lerp( Color.White, new Color( 1f, 0.2f, 0.14f ), Math.Clamp( flash, 0f, 1f ) );
+		tint = Color.Lerp( tint, ShotColors.Dodge, Loop.DodgeAmount * 0.8f );
 		portrait.Tint = Color.Lerp( tint, new Color( 0.42f, 0.09f, 0.07f ), deadMix );
 	}
 

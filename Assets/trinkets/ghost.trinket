@@ -1,0 +1,25 @@
+{
+  "Id": "GHOST",
+  "Title": "GHOST",
+  "Pack": "Junior",
+  "MaxLevel": 1,
+  "Sort": 53,
+  "Icon": "ui/traits/GHOST-64x64.png",
+  "Blurb": "Rounds pass through panels, shards, and spinners.",
+  "Flags": [
+    "Ghost"
+  ],
+  "Excludes": [
+    "trinkets/electrify.trinket"
+  ],
+  "Notes": [
+    {
+      "Text": "Locks out ELECTRIFY",
+      "Sign": -1
+    }
+  ],
+  "__references": [
+    "trinkets/electrify.trinket"
+  ],
+  "__version": 1
+}

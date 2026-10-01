@@ -110,26 +110,18 @@ public sealed class PlayerAim : Component
 		}
 
 		var count = Math.Max( 1, recipe.Count );
-		var reach = recipe.PointAim ? (Cursor - Muzzle).Length : 0f;
 		var bounces = Math.Max( 0, recipe.Bounces );
 		var body = recipe.Radius > 1f ? recipe.Radius : RoundRadius;
 
 		for ( var i = 0; i < count; i++ )
 		{
 			var heading = ShotSpread.Turn( Direction, ShotSpread.Yaw( i, count, recipe.Cone ) );
-			List<Vector2> flat;
-			if ( recipe.PointAim )
-			{
-				var leg = recipe.Falloff > 1f ? MathF.Min( reach, recipe.Falloff ) : reach;
-				flat = new List<Vector2> { Muzzle, Clip( Muzzle, heading, leg ) };
-			}
-			else
-			{
-				var budget = recipe.Falloff > 1f ? recipe.Falloff : PreviewLength;
-				var first = MathF.Min( PreviewLength, budget );
-				var bounceLeg = recipe.Falloff > 1f ? MathF.Min( PreviewBounceLength, MathF.Max( 0f, budget - first ) ) : PreviewBounceLength;
-				flat = Arena.Geometry.PredictPath( Muzzle, heading, body, first, bounceLeg, bounces );
-			}
+			var budget = recipe.Falloff > 1f ? recipe.Falloff : PreviewLength;
+			var first = MathF.Min( PreviewLength, budget );
+			var bounceLeg = recipe.Falloff > 1f ? MathF.Min( PreviewBounceLength, MathF.Max( 0f, budget - first ) ) : PreviewBounceLength;
+			var flat = Arena.Geometry.PredictPath( Muzzle, heading, body, first, bounceLeg, bounces, ghost: recipe.Ghost );
+			if ( recipe.Fetch && Runner.IsValid() && flat.Count > 0 )
+				flat.Add( Runner.Flat );
 
 			PaintPath( Take( paths, i, "Aim Path" ), flat, tint, 3f );
 			if ( recipe.Splash > 1f && flat.Count > 0 )
@@ -138,18 +130,6 @@ public sealed class PlayerAim : Component
 
 		Hide( paths, count );
 		Hide( rings, recipe.Splash > 1f ? count : 0 );
-	}
-
-	Vector2 Clip( Vector2 origin, Vector2 dir, float range )
-	{
-		if ( range <= 1f || dir.Length <= 0.01f )
-			return origin;
-
-		var heading = dir.Normal;
-		if ( Arena.Geometry.TraceRay( origin, heading, range, out var hit ) )
-			return hit.Position;
-
-		return origin + heading * range;
 	}
 
 	PolyLine Take( List<PolyLine> list, int index, string name )

@@ -1,0 +1,14 @@
+{
+  "Id": "IGNORANCE",
+  "Title": "IGNORANCE",
+  "Pack": "Rocket",
+  "MaxLevel": 1,
+  "Sort": 21,
+  "Icon": "ui/traits/IGNORANCE-64x64.png",
+  "Blurb": "Your explosions do not hurt you.",
+  "Flags": [
+    "NoFriendlySplash"
+  ],
+  "__references": [],
+  "__version": 0
+}

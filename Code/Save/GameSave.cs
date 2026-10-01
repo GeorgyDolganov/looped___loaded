@@ -68,7 +68,8 @@ public enum MenuPage
 {
 	Title,
 	Saves,
-	Settings
+	Settings,
+	Collection
 }
 
 public enum SettingRow
@@ -84,6 +85,7 @@ public enum MenuChoice
 	Continue,
 	Upgrades,
 	Saves,
+	Collection,
 	Settings,
 	Quit
 }

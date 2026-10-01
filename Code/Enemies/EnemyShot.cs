@@ -9,6 +9,7 @@ public sealed class EnemyShot : Component
 	public GameLoop Loop { get; private set; }
 	public Vector2 Flat { get; private set; }
 	public Vector2 Direction { get; private set; }
+	public bool Dodged { get; private set; }
 
 	const int TrailPoints = 10;
 
@@ -16,6 +17,7 @@ public sealed class EnemyShot : Component
 	ArenaGeometry geometry;
 	GameObject bolt;
 	PolyLine trailLine;
+	PointLight glow;
 	float born;
 
 	public static void Fire( GameLoop loop, Vector2 origin, Vector2 direction, float speed = 0f )
@@ -46,6 +48,30 @@ public sealed class EnemyShot : Component
 		born += dt;
 	}
 
+	public void Slip()
+	{
+		if ( Dodged )
+			return;
+
+		Dodged = true;
+		var ghost = (ShotColors.Enemy * 0.5f).WithAlpha( 0.35f );
+
+		var renderer = bolt.IsValid() ? bolt.GetComponent<ModelRenderer>() : null;
+		if ( renderer.IsValid() )
+			renderer.Tint = ghost;
+
+		if ( trailLine.IsValid() )
+		{
+			trailLine.HeadTint = ghost;
+			trailLine.TailTint = ghost.WithAlpha( 0f );
+			trailLine.HeadWidth = 8f;
+			trailLine.Apply();
+		}
+
+		if ( glow.IsValid() )
+			glow.LightColor = ShotColors.Enemy * 1.5f;
+	}
+
 	protected override void OnStart() => BuildVisuals();
 
 	void BuildVisuals()
@@ -56,7 +82,7 @@ public sealed class EnemyShot : Component
 		bolt = Blocks.SpawnBox( GameObject, "Bolt", WorldPosition, Blocks.FlatFacing( Direction ),
 			new Vector3( 42f, 16f, 16f ), ShotColors.Enemy, false );
 
-		GraphicsApply.AddShotLight( GameObject, ShotColors.Enemy * 7f, 280f );
+		glow = GraphicsApply.AddShotLight( GameObject, ShotColors.Enemy * 7f, 280f );
 
 		var trailObject = Scene.CreateObject();
 		trailObject.Name = "Trail";

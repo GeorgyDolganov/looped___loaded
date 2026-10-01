@@ -23,6 +23,14 @@
 			</div>
 		}
 
+		@if ( !Loop.InCity && !Loop.InMenu && Loop.DodgeAmount > 0.01f )
+		{
+			<div class="dodge-veil"></div>
+			<div class="dodge-stamp">
+				<label>@GameSettings.Text.Hud.DodgeStamp</label>
+			</div>
+		}
+
 		@if ( !Loop.InCity && !Loop.InMenu && Loop.Inventory.IsValid() )
 		{
 			<div class="run-left">
@@ -91,6 +99,12 @@
 				</div>
 			</div>
 
+			@if ( Loop.DashCoach )
+			{
+				<div class="dash-coach">
+					<label>@GameSettings.Text.Hud.DashCoach</label>
+				</div>
+			}
 			<div class="tray-frame">
 				<img class="tray-back" src="ui/Arena UI/back.png" />
 				<HudFace class="face-slot" Loop="@Loop"></HudFace>
@@ -99,7 +113,7 @@
 					<div class="hp-row">
 						@for ( var i = 0; i < Loop.HeartMax; i++ )
 						{
-							<img class="hp @(i < Loop.Health ? "live" : "dead") @(i < Loop.Health && Loop.HurtAmount > 0.08f ? "sting" : "")" src="@(i < Loop.Health ? "ui/Arena UI/health.png" : "ui/Arena UI/health_empty.png")" />
+							<img class="hp @(i < Loop.Health ? "live" : "dead") @(i < Loop.Health && Loop.HurtAmount > 0.08f ? "sting" : "") @(i < Loop.Health && Loop.DodgeAmount > 0.08f ? "guard" : "")" src="@(i < Loop.Health ? "ui/Arena UI/health.png" : "ui/Arena UI/health_empty.png")" />
 						}
 					</div>
 				</div>
@@ -117,7 +131,7 @@
 								<img class="charge-layer" src="ui/Arena UI/dash.png" />
 							</div>
 						</div>
-						<label class="meter-hint">@GameSettings.Text.Hud.DashKey</label>
+						<label class="meter-hint @(Loop.DashCoach ? "coach" : "")">@GameSettings.Text.Hud.DashKey</label>
 					</div>
 					@if ( SlowUnlocked )
 					{
@@ -338,6 +352,82 @@
 			</div>
 		}
 
+		@if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Collection )
+		{
+			<div class="overlay title collection">
+				<div class="title-scrim"></div>
+				<div class="col-page">
+					<label class="page-title">@GameSettings.Text.Menu.Collection</label>
+					<div class="col-body">
+						<div class="col-grid" @ref="collectionGrid">
+							@for ( var row = 0; row < CollectionRows; row++ )
+							{
+								<div class="col-row">
+									@for ( var col = 0; col < GameLoop.CollectionColumns; col++ )
+									{
+										var index = row * GameLoop.CollectionColumns + col;
+										if ( index < Trinkets.Every.Count )
+										{
+											var card = Trinkets.Every[index];
+											<div class="col-tile @(Loop.CollectionIndex == index ? "on" : "")" style="border-color: @TraitBorder(card)" @key="@card.Id" onmouseover="@(() => FocusTrinket( index ))" onclick="@(() => FocusTrinket( index ))">
+												<img class="col-icon" src="@card.IconPath" />
+												<label class="col-name">@card.ShownTitle</label>
+											</div>
+										}
+									}
+								</div>
+							}
+						</div>
+						@if ( CollectionCard is TrinketDef picked )
+						{
+							<div class="col-detail">
+								<div class="col-lead">
+									<img class="col-portrait" src="@picked.IconPath" />
+									<div class="col-names">
+										<label class="col-title">@picked.ShownTitle</label>
+										<label class="col-rarity" style="color: @TraitInk(picked)">@GameSettings.Text.RarityOf(picked.Pack)</label>
+										@if ( Trinkets.IsWeapon( picked ) )
+										{
+											<label class="col-weapon">@GameSettings.Text.Shop.Weapon</label>
+										}
+										@if ( CollectionRank( picked ) is { Length: > 0 } rank )
+										{
+											<label class="col-rank">@rank</label>
+										}
+									</div>
+								</div>
+								@if ( OfferBlurb( picked ) is { Length: > 0 } blurb )
+								{
+									<label class="col-blurb">@blurb</label>
+								}
+								@if ( OfferLocks( picked ) is { Length: > 0 } locks )
+								{
+									<label class="col-blurb">@locks</label>
+								}
+								@if ( OfferUnlocks( picked ) is { Length: > 0 } opens )
+								{
+									<label class="col-blurb">@opens</label>
+								}
+								<div class="col-stats">
+									@foreach ( var line in CollectionStats( picked ) )
+									{
+										<label class="stat @line.Class">@line.Text</label>
+									}
+								</div>
+							</div>
+						}
+					</div>
+					<div class="rail-list quiet col-back">
+						<div class="rail-row back" onclick="@BackFromCollection">
+							<img class="row-plate" src="ui/Arena UI/long_button.png" />
+							<div class="row-tint"></div>
+							<label class="row-title">@GameSettings.Text.Options.Back</label>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+
 		@if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Settings )
 		{
 			<div class="overlay title">
@@ -518,6 +608,7 @@
 						<div class="card shop-offer @OfferClass(trait, bought)" style="border-color: @TraitBorder(trait)" @key="@(trait?.Id)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
 							<img class="shop-plate" src="@(Loop.Offers[index].LeftPlate ? "ui/Arena UI/element_shop_left_btn.png" : "ui/Arena UI/element_shop_right_btn.png")" />
 							<div class="shop-body">
+								<img class="shop-icon" src="@trait.IconPath" />
 								<div class="shop-name">
 									<label class="title">@trait.ShownTitle</label>
 									@if ( Trinkets.IsWeapon( trait ) )
@@ -711,9 +802,32 @@
 		TickSettingDrag();
 		TickTraySize();
 		TickHurtVeil();
+		TickCollectionList();
 
 		if ( Loop.Phase != RunPhase.PickTrait )
 			shopHover = -1;
+	}
+
+	bool collectionListed;
+	int revealedCollection = -1;
+
+	void TickCollectionList()
+	{
+		var open = Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Collection;
+		if ( !open )
+		{
+			collectionListed = false;
+			revealedCollection = -1;
+			return;
+		}
+
+		if ( !collectionListed )
+		{
+			collectionListed = true;
+			Trinkets.Refresh();
+		}
+
+		RevealCollection();
 	}
 
 	void Resume() => Loop?.Resume();
@@ -741,12 +855,15 @@
 		get
 		{
 			var copy = GameSettings.Text.Menu;
-			return new()
+			var rows = new List<(MenuChoice Item, string Title, string Key)>
 			{
-				(MenuChoice.Continue, Loop.IsValid() && Loop.HasActiveSave ? copy.Continue : copy.Play, copy.Key1),
-				(MenuChoice.Upgrades, "ALTAR", copy.Key2),
-				(MenuChoice.Saves, copy.Saves, copy.Key3)
+				(MenuChoice.Continue, Loop.IsValid() && Loop.HasActiveSave ? copy.Continue : copy.Play, copy.Key1)
 			};
+			if ( Loop.IsValid() && Loop.HasActiveSave )
+				rows.Add( (MenuChoice.Upgrades, "ALTAR", copy.Key2) );
+			rows.Add( (MenuChoice.Saves, copy.Saves, copy.Key3) );
+			rows.Add( (MenuChoice.Collection, copy.Collection, "" ) );
+			return rows;
 		}
 	}
 
@@ -754,6 +871,95 @@
 	{
 		Loop?.NoteUiClick();
 		Loop?.CloseSettings();
+	}
+
+	void BackFromCollection()
+	{
+		Loop?.NoteUiClick();
+		Loop?.CloseCollection();
+	}
+
+	Sandbox.UI.Panel collectionGrid;
+
+	void FocusTrinket( int index )
+	{
+		Loop?.FocusCollection( index );
+		RevealCollection();
+	}
+
+	void RevealCollection()
+	{
+		if ( collectionGrid is null || !Loop.IsValid() )
+			return;
+
+		var view = collectionGrid.Box.Rect.Height;
+		if ( view < 1f || revealedCollection == Loop.CollectionIndex )
+			return;
+
+		revealedCollection = Loop.CollectionIndex;
+		const float rowPitch = 110f;
+		var row = Loop.CollectionIndex / GameLoop.CollectionColumns;
+		var top = row * rowPitch;
+		var offset = collectionGrid.ScrollOffset.y;
+		var bottom = top + rowPitch;
+		if ( top < offset )
+			collectionGrid.ScrollOffset = new Vector2( 0f, top );
+		else if ( bottom > offset + view )
+			collectionGrid.ScrollOffset = new Vector2( 0f, bottom - view );
+	}
+
+	int CollectionRows
+	{
+		get
+		{
+			var count = Trinkets.Every.Count;
+			if ( count == 0 )
+				return 0;
+
+			return (count + GameLoop.CollectionColumns - 1) / GameLoop.CollectionColumns;
+		}
+	}
+
+	TrinketDef CollectionCard
+	{
+		get
+		{
+			var cards = Trinkets.Every;
+			if ( !Loop.IsValid() || cards.Count == 0 )
+				return null;
+
+			return cards[Math.Clamp( Loop.CollectionIndex, 0, cards.Count - 1 )];
+		}
+	}
+
+	string CollectionRank( TrinketDef card )
+	{
+		if ( card is null || !Trinkets.ShowRank( card ) )
+			return "";
+
+		if ( card.Cap <= 1 )
+			return GameSettings.Text.F( GameSettings.Text.Shop.OfferRank, 1 );
+
+		return $"LV 1–{card.Cap}";
+	}
+
+	List<StatLine> CollectionStats( TrinketDef card )
+	{
+		var lines = new List<StatLine>();
+		if ( card is null )
+			return lines;
+
+		var cap = Math.Max( 1, card.Cap );
+		for ( var rank = 1; rank <= cap; rank++ )
+		{
+			foreach ( var line in StatSheet.Effects( card, rank ) )
+			{
+				var text = cap > 1 ? $"LV {rank}  {line.Text}" : line.Text;
+				lines.Add( new StatLine( text, line.Sign, line.Mixed ) );
+			}
+		}
+
+		return lines;
 	}
 
 	void CycleGraphics()
@@ -1045,6 +1251,9 @@
 			if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Saves )
 				return GameSettings.Text.Help.Saves;
 
+			if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Collection )
+				return GameSettings.Text.Help.Collection;
+
 			if ( Loop.Phase == RunPhase.Menu )
 				return "";
 
@@ -1165,8 +1374,10 @@
 				return;
 
 			var name = ex.ShownTitle;
-			if ( name.Length > 0 && !names.Contains( name ) )
-				names.Add( name );
+			if ( string.IsNullOrWhiteSpace( name ) || names.Contains( name ) )
+				return;
+
+			names.Add( name );
 		}
 
 		foreach ( var ex in Trinkets.ExcludesOf( trait ) )
@@ -1287,6 +1498,7 @@
 	Sandbox.UI.Panel shopSheet;
 	Sandbox.UI.Panel healthRow;
 	Sandbox.UI.Panel dashSlot;
+	Sandbox.UI.Panel dashCoach;
 	Sandbox.UI.Panel hotCard;
 	int shopHover = -1;
 	const float HudScale = 0.8f;
@@ -1353,6 +1565,28 @@
 			shopSheet.Style.Bottom = Sandbox.UI.Length.Pixels( height + 16f );
 			shopSheet.Style.Dirty();
 		}
+
+		PlaceDashCoach( height );
+	}
+
+	void PlaceDashCoach( float trayHeight )
+	{
+		if ( !Loop.DashCoach )
+		{
+			dashCoach = null;
+			return;
+		}
+
+		if ( !dashCoach.IsValid() )
+			dashCoach = FindHud( "dash-coach" );
+
+		if ( !dashCoach.IsValid() )
+			return;
+
+		dashCoach.Style.Position = Sandbox.UI.PositionMode.Absolute;
+		dashCoach.Style.Bottom = Sandbox.UI.Length.Pixels( trayHeight + 14f );
+		dashCoach.Style.Right = Sandbox.UI.Length.Percent( 12f );
+		dashCoach.Style.Dirty();
 	}
 
 	void PlaceHealthIcons()
@@ -1659,13 +1893,13 @@
 			Loop.Scrap,
 			Loop.Kills,
 			mag,
-			Loop.HurtAmount > 0.01f );
+			System.HashCode.Combine( Loop.HurtAmount > 0.01f, Loop.DodgeAmount > 0.01f, Loop.DodgeAmount > 0.08f ) );
 
 		var b = System.HashCode.Combine(
 			Loop.Notice,
 			Loop.NoticeVisible,
 			TimeText,
-			System.HashCode.Combine( Loop.Paused, Loop.Talking ),
+			System.HashCode.Combine( Loop.Paused, Loop.Talking, Loop.DashCoach, Loop.CollectionIndex, menu && Loop.MenuView == MenuPage.Collection ? Trinkets.Every.Count : 0 ),
 			(int)Loop.MenuView,
 			(int)Loop.MenuFocus,
 			(int)Loop.SettingCursor,
@@ -1856,6 +2090,67 @@
 	.notice.hurt label {
 		color: #ff5742;
 		font-size: 42px;
+	}
+
+	.dodge-veil {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(140, 230, 255, 0.06);
+		border: 20px solid #9fefff;
+		opacity: 0;
+		animation-name: dodge-veil;
+		animation-duration: 0.6s;
+		animation-timing-function: ease-out;
+		animation-fill-mode: forwards;
+	}
+
+	.dodge-stamp {
+		position: absolute;
+		top: 26%;
+		width: 100%;
+		justify-content: center;
+		opacity: 0;
+		animation-name: dodge-pop;
+		animation-duration: 0.6s;
+		animation-timing-function: ease-out;
+		animation-fill-mode: forwards;
+	}
+
+	.dodge-stamp label {
+		font-size: 74px;
+		font-weight: 800;
+		letter-spacing: 10px;
+		color: #c8f6ff;
+		text-shadow: 0px 0px 28px rgba(110, 225, 255, 0.95);
+	}
+
+	@@keyframes dodge-veil {
+		0% {
+			opacity: 0.8;
+		}
+		100% {
+			opacity: 0;
+		}
+	}
+
+	@@keyframes dodge-pop {
+		0% {
+			opacity: 0;
+			transform: scale( 1.6 ) translateY( 0px );
+		}
+		18% {
+			opacity: 1;
+			transform: scale( 1 ) translateY( 0px );
+		}
+		70% {
+			opacity: 1;
+			transform: scale( 1 ) translateY( -6px );
+		}
+		100% {
+			opacity: 0;
+			transform: scale( 1 ) translateY( -20px );
+		}
 	}
 
 	.clock {
@@ -3651,6 +3946,13 @@
 		margin-bottom: 16px;
 	}
 
+	.shop-offer .shop-icon {
+		width: 64px;
+		height: 64px;
+		margin-bottom: 8px;
+		align-self: flex-start;
+	}
+
 	.shop-name {
 		flex-direction: row;
 		align-items: flex-end;
@@ -4457,6 +4759,38 @@
 		pointer-events: none;
 	}
 
+	.dash-coach {
+		position: absolute;
+		right: 12%;
+		bottom: 18%;
+		z-index: 40;
+		justify-content: flex-end;
+		pointer-events: none;
+		animation-name: dash-coach-in;
+		animation-duration: 0.18s;
+		animation-timing-function: ease-out;
+	}
+
+	.dash-coach label {
+		font-size: 22px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #f0b429;
+		white-space: nowrap;
+		text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0px 2px 0 #000, 0px -2px 0 #000, 2px 0px 0 #000, -2px 0px 0 #000;
+	}
+
+	@@keyframes dash-coach-in {
+		from {
+			opacity: 0;
+			transform: translateY( 8px );
+		}
+		to {
+			opacity: 1;
+			transform: translateY( 0px );
+		}
+	}
+
 	.dash-slot {
 		position: absolute;
 		left: 72.64%;
@@ -4494,6 +4828,10 @@
 		letter-spacing: 1px;
 		color: #a39c91;
 		flex-shrink: 0;
+	}
+
+	.meter-hint.coach {
+		color: #f0b429;
 	}
 
 	.charge-meter {
@@ -4584,6 +4922,10 @@
 		opacity: 0.45;
 	}
 
+	.hp.guard {
+		transform: scale( 1.2 );
+	}
+
 	.round {
 		width: 14px;
 		height: 34px;
@@ -4629,7 +4971,7 @@
 	.rail {
 		position: absolute;
 		left: 72px;
-		top: 62px;
+		top: 40px;
 		width: 600px;
 		flex-direction: column;
 		align-items: flex-start;
@@ -4656,7 +4998,7 @@
 		flex-direction: row;
 		align-items: center;
 		margin-top: 20px;
-		margin-bottom: 38px;
+		margin-bottom: 16px;
 	}
 
 	.rule-bar {
@@ -5148,6 +5490,194 @@
 			opacity: 1;
 			transform: translateY( 0px );
 		}
+	}
+
+	.collection .col-page {
+		position: absolute;
+		left: 64px;
+		top: 28px;
+		right: 48px;
+		bottom: 36px;
+		z-index: 1;
+		flex-direction: column;
+		align-items: stretch;
+		overflow: hidden;
+	}
+
+	.collection .page-title {
+		flex-shrink: 0;
+		margin-bottom: 18px;
+	}
+
+	.collection .col-body {
+		position: absolute;
+		left: 0px;
+		right: 0px;
+		top: 82px;
+		bottom: 96px;
+		flex-direction: row;
+		overflow: hidden;
+	}
+
+	.collection .col-grid {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		bottom: 0px;
+		width: 760px;
+		flex-direction: column;
+		align-items: flex-start;
+		overflow: scroll;
+		pointer-events: all;
+	}
+
+	.collection .col-row {
+		flex-direction: row;
+		flex-shrink: 0;
+	}
+
+	.collection .col-tile {
+		width: 86px;
+		height: 102px;
+		margin-right: 8px;
+		margin-bottom: 8px;
+		flex-shrink: 0;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		background-color: rgba(16, 17, 19, 0.9);
+		border: 2px solid rgba(255, 255, 255, 0.18);
+		pointer-events: all;
+		cursor: pointer;
+	}
+
+	.collection .col-tile.on {
+		background-color: rgba(240, 180, 41, 0.16);
+		box-shadow: 0px 0px 0px 2px #f0b429;
+	}
+
+	.collection .col-icon {
+		width: 64px;
+		height: 64px;
+		pointer-events: none;
+	}
+
+	.collection .col-name {
+		width: 78px;
+		height: 16px;
+		margin-top: 4px;
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.4px;
+		text-align: center;
+		color: #efe6d8;
+		white-space: nowrap;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.collection .col-detail {
+		position: absolute;
+		left: 788px;
+		top: 0px;
+		right: 0px;
+		bottom: 0px;
+		padding: 22px 26px;
+		flex-direction: column;
+		align-items: flex-start;
+		background-color: rgba(8, 8, 10, 0.88);
+		border-left: 4px solid #f0b429;
+		overflow: scroll;
+		pointer-events: all;
+	}
+
+	.collection .col-lead {
+		flex-direction: row;
+		align-items: center;
+		margin-bottom: 14px;
+		flex-shrink: 0;
+	}
+
+	.collection .col-portrait {
+		width: 64px;
+		height: 64px;
+		margin-right: 18px;
+		flex-shrink: 0;
+		background-color: rgba(255, 255, 255, 0.04);
+	}
+
+	.collection .col-names {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.collection .col-title {
+		font-family: Anton;
+		font-size: 52px;
+		line-height: 52px;
+		letter-spacing: 2px;
+		color: #f4ece0;
+	}
+
+	.collection .col-rarity,
+	.collection .col-weapon,
+	.collection .col-rank {
+		margin-top: 4px;
+		font-size: 20px;
+		font-weight: 700;
+		letter-spacing: 2px;
+	}
+
+	.collection .col-weapon,
+	.collection .col-rank {
+		color: #f0b429;
+	}
+
+	.collection .col-blurb {
+		font-size: 22px;
+		line-height: 26px;
+		color: #cdc6ba;
+		margin-bottom: 8px;
+		white-space: normal;
+	}
+
+	.collection .col-stats {
+		flex-direction: column;
+		align-items: flex-start;
+		margin-top: 6px;
+	}
+
+	.collection .col-stats .stat {
+		font-size: 22px;
+		font-weight: 700;
+		margin-top: 2px;
+	}
+
+	.collection .col-stats .stat.up {
+		color: #4fe07a;
+	}
+
+	.collection .col-stats .stat.down {
+		color: #e0453a;
+	}
+
+	.collection .col-stats .stat.note {
+		color: #d8c9a0;
+	}
+
+	.collection .col-stats .stat.mixed {
+		color: #f0b429;
+	}
+
+	.collection .col-back {
+		position: absolute;
+		left: 0px;
+		bottom: 0px;
+		width: 520px;
+	}
+
+	.collection .col-back .rail-row.back {
+		margin-top: 14px;
 	}
 
 	@@keyframes cursor-pulse {

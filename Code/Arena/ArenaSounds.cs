@@ -4,7 +4,7 @@ public static class ArenaSounds
 {
 	const int Studio = 44100;
 	const int Rate = 22050;
-	const int Bank = 7;
+	const int Bank = 8;
 
 	static readonly Dictionary<string, SoundEvent> events = new();
 	static int built;
@@ -46,6 +46,7 @@ public static class ArenaSounds
 	public static void Change() => Play( "change", null );
 	public static void Deny() => Play( "deny", null );
 	public static void Jump( Vector3? at = null ) => Play( "jump", at );
+	public static void Dodge( Vector3? at = null ) => Play( "dodge", at );
 	public static void Pain( Vector3? at = null ) => Play( "pain", at );
 	public static void Death( Vector3? at = null ) => Play( "death", at );
 	public static void Armor( Vector3? at = null ) => Play( "armor", at );
@@ -103,6 +104,7 @@ public static class ArenaSounds
 		Put( "change", true, 0.7f, 0.03f, 1, _ => ClipChange() );
 		Put( "deny", true, 0.7f, 0.03f, 1, _ => ClipDeny() );
 		Put( "jump", false, 0.86f, 0.07f, 2, ClipJump );
+		Put( "dodge", false, 0.84f, 0.06f, 2, ClipDodge );
 		Put( "pain", false, 0.92f, 0.06f, 2, ClipPain );
 		Put( "death", false, 1f, 0.04f, 1, _ => ClipDeath() );
 		Put( "armor", false, 0.88f, 0.05f, 1, _ => ClipArmor() );
@@ -712,6 +714,31 @@ public static class ArenaSounds
 				+ Sine( MathF.Max( 34f, 78f - t * 160f ) * t ) * Env( t, 0.003f, 14f ) * 0.95f );
 			if ( t < 0.04f )
 				Stamp( buf, i + dPlate, lp * Env( t, 0.002f, 30f ) * 0.7f );
+		}
+
+		return buf;
+	}
+
+	static float[] ClipDodge( int v )
+	{
+		var rng = new Random( 960 + v );
+		var n = Len( 0.32f );
+		var buf = new float[n];
+		float lo = 0f;
+		float hi = 0f;
+		var dGlint = Ms( 30f );
+		for ( var i = 0; i < n; i++ )
+		{
+			var t = i / (float)Studio;
+			var noise = Noise( rng );
+			var sweep = 0.05f + 0.32f * MathF.Sin( MathF.PI * Math.Clamp( t / 0.24f, 0f, 1f ) );
+			lo += (noise - lo) * sweep;
+			hi += (lo - hi) * sweep * 0.35f;
+			var swell = t < 0.06f ? t / 0.06f : MathF.Exp( -(t - 0.06f) * 13f );
+			Stamp( buf, i, (lo - hi) * swell * 1.5f );
+			var chirp = 1250f + v * 160f + t * 2200f;
+			Stamp( buf, i + dGlint, Sine( chirp * t ) * Env( t, 0.002f, 24f ) * 0.24f
+				+ Sine( chirp * 1.5f * t ) * Env( t, 0.002f, 34f ) * 0.1f );
 		}
 
 		return buf;

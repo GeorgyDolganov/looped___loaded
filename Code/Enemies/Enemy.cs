@@ -59,6 +59,7 @@ public sealed class Enemy : Component
 	float headTop;
 	float barWidth;
 	Vector2 moveVelocity;
+	Vector2 shove;
 	float hitAt = -99f;
 	float bleedUntil = -99f;
 	float nextBleed;
@@ -132,6 +133,7 @@ public sealed class Enemy : Component
 		var toPlayer = Loop.IsValid() && Loop.Runner.IsValid() ? Loop.Runner.Flat - Flat : -Flat;
 		drive.Reset( toPlayer );
 		moveVelocity = Vector2.Zero;
+		shove = Vector2.Zero;
 		lastImpulse = Vector2.Right;
 		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
 		RebuildVisuals();
@@ -147,12 +149,7 @@ public sealed class Enemy : Component
 	public bool BlocksFrom( Vector2 incoming, RoundProjectile source, bool asBounce = false, Vector2 from = default, bool ignorePlate = false )
 	{
 		if ( Kind == EnemyKind.Core )
-		{
-			if ( source is not null && source.Flight.IgnoreArmor )
-				return false;
-
 			return !asBounce && (source is null || source.Ricochets <= 0);
-		}
 
 		if ( Kind == EnemyKind.Lens )
 			return BlocksLens( incoming, source, from );
@@ -161,9 +158,6 @@ public sealed class Enemy : Component
 			return false;
 
 		if ( ignorePlate )
-			return false;
-
-		if ( source is not null && source.Flight.IgnoreArmor )
 			return false;
 
 		if ( !Loop.IsValid() || !Loop.Runner.IsValid() )
@@ -219,13 +213,35 @@ public sealed class Enemy : Component
 		attackUntil = MathF.Max( attackUntil, Time.Now + duration );
 	}
 
+	const float ShoveDrag = 3.2f;
+
 	public void Shove( Vector2 delta )
 	{
-		if ( !Alive || Locations.IsBoss( Kind ) || delta.Length < 0.01f || !Arena.IsValid() )
+		if ( !Alive || Locations.IsBoss( Kind ) || delta.Length < 0.01f )
+			return;
+
+		shove += delta * ShoveDrag;
+		var cap = 220f * ShoveDrag * 2f;
+		if ( shove.Length > cap )
+			shove = shove.Normal * cap;
+
+		lastImpulse = delta.Normal;
+	}
+
+	void SlideShove()
+	{
+		if ( shove.Length < 16f || !Arena.IsValid() )
+		{
+			shove = Vector2.Zero;
+			return;
+		}
+
+		var dt = Time.Delta;
+		if ( dt <= 0.0001f )
 			return;
 
 		var pos = Flat;
-		Arena.Geometry.MoveBody( ref pos, delta, Radius, true );
+		Arena.Geometry.MoveBody( ref pos, shove * dt, Radius, true );
 		var length = pos.Length;
 		var inner = Arena.Geometry.CoreRadius + GameSettings.Enemies.ShoveInnerPad;
 		var track = Arena.Geometry.TrackRadius - GameSettings.Enemies.TrackPad;
@@ -237,7 +253,7 @@ public sealed class Enemy : Component
 			pos = pos.Normal * track;
 
 		Flat = pos;
-		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
+		shove *= MathF.Exp( -ShoveDrag * dt );
 	}
 
 	public void Damage( int amount, float freezeDuration, float freezeScale )
@@ -518,7 +534,8 @@ public sealed class Enemy : Component
 		}
 
 		Separate();
-		moveVelocity = drive.Velocity;
+		SlideShove();
+		moveVelocity = drive.Velocity + shove;
 		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
 	}
 

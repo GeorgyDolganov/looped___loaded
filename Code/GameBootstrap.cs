@@ -24,7 +24,7 @@ public sealed class GameBootstrap : Component
 		TrimDuplicates();
 		ArenaSounds.Warm();
 		loop.RestoreSaves();
-		loop.ShowMenu();
+		loop.BeginVisit();
 		UserSettings.Load();
 		GraphicsApply.Push( Scene );
 	}

@@ -1,0 +1,29 @@
+{
+  "Id": "CASSETTE",
+  "Title": "CASSETTE",
+  "Pack": "Rocket",
+  "MaxLevel": 3,
+  "Sort": 18,
+  "Icon": "ui/traits/CASETTE-64x64.png",
+  "Blurb": "Projectiles can explode +1/2/3 times after they already exploded.",
+  "Requires": [
+    "trinkets/warhead.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "ExtraSplash",
+      "Op": "Add",
+      "Growth": "Tiers",
+      "Order": 1210,
+      "Tiers": {
+        "Level1": 1,
+        "Level2": 2,
+        "Level3": 3
+      }
+    }
+  ],
+  "__references": [
+    "trinkets/warhead.trinket"
+  ],
+  "__version": 0
+}

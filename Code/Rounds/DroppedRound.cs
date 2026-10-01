@@ -65,7 +65,7 @@ public sealed class DroppedRound : Component
 		return gap;
 	}
 
-	public bool Crosses( float gap, float playerArc, float dashArc, float track )
+	public bool Crosses( float gap, float playerArc, float dashArc, float track, float pace )
 	{
 		if ( track < 1f || dashArc <= 0.001f )
 			return false;
@@ -73,11 +73,11 @@ public sealed class DroppedRound : Component
 		if ( gap <= StopGap )
 			return playerArc > 0.001f;
 
-		var closing = (playerArc + ChaseSpeed * RealTime.Delta + dashArc) / track;
+		var closing = (playerArc + ChaseSpeed * pace * RealTime.Delta + dashArc) / track;
 		return closing >= gap;
 	}
 
-	public void Roll( float playerAngle, float dashArc, float track )
+	public void Roll( float playerAngle, float dashArc, float track, float pace )
 	{
 		if ( track < 1f )
 			return;
@@ -87,7 +87,7 @@ public sealed class DroppedRound : Component
 			return;
 
 		var ang = MathF.Atan2( Flat.y, Flat.x );
-		var step = (ChaseSpeed * RealTime.Delta + MathF.Max( 0f, dashArc )) / track;
+		var step = (ChaseSpeed * pace * RealTime.Delta + MathF.Max( 0f, dashArc )) / track;
 		SetFlat( ArenaGeometry.FromAngle( ang + MathF.Min( step, gap - StopGap ) ) * track );
 	}
 

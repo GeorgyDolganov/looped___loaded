@@ -14,6 +14,8 @@ public sealed class RingRunner : Component
 	[Property] public float PlayerRadius { get; set; } = 48f;
 	[Property] public float ClearSpeedScale { get; set; } = 4.5f;
 	[Property] public float ClearSpeedRamp { get; set; } = 0.5f;
+	[Property] public float JukeDistance { get; set; } = 38f;
+	[Property] public float JukeTime { get; set; } = 0.34f;
 
 	public float Angle { get; private set; }
 	public float TravelledArc { get; private set; }
@@ -38,6 +40,9 @@ public sealed class RingRunner : Component
 	SkinnedModelRenderer warlord;
 	Vector3 warlordVelocity;
 	Vector3 warlordLook;
+	Vector3 warlordRest;
+	Vector2 jukeSide;
+	float jukeAt = -99f;
 	readonly List<(ModelRenderer Renderer, Color Tint)> meshes = new();
 
 	float startSpeed;
@@ -92,6 +97,12 @@ public sealed class RingRunner : Component
 		ApplyTransform();
 	}
 
+	public void JumpToLap( int lap, float startAngle )
+	{
+		ResetLap( startAngle );
+		TravelledArc = MathF.Tau * Radius * Math.Max( 0, lap - 1 ) + 1f;
+	}
+
 	public void ApplyCity( CityStats stats )
 	{
 		CaptureStart();
@@ -104,6 +115,12 @@ public sealed class RingRunner : Component
 	{
 		CaptureStart();
 		Speed = startSpeed * Progression.Pace( lap );
+	}
+
+	public void Juke( Vector2 side )
+	{
+		jukeSide = side.Length > 0.01f ? side.Normal : Vector2.Zero;
+		jukeAt = RealTime.Now;
 	}
 
 	public bool TryDash()
@@ -165,6 +182,7 @@ public sealed class RingRunner : Component
 			ApplyTransform();
 			EnsureWarlord();
 			DriveWarlord();
+			PaintJuke();
 			PaintHurt();
 			return;
 		}
@@ -193,6 +211,7 @@ public sealed class RingRunner : Component
 		ApplyTransform();
 		EnsureWarlord();
 		DriveWarlord();
+		PaintJuke();
 		PaintHurt();
 	}
 
@@ -219,6 +238,7 @@ public sealed class RingRunner : Component
 					continue;
 
 				warlord = skin;
+				warlordRest = skin.GameObject.LocalPosition;
 				break;
 			}
 		}
@@ -252,6 +272,7 @@ public sealed class RingRunner : Component
 		}
 
 		warlord = WarlordLook.Attach( GameObject );
+		warlordRest = warlord.IsValid() ? warlord.GameObject.LocalPosition : Vector3.Zero;
 		meshes.Clear();
 	}
 
@@ -295,7 +316,10 @@ public sealed class RingRunner : Component
 		}
 
 		var hurt = Loop.IsValid() ? Loop.HurtAmount : 0f;
+		var dodge = Loop.IsValid() ? Loop.DodgeAmount : 0f;
+		var guard = Loop.IsValid() && Loop.DodgeGuard;
 		var blink = Loop.IsValid() && Loop.Invulnerable && (RealTime.Now * 16f % 1f) < 0.5f;
+		var blinkTint = guard ? ShotColors.Dodge : new Color( 1f, 0.35f, 0.28f );
 
 		foreach ( var mesh in meshes )
 		{
@@ -304,11 +328,30 @@ public sealed class RingRunner : Component
 
 			if ( hurt > 0.01f )
 				mesh.Renderer.Tint = Color.Lerp( mesh.Tint, new Color( 1f, 0.12f, 0.08f ), hurt );
+			else if ( dodge > 0.01f )
+				mesh.Renderer.Tint = Color.Lerp( mesh.Tint, ShotColors.Dodge, dodge * 0.85f );
 			else if ( blink )
-				mesh.Renderer.Tint = Color.Lerp( mesh.Tint, new Color( 1f, 0.35f, 0.28f ), 0.7f );
+				mesh.Renderer.Tint = Color.Lerp( mesh.Tint, blinkTint, guard ? 0.45f : 0.7f );
 			else
 				mesh.Renderer.Tint = mesh.Tint;
 		}
+	}
+
+	void PaintJuke()
+	{
+		if ( !warlord.IsValid() )
+			return;
+
+		var t = JukeTime <= 0f ? 1f : (RealTime.Now - jukeAt) / JukeTime;
+		var reach = 0f;
+		if ( t >= 0f && t < 1f )
+		{
+			var k = t < 0.2f ? t / 0.2f : 1f - (t - 0.2f) / 0.8f;
+			reach = k * k * (3f - 2f * k) * JukeDistance;
+		}
+
+		var offset = new Vector3( jukeSide.x, jukeSide.y, 0f ) * reach;
+		warlord.GameObject.LocalPosition = warlordRest + WorldRotation.Inverse * offset;
 	}
 
 	void TickClearBoost()

@@ -18,28 +18,27 @@ public static class TrinketParity
 		var fails = 0;
 		var shown = 0;
 		fails += Run( new Dictionary<string, int>(), 0, ref shown );
-		fails += Run( Levels( ("SPLIT", 4), ("SLUG", 1) ), 0, ref shown );
+		fails += Run( Levels( ("BUCK", 3), ("SLUG", 1) ), 0, ref shown );
 		fails += Run( Levels( ("PIN", 1) ), 0, ref shown );
 		fails += Run( Levels( ("PIN", 1), ("SLUG", 1) ), 0, ref shown );
-		fails += Run( Levels( ("PIN", 1), ("SPLIT", 1) ), 0, ref shown );
-		fails += Run( Levels( ("PIN", 1), ("SHUCK", 1) ), 0, ref shown );
-		fails += Run( Levels( ("LASH", 1), ("BORE", 1) ), 0, ref shown );
-		fails += Run( Levels( ("LASH", 1), ("SEAR", 1), ("KILN", 1), ("FORK", 1), ("LINGER", 1), ("CELL", 1) ), 0, ref shown );
-		fails += Run( Levels( ("LASH", 1), ("SNAP", 3) ), 0, ref shown );
-		fails += Run( Levels( ("WARHEAD", 1), ("MIRV", 1), ("BLOOM", 1), ("LANCE", 1) ), 0, ref shown );
-		fails += Run( Levels( ("WARHEAD", 1), ("SPOT", 1), ("SCORCH", 1) ), 0, ref shown );
-		fails += Run( Levels( ("DRUM", 1), ("BELT", 1), ("DOUBLE", 1) ), 0, ref shown );
-		fails += Run( Levels( ("SLUG", 1), ("SPLIT", 4), ("SLAM", 1) ), 0, ref shown );
-		fails += Run( Levels( ("BUCK", 1), ("SHUCK", 1), ("SLAM", 1) ), 0, ref shown );
-		fails += Run( Levels( ("MEAT", 2), ("BUCK", 3) ), 0, ref shown );
+		fails += Run( Levels( ("ELECTRIFY", 1), ("BORE", 1) ), 0, ref shown );
+		fails += Run( Levels( ("ELECTRIFY", 1), ("FOCUS", 1), ("LINGER", 1) ), 0, ref shown );
+		fails += Run( Levels( ("ELECTRIFY", 1), ("RELOADER", 3) ), 0, ref shown );
+		fails += Run( Levels( ("WARHEAD", 1), ("CASSETTE", 1), ("BLOOM", 1), ("IGNORANCE", 1) ), 0, ref shown );
+		fails += Run( Levels( ("DRUM", 1) ), 0, ref shown );
+		fails += Run( Levels( ("SLUG", 1), ("BUCK", 3) ), 0, ref shown );
 		fails += Run( Levels( ("DODGE", 3) ), 0, ref shown );
-		fails += Run( Levels( ("KEEL", 1), ("BORE", 3), ("DRAW", 1), ("RACK", 1) ), 0, ref shown );
-		fails += Run( Levels( ("LASH", 3), ("SEAR", 1), ("KILN", 1), ("CELL", 1), ("VENT", 1), ("COOL", 1) ), 0, ref shown );
-		fails += Run( Levels( ("DRUM", 3), ("BELT", 1), ("SPOOL", 1) ), 0, ref shown );
-		fails += Run( Levels( ("BUCK", 1), ("SIGHT", 1) ), 0, ref shown );
+		fails += Run( Levels( ("BORE", 3) ), 0, ref shown );
+		fails += Run( Levels( ("ELECTRIFY", 3), ("FOCUS", 1) ), 0, ref shown );
+		fails += Run( Levels( ("DRUM", 3) ), 0, ref shown );
 		fails += Run( Levels( ("PINBALL", 3), ("RICO", 3) ), 0, ref shown );
-		fails += Run( Levels( ("RICO", 2), ("BUCK", 3), ("MEAT", 2) ), 0, ref shown );
-		fails += Run( Levels( ("PINBALL", 2), ("KEEL", 1) ), 0, ref shown );
+		fails += Run( Levels( ("RICO", 2), ("BUCK", 3) ), 0, ref shown );
+		fails += Run( Levels( ("PINBALL", 2) ), 0, ref shown );
+		fails += Run( Levels( ("KICK", 1) ), 0, ref shown );
+		fails += Run( Levels( ("KICK", 3) ), 0, ref shown );
+		fails += Run( Levels( ("BULK", 1) ), 0, ref shown );
+		fails += Run( Levels( ("BULK", 3) ), 0, ref shown );
+		fails += Run( Levels( ("SLUG", 1), ("BULK", 3) ), 0, ref shown );
 		fails += Run( new Dictionary<string, int>(), 4, ref shown );
 
 		var all = new Dictionary<string, int>();
@@ -64,21 +63,23 @@ public static class TrinketParity
 
 		fails += Blocked( new HashSet<string>(), ref shown );
 		fails += Blocked( Set( "BUCK" ), ref shown );
-		fails += Blocked( Set( "BUCK", "SHUCK" ), ref shown );
-		fails += Blocked( Set( "WARHEAD", "MIRV" ), ref shown );
-		fails += Blocked( Set( "WARHEAD", "LANCE" ), ref shown );
-		fails += Blocked( Set( "BORE", "KEEL" ), ref shown );
-		fails += Blocked( Set( "DRUM", "BELT" ), ref shown );
-		fails += Blocked( Set( "DRUM", "SPOOL" ), ref shown );
-		fails += Blocked( Set( "LASH", "SEAR" ), ref shown );
-		fails += Blocked( Set( "LASH", "ARC" ), ref shown );
-		fails += Blocked( Set( "BORE", "LASH" ), ref shown );
-		fails += Blocked( Set( "DRUM", "LASH" ), ref shown );
-		fails += Blocked( Set( "LASH", "VENT" ), ref shown );
-		fails += Blocked( Set( "DRUM", "BITE" ), ref shown );
-		fails += Blocked( Set( "BORE", "RACK" ), ref shown );
+		fails += Blocked( Set( "BORE" ), ref shown );
+		fails += Blocked( Set( "BUCK", "BORE" ), ref shown );
+		fails += Blocked( Set( "WARHEAD", "CASSETTE" ), ref shown );
+		fails += Blocked( Set( "IGNORANCE" ), ref shown );
+		fails += Blocked( Set( "ELECTRIFY", "FOCUS" ), ref shown );
+		fails += Blocked( Set( "ELECTRIFY", "ARC" ), ref shown );
+		fails += Blocked( Set( "BORE", "ELECTRIFY" ), ref shown );
+		fails += Blocked( Set( "DRUM", "ELECTRIFY" ), ref shown );
+		fails += Blocked( Set( "DRUM", "FRENZY" ), ref shown );
+		fails += Blocked( Set( "FETCH" ), ref shown );
+		fails += Blocked( Set( "ELECTRIFY", "FETCH" ), ref shown );
+		fails += Blocked( Set( "RETURN" ), ref shown );
+		fails += Blocked( Set( "ELECTRIFY", "RETURN" ), ref shown );
+		fails += Blocked( Set( "FETCH", "RETURN" ), ref shown );
+		fails += Blocked( Set( "GHOST" ), ref shown );
+		fails += Blocked( Set( "ELECTRIFY", "GHOST" ), ref shown );
 		fails += Blocked( Set( "WARHEAD", "PINBALL" ), ref shown );
-		fails += Blocked( Set( "KEEL" ), ref shown );
 		for ( var i = 0; i < 200; i++ )
 		{
 			var owned = new HashSet<string>();
@@ -96,17 +97,16 @@ public static class TrinketParity
 
 	static readonly string[] Pool =
 	{
-		"SPLIT", "MEAT", "RICO", "DOUBLE", "KICK", "STUN", "SLUG",
-		"BUCK", "BORE", "DRUM", "WARHEAD", "LASH", "PIN", "RUSH", "DODGE", "SNAP",
-		"MIRV", "BLOOM", "SCORCH", "LANCE", "CRATER", "SPOT",
-		"AWL", "RAM", "KEEL",
-		"BELT", "SPOOL", "SIGHT", "BITE",
-		"SEAR", "KILN", "ARC", "FORK", "SHUNT", "LINGER", "CELL",
-		"RACK", "DRAW", "VENT", "COOL", "SHUCK", "SLAM", "PINBALL"
+		"RICO", "KICK", "BULK", "STUN", "SLUG",
+		"BUCK", "BORE", "DRUM", "WARHEAD", "ELECTRIFY", "PIN", "RUSH", "DODGE", "RELOADER",
+		"CASSETTE", "BLOOM", "IGNORANCE",
+		"RAM",
+		"FRENZY",
+		"FOCUS", "ARC", "SHUNT", "LINGER",
+		"PINBALL",
+		"FETCH", "RETURN", "GHOST"
 	};
 
-	static readonly Tier4 SplitPellets = new( 1f, 2f, 4f, 7f );
-	static readonly Tier4 SplitReload = new( 0f, 0.15f, 0.25f, 0.5f );
 	static readonly Tier4 BuckPellets = new( 2f, 3f, 5f );
 	static readonly Tier4 BuckCone = new( 10f, 16f, 24f );
 	static readonly Tier4 BuckRange = new( 0.83f, 0.94f, 1f );
@@ -114,87 +114,44 @@ public static class TrinketParity
 	static readonly Tier4 DrumBurst = new( 3f, 4f, 6f );
 	static readonly Tier4 WarheadRadius = new( 90f, 126f, 176f );
 	static readonly Tier4 WarheadSpeed = new( 0.78f, 0.68f, 0.58f );
-	static readonly Tier4 LashTick = new( 0.6f, 0.4f, 0.2f );
-	static readonly Tier4 LashTicks = new( 4f, 6f, 8f );
+	static readonly Tier4 ElectrifyTick = new( 0.6f, 0.4f, 0.2f );
+	static readonly Tier4 ElectrifyTicks = new( 4f, 6f, 8f );
 	static readonly Tier4 RushSpeed = new( 1.2f, 1.4f, 1.65f );
+	static readonly Tier4 ReturnSpeed = new( 1.35f, 1.7f, 2.15f );
 	static readonly Tier4 DodgeChance = new( 0.1f, 0.2f, 0.32f );
-	static readonly Tier4 SnapReload = new( 0.8f, 0.64f, 0.5f );
+	static readonly Tier4 ReloaderReload = new( 0.8f, 0.64f, 0.5f );
 	static readonly Tier4 RicoBounces = new( 1f, 3f, 5f );
 	static readonly Tier4 RicoEnergy = new( 1.25f, 1.6f, 2f );
 	static readonly Tier4 PinballDamage = new( 1f, 1f, 2f );
 	static readonly Tier4 PinballSpeed = new( 0.1f, 0.2f, 0.3f );
 
-	const float MeatRange = 140f;
-	const float MeatBonus = 1f;
-	const float MeatCut = 1f;
-	const float DoubleGap = 0.12f;
-	const float DoubleReload = 0.35f;
-	const float KickForce = 110f;
+	static readonly Tier4 KickForceTiers = new( 110f, 160f, 220f );
+	static readonly Tier4 BulkRadius = new( 2f, 4f, 7f );
 	const float KickRange = 180f;
 	const float StunTime = 0.45f;
 	const float StunRange = 160f;
 	const float SlugRadius = 22f;
 	const int SlugDamage = 2;
+	const int SlugBounce = 4;
+	const int SlugPierce = 4;
 	const float SlugPad = 120f;
 	const float BoreReload = 0.35f;
 	const float BoreSpeed = 0.95f;
 	const float DrumReload = 0.45f;
-	const float MirvRadius = 0.55f;
-	const float MirvSpeed = 0.8f;
+	static readonly Tier4 CassetteExtra = new( 1f, 2f, 3f );
 	const float BloomRadius = 80f;
 	const float BloomReload = 0.2f;
-	const int ScorchDamage = 2;
-	const float ScorchSpeed = 0.75f;
-	const float ScorchReload = 0.12f;
-	const int LanceDamage = 2;
-	const float LanceRadius = 0.7f;
-	const float LanceSpeed = 0.7f;
-	const float LanceReload = 0.3f;
-	const float CraterBody = 22f;
-	const float CraterSplash = 56f;
-	const float CraterSpeed = 0.65f;
-	const float SpotSpeed = 0.85f;
-	const float SpotSplash = 40f;
-	const int SpotSplashDamage = 1;
-	const float AwlSpeed = 0.85f;
-	const float AwlReload = 0.12f;
 	const float RamSpeed = 0.9f;
-	const int KeelDamage = 5;
-	const float KeelSpeed = 0.6f;
-	const int BeltBurst = 3;
-	const float BeltReload = 0.3f;
-	const float SpoolCycle = 0.65f;
-	const float SpoolReload = 0.15f;
-	const float SightSpeed = 0.9f;
 	const float BiteSpeed = 0.8f;
-	const float LashReload = 0.3f;
-	const int LashHit = 1;
+	const float ElectrifyReload = 0.3f;
+	const int ElectrifyHit = 1;
 	const float SearReload = 0.1f;
-	const float KilnTick = 0.75f;
-	const float KilnWidth = 0.75f;
-	const float KilnReload = 0.06f;
 	const float ArcRange = 220f;
 	const float ArcTick = 1.15f;
-	const float ForkReload = 0.08f;
 	const float ShuntTick = 1.25f;
 	const float ShuntWidth = 0.85f;
 	const float LingerReload = 0.12f;
-	const int CellTicks = 2;
-	const float CellReload = 0.1f;
-	const float RackReload = 0.75f;
-	const float RackSpeed = 0.85f;
-	const float DrawReload = 0.85f;
-	const int DrawPierce = 1;
-	const float VentReload = 0.8f;
-	const float VentTick = 1.2f;
-	const float CoolReload = 0.85f;
-	const float CoolWidth = 0.8f;
-	const float ShuckReload = 0.8f;
-	const float ShuckCone = 8f;
-	const float SlamReload = 0.85f;
-	const int SlamPellets = 1;
-	const float RushReload = 0.12f;
-
+	const float FetchReload = 0.35f;
 	static int Run( Dictionary<string, int> levels, int bonus, ref int shown )
 	{
 		var live = Build( levels, bonus ).Recipe();
@@ -202,7 +159,6 @@ public static class TrinketParity
 		var bad = new List<string>();
 		Flag( bad, "Beam", live.Beam, old.Beam );
 		Flag( bad, "Auto", live.Auto, old.Auto );
-		Flag( bad, "DoublePump", live.DoublePump, old.DoublePump );
 		Whole( bad, "Count", live.Count, old.Count );
 		Float( bad, "Cone", live.Cone, old.Cone );
 		Whole( bad, "Damage", live.Damage, old.Damage );
@@ -215,18 +171,15 @@ public static class TrinketParity
 		Float( bad, "Radius", live.Radius, old.Radius );
 		Float( bad, "Splash", live.Splash, old.Splash );
 		Whole( bad, "SplashDamage", live.SplashDamage, old.SplashDamage );
+		Whole( bad, "ExtraSplash", live.ExtraSplash, old.ExtraSplash );
 		Flag( bad, "FriendlySplash", live.FriendlySplash, old.FriendlySplash );
 		Flag( bad, "PerPelletSplash", live.PerPelletSplash, old.PerPelletSplash );
-		Flag( bad, "PointAim", live.PointAim, old.PointAim );
-		Flag( bad, "IgnoreArmor", live.IgnoreArmor, old.IgnoreArmor );
 		Flag( bad, "RampPierce", live.RampPierce, old.RampPierce );
 		Flag( bad, "Nail", live.Nail, old.Nail );
 		Float( bad, "StickTime", live.StickTime, old.StickTime );
 		Float( bad, "RangeCut", live.RangeCut, old.RangeCut );
 		Float( bad, "RangePad", live.RangePad, old.RangePad );
 		Float( bad, "Falloff", live.Falloff, old.Falloff );
-		Float( bad, "MeatRange", live.MeatRange, old.MeatRange );
-		Whole( bad, "MeatBonus", live.MeatBonus, old.MeatBonus );
 		Float( bad, "KickForce", live.KickForce, old.KickForce );
 		Float( bad, "KickRange", live.KickRange, old.KickRange );
 		Float( bad, "StunTime", live.StunTime, old.StunTime );
@@ -234,7 +187,6 @@ public static class TrinketParity
 		Float( bad, "Cycle", live.Cycle, old.Cycle );
 		Whole( bad, "Burst", live.Burst, old.Burst );
 		Float( bad, "WalkStep", live.WalkStep, old.WalkStep );
-		Flag( bad, "Sight", live.Sight, old.Sight );
 		Flag( bad, "Bite", live.Bite, old.Bite );
 		Float( bad, "Reload", live.Reload, old.Reload );
 		Float( bad, "BoreWait", live.BoreWait, old.BoreWait );
@@ -248,13 +200,13 @@ public static class TrinketParity
 		Float( bad, "BeamWidth", live.BeamWidth, old.BeamWidth );
 		Whole( bad, "BeamRank", live.BeamRank, old.BeamRank );
 		Flag( bad, "BeamSear", live.BeamSear, old.BeamSear );
-		Float( bad, "BeamKiln", live.BeamKiln, old.BeamKiln );
 		Float( bad, "BeamArc", live.BeamArc, old.BeamArc );
-		Flag( bad, "BeamFork", live.BeamFork, old.BeamFork );
 		Flag( bad, "BeamShunt", live.BeamShunt, old.BeamShunt );
 		Flag( bad, "BeamLinger", live.BeamLinger, old.BeamLinger );
 		Float( bad, "Dodge", live.Dodge, old.Dodge );
-		Float( bad, "Gap", live.Gap, old.Gap );
+		Flag( bad, "Fetch", live.Fetch, old.Fetch );
+		Float( bad, "Pickup", live.Pickup, old.Pickup );
+		Flag( bad, "Ghost", live.Ghost, old.Ghost );
 
 		if ( bad.Count == 0 )
 			return 0;
@@ -339,16 +291,14 @@ public static class TrinketParity
 		var bore = Lv( levels, "BORE" );
 		var drum = Lv( levels, "DRUM" );
 		var warhead = Lv( levels, "WARHEAD" );
-		var lash = Lv( levels, "LASH" );
+		var electrify = Lv( levels, "ELECTRIFY" );
 		var rush = Lv( levels, "RUSH" );
-		var split = Lv( levels, "SPLIT" );
 		var slug = Has( levels, "SLUG" );
-		var meat = Lv( levels, "MEAT" );
 		var pinball = Lv( levels, "PINBALL" );
 		var rico = Lv( levels, "RICO" );
+		var cassette = Lv( levels, "CASSETTE" );
+		var kick = Lv( levels, "KICK" );
 		var count = 1;
-		if ( split > 0 )
-			count += Math.Max( 0, (int)SplitPellets.At( split ) );
 		if ( buck > 0 )
 			count += Math.Max( 0, (int)BuckPellets.At( buck ) - 1 );
 
@@ -364,23 +314,17 @@ public static class TrinketParity
 			cone = 0f;
 		}
 
-		if ( Has( levels, "SHUCK" ) )
-			cone += ShuckCone;
-		if ( Has( levels, "SLAM" ) )
-		{
-			count = Math.Max( 1, count - SlamPellets );
-			full = Math.Max( 1, full - SlamPellets );
-		}
-
 		var bounces = t.MaxBouncesBase;
 		if ( rico > 0 )
 			bounces += (int)RicoBounces.At( rico );
-		if ( Has( levels, "LANCE" ) || Has( levels, "CRATER" ) || Has( levels, "SPOT" ) || Has( levels, "KEEL" ) )
+		if ( slug )
+			bounces += SlugBounce * Math.Max( 0, full - count );
+		if ( Has( levels, "FETCH" ) )
 			bounces = 0;
 
 		var pierce = bore <= 0 ? 0 : (int)BorePierce.At( bore );
-		if ( Has( levels, "DRAW" ) )
-			pierce = Math.Max( 0, pierce - DrawPierce );
+		if ( slug )
+			pierce += SlugPierce * Math.Max( 0, full - count );
 
 		var reload = t.ReloadBase;
 		var boreWait = 0f;
@@ -391,170 +335,81 @@ public static class TrinketParity
 		}
 		if ( drum > 0 )
 			reload += DrumReload * Progression.TraitMul( drum );
-		if ( rush > 0 )
-			reload += RushReload * Progression.TraitMul( rush );
-		if ( split > 0 )
-			reload += SplitReload.At( split );
-		if ( Has( levels, "DOUBLE" ) )
-			reload += DoubleReload;
 		if ( Has( levels, "BLOOM" ) )
 			reload += BloomReload;
-		if ( Has( levels, "SCORCH" ) )
-			reload += ScorchReload;
-		if ( Has( levels, "LANCE" ) )
-			reload += LanceReload;
-		if ( Has( levels, "AWL" ) )
-			reload += AwlReload;
-		if ( Has( levels, "BELT" ) )
-			reload += BeltReload;
-		if ( Has( levels, "SPOOL" ) )
-			reload += SpoolReload;
+		if ( Has( levels, "FETCH" ) )
+			reload += FetchReload;
 
-		if ( lash > 0 )
+		if ( electrify > 0 )
 		{
-			reload = LashReload;
-			if ( Has( levels, "SEAR" ) )
+			reload = ElectrifyReload;
+			if ( Has( levels, "FOCUS" ) )
 				reload += SearReload;
-			if ( Has( levels, "KILN" ) )
-				reload += KilnReload;
-			if ( Has( levels, "FORK" ) )
-				reload += ForkReload;
 			if ( Has( levels, "LINGER" ) )
 				reload += LingerReload;
-			if ( Has( levels, "CELL" ) )
-				reload += CellReload;
 		}
 
-		if ( Has( levels, "RACK" ) )
-			reload *= RackReload;
-		if ( Has( levels, "DRAW" ) )
-			reload *= DrawReload;
-		if ( Has( levels, "VENT" ) )
-			reload *= VentReload;
-		if ( Has( levels, "COOL" ) )
-			reload *= CoolReload;
-		if ( Has( levels, "SHUCK" ) )
-			reload *= ShuckReload;
-		if ( Has( levels, "SLAM" ) )
-			reload *= SlamReload;
-
-		var snap = Lv( levels, "SNAP" );
-		if ( snap > 0 )
-			reload *= SnapReload.At( snap );
+		var reloader = Lv( levels, "RELOADER" );
+		if ( reloader > 0 )
+			reload *= ReloaderReload.At( reloader );
 
 		var speed = 1f;
 		if ( bore > 0 )
 			speed *= BoreSpeed;
 		if ( warhead > 0 )
 			speed *= WarheadSpeed.At( warhead );
-		if ( Has( levels, "MIRV" ) )
-			speed *= MirvSpeed;
-		if ( Has( levels, "SCORCH" ) )
-			speed *= ScorchSpeed;
-		if ( Has( levels, "LANCE" ) )
-			speed *= LanceSpeed;
-		if ( Has( levels, "CRATER" ) )
-			speed *= CraterSpeed;
-		if ( Has( levels, "SPOT" ) )
-			speed *= SpotSpeed;
 		if ( rush > 0 )
 			speed *= RushSpeed.At( rush );
-		if ( Has( levels, "AWL" ) )
-			speed *= AwlSpeed;
 		if ( Has( levels, "RAM" ) )
 			speed *= RamSpeed;
-		if ( Has( levels, "KEEL" ) )
-			speed *= KeelSpeed;
-		if ( Has( levels, "SIGHT" ) )
-			speed *= SightSpeed;
-		if ( Has( levels, "BITE" ) )
+		if ( Has( levels, "FRENZY" ) )
 			speed *= BiteSpeed;
-		if ( Has( levels, "RACK" ) )
-			speed *= RackSpeed;
 
 		var rangeCut = 0f;
-		var meatRange = 0f;
-		var meatBonus = 0;
-		if ( meat > 0 )
-		{
-			meatRange = MathF.Max( meatRange, MeatRange );
-			meatBonus += (int)MeatBonus * meat;
-			rangeCut += MeatCut * meat;
-		}
 		if ( buck > 0 )
 			rangeCut += BuckRange.At( buck );
 
 		var damage = Math.Max( 1, t.BaseDamage + bonus );
 		if ( slug )
 			damage += SlugDamage * Math.Max( 0, full - count );
-		if ( Has( levels, "LANCE" ) )
-			damage += LanceDamage;
-		if ( Has( levels, "KEEL" ) )
-			damage += KeelDamage;
-
 		var radius = t.ProjectileRadius;
 		if ( slug )
 			radius = MathF.Max( radius, SlugRadius );
-		if ( Has( levels, "CRATER" ) )
-			radius = MathF.Max( radius, CraterBody );
+		var bulk = Lv( levels, "BULK" );
+		if ( bulk > 0 )
+			radius *= BulkRadius.At( bulk );
 
 		var splash = WarheadRadius.At( warhead );
-		if ( Has( levels, "MIRV" ) )
-			splash *= MirvRadius;
 		if ( Has( levels, "BLOOM" ) )
 			splash += BloomRadius;
-		if ( Has( levels, "LANCE" ) )
-			splash *= LanceRadius;
-		if ( Has( levels, "CRATER" ) )
-			splash += CraterSplash;
-		if ( Has( levels, "SPOT" ) )
-			splash += SpotSplash;
 
 		var splashDamage = splash > 1f ? 1 : 0;
-		if ( Has( levels, "SCORCH" ) && splash > 1f )
-			splashDamage = Math.Max( splashDamage, ScorchDamage );
-		if ( Has( levels, "SPOT" ) && splash > 1f )
-			splashDamage += SpotSplashDamage;
 
 		var cycle = t.DrumCycle;
-		if ( Has( levels, "SPOOL" ) )
-			cycle *= SpoolCycle;
-
 		var burst = drum <= 0 ? 1 : Math.Max( 1, (int)DrumBurst.At( drum ) );
-		if ( drum > 0 && Has( levels, "BELT" ) )
-			burst += BeltBurst;
 
 		var beamTicks = 0;
 		var beamTick = 1f;
-		if ( lash > 0 )
+		if ( electrify > 0 )
 		{
-			beamTicks = Math.Max( 1, (int)LashTicks.At( lash ) );
-			if ( Has( levels, "CELL" ) )
-				beamTicks += CellTicks;
-			beamTick = LashTick.At( lash );
+			beamTicks = Math.Max( 1, (int)ElectrifyTicks.At( electrify ) );
+			beamTick = ElectrifyTick.At( electrify );
 			if ( Has( levels, "ARC" ) )
 				beamTick *= ArcTick;
 			if ( Has( levels, "SHUNT" ) )
 				beamTick *= ShuntTick;
-			if ( Has( levels, "VENT" ) )
-				beamTick *= VentTick;
 		}
 
 		var width = t.LashWidth;
-		if ( Has( levels, "KILN" ) )
-			width *= KilnWidth;
 		if ( Has( levels, "SHUNT" ) )
 			width *= ShuntWidth;
-		if ( Has( levels, "COOL" ) )
-			width *= CoolWidth;
 
-		var beam = lash > 0;
-		var auto = drum > 0 && lash <= 0;
+		var beam = electrify > 0;
+		var auto = drum > 0 && electrify <= 0;
 		return new GunRecipe
 		{
 			Beam = beam,
 			Auto = auto,
-			DoublePump = Has( levels, "DOUBLE" ) && drum <= 0 && lash <= 0,
 			Count = count,
 			Cone = cone,
 			Damage = damage,
@@ -567,101 +422,68 @@ public static class TrinketParity
 			Radius = radius,
 			Splash = splash,
 			SplashDamage = splashDamage,
-			FriendlySplash = warhead > 0 && !Has( levels, "LANCE" ),
-			PerPelletSplash = Has( levels, "MIRV" ),
-			PointAim = Has( levels, "SPOT" ),
-			IgnoreArmor = Has( levels, "AWL" ),
+			ExtraSplash = cassette > 0 ? (int)CassetteExtra.At( cassette ) : 0,
+			FriendlySplash = warhead > 0 && !Has( levels, "IGNORANCE" ),
+			PerPelletSplash = false,
 			RampPierce = Has( levels, "RAM" ),
 			Nail = false,
 			StickTime = 0f,
 			RangeCut = MathF.Max( 0f, rangeCut ),
 			RangePad = slug ? SlugPad : 0f,
 			Falloff = 0f,
-			MeatRange = meatRange,
-			MeatBonus = meatBonus,
-			KickForce = Has( levels, "KICK" ) ? KickForce : 0f,
+			KickForce = KickForceTiers.At( kick ),
 			KickRange = KickRange,
 			StunTime = Has( levels, "STUN" ) ? StunTime : 0f,
 			StunRange = StunRange,
 			Cycle = cycle,
 			Burst = burst,
 			WalkStep = 0f,
-			Sight = Has( levels, "SIGHT" ),
-			Bite = Has( levels, "BITE" ),
+			Bite = Has( levels, "FRENZY" ),
 			Reload = MathF.Max( t.ReloadMin, reload ),
 			BoreWait = boreWait,
 			BeamPad = t.LashPad,
 			BeamPerSecond = t.LashPerSecond,
 			BeamMaxHold = t.LashMaxHold,
-			BeamHit = lash > 0 ? Math.Max( 1, LashHit ) : 0,
+			BeamHit = electrify > 0 ? Math.Max( 1, ElectrifyHit ) : 0,
 			BeamTick = beamTick,
 			BeamTicks = beamTicks,
 			BeamRange = t.LashRange,
 			BeamWidth = width,
-			BeamRank = lash,
-			BeamSear = Has( levels, "SEAR" ),
-			BeamKiln = Has( levels, "KILN" ) ? KilnTick : 1f,
+			BeamRank = electrify,
+			BeamSear = Has( levels, "FOCUS" ),
 			BeamArc = Has( levels, "ARC" ) ? ArcRange : 0f,
-			BeamFork = Has( levels, "FORK" ),
 			BeamShunt = Has( levels, "SHUNT" ),
 			BeamLinger = Has( levels, "LINGER" ),
 			Dodge = Has( levels, "DODGE" ) ? DodgeChance.At( Lv( levels, "DODGE" ) ) : 0f,
-			Gap = Has( levels, "DOUBLE" ) ? DoubleGap : 0f
+			Pickup = Lv( levels, "RETURN" ) > 0 ? ReturnSpeed.At( Lv( levels, "RETURN" ) ) : 1f,
+			Fetch = Has( levels, "FETCH" ),
+			Ghost = Has( levels, "GHOST" )
 		};
 	}
 
 	static bool LegacyBlocked( string id, HashSet<string> owned )
 	{
-		bool Owns( params string[] group )
-		{
-			foreach ( var item in group )
-			{
-				if ( owned.Contains( item ) )
-					return true;
-			}
-
-			return false;
-		}
-
-		if ( (id == "SPLIT" || id == "SHUCK" || id == "SLAM") && !owned.Contains( "BUCK" ) )
-			return true;
-		if ( id == "SIGHT" && !owned.Contains( "DRUM" ) )
-			return true;
 		if ( id == "RAM" && !owned.Contains( "BORE" ) )
 			return true;
-		if ( (id is "MIRV" or "BLOOM" or "SCORCH" or "LANCE" or "CRATER" or "SPOT") && !owned.Contains( "WARHEAD" ) )
+		if ( (id is "CASSETTE" or "BLOOM") && !owned.Contains( "WARHEAD" ) )
 			return true;
-		if ( id == "LASH" && owned.Contains( "DRUM" ) )
+		if ( id == "ELECTRIFY" && (owned.Contains( "DRUM" ) || owned.Contains( "FETCH" ) || owned.Contains( "GHOST" )) )
 			return true;
-		if ( id == "DRUM" && owned.Contains( "LASH" ) )
+		if ( id == "DRUM" && owned.Contains( "ELECTRIFY" ) )
 			return true;
-		if ( (id is "MIRV" or "BLOOM" or "SCORCH") && Owns( "LANCE", "CRATER" ) )
+		if ( id == "FETCH" && owned.Contains( "ELECTRIFY" ) )
 			return true;
-		if ( (id is "LANCE" or "CRATER") && Owns( "MIRV", "BLOOM", "SCORCH" ) )
+		if ( id == "GHOST" && owned.Contains( "ELECTRIFY" ) )
 			return true;
-		if ( (id is "AWL" or "RAM") && owned.Contains( "KEEL" ) )
+		if ( id == "FRENZY" && !owned.Contains( "DRUM" ) )
 			return true;
-		if ( id == "KEEL" && Owns( "AWL", "RAM" ) )
+		if ( id == "SLUG" && (!owned.Contains( "BORE" ) || !owned.Contains( "BUCK" )) )
 			return true;
-		if ( (id is "BELT" or "SPOOL" or "BITE") && !owned.Contains( "DRUM" ) )
+		if ( (id is "FOCUS" or "ARC" or "SHUNT" or "LINGER") && !owned.Contains( "ELECTRIFY" ) )
 			return true;
-		if ( id == "BELT" && Owns( "SPOOL", "BITE" ) )
+		if ( id == "FOCUS" && owned.Contains( "ARC" ) )
 			return true;
-		if ( (id is "SPOOL" or "BITE") && owned.Contains( "BELT" ) )
-			return true;
-		if ( (id is "SEAR" or "KILN" or "ARC" or "FORK" or "SHUNT" or "LINGER" or "CELL" or "VENT" or "COOL") && !owned.Contains( "LASH" ) )
-			return true;
-		if ( (id is "SEAR" or "KILN") && Owns( "ARC", "FORK" ) )
-			return true;
-		if ( (id is "ARC" or "FORK") && Owns( "SEAR", "KILN" ) )
-			return true;
-		if ( id == "DRAW" && !owned.Contains( "RACK" ) )
-			return true;
-		if ( id == "COOL" && !owned.Contains( "VENT" ) )
-			return true;
-		if ( id == "PINBALL" && Owns( "LANCE", "CRATER", "SPOT", "KEEL" ) )
-			return true;
-		if ( (id is "LANCE" or "CRATER" or "SPOT" or "KEEL") && owned.Contains( "PINBALL" ) )
+		if ( id == "ARC" && owned.Contains( "FOCUS" ) )
 			return true;
 		return false;
 	}

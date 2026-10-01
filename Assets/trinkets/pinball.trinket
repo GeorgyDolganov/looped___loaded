@@ -4,14 +4,8 @@
   "Pack": "Junior",
   "MaxLevel": 3,
   "Sort": 51,
-  "Icon": "ui/traits/pinball.png",
+  "Icon": "ui/traits/PINBALL-64x64.png",
   "Blurb": "Each ricochet hits HARDER and flies FASTER.",
-  "Excludes": [
-    "trinkets/lance.trinket",
-    "trinkets/crater.trinket",
-    "trinkets/spot.trinket",
-    "trinkets/keel.trinket"
-  ],
   "Mods": [
     {
       "Stat": "BounceDamage",
@@ -36,11 +30,6 @@
       }
     }
   ],
-  "__references": [
-    "trinkets/lance.trinket",
-    "trinkets/crater.trinket",
-    "trinkets/spot.trinket",
-    "trinkets/keel.trinket"
-  ],
+  "__references": [],
   "__version": 0
 }

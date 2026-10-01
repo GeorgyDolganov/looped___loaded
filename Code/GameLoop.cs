@@ -42,7 +42,9 @@ public sealed class GameLoop : Component
 	public MenuPage MenuView { get; private set; } = MenuPage.Title;
 	public MenuChoice MenuFocus { get; private set; } = MenuChoice.Continue;
 	public SettingRow SettingCursor { get; private set; } = SettingRow.Graphics;
-	static readonly MenuChoice[] MenuOrder = { MenuChoice.Continue, MenuChoice.Upgrades, MenuChoice.Saves, MenuChoice.Settings, MenuChoice.Quit };
+	public int CollectionIndex { get; private set; }
+	public const int CollectionColumns = 8;
+	static readonly MenuChoice[] MenuOrder = { MenuChoice.Continue, MenuChoice.Upgrades, MenuChoice.Saves, MenuChoice.Collection, MenuChoice.Settings, MenuChoice.Quit };
 	public static readonly SettingRow[] SettingOrder = { SettingRow.Graphics, SettingRow.Music, SettingRow.Sfx, SettingRow.Shake };
 	public int ActiveSlot { get; private set; }
 	public int SaveCursor { get; private set; }
@@ -62,10 +64,15 @@ public sealed class GameLoop : Component
 	public int Stash { get; private set; }
 	public int HeartMax => MaxHealth + (City.IsValid() ? City.Stats().BonusHealth : 0);
 
+	public static bool CheatDodge { get; set; }
+
 	public float DodgeChance
 	{
 		get
 		{
+			if ( CheatDodge )
+				return 1f;
+
 			if ( !Inventory.IsValid() )
 				return 0f;
 
@@ -76,6 +83,10 @@ public sealed class GameLoop : Component
 	public float PainYaw { get; private set; }
 	public float HurtAmount => Math.Clamp( 1f - (Time.Now - lastHurtAt) / GameSettings.Run.HurtFlash, 0f, 1f );
 	public bool Invulnerable => Time.Now < invulnUntil;
+	public float DodgeAmount => Math.Clamp( 1f - (Time.Now - lastDodgeAt) / DodgeFlash.Duration, 0f, 1f );
+	public bool DodgeGuard => Invulnerable && lastDodgeAt > lastHurtAt;
+	public float DodgeYaw { get; private set; }
+	public int Dodges { get; private set; }
 	public int Kills { get; private set; }
 	public int Scrap { get; private set; }
 	public int ShotsFired { get; private set; }
@@ -160,6 +171,7 @@ public sealed class GameLoop : Component
 	float runStartedAt;
 	float invulnUntil;
 	float lastHurtAt = -99f;
+	float lastDodgeAt = -99f;
 	float armorNoticeAt = -99f;
 	float boneSoundAt = -99f;
 	int boneNoticeSum;
@@ -171,6 +183,8 @@ public sealed class GameLoop : Component
 	static readonly string[] OfferSlots = { "Slot1", "Slot2", "Slot3", "Slot4", "Slot5", "Slot6", "Slot7", "Slot8", "Slot9" };
 	bool bossWon;
 	bool skipHinted;
+	float dashCoachUntil;
+	public bool DashCoach => Phase == RunPhase.Playing && Time.Now < dashCoachUntil;
 	bool feedClosedOnDeath;
 	public int BestLine { get; private set; } = -1;
 	readonly ProgressTrack progress = new();
@@ -281,7 +295,10 @@ public sealed class GameLoop : Component
 		SaveStore.SetLastSlot( ActiveSlot );
 		ApplySave( SaveStore.Read( ActiveSlot ) );
 		RefreshSaves();
-		OpenCityFromMenu();
+		if ( HasActiveSave )
+			OpenCityFromMenu();
+		else
+			Restart();
 	}
 
 	public void DeleteSave( int index )
@@ -460,6 +477,7 @@ public sealed class GameLoop : Component
 		bossWon = false;
 		InBossFight = false;
 		lastHurtAt = -99f;
+		lastDodgeAt = -99f;
 		PainYaw = 0f;
 		invulnUntil = 0f;
 		ClearPause();
@@ -471,8 +489,22 @@ public sealed class GameLoop : Component
 		ArenaSounds.MenuOpen();
 	}
 
+	public void BeginVisit()
+	{
+		if ( HasActiveSave )
+			ShowMenu();
+		else
+			Restart();
+	}
+
 	public void OpenCityFromMenu()
 	{
+		if ( !HasActiveSave )
+		{
+			Restart();
+			return;
+		}
+
 		EnterCity( false );
 	}
 
@@ -519,6 +551,9 @@ public sealed class GameLoop : Component
 			case MenuChoice.Saves:
 				OpenSaves();
 				return;
+			case MenuChoice.Collection:
+				OpenCollection();
+				return;
 			case MenuChoice.Settings:
 				OpenSettings();
 				return;
@@ -541,6 +576,86 @@ public sealed class GameLoop : Component
 		MenuView = MenuPage.Title;
 		MenuFocus = MenuChoice.Settings;
 		ArenaSounds.MenuBack();
+	}
+
+	public void OpenCollection()
+	{
+		Trinkets.Refresh();
+		CollectionIndex = 0;
+		MenuView = MenuPage.Collection;
+		ArenaSounds.MenuOk();
+	}
+
+	public void CloseCollection()
+	{
+		MenuView = MenuPage.Title;
+		MenuFocus = MenuChoice.Collection;
+		ArenaSounds.MenuBack();
+	}
+
+	public void FocusCollection( int index )
+	{
+		var count = Trinkets.Every.Count;
+		if ( count == 0 )
+			return;
+
+		index = Math.Clamp( index, 0, count - 1 );
+		if ( CollectionIndex == index )
+			return;
+
+		CollectionIndex = index;
+		ArenaSounds.MenuMove();
+	}
+
+	void MoveCollection( int delta )
+	{
+		var count = Trinkets.Every.Count;
+		if ( count == 0 )
+			return;
+
+		var index = Math.Clamp( CollectionIndex, 0, count - 1 );
+		var next = index + delta;
+		if ( next >= count && delta == CollectionColumns && index / CollectionColumns < (count - 1) / CollectionColumns )
+			next = count - 1;
+
+		if ( next < 0 || next >= count )
+		{
+			ArenaSounds.Deny();
+			return;
+		}
+
+		CollectionIndex = next;
+		ArenaSounds.MenuMove();
+	}
+
+	void TickCollection()
+	{
+		if ( Input.Pressed( "MenuUp" ) || Input.Pressed( "Forward" ) )
+		{
+			MoveCollection( -CollectionColumns );
+			return;
+		}
+
+		if ( Input.Pressed( "MenuDown" ) || Input.Pressed( "Backward" ) )
+		{
+			MoveCollection( CollectionColumns );
+			return;
+		}
+
+		if ( Input.Pressed( "MenuLeft" ) || Input.Pressed( "Left" ) )
+		{
+			MoveCollection( -1 );
+			return;
+		}
+
+		if ( Input.Pressed( "MenuRight" ) || Input.Pressed( "Right" ) )
+		{
+			MoveCollection( 1 );
+			return;
+		}
+
+		if ( PressedEscape() || Input.Pressed( "MenuSelect" ) || Input.Pressed( "Jump" ) )
+			CloseCollection();
 	}
 
 	public void HighlightSetting( SettingRow row )
@@ -625,7 +740,13 @@ public sealed class GameLoop : Component
 		if ( index < 0 )
 			index = 0;
 
-		index = (index + delta + MenuOrder.Length) % MenuOrder.Length;
+		for ( var n = 0; n < MenuOrder.Length; n++ )
+		{
+			index = (index + delta + MenuOrder.Length) % MenuOrder.Length;
+			if ( MenuOrder[index] != MenuChoice.Upgrades || HasActiveSave )
+				break;
+		}
+
 		FocusMenu( MenuOrder[index] );
 	}
 
@@ -642,6 +763,12 @@ public sealed class GameLoop : Component
 		if ( MenuView == MenuPage.Settings )
 		{
 			TickSettings();
+			return;
+		}
+
+		if ( MenuView == MenuPage.Collection )
+		{
+			TickCollection();
 			return;
 		}
 
@@ -671,7 +798,8 @@ public sealed class GameLoop : Component
 
 		if ( Input.Pressed( "Slot2" ) )
 		{
-			ActivateMenu( MenuChoice.Upgrades );
+			if ( HasActiveSave )
+				ActivateMenu( MenuChoice.Upgrades );
 			return;
 		}
 
@@ -790,7 +918,10 @@ public sealed class GameLoop : Component
 		noticeAt += dt;
 		runStartedAt += dt;
 		lastHurtAt += dt;
+		lastDodgeAt += dt;
 		armorNoticeAt += dt;
+		if ( dashCoachUntil > 0f )
+			dashCoachUntil += dt;
 		if ( invulnUntil > 0f )
 			invulnUntil += dt;
 
@@ -874,11 +1005,14 @@ public sealed class GameLoop : Component
 		feedClosedOnDeath = false;
 		invulnUntil = 0f;
 		lastHurtAt = -99f;
+		lastDodgeAt = -99f;
+		Dodges = 0;
 		PainYaw = 0f;
 		pendingBoss = false;
 		InBossFight = false;
 		bossWon = false;
 		skipHinted = false;
+		dashCoachUntil = 0f;
 		ClearPause();
 		if ( Arena.IsValid() )
 		{
@@ -1185,7 +1319,10 @@ public sealed class GameLoop : Component
 		Inventory?.TryPickup();
 
 		if ( Input.Pressed( "Jump" ) && Runner.TryDash() )
+		{
 			ArenaSounds.Jump( Runner.WorldPosition );
+			dashCoachUntil = 0f;
+		}
 
 		CheckHits();
 		CheckLap();
@@ -1210,7 +1347,7 @@ public sealed class GameLoop : Component
 
 			if ( (enemy.Flat - Runner.Flat).Length <= enemy.Radius + reach )
 			{
-				Hurt( enemy.Flat );
+				Hurt( enemy.Flat, Runner.Flat - enemy.Flat );
 				return;
 			}
 		}
@@ -1218,22 +1355,24 @@ public sealed class GameLoop : Component
 		for ( var i = Shots.Count - 1; i >= 0; i-- )
 		{
 			var shot = Shots[i];
-			if ( !shot.IsValid() )
+			if ( !shot.IsValid() || shot.Dodged )
 				continue;
 
 			if ( (shot.Flat - Runner.Flat).Length <= shot.Radius + reach )
 			{
-				shot.GameObject.Destroy();
-				Hurt( shot.Flat );
+				if ( Hurt( shot.Flat, shot.Direction ) )
+					shot.GameObject.Destroy();
+				else
+					shot.Slip();
 				return;
 			}
 		}
 	}
 
-	void Hurt( Vector2 from )
+	bool Hurt( Vector2 from, Vector2 heading )
 	{
-		if ( Phase != RunPhase.Playing || TryDodge() )
-			return;
+		if ( Phase != RunPhase.Playing || TryDodge( from, heading ) )
+			return false;
 
 		PainYaw = YawToward( from );
 		Health--;
@@ -1247,7 +1386,8 @@ public sealed class GameLoop : Component
 		if ( Health > 0 )
 		{
 			ArenaSounds.Pain( Runner.WorldPosition );
-			return;
+			NoteDashCoach();
+			return true;
 		}
 
 		ArenaSounds.Death( Runner.WorldPosition );
@@ -1270,20 +1410,50 @@ public sealed class GameLoop : Component
 		Announce( T.Announce.RunOver );
 		Say( "dead" );
 		Autosave();
+		return true;
 	}
 
-	bool TryDodge()
+
+	void NoteDashCoach()
+	{
+		if ( !talk.Remember( "dash" ) )
+			return;
+
+		dashCoachUntil = Time.Now + 8f;
+		Autosave();
+	}
+
+	bool TryDodge( Vector2 from, Vector2 heading )
 	{
 		var chance = DodgeChance;
-		if ( chance <= 0f || Game.Random.Float( 0f, 1f ) >= chance )
+		if ( chance <= 0f || (chance < 1f && Game.Random.Float( 0f, 1f ) >= chance) )
 			return false;
 
+		Dodges++;
+		DodgeYaw = YawToward( from );
+		lastDodgeAt = Time.Now;
 		invulnUntil = Time.Now + GameSettings.Run.IFrames;
-		var world = Geometry.ToPlayWorld( Runner.Flat );
-		ArenaSounds.Jump( Runner.WorldPosition );
-		ImpactFlash.Spawn( Scene, world, new Color( 0.72f, 0.95f, 1f ), 2.2f );
-		Announce( T.Announce.Dodged );
+
+		Runner.Juke( DodgeSide( from, heading ) );
+		DodgeFlash.Spawn( Scene, Runner.GameObject, Geometry.ToPlayWorld( Runner.Flat ), from - Runner.Flat, Runner.PlayerRadius );
+		ArenaSounds.Dodge( Runner.WorldPosition );
 		return true;
+	}
+
+	Vector2 DodgeSide( Vector2 from, Vector2 heading )
+	{
+		var offset = Runner.Flat - from;
+		if ( heading.Length < 0.01f )
+			heading = offset;
+		if ( heading.Length < 0.01f )
+			heading = Runner.Tangent;
+
+		var side = new Vector2( -heading.y, heading.x ).Normal;
+		var lean = side.x * offset.x + side.y * offset.y;
+		if ( MathF.Abs( lean ) < 1f )
+			return Game.Random.Float( 0f, 1f ) < 0.5f ? -side : side;
+
+		return lean < 0f ? -side : side;
 	}
 
 	public void TryHurt()
@@ -1296,7 +1466,7 @@ public sealed class GameLoop : Component
 		if ( Time.Now < invulnUntil || (Runner.IsValid() && Runner.Dashing) )
 			return;
 
-		Hurt( from );
+		Hurt( from, Runner.IsValid() ? Runner.Flat - from : Vector2.Zero );
 	}
 
 	float YawToward( Vector2 from )
@@ -1965,6 +2135,43 @@ public sealed class GameLoop : Component
 		runStartedAt = Time.Now;
 		Mouse.CursorType = "crosshair";
 		SpawnBoss( false );
+		ArenaSounds.Fight();
+	}
+
+	public void TestWave( int lap )
+	{
+		lap = Math.Max( 1, lap );
+		var running = Phase is RunPhase.Playing or RunPhase.DecideLap or RunPhase.DecideRing or RunPhase.PickTrait;
+		if ( !running )
+			Restart();
+
+		if ( Talking )
+			SkipTalk();
+
+		ClearCombat();
+		for ( var next = Lap + 1; next <= lap; next++ )
+		{
+			Lap = next;
+			GrantContinueRounds();
+		}
+
+		Lap = lap;
+		Inventory?.ChamberAll();
+		pendingBoss = false;
+		bossWon = false;
+		skipHinted = false;
+		ClearPause();
+
+		if ( Runner.IsValid() )
+		{
+			Runner.GameObject.Enabled = true;
+			Runner.JumpToLap( lap, Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f );
+			Runner.ApplyPace( lap );
+		}
+
+		SpawnWave( lap );
+		Phase = RunPhase.Playing;
+		Mouse.CursorType = "crosshair";
 		ArenaSounds.Fight();
 	}
 

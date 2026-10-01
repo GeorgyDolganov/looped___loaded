@@ -2,7 +2,7 @@
   "Id": "BORE",
   "Title": "PIERCE",
   "Blurb": "Fill them with holes.",
-  "Icon": "ui/traits/pierce.png",
+  "Icon": "ui/traits/PIERCE-impact-64x64.png",
   "Pack": "Rail",
   "MaxLevel": 3,
   "InPool": true,

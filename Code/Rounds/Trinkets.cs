@@ -247,7 +247,8 @@ public static class Trinkets
 		{
 			if ( string.IsNullOrWhiteSpace( card.Id ) )
 			{
-				Log.Warning( $"Trinket is missing an Id ({card.ResourcePath})" );
+				if ( SourceExists( card ) )
+					Log.Warning( $"Trinket is missing an Id ({card.ResourcePath})" );
 				continue;
 			}
 
@@ -312,6 +313,22 @@ public static class Trinkets
 
 		ready = index;
 		return index;
+	}
+
+	static bool SourceExists( TrinketDef card )
+	{
+		if ( card is null )
+			return false;
+
+		var path = card.ResourcePath;
+		if ( string.IsNullOrWhiteSpace( path ) )
+			return true;
+
+		var fs = FileSystem.Mounted;
+		if ( fs is null )
+			return true;
+
+		return fs.FileExists( path );
 	}
 
 	static bool Present( TrinketDef card )

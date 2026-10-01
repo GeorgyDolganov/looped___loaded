@@ -4,14 +4,13 @@
   "Pack": "Laser",
   "MaxLevel": 1,
   "Sort": 36,
-  "Icon": "ui/traits/electric.png",
+  "Icon": "ui/traits/ARC-64x64.png",
   "Blurb": "Jumps once to a near neighbor.",
   "Requires": [
-    "trinkets/lash.trinket"
+    "trinkets/electrify.trinket"
   ],
   "Excludes": [
-    "trinkets/sear.trinket",
-    "trinkets/kiln.trinket"
+    "trinkets/focus.trinket"
   ],
   "Mods": [
     {
@@ -34,9 +33,8 @@
     }
   ],
   "__references": [
-    "trinkets/lash.trinket",
-    "trinkets/sear.trinket",
-    "trinkets/kiln.trinket"
+    "trinkets/electrify.trinket",
+    "trinkets/focus.trinket"
   ],
   "__version": 0
 }

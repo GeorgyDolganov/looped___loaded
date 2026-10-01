@@ -1,0 +1,36 @@
+{
+  "Id": "FOCUS",
+  "Title": "FOCUS",
+  "Pack": "Laser",
+  "MaxLevel": 1,
+  "Sort": 34,
+  "Icon": "ui/traits/FOCUS-64x64.png",
+  "Blurb": "+1 damage while the beam stays on a body.",
+  "Flags": [
+    "BeamSear"
+  ],
+  "Requires": [
+    "trinkets/electrify.trinket"
+  ],
+  "Excludes": [
+    "trinkets/arc.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 720,
+      "Value": 0.1,
+      "UseWhen": true,
+      "WhenStat": "BeamRank",
+      "HasWhenMin": true,
+      "WhenMin": 1
+    }
+  ],
+  "__references": [
+    "trinkets/electrify.trinket",
+    "trinkets/arc.trinket"
+  ],
+  "__version": 0
+}

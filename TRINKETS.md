@@ -29,33 +29,7 @@
 | Warrior | RARE | 5 | 2 |  |
 | Abomination | EPIC | 8 | 1 | yes |
 
-## Entry
-
-### SPLIT
-
-| Field | Value |
-| --- | --- |
-| Id | SPLIT |
-| Pack | Entry |
-| InPool | yes |
-| MaxLevel | 4 |
-| Requires | BUCK |
-| Count Add | 1 / 2 / 4 / 7 @100 |
-| Reload Add | 0.15 / 0.25 / 0.5 @700 |
-
 ## Junior
-
-### MEAT
-
-| Field | Value |
-| --- | --- |
-| Id | MEAT |
-| Pack | Junior |
-| InPool | yes |
-| MaxLevel | 2 |
-| MeatRange Max | 140 @900 |
-| MeatBonus Add | 1 x level @900 |
-| RangeCut Add | 1 x level @0 |
 
 ### RICO
 
@@ -70,18 +44,6 @@
 
 ## Warrior
 
-### DOUBLE
-
-| Field | Value |
-| --- | --- |
-| Id | DOUBLE |
-| Pack | Warrior |
-| InPool | yes |
-| MaxLevel | 1 |
-| Flag | DoublePump |
-| Reload Add | 0.35 @700 |
-| Gap Set | 0.12 @700 |
-
 ### KICK
 
 | Field | Value |
@@ -89,9 +51,20 @@
 | Id | KICK |
 | Pack | Warrior |
 | InPool | yes |
-| MaxLevel | 1 |
-| KickForce Add | 110 @900 |
+| MaxLevel | 3 |
+| KickForce Add | 110 / 160 / 220 @900 |
 | KickRange Set | 180 passive @0 |
+
+### BULK
+
+| Field | Value |
+| --- | --- |
+| Id | BULK |
+| Pack | Warrior |
+| InPool | yes |
+| MaxLevel | 3 |
+| Blurb | Rounds get huge. |
+| Radius Mul | 2 / 4 / 7 @1150 |
 
 ### STUN
 
@@ -116,9 +89,12 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Hook | Slug |
-| Blurb | Get +damage for each removed projectile |
+| Blurb | Get +damage, +4 bounces, and +4 pierce for each removed projectile. |
+| Requires | BORE, BUCK |
 | Flag | NoNail |
 | Damage Add | 2 per removed @1000 |
+| Bounces Add | 4 per removed @505 |
+| Pierce Add | 4 per removed @620 |
 | Radius Max | 22 @1100 |
 | RangePad Set | 120 @900 |
 
@@ -164,7 +140,7 @@
 | InPool | yes |
 | MaxLevel | 3 |
 | Blurb | Hold to shoot multiple rounds, one after another. |
-| Excludes | LASH |
+| Excludes | ELECTRIFY |
 | Flag | Auto |
 | Burst Set | 3 / 4 / 6 @1400 |
 | Reload Add | 0.45 x rank @700 |
@@ -186,17 +162,17 @@
 
 ## Laser
 
-### LASH
+### ELECTRIFY
 
 | Field | Value |
 | --- | --- |
-| Id | LASH |
+| Id | ELECTRIFY |
 | Pack | Laser |
 | InPool | yes |
 | MaxLevel | 3 |
 | OwnedWeight | 12 |
 | Blurb | HOLD TO ZAP. Short reload. |
-| Excludes | DRUM |
+| Excludes | DRUM, FETCH, GHOST |
 | Flag | Beam |
 | Reload Set | 0.3 @710 |
 | BeamTick Set | 0.6 / 0.4 / 0.2 @1500 |
@@ -227,7 +203,6 @@
 | InPool | yes |
 | MaxLevel | 3 |
 | Speed Mul | 1.2 / 1.4 / 1.65 @800 |
-| Reload Add | 0.12 x rank @700 |
 
 ## Nailgun
 
@@ -242,11 +217,11 @@
 | Blurb | Improve your chance of ignoring damage |
 | Dodge Set | 0.1 / 0.2 / 0.32 @900 |
 
-### SNAP
+### RELOADER
 
 | Field | Value |
 | --- | --- |
-| Id | SNAP |
+| Id | RELOADER |
 | Pack | Nailgun |
 | InPool | yes |
 | MaxLevel | 3 |
@@ -256,20 +231,17 @@
 
 ## Rocket
 
-### MIRV
+### CASSETTE
 
 | Field | Value |
 | --- | --- |
-| Id | MIRV |
+| Id | CASSETTE |
 | Pack | Rocket |
 | InPool | yes |
-| MaxLevel | 1 |
-| Blurb | Explosions not only on first contact! |
+| MaxLevel | 3 |
+| Blurb | Projectiles can explode +1/2/3 times after they already exploded. |
 | Requires | WARHEAD |
-| Excludes | LANCE, CRATER |
-| Flag | PerPelletSplash |
-| Splash Mul | 0.55 @1201 |
-| Speed Mul | 0.8 @800 |
+| ExtraSplash Add | 1 / 2 / 3 @1210 |
 
 ### BLOOM
 
@@ -280,89 +252,21 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Requires | WARHEAD |
-| Excludes | LANCE, CRATER |
 | Splash Add | 80 @1202 |
 | Reload Add | 0.2 @700 |
 
-### SCORCH
+### IGNORANCE
 
 | Field | Value |
 | --- | --- |
-| Id | SCORCH |
+| Id | IGNORANCE |
 | Pack | Rocket |
 | InPool | yes |
 | MaxLevel | 1 |
-| Requires | WARHEAD |
-| Excludes | LANCE, CRATER |
-| Speed Mul | 0.75 @800 |
-| Reload Add | 0.12 @700 |
-| SplashDamage Max | 2 @1260 |
-
-### LANCE
-
-| Field | Value |
-| --- | --- |
-| Id | LANCE |
-| Pack | Rocket |
-| InPool | yes |
-| MaxLevel | 1 |
-| Blurb | Are you tiered from hitting yourself? Try this! Disables Ricochet. |
-| Requires | WARHEAD |
-| Excludes | MIRV, BLOOM, SCORCH, PINBALL |
+| Blurb | Your explosions do not hurt you. |
 | Flag | NoFriendlySplash |
-| Damage Add | 2 @900 |
-| Splash Mul | 0.7 @1203 |
-| Speed Mul | 0.7 @800 |
-| Reload Add | 0.3 @700 |
-| Bounces Set | 0 @510 |
-
-### CRATER
-
-| Field | Value |
-| --- | --- |
-| Id | CRATER |
-| Pack | Rocket |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | WARHEAD |
-| Excludes | MIRV, BLOOM, SCORCH, PINBALL |
-| Radius Max | 22 @1110 |
-| Splash Add | 56 @1204 |
-| Speed Mul | 0.65 @800 |
-| Bounces Set | 0 @510 |
-
-### SPOT
-
-| Field | Value |
-| --- | --- |
-| Id | SPOT |
-| Pack | Rocket |
-| InPool | yes |
-| MaxLevel | 1 |
-| Blurb | AIM TO BOOOOM |
-| Requires | WARHEAD |
-| Excludes | PINBALL |
-| Flag | PointAim |
-| Speed Mul | 0.85 @800 |
-| Splash Add | 40 @1205 |
-| SplashDamage Add | 1 @1261 |
-| Bounces Set | 0 @510 |
 
 ## Rail
-
-### AWL
-
-| Field | Value |
-| --- | --- |
-| Id | AWL |
-| Pack | Rail |
-| InPool | yes |
-| MaxLevel | 1 |
-| Blurb | Ignores boss armor. |
-| Excludes | KEEL |
-| Flag | IgnoreArmor |
-| Speed Mul | 0.85 @800 |
-| Reload Add | 0.12 @700 |
 
 ### RAM
 
@@ -374,96 +278,53 @@
 | MaxLevel | 1 |
 | Blurb | Each body you punch through hits the next HARDER.  |
 | Requires | BORE |
-| Excludes | KEEL |
 | Flag | RampPierce |
 | Speed Mul | 0.9 @800 |
 
-### KEEL
+### FETCH
 
 | Field | Value |
 | --- | --- |
-| Id | KEEL |
+| Id | FETCH |
 | Pack | Rail |
 | InPool | yes |
 | MaxLevel | 1 |
-| Blurb | Removes richochet. |
-| Excludes | AWL, RAM, PINBALL |
-| Damage Add | 5 @900 |
-| Speed Mul | 0.6 @800 |
-| Bounces Set | 0 @510 |
+| Blurb | Flies straight back to you, through walls and bodies. |
+| Excludes | ELECTRIFY |
+| Flag | Fetch |
+| Bounces Set | 0 @520 |
+| Reload Add | 0.35 @700 |
 
 ## Rifle
 
-### BELT
+### FRENZY
 
 | Field | Value |
 | --- | --- |
-| Id | BELT |
-| Pack | Rifle |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | DRUM |
-| Excludes | SPOOL, BITE |
-| Burst Add | 3 @1410 |
-| Reload Add | 0.3 @700 |
-
-### SPOOL
-
-| Field | Value |
-| --- | --- |
-| Id | SPOOL |
-| Pack | Rifle |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | DRUM |
-| Excludes | BELT |
-| Cycle Mul | 0.65 @1400 |
-| Reload Add | 0.15 @700 |
-
-### BITE
-
-| Field | Value |
-| --- | --- |
-| Id | BITE |
+| Id | FRENZY |
 | Pack | Rifle |
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | +damage on a body this burst already hit.  |
 | Requires | DRUM |
-| Excludes | BELT |
 | Flag | Bite |
 | Speed Mul | 0.8 @800 |
 
 ## Laser
 
-### SEAR
+### FOCUS
 
 | Field | Value |
 | --- | --- |
-| Id | SEAR |
+| Id | FOCUS |
 | Pack | Laser |
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | +1 damage while the beam stays on a body. |
-| Requires | LASH |
-| Excludes | ARC, FORK |
+| Requires | ELECTRIFY |
+| Excludes | ARC |
 | Flag | BeamSear |
 | Reload Add | 0.1 @720 |
-
-### KILN
-
-| Field | Value |
-| --- | --- |
-| Id | KILN |
-| Pack | Laser |
-| InPool | yes |
-| MaxLevel | 1 |
-| Blurb | Tick ×0.75 while latched.  |
-| Requires | LASH |
-| Excludes | ARC, FORK |
-| BeamKiln Set | 0.75 @1500 |
-| BeamWidth Mul | 0.75 @1600 |
-| Reload Add | 0.06 @720 |
 
 ### ARC
 
@@ -474,24 +335,10 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Jumps once to a near neighbor. |
-| Requires | LASH |
-| Excludes | SEAR, KILN |
+| Requires | ELECTRIFY |
+| Excludes | FOCUS |
 | BeamArc Set | 220 @1500 |
 | BeamTick Mul | 1.15 @1510 |
-
-### FORK
-
-| Field | Value |
-| --- | --- |
-| Id | FORK |
-| Pack | Laser |
-| InPool | yes |
-| MaxLevel | 1 |
-| Blurb | Side bolts hit on their own. |
-| Requires | LASH |
-| Excludes | SEAR, KILN |
-| Flag | BeamFork |
-| Reload Add | 0.08 @720 |
 
 ### SHUNT
 
@@ -502,7 +349,7 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Ignores shields and plates. |
-| Requires | LASH |
+| Requires | ELECTRIFY |
 | Flag | BeamShunt |
 | BeamTick Mul | 1.25 @1510 |
 | BeamWidth Mul | 0.85 @1600 |
@@ -516,113 +363,9 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Remaining ticks finish where you let go. |
-| Requires | LASH |
+| Requires | ELECTRIFY |
 | Flag | BeamLinger |
 | Reload Add | 0.12 @720 |
-
-### CELL
-
-| Field | Value |
-| --- | --- |
-| Id | CELL |
-| Pack | Laser |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | LASH |
-| BeamTicks Add | 2 @1510 |
-| Reload Add | 0.1 @720 |
-
-## Rail
-
-### RACK
-
-| Field | Value |
-| --- | --- |
-| Id | RACK |
-| Pack | Rail |
-| InPool | yes |
-| MaxLevel | 1 |
-| Reload Mul | 0.75 @730 |
-| Speed Mul | 0.85 @800 |
-
-### DRAW
-
-| Field | Value |
-| --- | --- |
-| Id | DRAW |
-| Pack | Rail |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | RACK |
-| Reload Mul | 0.85 @730 |
-| Pierce Add | -1 @610 |
-| Pierce Max | 0 @611 |
-
-## Laser
-
-### VENT
-
-| Field | Value |
-| --- | --- |
-| Id | VENT |
-| Pack | Laser |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | LASH |
-| Reload Mul | 0.8 @730 |
-| BeamTick Mul | 1.2 @1510 |
-
-### COOL
-
-| Field | Value |
-| --- | --- |
-| Id | COOL |
-| Pack | Laser |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | LASH, VENT |
-| Reload Mul | 0.85 @730 |
-| BeamWidth Mul | 0.8 @1600 |
-
-## Shotgun
-
-### SIGHT
-
-| Field | Value |
-| --- | --- |
-| Id | SIGHT |
-| Pack | Shotgun |
-| InPool | yes |
-| MaxLevel | 1 |
-| Blurb | Later shots in a burst use half spread. |
-| Requires | DRUM |
-| Flag | Sight |
-| Speed Mul | 0.9 @800 |
-
-### SHUCK
-
-| Field | Value |
-| --- | --- |
-| Id | SHUCK |
-| Pack | Shotgun |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | BUCK |
-| Cone Add | 8 @400 |
-| Reload Mul | 0.8 @730 |
-
-### SLAM
-
-| Field | Value |
-| --- | --- |
-| Id | SLAM |
-| Pack | Shotgun |
-| InPool | yes |
-| MaxLevel | 1 |
-| Requires | BUCK |
-| Count Add | -1 @410 |
-| Count Max | 1 @411 |
-| Reload Mul | 0.85 @730 |
 
 ## Junior
 
@@ -635,6 +378,28 @@
 | InPool | yes |
 | MaxLevel | 3 |
 | Blurb | Each ricochet hits HARDER and flies FASTER. |
-| Excludes | LANCE, CRATER, SPOT, KEEL |
 | BounceDamage Add | 1 / 1 / 2 @900 |
 | BounceSpeed Add | 0.1 / 0.2 / 0.3 @900 |
+
+### RETURN
+
+| Field | Value |
+| --- | --- |
+| Id | RETURN |
+| Pack | Junior |
+| InPool | yes |
+| MaxLevel | 3 |
+| Blurb | Spent rounds chase you faster. Faster each rank. |
+| Pickup Mul | 1.35 / 1.7 / 2.15 @800 |
+
+### GHOST
+
+| Field | Value |
+| --- | --- |
+| Id | GHOST |
+| Pack | Junior |
+| InPool | yes |
+| MaxLevel | 1 |
+| Blurb | Rounds pass through panels, shards, and spinners. |
+| Excludes | ELECTRIFY |
+| Flag | Ghost |

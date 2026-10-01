@@ -4,7 +4,7 @@
   "Pack": "Rocket",
   "MaxLevel": 3,
   "Sort": 12,
-  "Icon": "ui/traits/explosive.png",
+  "Icon": "ui/traits/WARHEAD-64x64.png",
   "Blurb": "SLOW BUT AREAL. Also damages you! PS No rocket jump!",
   "Flags": [
     "FriendlySplash"

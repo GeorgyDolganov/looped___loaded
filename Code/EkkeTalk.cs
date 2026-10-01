@@ -6,7 +6,7 @@ public sealed class EkkeTalk
 	{
 		"intro", "bones", "skip", "lap", "boss", "chapel",
 		"lens", "core", "ring", "yard", "dead", "altar",
-		"frame", "organ", "won"
+		"frame", "organ", "won", "dash"
 	};
 
 	readonly HashSet<string> seen = new( StringComparer.OrdinalIgnoreCase );
@@ -38,6 +38,14 @@ public sealed class EkkeTalk
 			var count = Math.Clamp( shown, 0, text.Length );
 			return text[..count];
 		}
+	}
+
+	public bool Remember( string id )
+	{
+		if ( string.IsNullOrWhiteSpace( id ) )
+			return false;
+
+		return seen.Add( id );
 	}
 
 	public bool Once( string id, IReadOnlyList<string> source, bool force = false )

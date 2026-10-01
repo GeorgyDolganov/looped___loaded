@@ -4,7 +4,7 @@
   "Pack": "Nailgun",
   "MaxLevel": 3,
   "Sort": 16,
-  "Icon": "ui/traits/graze.png",
+  "Icon": "ui/traits/DOGE-64x64.png",
   "Blurb": "Improve your chance of ignoring damage",
   "Mods": [
     {

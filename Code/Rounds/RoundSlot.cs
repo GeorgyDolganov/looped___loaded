@@ -101,7 +101,6 @@ public struct GunRecipe
 {
 	public bool Beam;
 	public bool Auto;
-	public bool DoublePump;
 	public int Count;
 	public float Cone;
 	public int Damage;
@@ -114,18 +113,15 @@ public struct GunRecipe
 	public float Radius;
 	public float Splash;
 	public int SplashDamage;
+	public int ExtraSplash;
 	public bool FriendlySplash;
 	public bool PerPelletSplash;
-	public bool PointAim;
-	public bool IgnoreArmor;
 	public bool RampPierce;
 	public bool Nail;
 	public float StickTime;
 	public float RangeCut;
 	public float RangePad;
 	public float Falloff;
-	public float MeatRange;
-	public int MeatBonus;
 	public float KickForce;
 	public float KickRange;
 	public float StunTime;
@@ -133,7 +129,6 @@ public struct GunRecipe
 	public float Cycle;
 	public int Burst;
 	public float WalkStep;
-	public bool Sight;
 	public bool Bite;
 	public float Reload;
 	public float BoreWait;
@@ -147,13 +142,13 @@ public struct GunRecipe
 	public float BeamWidth;
 	public int BeamRank;
 	public bool BeamSear;
-	public float BeamKiln;
 	public float BeamArc;
-	public bool BeamFork;
 	public bool BeamShunt;
 	public bool BeamLinger;
 	public float Dodge;
-	public float Gap;
+	public float Pickup;
+	public bool Fetch;
+	public bool Ghost;
 }
 
 public struct RoundFlight
@@ -168,23 +163,21 @@ public struct RoundFlight
 	public float SpeedScale;
 	public float ExplosiveRadius;
 	public int SplashDamage;
+	public int ExtraSplashes;
 	public bool FriendlySplash;
-	public bool PointAim;
-	public bool IgnoreArmor;
 	public bool RampPierce;
 	public bool Bite;
 	public int BurstId;
 	public int VolleyIndex;
-	public Vector2 Mark;
 	public float Falloff;
-	public float MeatRange;
-	public int MeatBonus;
 	public float KickForce;
 	public float KickRange;
 	public float StunTime;
 	public float StunRange;
 	public float StickTime;
 	public bool Nail;
+	public bool Fetch;
+	public bool Ghost;
 	public float FreezeDuration;
 	public float FreezeScale;
 	public ShotVolley Volley;
@@ -196,16 +189,14 @@ public sealed class ShotVolley
 	public bool Splashed;
 	public bool PerPellet;
 	public bool Closed;
-	public bool Hold;
 	public Vector2 LastFlat;
 	readonly HashSet<Enemy> crowd = new();
 
+	public bool CanFirstSplash() => PerPellet || !Splashed;
+
 	public bool TrySplash()
 	{
-		if ( PerPellet )
-			return true;
-
-		if ( Splashed )
+		if ( !CanFirstSplash() )
 			return false;
 
 		Splashed = true;

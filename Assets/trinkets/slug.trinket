@@ -4,11 +4,15 @@
   "Pack": "Abomination",
   "MaxLevel": 1,
   "Sort": 8,
-  "Icon": "ui/traits/heavy.png",
-  "Blurb": "Get +damage for each removed projectile",
+  "Icon": "ui/traits/SLUG-64x64.png",
+  "Blurb": "Get +damage, +4 bounces, and +4 pierce for each removed projectile.",
   "Hook": "Slug",
   "Flags": [
     "NoNail"
+  ],
+  "Requires": [
+    "trinkets/bore.trinket",
+    "trinkets/buck.trinket"
   ],
   "Mods": [
     {
@@ -17,6 +21,20 @@
       "Growth": "PerRemoved",
       "Order": 1000,
       "Value": 2
+    },
+    {
+      "Stat": "Bounces",
+      "Op": "Add",
+      "Growth": "PerRemoved",
+      "Order": 505,
+      "Value": 4
+    },
+    {
+      "Stat": "Pierce",
+      "Op": "Add",
+      "Growth": "PerRemoved",
+      "Order": 620,
+      "Value": 4
     },
     {
       "Stat": "Radius",
@@ -38,6 +56,9 @@
       "Text": "One shot"
     }
   ],
-  "__references": [],
+  "__references": [
+    "trinkets/bore.trinket",
+    "trinkets/buck.trinket"
+  ],
   "__version": 0
 }

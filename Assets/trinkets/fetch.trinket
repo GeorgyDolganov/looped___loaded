@@ -1,0 +1,41 @@
+{
+  "Id": "FETCH",
+  "Title": "FETCH",
+  "Pack": "Rail",
+  "MaxLevel": 1,
+  "Sort": 27,
+  "Icon": "ui/traits/FETCH-64x64.png",
+  "Blurb": "Flies straight back to you, through walls and bodies.",
+  "Flags": [
+    "Fetch"
+  ],
+  "Excludes": [
+    "trinkets/electrify.trinket"
+  ],
+  "Mods": [
+    {
+      "Stat": "Bounces",
+      "Op": "Set",
+      "Growth": "Flat",
+      "Order": 520,
+      "Value": 0
+    },
+    {
+      "Stat": "Reload",
+      "Op": "Add",
+      "Growth": "Flat",
+      "Order": 700,
+      "Value": 0.35
+    }
+  ],
+  "Notes": [
+    {
+      "Text": "Locks out ELECTRIFY",
+      "Sign": -1
+    }
+  ],
+  "__references": [
+    "trinkets/electrify.trinket"
+  ],
+  "__version": 0
+}

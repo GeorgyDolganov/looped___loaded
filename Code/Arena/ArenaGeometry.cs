@@ -466,6 +466,8 @@ public sealed class ArenaGeometry
 			EjectSoft( ref flat, radius, includeBoss, preferFrom, maxStep );
 	}
 
+	public static bool Obstacle( WallKind kind ) => kind is WallKind.Panel or WallKind.Shard or WallKind.Spin;
+
 	public bool TraceRay( Vector2 origin, Vector2 direction, float maxDistance, out ArenaHit hit )
 	{
 		hit = default;
@@ -805,7 +807,7 @@ public sealed class ArenaGeometry
 		return corrected;
 	}
 
-	public List<Vector2> PredictPath( Vector2 origin, Vector2 direction, float radius, float firstLegLimit, float bounceLegLength, int extraBounces = 1, float spinSpeed = 0f, float flightSpeed = 950f )
+	public List<Vector2> PredictPath( Vector2 origin, Vector2 direction, float radius, float firstLegLimit, float bounceLegLength, int extraBounces = 1, float spinSpeed = 0f, float flightSpeed = 950f, bool ghost = false )
 	{
 		var path = new List<Vector2> { origin };
 		var dir = direction.Length > 0.01f ? direction.Normal : Vector2.Right;
@@ -818,20 +820,37 @@ public sealed class ArenaGeometry
 			for ( var i = 0; i <= bounces; i++ )
 			{
 				var limit = first ? firstLegLimit : bounceLegLength;
-				if ( limit <= 1f )
-					break;
-
-				if ( !TraceRay( pos, dir, limit + radius, out var hit ) )
+				var slipped = 0;
+				while ( limit > 1f && slipped < 8 )
 				{
-					path.Add( pos + dir * limit );
-					return path;
+					if ( !TraceRay( pos, dir, limit + radius, out var hit ) )
+					{
+						path.Add( pos + dir * limit );
+						return path;
+					}
+
+					if ( ghost && Obstacle( hit.Kind ) )
+					{
+						var skip = MathF.Min( limit, MathF.Max( 2f, hit.Distance + 2f ) );
+						pos += dir * skip;
+						limit -= skip;
+						slipped++;
+						continue;
+					}
+
+					var contact = hit.Position + hit.Normal * radius;
+					path.Add( contact );
+					pos = contact;
+					dir = Reflect( dir, hit.Normal ).Normal;
+					first = false;
+					break;
 				}
 
-				var contact = hit.Position + hit.Normal * radius;
-				path.Add( contact );
-				pos = contact;
-				dir = Reflect( dir, hit.Normal ).Normal;
-				first = false;
+				if ( limit <= 1f )
+				{
+					path.Add( pos );
+					return path;
+				}
 			}
 
 			return path;

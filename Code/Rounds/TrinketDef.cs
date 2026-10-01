@@ -37,8 +37,6 @@ public enum GunStat
 	SplashDamage,
 	RangeCut,
 	RangePad,
-	MeatRange,
-	MeatBonus,
 	KickForce,
 	KickRange,
 	StunTime,
@@ -51,14 +49,14 @@ public enum GunStat
 	BeamTicks,
 	BeamWidth,
 	BeamArc,
-	BeamKiln,
 	BeamRank,
 	StickTime,
 	Dodge,
-	Gap,
 	Energy,
 	BounceDamage,
-	BounceSpeed
+	BounceSpeed,
+	ExtraSplash,
+	Pickup
 }
 
 public enum ModOp
@@ -92,11 +90,7 @@ public enum GunFlag
 	None = 0,
 	Beam = 1 << 0,
 	Auto = 1 << 1,
-	DoublePump = 1 << 2,
-	PointAim = 1 << 3,
-	IgnoreArmor = 1 << 4,
 	RampPierce = 1 << 5,
-	Sight = 1 << 6,
 	Bite = 1 << 7,
 	PerPelletSplash = 1 << 9,
 	FriendlySplash = 1 << 10,
@@ -104,9 +98,11 @@ public enum GunFlag
 	Nail = 1 << 12,
 	NoNail = 1 << 13,
 	BeamSear = 1 << 14,
-	BeamFork = 1 << 15,
 	BeamShunt = 1 << 16,
-	BeamLinger = 1 << 17
+	BeamLinger = 1 << 17,
+	Fetch = 1 << 18,
+	Return = 1 << 19,
+	Ghost = 1 << 20
 }
 
 [AssetType( Name = "Trinket", Extension = "trinket", Category = "Looped Loaded" )]
