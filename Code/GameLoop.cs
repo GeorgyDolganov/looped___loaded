@@ -21,8 +21,14 @@ public sealed class GameLoop : Component
 	public string BossName => Locations.Boss( Location );
 	public string NextRingCode => Locations.Code( Locations.Next( Location ) );
 	public string NextRingRule => Locations.Rule( Locations.Next( Location ) );
-	public bool WantsUiCursor => InMenu || Paused || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait || Phase == RunPhase.Dead || Phase == RunPhase.Extracted || Phase == RunPhase.Won;
-	public bool CanPause => !InMenu && !Paused && (Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait);
+	public bool Talking => talk.Active;
+	public bool Halted => Paused || Talking;
+	public string TalkText => talk.Shown;
+	public bool TalkReady => talk.LineDone;
+	public float TalkMouth => talk.Mouth;
+	public int TalkCursor => talk.Cursor;
+	public bool WantsUiCursor => InMenu || Halted || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait || Phase == RunPhase.Dead || Phase == RunPhase.Extracted || Phase == RunPhase.Won;
+	public bool CanPause => !InMenu && !Halted && (Phase == RunPhase.Playing || Phase == RunPhase.City || Phase == RunPhase.DecideLap || Phase == RunPhase.DecideRing || Phase == RunPhase.PickTrait);
 	public bool BlocksShot => Time.Now < uiClickUntil;
 	public ArenaGeometry Geometry => Arena.Geometry;
 	public List<Enemy> Enemies { get; } = new();
@@ -43,7 +49,7 @@ public sealed class GameLoop : Component
 	readonly GameSave[] slotCache = new GameSave[SaveStore.Slots];
 	bool savesLoaded;
 	public bool Paused { get; private set; }
-	public bool IsFrozen => Paused || Phase != RunPhase.Playing;
+	public bool IsFrozen => Halted || Phase != RunPhase.Playing;
 
 	TextConfig T => GameSettings.Text;
 	public string Notice { get; private set; } = "AIM. FIRE.";
@@ -168,6 +174,8 @@ public sealed class GameLoop : Component
 	bool feedClosedOnDeath;
 	public int BestLine { get; private set; } = -1;
 	readonly ProgressTrack progress = new();
+	readonly EkkeTalk talk = new();
+	float talkStartedAt;
 	public bool HasTask => progress.HasCurrent;
 	public string TaskTitle => progress.Current?.Title ?? "";
 	public string TaskBlurb => progress.Current?.Blurb ?? "";
@@ -242,7 +250,8 @@ public sealed class GameLoop : Component
 		save.Runs = Runs;
 		save.Ascend = Ascend;
 		save.Tasks = progress.Capture();
-		if ( !save.HasProgress && !SaveStore.Exists( ActiveSlot ) )
+		save.Talks = talk.Capture();
+		if ( !save.HasProgress && save.Talks.Count == 0 && !SaveStore.Exists( ActiveSlot ) )
 			return;
 
 		if ( SaveStore.Write( ActiveSlot, save ) )
@@ -299,9 +308,14 @@ public sealed class GameLoop : Component
 
 	void ApplySave( GameSave save )
 	{
+		talk.Clear();
+		talkStartedAt = 0f;
+
 		if ( save is null || !save.HasProgress )
 		{
 			WipeCampaign();
+			if ( save is not null && save.Version >= 3 )
+				talk.Apply( save.Talks );
 			return;
 		}
 
@@ -312,6 +326,10 @@ public sealed class GameLoop : Component
 		City?.Apply( save );
 		FedBiomass = Math.Max( save.FedBiomass, City.IsValid() ? City.Warehouse : save.Warehouse );
 		progress.Apply( save.Tasks, City, BestLine, BestExtract );
+		if ( save.Version < 3 )
+			talk.SeedAll();
+		else
+			talk.Apply( save.Talks );
 	}
 
 	void RefreshSaves()
@@ -330,6 +348,93 @@ public sealed class GameLoop : Component
 	public void NoteProgress( ProgressGoal goal, RunLocation location = default )
 	{
 		progress.Note( goal, location );
+		if ( goal == ProgressGoal.PlaceFrame )
+			Say( "frame" );
+		else if ( goal == ProgressGoal.WorkOrgan )
+			Say( "organ" );
+	}
+
+	public void Say( string id, params object[] args ) => StartTalk( id, false, args );
+
+	public void PreviewTalk( string id )
+	{
+		if ( T.TalkLines( id ).Count == 0 )
+		{
+			Log.Warning( $"ekke_say: unknown '{id}'" );
+			return;
+		}
+
+		var arg = id == "altar" ? (object)WinNeed : BossName;
+		StartTalk( id, true, arg );
+	}
+
+	public void ResetTalk()
+	{
+		talk.ClearSeen();
+		Autosave();
+		Log.Info( "ekke_reset: this slot will hear EKKE again" );
+	}
+
+	public void AdvanceTalk()
+	{
+		if ( !Talking )
+			return;
+
+		NoteUiClick();
+		if ( talk.Advance() )
+			EndTalk();
+	}
+
+	public void SkipTalk()
+	{
+		if ( !talk.Skip() )
+			return;
+
+		EndTalk();
+	}
+
+	void StartTalk( string id, bool force, params object[] args )
+	{
+		var raw = T.TalkLines( id );
+		if ( raw.Count == 0 )
+			return;
+
+		var lines = new string[raw.Count];
+		for ( var i = 0; i < raw.Count; i++ )
+			lines[i] = T.F( raw[i], args );
+
+		var was = Talking;
+		if ( !talk.Once( id, lines, force ) )
+			return;
+
+		if ( !was )
+			talkStartedAt = Time.Now;
+	}
+
+	void EndTalk()
+	{
+		var elapsed = talkStartedAt > 0f ? Time.Now - talkStartedAt : 0f;
+		talkStartedAt = 0f;
+		if ( elapsed > 0f )
+			ShiftClocks( elapsed );
+
+		NoteUiClick();
+		Autosave();
+	}
+
+	void TickTalk()
+	{
+		Mouse.CursorType = "pointer";
+		talk.Tick( RealTime.Delta );
+
+		if ( PressedEscape() )
+		{
+			SkipTalk();
+			return;
+		}
+
+		if ( Input.Pressed( "Jump" ) || Input.Pressed( "MenuSelect" ) || Input.Pressed( "Attack1" ) )
+			AdvanceTalk();
 	}
 
 	public void ShowMenu()
@@ -631,7 +736,7 @@ public sealed class GameLoop : Component
 
 	public void Pause()
 	{
-		if ( Paused || InMenu )
+		if ( Halted || InMenu )
 			return;
 
 		Paused = true;
@@ -785,6 +890,7 @@ public sealed class GameLoop : Component
 		SpawnWave( 1 );
 		Mouse.CursorType = "crosshair";
 		ArenaSounds.Fight();
+		Say( "intro" );
 	}
 
 	public void RegisterKill( EnemyKind kind, Vector2 origin )
@@ -823,6 +929,7 @@ public sealed class GameLoop : Component
 		var sum = boneNoticeSum;
 		Announce( T.F( T.Announce.ScrapGain, sum ) );
 		boneNoticeSum = sum;
+		Say( "bones" );
 	}
 
 	public void NoteShot()
@@ -930,15 +1037,21 @@ public sealed class GameLoop : Component
 		if ( !Arena.IsValid() || !Runner.IsValid() || !Inventory.IsValid() )
 			return;
 
-		if ( Phase == RunPhase.Menu )
-		{
-			TickMenu();
-			return;
-		}
-
 		if ( Paused )
 		{
 			TickPause();
+			return;
+		}
+
+		if ( Talking )
+		{
+			TickTalk();
+			return;
+		}
+
+		if ( Phase == RunPhase.Menu )
+		{
+			TickMenu();
 			return;
 		}
 
@@ -1155,6 +1268,7 @@ public sealed class GameLoop : Component
 		}
 
 		Announce( T.Announce.RunOver );
+		Say( "dead" );
 		Autosave();
 	}
 
@@ -1247,6 +1361,7 @@ public sealed class GameLoop : Component
 			Phase = RunPhase.DecideRing;
 			ArenaSounds.Tele();
 			Announce( T.F( T.Announce.RingClearNext, NextRingCode, NextRingRule ) );
+			Say( "ring" );
 			Autosave();
 			return;
 		}
@@ -1269,6 +1384,7 @@ public sealed class GameLoop : Component
 		{
 			skipHinted = true;
 			Announce( T.Announce.ArenaSkip );
+			Say( "skip" );
 		}
 
 		if ( Runner.IsValid() && Runner.Lap > Lap )
@@ -1295,11 +1411,15 @@ public sealed class GameLoop : Component
 		Phase = RunPhase.DecideLap;
 		ArenaSounds.Tele();
 		NoteProgress( ProgressGoal.FinishLap );
+		if ( HasBossOffer )
+			Say( "boss", BossName );
+		else
+			Say( "lap" );
 	}
 
 	public void ChooseExtract()
 	{
-		if ( Paused || (Phase != RunPhase.DecideLap && Phase != RunPhase.DecideRing) )
+		if ( Halted || (Phase != RunPhase.DecideLap && Phase != RunPhase.DecideRing) )
 			return;
 
 		Extract();
@@ -1307,7 +1427,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseNextRing()
 	{
-		if ( Paused || Phase != RunPhase.DecideRing || !HasNextRing )
+		if ( Halted || Phase != RunPhase.DecideRing || !HasNextRing )
 			return;
 
 		EnterNextRing();
@@ -1315,7 +1435,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseContinue()
 	{
-		if ( Paused || Phase != RunPhase.DecideLap || HasBossOffer )
+		if ( Halted || Phase != RunPhase.DecideLap || HasBossOffer )
 			return;
 
 		ContinueRun();
@@ -1323,7 +1443,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseBoss()
 	{
-		if ( Paused || Phase != RunPhase.DecideLap || !HasBossOffer )
+		if ( Halted || Phase != RunPhase.DecideLap || !HasBossOffer )
 			return;
 
 		ContinueBoss();
@@ -1331,7 +1451,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseUpgrade( TrinketDef trait )
 	{
-		if ( Paused || Phase != RunPhase.PickTrait )
+		if ( Halted || Phase != RunPhase.PickTrait )
 			return;
 
 		TryBuyOffer( trait );
@@ -1339,7 +1459,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseUpgradeAt( int index )
 	{
-		if ( Paused || Phase != RunPhase.PickTrait )
+		if ( Halted || Phase != RunPhase.PickTrait )
 			return;
 
 		TryBuyOfferAt( index );
@@ -1347,7 +1467,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseBuyAll()
 	{
-		if ( Paused || Phase != RunPhase.PickTrait )
+		if ( Halted || Phase != RunPhase.PickTrait )
 			return;
 
 		TryBuyAll();
@@ -1355,7 +1475,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseShopGo()
 	{
-		if ( Paused || Phase != RunPhase.PickTrait )
+		if ( Halted || Phase != RunPhase.PickTrait )
 			return;
 
 		LeaveShop();
@@ -1363,7 +1483,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseRefreshShop()
 	{
-		if ( Paused || Phase != RunPhase.PickTrait )
+		if ( Halted || Phase != RunPhase.PickTrait )
 			return;
 
 		var price = ShopRefreshCost;
@@ -1394,7 +1514,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseCity()
 	{
-		if ( Paused || (Phase != RunPhase.Dead && Phase != RunPhase.Extracted) )
+		if ( Halted || (Phase != RunPhase.Dead && Phase != RunPhase.Extracted) )
 			return;
 
 		EnterCity( false );
@@ -1402,7 +1522,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseAscend()
 	{
-		if ( Paused || Phase != RunPhase.Won )
+		if ( Halted || Phase != RunPhase.Won )
 			return;
 
 		Ascend++;
@@ -1415,13 +1535,14 @@ public sealed class GameLoop : Component
 
 	public void ChooseKeep()
 	{
-		if ( Paused || Phase != RunPhase.Won )
+		if ( Halted || Phase != RunPhase.Won )
 			return;
 
 		Phase = RunPhase.City;
 		Mouse.CursorType = "crosshair";
 		ArenaSounds.MenuOk();
 		Announce( T.Announce.City );
+		Say( "altar", WinNeed );
 	}
 
 	void WipeCampaign()
@@ -1434,6 +1555,8 @@ public sealed class GameLoop : Component
 		ExtractedRounds = 0;
 		feedClosedOnDeath = false;
 		progress.Clear();
+		talk.Clear();
+		talkStartedAt = 0f;
 		City?.Wipe();
 	}
 
@@ -1452,6 +1575,7 @@ public sealed class GameLoop : Component
 		{
 			Phase = RunPhase.City;
 			Mouse.CursorType = "crosshair";
+			Say( "altar", WinNeed );
 			return;
 		}
 
@@ -1485,6 +1609,7 @@ public sealed class GameLoop : Component
 			Phase = RunPhase.Won;
 			Mouse.CursorType = "pointer";
 			Announce( T.Announce.Won );
+			Say( "won" );
 			Autosave();
 			return;
 		}
@@ -1498,6 +1623,7 @@ public sealed class GameLoop : Component
 		{
 			Phase = RunPhase.City;
 			Mouse.CursorType = "crosshair";
+			Say( "altar", WinNeed );
 		}
 
 		if ( !deposit )
@@ -1545,6 +1671,7 @@ public sealed class GameLoop : Component
 		shopRefreshUses = 0;
 		RollShop();
 		Phase = RunPhase.PickTrait;
+		Say( "chapel" );
 	}
 
 	void RollShop()
@@ -1791,7 +1918,57 @@ public sealed class GameLoop : Component
 		return sum;
 	}
 
-	void SpawnBoss()
+	public void TestBoss()
+	{
+		if ( Talking )
+			SkipTalk();
+
+		City?.ClearShots();
+		ClearCombat();
+
+		if ( Runner.IsValid() )
+		{
+			Runner.GameObject.Enabled = true;
+			Runner.ResetToStart( Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f );
+			Runner.ApplyPace( 1 );
+		}
+
+		Phase = RunPhase.Playing;
+		Health = HeartMax;
+		if ( City.IsValid() )
+		{
+			var stats = City.Stats();
+			if ( Runner.IsValid() )
+			{
+				Runner.ApplyCity( stats );
+				Runner.ApplyPace( 1 );
+			}
+
+			if ( Inventory.IsValid() )
+			{
+				Inventory.ResetLoadout();
+				Inventory.Loadout.BonusDamage = stats.BonusDamage;
+			}
+
+			City.SetVisible( false );
+		}
+
+		Lap = 1;
+		Location = RunLocation.Glass;
+		if ( Arena.IsValid() )
+			Arena.ApplyLocation( Location );
+		if ( layoutSeed == 0 )
+			layoutSeed = Game.Random.Int( 1, int.MaxValue - 1 );
+		pendingBoss = false;
+		bossWon = false;
+		ClearPause();
+		runStartedAt = Time.Now;
+		Mouse.CursorType = "crosshair";
+		SpawnBoss( false );
+		ArenaSounds.Fight();
+	}
+
+	void SpawnBoss( bool announce = true )
 	{
 		ClearEnemies();
 		Geometry.CoreSolid = false;
@@ -1812,6 +1989,8 @@ public sealed class GameLoop : Component
 
 			var lens = lensObject.AddComponent<ArenaLens>();
 			lens.Arm( lensEnemy );
+			if ( announce )
+				Say( "lens" );
 			return;
 		}
 
@@ -1826,6 +2005,8 @@ public sealed class GameLoop : Component
 
 		var boss = go.AddComponent<ArenaBoss>();
 		boss.Arm( enemy );
+		if ( announce )
+			Say( "core" );
 	}
 
 	void SpawnWave( int lap )
@@ -2033,6 +2214,7 @@ public sealed class GameLoop : Component
 		Mouse.CursorType = "crosshair";
 		ArenaSounds.Tele();
 		Announce( T.F( T.Announce.PlaceRule, LocationCode, LocationRule ) );
+		Say( "yard" );
 		Autosave();
 	}
 

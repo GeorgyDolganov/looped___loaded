@@ -4,7 +4,7 @@ public static class ArenaSounds
 {
 	const int Studio = 44100;
 	const int Rate = 22050;
-	const int Bank = 6;
+	const int Bank = 7;
 
 	static readonly Dictionary<string, SoundEvent> events = new();
 	static int built;
@@ -49,6 +49,7 @@ public static class ArenaSounds
 	public static void Pain( Vector3? at = null ) => Play( "pain", at );
 	public static void Death( Vector3? at = null ) => Play( "death", at );
 	public static void Armor( Vector3? at = null ) => Play( "armor", at );
+	public static void Talk() => Play( "talk", null );
 	public static void MenuMove() => Play( "menu_move", null );
 	public static void MenuOk() => Play( "menu_ok", null );
 	public static void MenuBack() => Play( "menu_back", null );
@@ -117,6 +118,7 @@ public static class ArenaSounds
 		Put( "lose", true, 0.78f, 0.03f, 1, _ => ClipLose() );
 		Put( "crack", false, 0.78f, 0.1f, 2, ClipCrack );
 		Put( "shatter", false, 0.88f, 0.08f, 2, ClipShatter );
+		Put( "talk", true, 0.42f, 0.06f, 3, ClipTalk );
 	}
 
 	static void Put( string key, bool ui, float volume, float jitter, int variants, Func<int, float[]> synth )
@@ -1000,6 +1002,25 @@ public static class ArenaSounds
 			buf[i] = (noise - lp * 0.25f) * Env( t, 0.002f, 14f )
 				+ Square( (90f + v * 12f) * t ) * Env( t, 0.003f, 16f ) * 0.2f
 				+ ping * Env( t, 0.001f, 18f ) * 0.28f;
+		}
+
+		return buf;
+	}
+
+	static float[] ClipTalk( int v )
+	{
+		var rng = new Random( 120 + v );
+		var n = Len( 0.05f );
+		var buf = new float[n];
+		var f = 68f + v * 16f;
+		float lp = 0f;
+		for ( var i = 0; i < n; i++ )
+		{
+			var t = i / (float)Studio;
+			var sq = Square( f * t );
+			var noise = Noise( rng );
+			lp += (sq - lp) * 0.28f;
+			buf[i] = (lp * 0.72f + noise * 0.1f) * Env( t, 0.002f, 48f );
 		}
 
 		return buf;

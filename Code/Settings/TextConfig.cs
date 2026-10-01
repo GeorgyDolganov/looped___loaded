@@ -17,6 +17,7 @@ public class TextConfig : GameResource
 	[Property] public BuildingsCopy Buildings { get; set; } = new();
 	[Property] public PlacesCopy Places { get; set; } = new();
 	[Property] public ProgressCopy Progress { get; set; } = new();
+	[Property] public TalkCopy Talk { get; set; } = new();
 
 	public void Ensure()
 	{
@@ -35,6 +36,8 @@ public class TextConfig : GameResource
 		Buildings ??= new();
 		Places ??= new();
 		Progress ??= new();
+		Talk ??= new();
+		Talk.Ensure();
 	}
 
 	public string F( string template, params object[] args )
@@ -155,6 +158,33 @@ public class TextConfig : GameResource
 
 	public string ProgressTitle( string id ) => Or( ProgressStep( id ).Title, id?.ToUpperInvariant() ?? "" );
 	public string ProgressBlurb( string id ) => Or( ProgressStep( id ).Blurb, "" );
+
+	public IReadOnlyList<string> TalkLines( string id )
+	{
+		var talk = (Talk ??= new());
+		talk.Ensure();
+		var lines = id switch
+		{
+			"intro" => talk.Intro,
+			"bones" => talk.Bones,
+			"skip" => talk.SkipLap,
+			"lap" => talk.Lap,
+			"boss" => talk.Boss,
+			"chapel" => talk.Chapel,
+			"lens" => talk.Lens,
+			"core" => talk.Core,
+			"ring" => talk.Ring,
+			"yard" => talk.Yard,
+			"dead" => talk.Dead,
+			"altar" => talk.Altar,
+			"frame" => talk.Frame,
+			"organ" => talk.Organ,
+			"won" => talk.Won,
+			_ => null
+		};
+
+		return lines ?? (IReadOnlyList<string>)Array.Empty<string>();
+	}
 
 	public string CityModeLabel( CityMode mode )
 	{
@@ -647,4 +677,106 @@ public class CityCopy
 	[Property] public string BonusDash { get; set; } = "DASH";
 	[Property] public string BonusSlow { get; set; } = "SLOW";
 	[Property] public string BonusCards { get; set; } = "{0} CARDS";
+}
+
+public class TalkCopy
+{
+	[Property] public string Name { get; set; } = "EKKE";
+	[Property] public string Advance { get; set; } = "CLICK";
+	[Property] public string Skip { get; set; } = "ESC SKIP";
+	[Property] public List<string> Intro { get; set; } = new()
+	{
+		"I am EKKE. I am hungry.",
+		"You run the ring clockwise. You never turn back.",
+		"Aim with the mouse. LMB fires. Wait out the reload. SPACE dashes."
+	};
+	[Property] public List<string> Bones { get; set; } = new()
+	{
+		"Bones.",
+		"The chapel trades them for gun flesh. What you don't spend, you keep."
+	};
+	[Property] public List<string> SkipLap { get; set; } = new()
+	{
+		"Nothing left alive.",
+		"Press E to end the lap."
+	};
+	[Property] public List<string> Lap { get; set; } = new()
+	{
+		"EXTRACT carries the stash to my altar.",
+		"ONE MORE ROUND pays more. Die, and it burns."
+	};
+	[Property] public List<string> Boss { get; set; } = new()
+	{
+		"The {0} is ready for you.",
+		"Fight it. Or EXTRACT, and bring me what you already have."
+	};
+	[Property] public List<string> Chapel { get; set; } = new()
+	{
+		"Every card grows your gun and costs you something.",
+		"Read the price. SPACE when you are done."
+	};
+	[Property] public List<string> Lens { get; set; } = new()
+	{
+		"The front is armor.",
+		"Break the glass, then hit the side."
+	};
+	[Property] public List<string> Core { get; set; } = new()
+	{
+		"A straight shot dies on the armor.",
+		"Ricochet into the nucleus."
+	};
+	[Property] public List<string> Ring { get; set; } = new()
+	{
+		"Take the stash home, or ride the NEXT RING.",
+		"Your gun comes with you. The board does not."
+	};
+	[Property] public List<string> Yard { get; set; } = new()
+	{
+		"These panels kick. The wall you passed is already gone.",
+		"Some of them stay hidden until your shot gets close."
+	};
+	[Property] public List<string> Dead { get; set; } = new()
+	{
+		"The stash burned. A third crawled back to me.",
+		"Click EXIT."
+	};
+	[Property] public List<string> Altar { get; set; } = new()
+	{
+		"Keys 1-5 pick an organ. Click an empty cell to GROW it.",
+		"Feed me {0} biomass."
+	};
+	[Property] public List<string> Frame { get; set; } = new()
+	{
+		"A frame is not an organ yet.",
+		"Click it. INJECT until it beats."
+	};
+	[Property] public List<string> Organ { get; set; } = new()
+	{
+		"It beats. It is yours.",
+		"Set the same organ beside it, and it ranks up."
+	};
+	[Property] public List<string> Won { get; set; } = new()
+	{
+		"...I am full.",
+		"For now."
+	};
+
+	public void Ensure()
+	{
+		Intro ??= new();
+		Bones ??= new();
+		SkipLap ??= new();
+		Lap ??= new();
+		Boss ??= new();
+		Chapel ??= new();
+		Lens ??= new();
+		Core ??= new();
+		Ring ??= new();
+		Yard ??= new();
+		Dead ??= new();
+		Altar ??= new();
+		Frame ??= new();
+		Organ ??= new();
+		Won ??= new();
+	}
 }

@@ -368,6 +368,72 @@
     "AdjustHint": "ADJUST",
     "BackHint": "ESC BACK"
   },
+  "Talk": {
+    "Name": "EKKE",
+    "Advance": "CLICK",
+    "Skip": "ESC SKIP",
+    "Intro": [
+      "I am EKKE. I am hungry.",
+      "You run the ring clockwise. You never turn back.",
+      "Aim with the mouse. LMB fires. Wait out the reload. SPACE dashes."
+    ],
+    "Bones": [
+      "Bones.",
+      "The chapel trades them for gun flesh. What you don't spend, you keep."
+    ],
+    "SkipLap": [
+      "Nothing left alive.",
+      "Press E to end the lap."
+    ],
+    "Lap": [
+      "EXTRACT carries the stash to my altar.",
+      "ONE MORE ROUND pays more. Die, and it burns."
+    ],
+    "Boss": [
+      "The {0} is ready for you.",
+      "Fight it. Or EXTRACT, and bring me what you already have."
+    ],
+    "Chapel": [
+      "Every card grows your gun and costs you something.",
+      "Read the price. SPACE when you are done."
+    ],
+    "Lens": [
+      "The front is armor.",
+      "Break the glass, then hit the side."
+    ],
+    "Core": [
+      "A straight shot dies on the armor.",
+      "Ricochet into the nucleus."
+    ],
+    "Ring": [
+      "Take the stash home, or ride the NEXT RING.",
+      "Your gun comes with you. The board does not."
+    ],
+    "Yard": [
+      "These panels kick. The wall you passed is already gone.",
+      "Some of them stay hidden until your shot gets close."
+    ],
+    "Dead": [
+      "The stash burned. A third crawled back to me.",
+      "Click EXIT."
+    ],
+    "Altar": [
+      "Keys 1-5 pick an organ. Click an empty cell to GROW it.",
+      "Feed me {0} biomass."
+    ],
+    "Frame": [
+      "A frame is not an organ yet.",
+      "Click it. INJECT until it beats."
+    ],
+    "Organ": [
+      "It beats. It is yours.",
+      "Set the same organ beside it, and it ranks up."
+    ],
+    "Won": [
+      "...I am full.",
+      "For now."
+    ]
+  },
   "__references": [],
   "__version": 0
 }

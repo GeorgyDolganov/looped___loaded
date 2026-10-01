@@ -12,4 +12,6 @@ public class RunConfig : GameResource
 	[Property] public int RingHeal { get; set; } = 1;
 	[Property] public float IFrames { get; set; } = 1.05f;
 	[Property] public float HurtFlash { get; set; } = 0.55f;
+	[Property] public float TalkCharsPerSecond { get; set; } = 36f;
+	[Property] public float TalkStopPause { get; set; } = 0.22f;
 }

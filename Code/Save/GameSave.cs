@@ -11,6 +11,7 @@ public sealed class GameSave
 	public int Runs { get; set; }
 	public int Ascend { get; set; }
 	public List<string> Tasks { get; set; } = new();
+	public List<string> Talks { get; set; }
 	public List<PlotSave> Plots { get; set; } = new();
 
 	public int BuildingCount

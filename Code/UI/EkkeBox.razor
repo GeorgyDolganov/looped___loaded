@@ -1,0 +1,178 @@
+@namespace LoopedLoaded
+@using Sandbox.UI
+@inherits Panel
+
+<root class="ekke" onclick="@Advance">
+	<div class="ekke-dim"></div>
+	<div class="ekke-box">
+		<img class="ekke-back" src="ui/Arena UI/default_element_back.png" />
+		<div class="ekke-face">
+			<div class="ekke-portrait">
+				<EkkePortrait Loop="@Loop" class="ekke-model"></EkkePortrait>
+			</div>
+			<div class="ekke-copy">
+				<label class="ekke-name">@GameSettings.Text.Talk.Name</label>
+				<label class="ekke-words">* @TalkText</label>
+				<div class="ekke-foot">
+					<label class="ekke-skip">@GameSettings.Text.Talk.Skip</label>
+					<label class="ekke-next @(Ready ? "on" : "")">@GameSettings.Text.Talk.Advance</label>
+				</div>
+			</div>
+		</div>
+	</div>
+</root>
+
+@code
+{
+	[Parameter] public GameLoop Loop { get; set; }
+
+	string TalkText => Loop.IsValid() ? Loop.TalkText : "";
+	bool Ready => Loop.IsValid() && Loop.TalkReady;
+
+	void Advance() => Loop?.AdvanceTalk();
+
+	protected override int BuildHash()
+	{
+		if ( !Loop.IsValid() )
+			return 0;
+
+		return System.HashCode.Combine( Loop.TalkCursor, Loop.TalkText, Loop.TalkReady );
+	}
+}
+
+<style>
+	.ekke {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		pointer-events: all;
+		z-index: 70;
+	}
+
+	.ekke-dim {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.38);
+	}
+
+	.ekke-box {
+		position: absolute;
+		left: 50%;
+		bottom: 24px;
+		width: 900px;
+		aspect-ratio: 477 / 217;
+		transform: translateX( -450px );
+		background-color: transparent;
+		border: 0px solid transparent;
+		border-radius: 0px;
+		padding: 0px;
+		overflow: hidden;
+	}
+
+	.ekke-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.ekke-face {
+		position: absolute;
+		left: 11%;
+		top: 18%;
+		width: 78%;
+		height: 64%;
+		flex-direction: row;
+		align-items: stretch;
+	}
+
+	.ekke-portrait {
+		width: 168px;
+		height: 100%;
+		justify-content: center;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	.ekke-model {
+		width: 148px;
+		height: 148px;
+		background-color: transparent;
+	}
+
+	.ekke .ekke-name {
+		font-family: "Barlow Condensed";
+		font-size: 16px;
+		font-weight: 700;
+		letter-spacing: 4px;
+		color: #f0b429;
+	}
+
+	.ekke-copy {
+		flex-direction: column;
+		justify-content: space-between;
+		flex-grow: 1;
+		height: 100%;
+		padding-left: 18px;
+		padding-top: 6px;
+		padding-bottom: 4px;
+	}
+
+	.ekke .ekke-words {
+		font-family: "Barlow Condensed";
+		font-size: 26px;
+		font-weight: 600;
+		color: #f4ece0;
+		white-space: normal;
+		letter-spacing: 0.4px;
+	}
+
+	.ekke-foot {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: flex-end;
+		width: 100%;
+	}
+
+	.ekke .ekke-skip {
+		font-family: "Barlow Condensed";
+		font-size: 16px;
+		font-weight: 600;
+		letter-spacing: 2px;
+		color: #8e8b86;
+	}
+
+	.ekke .ekke-next {
+		font-family: "Barlow Condensed";
+		font-size: 16px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #f0b429;
+		opacity: 0;
+	}
+
+	.ekke .ekke-next.on {
+		opacity: 1;
+		animation-name: ekke-next;
+		animation-duration: 0.7s;
+		animation-iteration-count: infinite;
+	}
+
+	@@keyframes ekke-next {
+		0% {
+			opacity: 0.15;
+		}
+		50% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0.15;
+		}
+	}
+</style>

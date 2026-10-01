@@ -232,7 +232,7 @@
 			</div>
 		}
 
-		@if ( !Loop.Paused && Loop.Phase != RunPhase.City && Loop.Phase != RunPhase.Playing )
+		@if ( !Loop.Paused && !Loop.Talking && Loop.Phase != RunPhase.City && Loop.Phase != RunPhase.Playing )
 		{
 			<label class="help">@HelpText</label>
 		}
@@ -663,6 +663,11 @@
 					</div>
 				</div>
 			</div>
+		}
+
+		@if ( Loop.Talking )
+		{
+			<EkkeBox Loop="@Loop" />
 		}
 
 	</div>
@@ -1660,7 +1665,7 @@
 			Loop.Notice,
 			Loop.NoticeVisible,
 			TimeText,
-			Loop.Paused,
+			System.HashCode.Combine( Loop.Paused, Loop.Talking ),
 			(int)Loop.MenuView,
 			(int)Loop.MenuFocus,
 			(int)Loop.SettingCursor,

@@ -178,7 +178,7 @@ public sealed class GibChunk : Component
 
 	protected override void OnUpdate()
 	{
-		if ( loop.IsValid() && loop.Paused )
+		if ( loop.IsValid() && loop.Halted )
 			return;
 
 		var dt = Time.Delta;

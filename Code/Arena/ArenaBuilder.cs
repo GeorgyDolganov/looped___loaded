@@ -633,7 +633,7 @@ public sealed class ArenaBuilder : Component
 			return;
 
 		loop ??= Scene.GetAllComponents<GameLoop>().FirstOrDefault();
-		if ( loop.IsValid() && loop.Paused )
+		if ( loop.IsValid() && loop.Halted )
 			return;
 
 		Geometry.AdvanceSpinners( Time.Delta );
@@ -752,7 +752,7 @@ public sealed class ArenaBuilder : Component
 			return;
 
 		loop ??= Scene.GetAllComponents<GameLoop>().FirstOrDefault();
-		if ( loop.IsValid() && loop.Paused )
+		if ( loop.IsValid() && loop.Halted )
 			return;
 
 		var dt = Time.Delta;

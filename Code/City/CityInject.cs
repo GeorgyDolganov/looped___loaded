@@ -76,7 +76,7 @@ public sealed class CityInject : Component
 			return;
 		}
 
-		if ( Board.Loop.IsValid() && Board.Loop.Paused )
+		if ( Board.Loop.IsValid() && Board.Loop.Halted )
 			return;
 
 		age += Time.Delta;

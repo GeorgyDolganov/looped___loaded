@@ -3,7 +3,7 @@ namespace LoopedLoaded;
 public static class SaveStore
 {
 	public const int Slots = 3;
-	public const int CurrentVersion = 2;
+	public const int CurrentVersion = 3;
 
 	const string Folder = "saves";
 	const string LastFile = "saves/last.txt";

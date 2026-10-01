@@ -157,7 +157,7 @@ public sealed class RingRunner : Component
 	{
 		if ( Loop.IsValid() && Loop.IsFrozen )
 		{
-			if ( !Loop.Paused )
+			if ( !Loop.Halted )
 				clearBoost = 0f;
 
 			Slowing = false;

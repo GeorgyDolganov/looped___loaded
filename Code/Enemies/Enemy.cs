@@ -733,9 +733,16 @@ public sealed class Enemy : Component
 
 		var look = LookFlat;
 		if ( look.Length > 0.1f && body.IsValid() )
-			body.WorldRotation = Ease( body.WorldRotation, Blocks.FlatFacing( look ), 13f );
+		{
+			var facing = Blocks.FlatFacing( look );
+			if ( Kind == EnemyKind.Lens )
+				facing *= LensLook.FaceYaw;
+			body.WorldRotation = Ease( body.WorldRotation, facing, 13f );
+		}
 
-		if ( hobo.IsValid() )
+		if ( hobo.IsValid() && Kind == EnemyKind.Lens )
+			LensLook.PlayIdle( hobo );
+		else if ( hobo.IsValid() )
 		{
 			var pace = Loop.IsValid() && Loop.IsFrozen ? Vector2.Zero : moveVelocity;
 			HoboLook.Drive( hobo, new Vector3( pace.x, pace.y, 0f ), new Vector3( look.x, look.y, 0f ), Time.Now < attackUntil );
@@ -836,16 +843,23 @@ public sealed class Enemy : Component
 		body.Parent = GameObject;
 		body.LocalPosition = Vector3.Zero;
 		body.WorldRotation = Blocks.FlatFacing( LookFlat );
+		if ( Kind == EnemyKind.Lens )
+			body.WorldRotation *= LensLook.FaceYaw;
 
 		dressed.Clear();
-		var height = Kind == EnemyKind.Core
-			? TerryLook.Height( true )
-			: Kind == EnemyKind.Lens
-				? TerryLook.CitizenHeight * 4.6f
-				: TerryLook.Height( false );
-		var hoboModel = Kind == EnemyKind.Shooter ? HoboLook.ShooterModelPath : HoboLook.ModelPath;
-		hobo = HoboLook.Attach( body, height, hoboModel );
-		headTop = HoboLook.TopOf( height, hoboModel );
+		if ( Kind == EnemyKind.Lens )
+		{
+			var height = TerryLook.CitizenHeight * 4.6f;
+			hobo = LensLook.Attach( body, height );
+			headTop = height;
+		}
+		else
+		{
+			var height = Kind == EnemyKind.Core ? TerryLook.Height( true ) : TerryLook.Height( false );
+			var hoboModel = Kind == EnemyKind.Shooter ? HoboLook.ShooterModelPath : HoboLook.ModelPath;
+			hobo = HoboLook.Attach( body, height, hoboModel );
+			headTop = HoboLook.TopOf( height, hoboModel );
+		}
 
 		if ( Kind == EnemyKind.Shield || Kind == EnemyKind.Shardguard )
 			BuildShield();
