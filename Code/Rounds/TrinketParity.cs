@@ -318,6 +318,8 @@ public static class TrinketParity
 			bounces += (int)RicoBounces.At( rico );
 		if ( slug )
 			bounces += SlugBounce * Math.Max( 0, full - count );
+		if ( electrify > 0 )
+			bounces -= electrify;
 		if ( Has( levels, "FETCH" ) )
 			bounces = 0;
 

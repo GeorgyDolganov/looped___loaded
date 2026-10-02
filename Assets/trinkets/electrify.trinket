@@ -59,6 +59,13 @@
       "Order": 705,
       "Value": 1,
       "Hidden": true
+    },
+    {
+      "Stat": "Bounces",
+      "Op": "Add",
+      "Growth": "Linear",
+      "Order": 510,
+      "Value": -1
     }
   ],
   "__references": [
