@@ -9,43 +9,43 @@
   "ReloadMin": 0.2,
   "ProjectileRadius": 13,
   "Rifle": {
-    "Price": 2,
+    "Price": 3,
     "Weight": 5
   },
   "Shotgun": {
-    "Price": 2,
+    "Price": 3,
     "Weight": 5
   },
   "Nailgun": {
-    "Price": 2,
+    "Price": 3,
     "Weight": 4
   },
   "Laser": {
-    "Price": 3,
+    "Price": 4,
     "Weight": 3
   },
   "Rail": {
-    "Price": 3,
+    "Price": 4,
     "Weight": 3
   },
   "Rocket": {
-    "Price": 3,
+    "Price": 4,
     "Weight": 3
   },
   "Entry": {
-    "Price": 2,
+    "Price": 3,
     "Weight": 6
   },
   "Junior": {
-    "Price": 3,
+    "Price": 4,
     "Weight": 4
   },
   "Warrior": {
-    "Price": 5,
+    "Price": 6,
     "Weight": 2
   },
   "Abomination": {
-    "Price": 8,
+    "Price": 9,
     "Weight": 1,
     "Single": true
   },

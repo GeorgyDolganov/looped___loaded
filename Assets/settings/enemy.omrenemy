@@ -14,7 +14,7 @@
   },
   "Splinter": {
     "Radius": 60,
-    "Scrap": 6,
+    "Scrap": 8,
     "SeekSpeed": 142,
     "Lead": 160,
     "LeadPressure": 50

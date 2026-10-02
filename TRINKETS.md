@@ -18,16 +18,16 @@
 
 | Pack | Rarity | Price | Weight | Single |
 | --- | --- | --- | --- | --- |
-| Rifle | COMMON | 2 | 5 |  |
-| Shotgun | COMMON | 2 | 5 |  |
-| Nailgun | UNCOMMON | 2 | 4 |  |
-| Laser | RARE | 3 | 3 |  |
-| Rail | RARE | 3 | 3 |  |
-| Rocket | RARE | 3 | 3 |  |
-| Entry | COMMON | 2 | 6 |  |
-| Junior | UNCOMMON | 3 | 4 |  |
-| Warrior | RARE | 5 | 2 |  |
-| Abomination | EPIC | 8 | 1 | yes |
+| Rifle | COMMON | 3 | 5 |  |
+| Shotgun | COMMON | 3 | 5 |  |
+| Nailgun | UNCOMMON | 3 | 4 |  |
+| Laser | RARE | 4 | 3 |  |
+| Rail | RARE | 4 | 3 |  |
+| Rocket | RARE | 4 | 3 |  |
+| Entry | COMMON | 3 | 6 |  |
+| Junior | UNCOMMON | 4 | 4 |  |
+| Warrior | RARE | 6 | 2 |  |
+| Abomination | EPIC | 9 | 1 | yes |
 
 ## Entry
 
@@ -225,7 +225,7 @@
 | Pack | Nailgun |
 | InPool | yes |
 | MaxLevel | 3 |
-| Price | 4 |
+| Price | 5 |
 | UnlockLap | 3 |
 | Reload Mul | 0.8 / 0.64 / 0.5 @740 |
 
