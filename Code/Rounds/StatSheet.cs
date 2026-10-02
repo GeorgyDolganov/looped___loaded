@@ -41,6 +41,9 @@ public static class StatSheet
 	public static List<StatLine> Effects( TrinketDef card, int rank )
 	{
 		var lines = new List<StatLine>();
+		var top = new List<StatLine>();
+		var range = new List<StatLine>();
+		var removed = new List<StatLine>();
 		if ( card is null )
 			return lines;
 
@@ -52,7 +55,14 @@ public static class StatSheet
 				if ( mod is null || mod.Hidden )
 					continue;
 
-				if ( Describe( mod, rank ) is { } line )
+				if ( Describe( mod, rank ) is not { } line )
+					continue;
+
+				if ( mod.Stat == GunStat.RangePad )
+					range.Add( line );
+				else if ( mod.Growth == ModGrowth.PerRemoved )
+					removed.Add( line );
+				else
 					lines.Add( line );
 			}
 		}
@@ -76,7 +86,11 @@ public static class StatSheet
 				if ( note.When == NoteWhen.Later && rank <= 1 )
 					continue;
 
-				lines.Add( new StatLine( note.Text, note.Sign, note.Mixed ) );
+				var line = new StatLine( note.Text, note.Sign, note.Mixed );
+				if ( note.Top )
+					top.Add( line );
+				else
+					lines.Add( line );
 			}
 		}
 
@@ -92,7 +106,13 @@ public static class StatSheet
 			}
 		}
 
-		return lines;
+		if ( top.Count == 0 && range.Count == 0 && removed.Count == 0 )
+			return lines;
+
+		top.AddRange( range );
+		top.AddRange( removed );
+		top.AddRange( lines );
+		return top;
 	}
 
 	static StatLine? Describe( TrinketMod mod, int rank )
@@ -205,6 +225,9 @@ public static class StatSheet
 			sign = (delta > 0) == good ? 1 : -1;
 
 		var number = NearlyInt( amount ) ? ((int)MathF.Round( amount )).ToString() : Fmt( amount );
+		if ( mod.Stat == GunStat.RangePad )
+			return new StatLine( $"+ {meta.Label} {number}", sign, mixed );
+
 		var text = string.IsNullOrEmpty( meta.Suffix ) ? $"{meta.Label} {number}" : $"{meta.Label} {number}{meta.Suffix}";
 		return new StatLine( text, sign, mixed );
 	}

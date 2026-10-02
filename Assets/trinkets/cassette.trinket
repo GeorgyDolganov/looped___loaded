@@ -1,29 +1,59 @@
 {
   "Id": "CASSETTE",
   "Title": "CASSETTE",
+  "Blurb": "Projectiles can explode again after they already exploded.",
+  "Icon": "ui/traits/CASETTE-64x64.png",
   "Pack": "Rocket",
   "MaxLevel": 3,
+  "InPool": true,
   "Sort": 18,
-  "Icon": "ui/traits/CASETTE-64x64.png",
-  "Blurb": "Projectiles can explode +1/2/3 times after they already exploded.",
+  "UnlockLap": 0,
+  "Price": 0,
+  "OwnedWeight": 0,
+  "Hook": "None",
+  "Skill": "None",
+  "Flags": [],
   "Requires": [
-    "trinkets/warhead.trinket"
+    {
+      "Id": "30308845-c98d-4206-b545-0e2baf6f468e",
+      "Path": "trinkets/warhead.trinket"
+    }
   ],
+  "Excludes": [],
   "Mods": [
     {
       "Stat": "ExtraSplash",
       "Op": "Add",
       "Growth": "Tiers",
-      "Order": 1210,
+      "Value": 0,
+      "Bias": 0,
       "Tiers": {
         "Level1": 1,
         "Level2": 2,
-        "Level3": 3
-      }
+        "Level3": 3,
+        "Level4": 0
+      },
+      "Order": 1210,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     }
   ],
-  "__references": [
-    "trinkets/warhead.trinket"
-  ],
+  "Notes": [],
+  "Cap": 3,
+  "IsSkill": false,
+  "ShownTitle": "CASSETTE",
+  "ShownBlurb": "Projectiles can explode again after they already exploded.",
+  "IconPath": "ui/traits/CASETTE-64x64.png",
+  "__references": [],
   "__version": 0
 }

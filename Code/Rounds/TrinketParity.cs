@@ -459,7 +459,7 @@ public static class TrinketParity
 	{
 		if ( id == "RAM" && !owned.Contains( "BORE" ) )
 			return true;
-		if ( (id is "CASSETTE" or "BLOOM") && !owned.Contains( "WARHEAD" ) )
+		if ( (id is "CASSETTE" or "BLOOM" or "IGNORANCE") && !owned.Contains( "WARHEAD" ) )
 			return true;
 		if ( id == "ELECTRIFY" && (owned.Contains( "DRUM" ) || owned.Contains( "FETCH" ) || owned.Contains( "GHOST" )) )
 			return true;
@@ -473,7 +473,7 @@ public static class TrinketParity
 			return true;
 		if ( id == "FRENZY" && !owned.Contains( "DRUM" ) )
 			return true;
-		if ( id == "SLUG" && (!owned.Contains( "BORE" ) || !owned.Contains( "BUCK" )) )
+		if ( id == "SLUG" && !owned.Contains( "BUCK" ) )
 			return true;
 		if ( (id is "FOCUS" or "ARC" or "SHUNT" or "LINGER") && !owned.Contains( "ELECTRIFY" ) )
 			return true;

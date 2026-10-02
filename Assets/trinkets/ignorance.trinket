@@ -6,9 +6,14 @@
   "Sort": 21,
   "Icon": "ui/traits/IGNORANCE-64x64.png",
   "Blurb": "Your explosions do not hurt you.",
+  "Requires": [
+    "trinkets/warhead.trinket"
+  ],
   "Flags": [
     "NoFriendlySplash"
   ],
-  "__references": [],
+  "__references": [
+    "trinkets/warhead.trinket"
+  ],
   "__version": 0
 }

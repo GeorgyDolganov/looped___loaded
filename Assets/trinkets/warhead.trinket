@@ -1,38 +1,82 @@
 {
   "Id": "WARHEAD",
   "Title": "WARHEAD",
+  "Blurb": "Area damage. Also damages you. No rocket jumping!",
+  "Icon": "ui/traits/WARHEAD-64x64.png",
   "Pack": "Rocket",
   "MaxLevel": 3,
+  "InPool": true,
   "Sort": 12,
-  "Icon": "ui/traits/WARHEAD-64x64.png",
-  "Blurb": "SLOW BUT AREAL. Also damages you! PS No rocket jump!",
+  "UnlockLap": 0,
+  "Price": 0,
+  "OwnedWeight": 0,
+  "Hook": "None",
+  "Skill": "None",
   "Flags": [
     "FriendlySplash"
   ],
+  "Requires": [],
+  "Excludes": [],
   "Mods": [
     {
       "Stat": "Splash",
       "Op": "Set",
       "Growth": "Tiers",
-      "Order": 1200,
+      "Value": 0,
+      "Bias": 0,
       "Tiers": {
         "Level1": 90,
         "Level2": 126,
-        "Level3": 176
-      }
+        "Level3": 176,
+        "Level4": 0
+      },
+      "Order": 1200,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "Speed",
       "Op": "Mul",
       "Growth": "Tiers",
-      "Order": 800,
+      "Value": 0,
+      "Bias": 0,
       "Tiers": {
         "Level1": 0.78,
         "Level2": 0.68,
-        "Level3": 0.58
-      }
+        "Level3": 0.58,
+        "Level4": 0
+      },
+      "Order": 800,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     }
   ],
+  "Notes": [],
+  "Cap": 3,
+  "IsSkill": false,
+  "ShownTitle": "WARHEAD",
+  "ShownBlurb": "Area damage. Also damages you. No rocket jumping!",
+  "IconPath": "ui/traits/WARHEAD-64x64.png",
   "__references": [],
   "__version": 0
 }

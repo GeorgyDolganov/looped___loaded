@@ -1,73 +1,170 @@
 {
   "Id": "SLUG",
   "Title": "SLUG",
+  "Blurb": "Set projectiles to 1 and gives bonuses for each removed projectile. Increases projectile size if it was smaller.",
+  "Icon": "ui/traits/SLUG-64x64.png",
   "Pack": "Abomination",
   "MaxLevel": 1,
+  "InPool": true,
   "Sort": 8,
-  "Icon": "ui/traits/SLUG-64x64.png",
-  "Blurb": "Get +40% range, +damage, +4 bounces, and +4 pierce for each removed projectile.",
+  "UnlockLap": 0,
+  "Price": 0,
+  "OwnedWeight": 0,
   "Hook": "Slug",
+  "Skill": "None",
   "Flags": [
     "NoNail"
   ],
   "Requires": [
-    "trinkets/bore.trinket",
-    "trinkets/buck.trinket"
+    {
+      "Id": "5c5948db-f032-418a-b065-41842fef720f",
+      "Path": "trinkets/buck.trinket"
+    }
   ],
+  "Excludes": [],
   "Mods": [
     {
       "Stat": "Damage",
       "Op": "Add",
       "Growth": "PerRemoved",
+      "Value": 2,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 1000,
-      "Value": 2
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "Bounces",
       "Op": "Add",
       "Growth": "PerRemoved",
+      "Value": 4,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 505,
-      "Value": 4
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "Pierce",
       "Op": "Add",
       "Growth": "PerRemoved",
+      "Value": 4,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 620,
-      "Value": 4
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "Radius",
       "Op": "Max",
       "Growth": "Flat",
+      "Value": 22,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 1100,
-      "Value": 22
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "RangePad",
       "Op": "Set",
       "Growth": "Flat",
+      "Value": 120,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 900,
-      "Value": 120
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "RangeMul",
       "Op": "Mul",
       "Growth": "PerRemoved",
-      "Order": 910,
       "Value": 0.4,
-      "Bias": 1
+      "Bias": 1,
+      "Tiers": null,
+      "Order": 910,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     }
   ],
   "Notes": [
     {
       "Text": "Sets Projectiles to 1",
-      "Sign": -1
+      "Sign": -1,
+      "Mixed": false,
+      "Top": true,
+      "When": "Always",
+      "Rank": 0
     }
   ],
-  "__references": [
-    "trinkets/bore.trinket",
-    "trinkets/buck.trinket"
-  ],
+  "Cap": 1,
+  "IsSkill": false,
+  "ShownTitle": "SLUG",
+  "ShownBlurb": "Set projectiles to 1 and gives bonuses for each removed projectile. Increases projectile size if it was smaller.",
+  "IconPath": "ui/traits/SLUG-64x64.png",
+  "__references": [],
   "__version": 0
 }

@@ -1,77 +1,179 @@
 {
   "Id": "ELECTRIFY",
   "Title": "ELECTRIFY",
+  "Blurb": "HOLD TO ZAP.",
+  "Icon": "ui/traits/ELECTRIFY-64x64.png",
   "Pack": "Laser",
   "MaxLevel": 3,
+  "InPool": true,
   "Sort": 13,
-  "Icon": "ui/traits/ELECTRIFY-64x64.png",
-  "Blurb": "HOLD TO ZAP. Short reload.",
+  "UnlockLap": 0,
+  "Price": 0,
   "OwnedWeight": 12,
+  "Hook": "None",
+  "Skill": "None",
   "Flags": [
     "Beam"
   ],
+  "Requires": [],
   "Excludes": [
-    "trinkets/drum.trinket",
-    "trinkets/fetch.trinket",
-    "trinkets/ghost.trinket"
+    {
+      "Id": "037a3659-8244-423a-b7d8-c134cacde4b8",
+      "Path": "trinkets/drum.trinket"
+    },
+    {
+      "Id": "f7aadfc7-0b96-43e8-a021-42ecf5387a76",
+      "Path": "trinkets/fetch.trinket"
+    },
+    {
+      "Id": "2ae91674-2b89-4176-acdd-013908e5810f",
+      "Path": "trinkets/ghost.trinket"
+    }
   ],
   "Mods": [
     {
       "Stat": "Reload",
       "Op": "Set",
       "Growth": "Flat",
+      "Value": 0.3,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 710,
-      "Value": 0.3
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "BeamTick",
       "Op": "Set",
       "Growth": "Tiers",
-      "Order": 1500,
+      "Value": 0,
+      "Bias": 0,
       "Tiers": {
         "Level1": 0.6,
         "Level2": 0.4,
-        "Level3": 0.2
-      }
+        "Level3": 0.2,
+        "Level4": 0
+      },
+      "Order": 1500,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "BeamTicks",
       "Op": "Set",
       "Growth": "Tiers",
-      "Order": 1500,
+      "Value": 0,
+      "Bias": 0,
       "Tiers": {
         "Level1": 4,
         "Level2": 6,
-        "Level3": 8
-      }
+        "Level3": 8,
+        "Level4": 0
+      },
+      "Order": 1500,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "BeamHit",
       "Op": "Set",
       "Growth": "Flat",
+      "Value": 1,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 1500,
-      "Value": 1
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "BeamRank",
       "Op": "Set",
       "Growth": "Linear",
-      "Order": 705,
       "Value": 1,
-      "Hidden": true
+      "Bias": 0,
+      "Tiers": null,
+      "Order": 705,
+      "Hidden": true,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "Bounces",
       "Op": "Add",
       "Growth": "Linear",
+      "Value": -1,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 510,
-      "Value": -1
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     }
   ],
-  "__references": [
-    "trinkets/drum.trinket",
-    "trinkets/fetch.trinket",
-    "trinkets/ghost.trinket"
-  ],
+  "Notes": [],
+  "Cap": 3,
+  "IsSkill": false,
+  "ShownTitle": "ELECTRIFY",
+  "ShownBlurb": "HOLD TO ZAP.",
+  "IconPath": "ui/traits/ELECTRIFY-64x64.png",
+  "__references": [],
   "__version": 0
 }

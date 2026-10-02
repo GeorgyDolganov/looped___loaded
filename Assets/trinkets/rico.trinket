@@ -1,34 +1,80 @@
 {
   "Id": "RICO",
-  "Title": "RICO",
+  "Title": "RICOCHET",
+  "Blurb": null,
+  "Icon": "ui/traits/RICO-extra-bounce-64x64.png",
   "Pack": "Entry",
   "MaxLevel": 3,
+  "InPool": true,
   "Sort": 4,
-  "Icon": "ui/traits/RICO-extra-bounce-64x64.png",
+  "UnlockLap": 0,
+  "Price": 0,
+  "OwnedWeight": 0,
+  "Hook": "None",
+  "Skill": "None",
+  "Flags": [],
+  "Requires": [],
+  "Excludes": [],
   "Mods": [
     {
       "Stat": "Bounces",
       "Op": "Add",
       "Growth": "Tiers",
-      "Order": 500,
+      "Value": 0,
+      "Bias": 0,
       "Tiers": {
         "Level1": 1,
         "Level2": 3,
-        "Level3": 5
-      }
+        "Level3": 5,
+        "Level4": 0
+      },
+      "Order": 500,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     },
     {
       "Stat": "Energy",
       "Op": "Mul",
       "Growth": "Tiers",
-      "Order": 500,
+      "Value": 0,
+      "Bias": 0,
       "Tiers": {
         "Level1": 1.25,
         "Level2": 1.6,
-        "Level3": 2
-      }
+        "Level3": 2,
+        "Level4": 0
+      },
+      "Order": 500,
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     }
   ],
+  "Notes": [],
+  "Cap": 3,
+  "IsSkill": false,
+  "ShownTitle": "RICOCHET",
+  "ShownBlurb": "",
+  "IconPath": "ui/traits/RICO-extra-bounce-64x64.png",
   "__references": [],
   "__version": 0
 }

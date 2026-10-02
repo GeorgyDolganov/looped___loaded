@@ -1,7 +1,7 @@
 {
   "Id": "PIN",
   "Title": "BLEED",
-  "Blurb": "Any damage marks the body. It loses 1 health each second for 3s / 5s / 8s.",
+  "Blurb": "Any damage marks the body. It loses 1 health each second.",
   "Icon": "ui/traits/BLEED-64x64.png",
   "Pack": "Warrior",
   "MaxLevel": 3,
@@ -13,10 +13,26 @@
   "Requires": [],
   "Excludes": [],
   "Mods": [],
-  "Notes": [],
+  "Notes": [
+    {
+      "Text": "1 dmg for 3 sec",
+      "Sign": 1,
+      "Rank": 1
+    },
+    {
+      "Text": "1 dmg for 5 sec",
+      "Sign": 1,
+      "Rank": 2
+    },
+    {
+      "Text": "1 dmg for 8 sec",
+      "Sign": 1,
+      "Rank": 3
+    }
+  ],
   "Cap": 3,
   "ShownTitle": "BLEED",
-  "ShownBlurb": "Any damage marks the body. It loses 1 health each second for 3s / 5s / 8s.",
+  "ShownBlurb": "Any damage marks the body. It loses 1 health each second.",
   "IconPath": "ui/traits/stick.png",
   "__references": [],
   "__version": 0

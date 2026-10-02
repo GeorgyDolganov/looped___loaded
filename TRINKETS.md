@@ -91,7 +91,7 @@
 | MaxLevel | 1 |
 | Hook | Slug |
 | Blurb | Get +damage, +4 bounces, and +4 pierce for each removed projectile. |
-| Requires | BORE, BUCK |
+| Requires | BUCK |
 | Flag | NoNail |
 | Damage Add | 2 per removed @1000 |
 | Bounces Add | 4 per removed @505 |
@@ -266,6 +266,7 @@
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Your explosions do not hurt you. |
+| Requires | WARHEAD |
 | Flag | NoFriendlySplash |
 
 ## Rail
