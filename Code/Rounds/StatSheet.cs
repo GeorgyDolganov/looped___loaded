@@ -270,7 +270,7 @@ public static class StatSheet
 		GunStat.BeamTick => new( "Bolt Tick", null, "s", false, false ),
 		GunStat.BeamTicks => new( "Tick", "Ticks", "", true, false ),
 		GunStat.BeamWidth => new( "Beam Width", null, "", true, false ),
-		GunStat.BeamArc => new( "Jump", null, "", true, false ),
+		GunStat.BeamArc => new( "Jump", "Jumps", "", true, false ),
 		GunStat.StickTime => new( "Stick", null, "s", true, false ),
 		GunStat.Dodge => new( "Dodge", null, "", true, false ),
 		GunStat.Energy => new( "Range", null, "", true, false ),

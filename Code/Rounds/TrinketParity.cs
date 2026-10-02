@@ -145,7 +145,6 @@ public static class TrinketParity
 	const float ElectrifyReload = 0.3f;
 	const int ElectrifyHit = 1;
 	const float SearReload = 0.1f;
-	const float ArcRange = 220f;
 	const float ArcTick = 1.15f;
 	const float ShuntTick = 1.25f;
 	const float ShuntWidth = 0.85f;
@@ -444,7 +443,7 @@ public static class TrinketParity
 			BeamWidth = width,
 			BeamRank = electrify,
 			BeamSear = Has( levels, "FOCUS" ),
-			BeamArc = Has( levels, "ARC" ) ? ArcRange : 0f,
+			BeamArc = Lv( levels, "ARC" ),
 			BeamShunt = Has( levels, "SHUNT" ),
 			BeamLinger = Has( levels, "LINGER" ),
 			Dodge = Has( levels, "DODGE" ) ? DodgeChance.At( Lv( levels, "DODGE" ) ) : 0f,

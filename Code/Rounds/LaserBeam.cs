@@ -4,6 +4,7 @@ public sealed class LaserBeam : Component
 {
 	static readonly Color ChargeFull = new Color( 0.15f, 0.90f, 0.85f );
 	static readonly Color ChargeEmpty = new Color( 0.95f, 0.22f, 0.16f );
+	const float ArcReach = 220f;
 
 	GameLoop loop;
 	GunRecipe recipe;
@@ -205,8 +206,8 @@ public sealed class LaserBeam : Component
 			splashLive = recipe.Splash > 1f;
 		}
 
-		if ( line.Count > 0 && recipe.BeamArc > 1f )
-			Jump( line[^1].At, line, bolt, seed, bolts, arcRico );
+		if ( line.Count > 0 )
+			Jump( line, hurt, bolt, rank, seed, bolts, arcRico );
 	}
 
 	bool ReflectBody( Contact stop, Vector2 incoming, float width, ref Vector2 pos, ref Vector2 dir, ref float budget, ref int bouncesLeft, ref int ricochets )
@@ -395,47 +396,97 @@ public sealed class LaserBeam : Component
 			RoundCombat.Blast( loop, nearestAt, recipe.Splash, Math.Max( 1, recipe.SplashDamage ), null, ShotColors.Player, recipe.FriendlySplash );
 	}
 
-	static bool Holds( List<Contact> line, Enemy body )
+	void Jump( List<Contact> line, HashSet<Enemy> hurt, int bolt, int rank, int seed, List<List<Vector2>> drawn, int ricochets )
 	{
-		foreach ( var contact in line )
-		{
-			if ( contact.Body == body )
-				return true;
-		}
-
-		return false;
-	}
-
-	void Jump( Vector2 from, List<Contact> line, int bolt, int seed, List<List<Vector2>> drawn, int ricochets )
-	{
-		Enemy pick = null;
-		var best = recipe.BeamArc;
-		foreach ( var candidate in loop.Enemies )
-		{
-			if ( !candidate.IsValid() || !candidate.Alive || Holds( line, candidate ) )
-				continue;
-
-			var dist = (candidate.Flat - from).Length;
-			if ( dist > best )
-				continue;
-
-			best = dist;
-			pick = candidate;
-		}
-
-		if ( !pick.IsValid() )
+		var jumps = (int)recipe.BeamArc;
+		if ( jumps <= 0 )
 			return;
 
-		var incoming = pick.Flat - from;
-		latches.Add( new Latch
+		var roots = new List<Enemy>( line.Count );
+		foreach ( var contact in line )
 		{
-			Body = pick,
-			At = pick.Flat,
-			Bolt = bolt,
-			Ricochets = ricochets,
-			Incoming = incoming.Length > 0.01f ? incoming.Normal : aimDir
-		} );
-		drawn.Add( LightningPath.Jag( from, pick.Flat, seed + 90 + bolt, 4, 24f ) );
+			if ( contact.Body.IsValid() && contact.Body.Alive )
+				roots.Add( contact.Body );
+		}
+
+		if ( roots.Count == 0 )
+			return;
+
+		var single = new List<Enemy>( 1 );
+		Enemy tip = null;
+		for ( var hop = 0; hop < jumps; hop++ )
+		{
+			var sources = roots;
+			if ( hop > 0 )
+			{
+				if ( !tip.IsValid() || !tip.Alive )
+					return;
+
+				single.Clear();
+				single.Add( tip );
+				sources = single;
+			}
+
+			if ( !Nearest( sources, hurt, out var from, out var pick ) )
+				return;
+
+			var incoming = pick.Flat - from.Flat;
+			incoming = incoming.Length > 0.01f ? incoming.Normal : aimDir;
+			hurt.Add( pick );
+			latches.Add( new Latch
+			{
+				Body = pick,
+				At = pick.Flat,
+				Bolt = bolt,
+				Ricochets = ricochets,
+				Segment = 32 + hop,
+				Incoming = incoming
+			} );
+			drawn.Add( LightningPath.Bolt( Edge( from, pick.Flat ), Edge( pick, from.Flat ), rank, seed + 90 + bolt * 13 + hop * 17 ) );
+
+			if ( pick.BlocksFrom( incoming, null, ricochets > 0, pick.Flat, recipe.BeamShunt ) )
+				return;
+
+			tip = pick;
+		}
+	}
+
+	bool Nearest( List<Enemy> sources, HashSet<Enemy> hurt, out Enemy from, out Enemy pick )
+	{
+		from = null;
+		pick = null;
+		var best = float.MaxValue;
+		foreach ( var body in sources )
+		{
+			if ( !body.IsValid() || !body.Alive )
+				continue;
+
+			foreach ( var candidate in loop.Enemies )
+			{
+				if ( !candidate.IsValid() || !candidate.Alive || hurt.Contains( candidate ) || candidate == body )
+					continue;
+
+				var dist = (candidate.Flat - body.Flat).Length;
+				var gap = dist - body.Radius - candidate.Radius;
+				if ( gap > ArcReach || dist >= best )
+					continue;
+
+				best = dist;
+				from = body;
+				pick = candidate;
+			}
+		}
+
+		return pick.IsValid();
+	}
+
+	static Vector2 Edge( Enemy body, Vector2 toward )
+	{
+		var dir = toward - body.Flat;
+		if ( dir.Length < 1f )
+			return body.Flat;
+
+		return body.Flat + dir.Normal * MathF.Max( 0f, body.Radius - 4f );
 	}
 
 	void Draw( List<List<Vector2>> bolts, int rank )

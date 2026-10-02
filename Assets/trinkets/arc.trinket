@@ -2,10 +2,10 @@
   "Id": "ARC",
   "Title": "ARC",
   "Pack": "Junior",
-  "MaxLevel": 1,
+  "MaxLevel": 5,
   "Sort": 36,
   "Icon": "ui/traits/ARC-64x64.png",
-  "Blurb": "Jumps once to a near neighbor.",
+  "Blurb": "Chains the bolt to a nearby enemy. Each rank adds another jump.",
   "Requires": [
     "trinkets/electrify.trinket"
   ],
@@ -15,10 +15,10 @@
   "Mods": [
     {
       "Stat": "BeamArc",
-      "Op": "Set",
-      "Growth": "Flat",
+      "Op": "Add",
+      "Growth": "Linear",
       "Order": 1500,
-      "Value": 220
+      "Value": 1
     },
     {
       "Stat": "BeamTick",
