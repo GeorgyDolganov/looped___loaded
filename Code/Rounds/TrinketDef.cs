@@ -184,4 +184,5 @@ public class TrinketNote
 	[Property] public int Sign { get; set; }
 	[Property] public bool Mixed { get; set; }
 	[Property] public NoteWhen When { get; set; }
+	[Property] public int Rank { get; set; }
 }

@@ -418,4 +418,7 @@
 | Pack | Warrior |
 | InPool | yes |
 | MaxLevel | 3 |
-| Blurb | A turret circles you and shoots the nearest body for 1 damage every 2s / 1.5s / 1s. |
+| Blurb | A turret circles you and shoots the nearest body. |
+| LV1 | 1 damage every 2s |
+| LV2 | 1 damage every 1.5s |
+| LV3 | 1 damage every 1s |

@@ -1414,9 +1414,26 @@
 
 	List<StatLine> OfferStats( TrinketDef trait, bool bought )
 	{
+		if ( RankedNotes( trait ) )
+			return CollectionStats( trait );
+
 		var level = TraitLevel( trait );
 		var rank = bought ? Math.Max( 1, level ) : Math.Min( trait.Cap, level + 1 );
 		return StatSheet.Effects( trait, rank );
+	}
+
+	static bool RankedNotes( TrinketDef trait )
+	{
+		if ( trait?.Notes is null )
+			return false;
+
+		foreach ( var note in trait.Notes )
+		{
+			if ( note is not null && note.Rank > 0 && !string.IsNullOrWhiteSpace( note.Text ) )
+				return true;
+		}
+
+		return false;
 	}
 
 	string OfferBlurb( TrinketDef trait )

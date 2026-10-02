@@ -67,6 +67,9 @@ public static class StatSheet
 				if ( note.Text.StartsWith( "Locks out" ) )
 					continue;
 
+				if ( note.Rank > 0 && note.Rank != rank )
+					continue;
+
 				if ( note.When == NoteWhen.First && rank > 1 )
 					continue;
 

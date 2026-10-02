@@ -5,8 +5,25 @@
   "MaxLevel": 3,
   "Sort": 54,
   "Icon": "ui/traits/TURRENT-64x64.png",
-  "Blurb": "A turret circles you and shoots the nearest body for 1 damage every 2s / 1.5s / 1s.",
+  "Blurb": "A turret circles you and shoots the nearest body.",
   "Mods": [],
+  "Notes": [
+    {
+      "Text": "1 damage every 2s",
+      "Sign": 1,
+      "Rank": 1
+    },
+    {
+      "Text": "1 damage every 1.5s",
+      "Sign": 1,
+      "Rank": 2
+    },
+    {
+      "Text": "1 damage every 1s",
+      "Sign": 1,
+      "Rank": 3
+    }
+  ],
   "__references": [],
   "__version": 0
 }
