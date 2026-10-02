@@ -213,7 +213,11 @@ public sealed class Enemy : Component
 		attackUntil = MathF.Max( attackUntil, Time.Now + duration );
 	}
 
-	const float ShoveDrag = 3.2f;
+	const float ShoveDrag = 6f;
+	const float ShoveStop = 16f;
+	const float ShoveCap = 2400f;
+
+	bool Sliding => shove.Length >= ShoveStop;
 
 	public void Shove( Vector2 delta )
 	{
@@ -221,7 +225,7 @@ public sealed class Enemy : Component
 			return;
 
 		shove += delta * ShoveDrag;
-		var cap = 220f * ShoveDrag * 2f;
+		var cap = ShoveCap * ShoveDrag;
 		if ( shove.Length > cap )
 			shove = shove.Normal * cap;
 
@@ -230,7 +234,7 @@ public sealed class Enemy : Component
 
 	void SlideShove()
 	{
-		if ( shove.Length < 16f || !Arena.IsValid() )
+		if ( !Sliding || !Arena.IsValid() )
 		{
 			shove = Vector2.Zero;
 			return;
@@ -501,41 +505,44 @@ public sealed class Enemy : Component
 		var inner = Arena.Geometry.CoreRadius + cfg.InnerPad;
 		var track = Arena.Geometry.TrackRadius - cfg.TrackPad;
 
-		switch ( Kind )
+		if ( !Sliding )
 		{
-			case EnemyKind.Core:
-			case EnemyKind.Lens:
-				break;
-			case EnemyKind.Chaser:
-			case EnemyKind.Splinter:
+			switch ( Kind )
 			{
-				var stats = cfg.Of( Kind );
-				var lead = Loop.Runner.Tangent * (stats.Lead + stats.LeadPressure * Pressure);
-				Seek( Loop.Runner.Flat + lead, stats.SeekSpeed * Pressure * scale, inner, track );
-				break;
+				case EnemyKind.Core:
+				case EnemyKind.Lens:
+					break;
+				case EnemyKind.Chaser:
+				case EnemyKind.Splinter:
+				{
+					var stats = cfg.Of( Kind );
+					var lead = Loop.Runner.Tangent * (stats.Lead + stats.LeadPressure * Pressure);
+					Seek( Loop.Runner.Flat + lead, stats.SeekSpeed * Pressure * scale, inner, track );
+					break;
+				}
+				case EnemyKind.Glimmer:
+				{
+					var stats = cfg.Of( Kind );
+					var lead = Loop.Runner.Tangent * (stats.Lead + stats.LeadPressure * Pressure);
+					Seek( Loop.Runner.Flat + lead, stats.SeekSpeed * Pressure * scale, inner, track );
+					break;
+				}
+				case EnemyKind.Shield:
+				case EnemyKind.Shardguard:
+				{
+					var stats = cfg.Of( Kind );
+					Seek( Loop.Runner.Flat, stats.SeekSpeed * Pressure * scale, inner, Arena.Geometry.TrackRadius + cfg.ShieldTrackExtra );
+					break;
+				}
+				case EnemyKind.Shooter:
+					MoveShooter( scale, inner );
+					break;
 			}
-			case EnemyKind.Glimmer:
-			{
-				var stats = cfg.Of( Kind );
-				var lead = Loop.Runner.Tangent * (stats.Lead + stats.LeadPressure * Pressure);
-				Seek( Loop.Runner.Flat + lead, stats.SeekSpeed * Pressure * scale, inner, track );
-				break;
-			}
-			case EnemyKind.Shield:
-			case EnemyKind.Shardguard:
-			{
-				var stats = cfg.Of( Kind );
-				Seek( Loop.Runner.Flat, stats.SeekSpeed * Pressure * scale, inner, Arena.Geometry.TrackRadius + cfg.ShieldTrackExtra );
-				break;
-			}
-			case EnemyKind.Shooter:
-				MoveShooter( scale, inner );
-				break;
 		}
 
 		Separate();
 		SlideShove();
-		moveVelocity = drive.Velocity + shove;
+		moveVelocity = Sliding ? shove : drive.Velocity + shove;
 		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
 	}
 
@@ -571,6 +578,9 @@ public sealed class Enemy : Component
 
 	float Nudge( Vector2 delta )
 	{
+		if ( Sliding )
+			return 0f;
+
 		var length = delta.Length;
 		if ( length < 0.01f || !Arena.IsValid() )
 			return 0f;

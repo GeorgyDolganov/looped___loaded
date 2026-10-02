@@ -1,0 +1,11 @@
+{
+  "Repulse": {
+    "Cooldown": 8,
+    "Radius": 466.67,
+    "Force": 900,
+    "EdgeScale": 0.45,
+    "StunTime": 0.35
+  },
+  "__references": [],
+  "__version": 0
+}

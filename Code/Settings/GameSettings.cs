@@ -8,6 +8,7 @@ public static class GameSettings
 	public static TraitConfig Traits => Load( ref traits, "settings/traits.omrtrait" );
 	public static CityConfig City => Load( ref city, "settings/city.omrcity" );
 	public static BossConfig Boss => Load( ref boss, "settings/boss.omrboss" );
+	public static SkillConfig Skills => Load( ref skills, "settings/skills.omrskill" );
 	public static TextConfig Text
 	{
 		get
@@ -24,6 +25,7 @@ public static class GameSettings
 	static TraitConfig traits;
 	static CityConfig city;
 	static BossConfig boss;
+	static SkillConfig skills;
 	static TextConfig text;
 
 	static T Load<T>( ref T fallback, string path ) where T : GameResource, new()

@@ -52,8 +52,8 @@
 | Pack | Warrior |
 | InPool | yes |
 | MaxLevel | 3 |
-| KickForce Add | 110 / 160 / 220 @900 |
-| KickRange Set | 180 passive @0 |
+| KickForce Add | 480 / 760 / 1100 @900 |
+| KickRange Set | 1600 passive @0 |
 
 ### BULK
 
@@ -403,3 +403,15 @@
 | Blurb | Rounds pass through panels, shards, and spinners. |
 | Excludes | ELECTRIFY |
 | Flag | Ghost |
+
+## Warrior
+
+### TURRET
+
+| Field | Value |
+| --- | --- |
+| Id | TURRET |
+| Pack | Warrior |
+| InPool | yes |
+| MaxLevel | 3 |
+| Blurb | A turret circles you and shoots the nearest body for 1 damage every 2s / 1.5s / 1s. |

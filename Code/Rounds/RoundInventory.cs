@@ -9,6 +9,7 @@ public sealed class RoundInventory : Component
 	[Property] public float PickupRadius { get; set; } = 145f;
 
 	public RunLoadout Loadout { get; } = new();
+	public ActiveSkills Skills { get; } = new();
 	public List<RoundProjectile> Live { get; } = new();
 	public List<DroppedRound> Dropped { get; } = new();
 	public int MagCap { get; private set; } = 1;
@@ -40,6 +41,7 @@ public sealed class RoundInventory : Component
 
 	float cycleLeft;
 	LaserBeam beam;
+	TurretDrone turret;
 	GameObject readyMarker;
 	bool recovering;
 
@@ -48,6 +50,7 @@ public sealed class RoundInventory : Component
 		ClearShots();
 		ClearDropped();
 		Loadout.Clear();
+		Skills.Clear();
 		MagCap = 1;
 		MagLoaded = 1;
 		ReloadLeft = 0f;
@@ -73,6 +76,7 @@ public sealed class RoundInventory : Component
 		ClearShots();
 		ClearDropped();
 		MagLoaded = MagCap;
+		Skills.ReadyAll();
 		ReloadLeft = 0f;
 		ReloadFor = 0f;
 		BurstLeft = 0;
@@ -547,8 +551,28 @@ public sealed class RoundInventory : Component
 		readyMarker = Blocks.SpawnSphere( GameObject, "Ready", Vector3.Zero, 20f, ShotColors.Player );
 	}
 
+	void SyncTurret()
+	{
+		var level = Loop.IsValid() && !Loop.InCity && !Loop.InMenu ? Loadout.TraitLevel( Trinkets.Find( TurretDrone.TrinketId ) ) : 0;
+		if ( level <= 0 )
+		{
+			if ( turret.IsValid() )
+				turret.GameObject.Destroy();
+			turret = null;
+			return;
+		}
+
+		if ( !turret.IsValid() )
+			turret = TurretDrone.Spawn( Loop, GameObject );
+
+		turret.Level = level;
+	}
+
 	protected override void OnUpdate()
 	{
+		SyncTurret();
+		Skills.Sync( Loadout );
+
 		if ( Loop.IsValid() && (Loop.InCity || Loop.InMenu) )
 		{
 			if ( readyMarker.IsValid() )

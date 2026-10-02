@@ -14,7 +14,7 @@ copy = text["Traits"]
 
 defaults = {
     "RicoBounces": 1,
-    "KickForce": 110, "KickRange": 180, "StunTime": 0.45, "StunRange": 160,
+    "KickForce": 480, "KickRange": 1600, "StunTime": 0.45, "StunRange": 160,
     "SlugRadius": 22, "SlugDamage": 2, "SlugFalloffPad": 120, "SlugBounce": 4, "SlugPierce": 4,
     "ElectrifyHit": 1, "ProjectileRadius": 13,
 }
@@ -93,7 +93,7 @@ icons = {
     "Rico": "ui/traits/RICO-extra-bounce-64x64.png",
     "Kick": "ui/traits/KICK-64x64.png", "Stun": "ui/traits/STUN-64x64.png",
     "Slug": "ui/traits/SLUG-64x64.png",
-    "Buck": "ui/traits/BUCK-readable-64x64.png",
+    "Buck": "ui/traits/BUCK-three-pellets-64x64.png",
     "Bore": "ui/traits/PIERCE-impact-64x64.png",
     "Ram": "ui/traits/PIERCE-damage-up-64x64.png",
     "Drum": "ui/traits/DRUM-three-bullets-64x64.png", "Frenzy": "ui/traits/FRENZY-rage-64x64.png",
@@ -145,7 +145,7 @@ def cross(left, right):
         cards[b]["Excludes"].update(a for a in left if a != b)
 
 add("Rico", "Junior", 4, 1, mods=[M("Bounces", "Add", 500, N("RicoBounces"))])
-KICK_FORCE = {"Level1": 110, "Level2": 160, "Level3": 220}
+KICK_FORCE = {"Level1": 480, "Level2": 760, "Level3": 1100}
 add("Kick", "Warrior", 6, 3, mods=[
     M("KickForce", "Add", 900, growth="Tiers", tiers=KICK_FORCE),
     M("KickRange", "Set", 0, N("KickRange"), passive=True),
@@ -702,12 +702,12 @@ def check(levels, bonus=0, **expect):
             fails.append((dict(levels), bonus, [f"{key}: expected {value} got {got[key]}"]))
 
 check({})
-check({}, kick_range=180, stun_range=160, kick_force=0, count=1, reload=0.7, radius=13, burst=1, beam_tick=1, beam_width=8)
+check({}, kick_range=1600, stun_range=160, kick_force=0, count=1, reload=0.7, radius=13, burst=1, beam_tick=1, beam_width=8)
 check({"BUCK": 3, "SLUG": 1}, count=1, damage=9, radius=22, cone=0, bounces=17, pierce=16)
 check({"PIN": 1}, count=1, cone=0, bounces=1, radius=13, stick=0, nail=False)
 check({"PIN": 1, "SLUG": 1}, count=1, damage=1, radius=22, nail=False, stick=0, cone=0)
-check({"KICK": 1}, kick_force=110, kick_range=180)
-check({"KICK": 3}, kick_force=220, kick_range=180)
+check({"KICK": 1}, kick_force=480, kick_range=1600)
+check({"KICK": 3}, kick_force=1100, kick_range=1600)
 check({"ELECTRIFY": 1, "BORE": 1}, reload=0.3, bore_wait=0.35, pierce=1, beam=True, bounces=1)
 check({"ELECTRIFY": 1, "FOCUS": 1, "LINGER": 1}, reload=0.3 + 0.1 + 0.12)
 check({"BORE": 1}, pierce=1, bore_wait=0.35)

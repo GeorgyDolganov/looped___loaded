@@ -12,9 +12,9 @@
       "Growth": "Tiers",
       "Order": 900,
       "Tiers": {
-        "Level1": 110,
-        "Level2": 160,
-        "Level3": 220
+        "Level1": 480,
+        "Level2": 760,
+        "Level3": 1100
       }
     },
     {
@@ -22,7 +22,7 @@
       "Op": "Set",
       "Growth": "Flat",
       "Order": 0,
-      "Value": 180,
+      "Value": 1600,
       "Passive": true
     }
   ],

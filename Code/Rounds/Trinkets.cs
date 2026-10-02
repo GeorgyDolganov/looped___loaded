@@ -89,6 +89,9 @@ public static class Trinkets
 		if ( loadout is null )
 			return false;
 
+		if ( card.IsSkill && !loadout.Has( card ) && ActiveSkills.Owned( loadout ) >= ActiveSkills.SlotCount )
+			return true;
+
 		foreach ( var req in Live( card.Requires ) )
 		{
 			if ( !loadout.Has( req ) )
@@ -238,6 +241,10 @@ public static class Trinkets
 
 		found.Sort( ( a, b ) =>
 		{
+			var skill = (b.IsSkill ? 1 : 0).CompareTo( a.IsSkill ? 1 : 0 );
+			if ( skill != 0 )
+				return skill;
+
 			var order = a.Sort.CompareTo( b.Sort );
 			return order != 0 ? order : string.Compare( a.Id, b.Id, StringComparison.Ordinal );
 		} );

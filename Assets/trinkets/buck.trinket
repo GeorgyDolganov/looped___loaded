@@ -4,7 +4,7 @@
   "Pack": "Shotgun",
   "MaxLevel": 3,
   "Sort": 9,
-  "Icon": "ui/traits/BUCK-readable-64x64.png",
+  "Icon": "ui/traits/BUCK-three-pellets-64x64.png",
   "Blurb": "Say hello to my little friend",
   "Mods": [
     {

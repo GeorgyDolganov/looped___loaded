@@ -105,6 +105,22 @@
 					<label>@GameSettings.Text.Hud.DashCoach</label>
 				</div>
 			}
+			<div class="skill-bar">
+				@for ( var i = 0; i < ActiveSkills.SlotCount; i++ )
+				{
+					var index = i;
+					var card = SkillCard( index );
+					<div class="skill-slot @(card is null ? "empty" : "") @(SkillReady( index ) ? "ready" : "")">
+						<img class="skill-plate" src="ui/Arena UI/element_back_square.png" />
+						@if ( card is not null )
+						{
+							<img class="skill-icon" src="@card.IconPath" />
+						}
+						<div class="skill-shade"></div>
+						<label class="skill-key">@ActiveSkills.Keys[index]</label>
+					</div>
+				}
+			</div>
 			<div class="tray-frame">
 				<img class="tray-back" src="ui/Arena UI/back.png" />
 				<HudFace class="face-slot" Loop="@Loop"></HudFace>
@@ -1165,6 +1181,9 @@
 	int FeedPercent => Loop.IsValid() && Loop.WinNeed > 0 ? (int)(Math.Clamp( Loop.FedBiomass / (float)Loop.WinNeed, 0f, 1f ) * 100f) : 0;
 	int HurtPercent => Loop.IsValid() ? (int)(Loop.HurtAmount * 100f) : 0;
 	string HurtVeil => (Loop.IsValid() ? Loop.HurtAmount * 0.55f : 0f).ToString( "0.###" );
+	ActiveSkills Skills => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Skills : null;
+	TrinketDef SkillCard( int index ) => Skills?.CardAt( index );
+	bool SkillReady( int index ) => Skills is not null && Skills.Ready( index );
 	int DashPercent => Runner.IsValid() ? (int)(Runner.DashCharge * 100f) : 0;
 	int SlowPercent => Runner.IsValid() ? (int)(Runner.SlowCharge * 100f) : 0;
 	int ReloadPercent => Loop.IsValid() && Loop.Inventory.IsValid() ? (int)(Loop.Inventory.Reload01 * 100f) : 0;
@@ -1499,6 +1518,7 @@
 	Sandbox.UI.Panel healthRow;
 	Sandbox.UI.Panel dashSlot;
 	Sandbox.UI.Panel dashCoach;
+	Sandbox.UI.Panel skillBar;
 	Sandbox.UI.Panel hotCard;
 	int shopHover = -1;
 	const float HudScale = 0.8f;
@@ -1567,6 +1587,42 @@
 		}
 
 		PlaceDashCoach( height );
+		PlaceSkillBar( height );
+	}
+
+	void PlaceSkillBar( float trayHeight )
+	{
+		if ( !skillBar.IsValid() )
+			skillBar = FindHud( "skill-bar" );
+
+		if ( !skillBar.IsValid() )
+			return;
+
+		skillBar.Style.Position = Sandbox.UI.PositionMode.Absolute;
+		skillBar.Style.Bottom = Sandbox.UI.Length.Pixels( trayHeight + 12f );
+		skillBar.Style.Dirty();
+
+		var slot = 0;
+		foreach ( var child in skillBar.Children )
+		{
+			if ( !child.HasClass( "skill-slot" ) )
+				continue;
+
+			var shade = 0f;
+			if ( Skills is not null && Skills.CardAt( slot ) is not null )
+				shade = 1f - Skills.Charge( slot );
+
+			foreach ( var part in child.Descendants )
+			{
+				if ( !part.HasClass( "skill-shade" ) )
+					continue;
+
+				part.Style.Height = Sandbox.UI.Length.Percent( Math.Clamp( shade, 0f, 1f ) * 100f );
+				part.Style.Dirty();
+			}
+
+			slot++;
+		}
 	}
 
 	void PlaceDashCoach( float trayHeight )
@@ -1943,7 +1999,8 @@
 			menu ? UserSettings.Steps( SettingRow.Sfx ) : 0,
 			menu ? UserSettings.Steps( SettingRow.Shake ) : 0,
 			(int)OrganLift,
-			Loop.Ascend );
+			Loop.Ascend,
+			Skills?.Stamp ?? 0 );
 
 		return System.HashCode.Combine( a, b, c, d, e, f, g, h );
 	}
@@ -4757,6 +4814,75 @@
 		align-items: center;
 		justify-content: center;
 		pointer-events: none;
+	}
+
+	.skill-bar {
+		position: absolute;
+		left: 0px;
+		bottom: 18%;
+		width: 100%;
+		flex-direction: row;
+		justify-content: center;
+		align-items: flex-end;
+		pointer-events: none;
+		z-index: 3;
+	}
+
+	.skill-slot {
+		position: relative;
+		width: 64px;
+		height: 64px;
+		margin-left: 6px;
+		margin-right: 6px;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.skill-slot.empty {
+		opacity: 0.45;
+	}
+
+	.skill-plate {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+	}
+
+	.skill-icon {
+		position: absolute;
+		left: 11px;
+		top: 8px;
+		width: 42px;
+		height: 42px;
+		z-index: 1;
+	}
+
+	.skill-shade {
+		position: absolute;
+		left: 0px;
+		bottom: 0px;
+		width: 100%;
+		height: 0%;
+		background-color: rgba( 0, 0, 0, 0.62 );
+		z-index: 2;
+	}
+
+	.skill-key {
+		position: absolute;
+		right: 4px;
+		bottom: 2px;
+		font-size: 14px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #e6d3a1;
+		z-index: 3;
+	}
+
+	.skill-slot.ready .skill-key {
+		color: #f0b429;
 	}
 
 	.dash-coach {

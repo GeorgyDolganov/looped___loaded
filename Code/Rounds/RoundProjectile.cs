@@ -387,13 +387,16 @@ public sealed class RoundProjectile : Component
 
 			if ( Flight.Volley is { } crowd && crowd.TryCrowd( target ) )
 			{
-				if ( Flight.KickForce > 1f && travelled <= Flight.KickRange )
+				var away = Loop.Runner.IsValid() ? target.Flat - Loop.Runner.Flat : -Direction;
+				var gap = away.Length;
+				if ( gap < 0.01f )
 				{
-					var away = Loop.Runner.IsValid() ? target.Flat - Loop.Runner.Flat : -Direction;
-					if ( away.Length < 0.01f )
-						away = normal;
-					target.Shove( away.Normal * Flight.KickForce );
+					away = normal;
+					gap = 0f;
 				}
+
+				if ( Flight.KickForce > 1f && gap <= Flight.KickRange )
+					target.Shove( away.Normal * Flight.KickForce );
 
 				if ( Flight.StunTime > 0.01f && travelled <= Flight.StunRange )
 					target.Stun( Flight.StunTime );

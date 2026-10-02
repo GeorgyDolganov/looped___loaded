@@ -4,7 +4,7 @@ public static class ArenaSounds
 {
 	const int Studio = 44100;
 	const int Rate = 22050;
-	const int Bank = 8;
+	const int Bank = 9;
 
 	static readonly Dictionary<string, SoundEvent> events = new();
 	static int built;
@@ -63,6 +63,7 @@ public static class ArenaSounds
 	public static void Lose() => Play( "lose", null );
 	public static void Crack( Vector3? at = null ) => Play( "crack", at );
 	public static void Shatter( Vector3? at = null ) => Play( "shatter", at );
+	public static void Repulse( Vector3? at = null ) => Play( "repulse", at );
 
 	static void Play( string key, Vector3? at, bool forceUi = false )
 	{
@@ -82,7 +83,7 @@ public static class ArenaSounds
 		handle.DistanceAttenuation = false;
 		handle.Distance = 20000f;
 		handle.SpacialBlend = ui ? 0f : 0.2f;
-		var loud = key == "fire" ? 1.35f : key == "explode" ? 1.6f : 1f;
+		var loud = key == "fire" ? 1.35f : key == "explode" ? 1.6f : key == "repulse" ? 1.15f : 1f;
 		handle.Volume = loud * gain;
 	}
 
@@ -120,6 +121,7 @@ public static class ArenaSounds
 		Put( "lose", true, 0.78f, 0.03f, 1, _ => ClipLose() );
 		Put( "crack", false, 0.78f, 0.1f, 2, ClipCrack );
 		Put( "shatter", false, 0.88f, 0.08f, 2, ClipShatter );
+		Put( "repulse", false, 0.92f, 0.05f, 2, ClipRepulse );
 		Put( "talk", true, 0.42f, 0.06f, 3, ClipTalk );
 	}
 
@@ -693,6 +695,28 @@ public static class ArenaSounds
 			var t = i / (float)Studio;
 			var click = t < 0.025f ? Noise( rng ) * Env( t, 0.001f, 80f ) * 0.65f : 0f;
 			buf[i] = click + Square( 48f * t ) * Env( t, 0.006f, 10f ) * 0.42f + Saw( 36f * t ) * Env( t, 0.008f, 9f ) * 0.2f;
+		}
+
+		return buf;
+	}
+
+	static float[] ClipRepulse( int v )
+	{
+		var rng = new Random( 1180 + v );
+		var n = Len( 0.36f );
+		var buf = new float[n];
+		float lo = 0f;
+		float hi = 0f;
+		for ( var i = 0; i < n; i++ )
+		{
+			var t = i / (float)Studio;
+			var noise = Noise( rng );
+			var open = 0.05f + 0.62f * Math.Clamp( t / 0.2f, 0f, 1f );
+			lo += (noise - lo) * open;
+			hi += (lo - hi) * (0.1f + 0.22f * open);
+			var air = t < 0.04f ? t / 0.04f : MathF.Exp( -(t - 0.04f) * 6.5f );
+			var sweep = 220f + v * 36f + t * 780f;
+			Stamp( buf, i, (lo - hi) * air * 1.4f + Sine( sweep * t ) * air * 0.18f );
 		}
 
 		return buf;

@@ -21,6 +21,12 @@ public enum TrinketHook
 	Pin
 }
 
+public enum ActiveSkill
+{
+	None,
+	Repulse
+}
+
 public enum GunStat
 {
 	Count,
@@ -120,6 +126,7 @@ public class TrinketDef : GameResource
 	[Property] public int Price { get; set; }
 	[Property] public int OwnedWeight { get; set; }
 	[Property] public TrinketHook Hook { get; set; }
+	[Property] public ActiveSkill Skill { get; set; }
 	[Property] public List<GunFlag> Flags { get; set; } = new();
 	[Property] public List<TrinketDef> Requires { get; set; } = new();
 	[Property] public List<TrinketDef> Excludes { get; set; } = new();
@@ -127,6 +134,7 @@ public class TrinketDef : GameResource
 	[Property] public List<TrinketNote> Notes { get; set; } = new();
 
 	public int Cap => MaxLevel > 0 ? MaxLevel : Math.Max( 1, GameSettings.Traits.MaxLevel );
+	public bool IsSkill => Skill != ActiveSkill.None;
 	public string ShownTitle => string.IsNullOrWhiteSpace( Title ) ? Id : Title;
 	public string ShownBlurb => Blurb ?? "";
 	public string IconPath => string.IsNullOrWhiteSpace( Icon ) ? "ui/traits/stick.png" : Icon;

@@ -1317,6 +1317,7 @@ public sealed class GameLoop : Component
 
 		HandleFire();
 		Inventory?.TryPickup();
+		Inventory?.Skills.Tick( this );
 
 		if ( Input.Pressed( "Jump" ) && Runner.TryDash() )
 		{

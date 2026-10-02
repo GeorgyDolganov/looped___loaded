@@ -104,7 +104,8 @@ public static class TrinketParity
 		"FRENZY",
 		"FOCUS", "ARC", "SHUNT", "LINGER",
 		"PINBALL",
-		"FETCH", "RETURN", "GHOST"
+		"FETCH", "RETURN", "GHOST",
+		"TURRET"
 	};
 
 	static readonly Tier4 BuckPellets = new( 2f, 3f, 5f );
@@ -125,9 +126,9 @@ public static class TrinketParity
 	static readonly Tier4 PinballDamage = new( 1f, 1f, 2f );
 	static readonly Tier4 PinballSpeed = new( 0.1f, 0.2f, 0.3f );
 
-	static readonly Tier4 KickForceTiers = new( 110f, 160f, 220f );
+	static readonly Tier4 KickForceTiers = new( 480f, 760f, 1100f );
 	static readonly Tier4 BulkRadius = new( 2f, 4f, 7f );
-	const float KickRange = 180f;
+	const float KickRange = 1600f;
 	const float StunTime = 0.45f;
 	const float StunRange = 160f;
 	const float SlugRadius = 22f;
