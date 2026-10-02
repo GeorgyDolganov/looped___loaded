@@ -35,6 +35,7 @@ public sealed class RingRunner : Component
 	float dashElapsed = 999f;
 	float lastDash = -999f;
 	float dashSpent;
+	float dashSign = 1f;
 	bool slowOverheat;
 	float clearBoost;
 	SkinnedModelRenderer warlord;
@@ -73,6 +74,7 @@ public sealed class RingRunner : Component
 		TravelledArc = 0f;
 		dashElapsed = 999f;
 		dashSpent = 0f;
+		dashSign = 1f;
 		lastDash = -999f;
 		SlowUnlocked = false;
 		SlowCharge = 1f;
@@ -92,6 +94,7 @@ public sealed class RingRunner : Component
 		TravelledArc = 0f;
 		dashElapsed = 999f;
 		dashSpent = 0f;
+		dashSign = 1f;
 		Slowing = false;
 		ApplyTimeScale();
 		ApplyTransform();
@@ -131,7 +134,15 @@ public sealed class RingRunner : Component
 		lastDash = RealTime.Now;
 		dashElapsed = 0f;
 		dashSpent = 0f;
+		dashSign = 1f;
 		return true;
+	}
+
+	public void BackDash()
+	{
+		dashElapsed = 0f;
+		dashSpent = 0f;
+		dashSign = -1f;
 	}
 
 	public void FinishCurrentLap()
@@ -148,6 +159,7 @@ public sealed class RingRunner : Component
 		Angle = Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f;
 		dashElapsed = 999f;
 		dashSpent = 0f;
+		dashSign = 1f;
 		Slowing = false;
 		ApplyTimeScale();
 		ApplyTransform();
@@ -198,7 +210,7 @@ public sealed class RingRunner : Component
 		{
 			dashElapsed = MathF.Min( DashDuration, dashElapsed + play );
 			var eased = 1f - MathF.Pow( 1f - dashElapsed / DashDuration, 3f );
-			var target = DashDistance * eased;
+			var target = DashDistance * dashSign * eased;
 			dashArc = target - dashSpent;
 			arc += dashArc;
 			dashSpent = target;
@@ -287,7 +299,7 @@ public sealed class RingRunner : Component
 		{
 			speed = Speed * SpeedScale;
 			if ( Dashing )
-				speed += DashDistance / MathF.Max( 0.05f, DashDuration );
+				speed += dashSign * DashDistance / MathF.Max( 0.05f, DashDuration );
 		}
 
 		var vel = new Vector3( Tangent.x, Tangent.y, 0f ) * speed;
@@ -404,11 +416,21 @@ public sealed class RingRunner : Component
 
 	void Advance( float arc )
 	{
+		var lapLength = MathF.Tau * Radius;
+		if ( lapLength > 0.001f && arc < 0f )
+		{
+			var room = TravelledArc - MathF.Floor( TravelledArc / lapLength ) * lapLength;
+			if ( -arc > room )
+				arc = -room;
+		}
+
 		TravelledArc += arc;
 		Angle -= arc / Radius;
 
 		if ( Angle < -MathF.Tau )
 			Angle += MathF.Tau;
+		else if ( Angle > MathF.Tau )
+			Angle -= MathF.Tau;
 	}
 
 	void ApplyTransform()

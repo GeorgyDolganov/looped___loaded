@@ -114,6 +114,9 @@ public static class StatSheet
 			if ( rank > 1 )
 				return null;
 
+			if ( mod.Op == ModOp.Mul )
+				return new StatLine( $"+{PctPoints( mod.Value )} {meta.Label} per removed projectile", meta.HigherIsGood == false ? -1 : 1 );
+
 			return new StatLine( $"+{Fmt( mod.Value )} {meta.Label} per removed projectile", 1 );
 		}
 
@@ -252,6 +255,7 @@ public static class StatSheet
 		GunStat.ExtraSplash => new( "Extra explosion", "Extra explosions", "", true, false ),
 		GunStat.RangeCut => new( "Range", null, "", false, false ),
 		GunStat.RangePad => new( "Range", null, "", true, false ),
+		GunStat.RangeMul => new( "Range", null, "", true, false ),
 		GunStat.KickForce => new( "Knockback", null, "", true, false ),
 		GunStat.KickRange => new( "Knockback range", null, "", true, false ),
 		GunStat.StunTime => new( "Stun", null, "s", true, false ),

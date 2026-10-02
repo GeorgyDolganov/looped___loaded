@@ -4,7 +4,7 @@
   "Pack": "Warrior",
   "MaxLevel": 3,
   "Sort": 54,
-  "Icon": "ui/traits/TURRET-64x64.png",
+  "Icon": "ui/traits/TURRENT-64x64.png",
   "Blurb": "A turret circles you and shoots the nearest body for 1 damage every 2s / 1.5s / 1s.",
   "Mods": [],
   "__references": [],

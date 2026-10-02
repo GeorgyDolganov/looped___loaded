@@ -1,7 +1,7 @@
 {
   "Id": "RICO",
   "Title": "RICO",
-  "Pack": "Junior",
+  "Pack": "Entry",
   "MaxLevel": 3,
   "Sort": 4,
   "Icon": "ui/traits/RICO-extra-bounce-64x64.png",

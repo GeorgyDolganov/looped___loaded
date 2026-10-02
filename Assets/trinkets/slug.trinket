@@ -5,7 +5,7 @@
   "MaxLevel": 1,
   "Sort": 8,
   "Icon": "ui/traits/SLUG-64x64.png",
-  "Blurb": "Get +damage, +4 bounces, and +4 pierce for each removed projectile.",
+  "Blurb": "Get +40% range, +damage, +4 bounces, and +4 pierce for each removed projectile.",
   "Hook": "Slug",
   "Flags": [
     "NoNail"
@@ -49,11 +49,20 @@
       "Growth": "Flat",
       "Order": 900,
       "Value": 120
+    },
+    {
+      "Stat": "RangeMul",
+      "Op": "Mul",
+      "Growth": "PerRemoved",
+      "Order": 910,
+      "Value": 0.4,
+      "Bias": 1
     }
   ],
   "Notes": [
     {
-      "Text": "One shot"
+      "Text": "Sets Projectiles to 1",
+      "Sign": -1
     }
   ],
   "__references": [

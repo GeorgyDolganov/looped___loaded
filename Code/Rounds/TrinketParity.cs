@@ -111,7 +111,7 @@ public static class TrinketParity
 	static readonly Tier4 BuckPellets = new( 2f, 3f, 5f );
 	static readonly Tier4 BuckCone = new( 10f, 16f, 24f );
 	static readonly Tier4 BuckRange = new( 0.83f, 0.94f, 1f );
-	static readonly Tier4 BorePierce = new( 1f, 1f, 2f );
+	static readonly Tier4 BorePierce = new( 1f, 2f, 3f );
 	static readonly Tier4 DrumBurst = new( 3f, 4f, 6f );
 	static readonly Tier4 WarheadRadius = new( 90f, 126f, 176f );
 	static readonly Tier4 WarheadSpeed = new( 0.78f, 0.68f, 0.58f );
@@ -130,14 +130,12 @@ public static class TrinketParity
 	static readonly Tier4 BulkRadius = new( 2f, 4f, 7f );
 	const float KickRange = 1600f;
 	const float StunTime = 0.45f;
-	const float StunRange = 160f;
 	const float SlugRadius = 22f;
 	const int SlugDamage = 2;
 	const int SlugBounce = 4;
 	const int SlugPierce = 4;
 	const float SlugPad = 120f;
-	const float BoreReload = 0.35f;
-	const float BoreSpeed = 0.95f;
+	const float SlugRange = 0.4f;
 	const float DrumReload = 0.45f;
 	static readonly Tier4 CassetteExtra = new( 1f, 2f, 3f );
 	const float BloomRadius = 80f;
@@ -180,6 +178,7 @@ public static class TrinketParity
 		Float( bad, "StickTime", live.StickTime, old.StickTime );
 		Float( bad, "RangeCut", live.RangeCut, old.RangeCut );
 		Float( bad, "RangePad", live.RangePad, old.RangePad );
+		Float( bad, "RangeMul", live.RangeMul, old.RangeMul );
 		Float( bad, "Falloff", live.Falloff, old.Falloff );
 		Float( bad, "KickForce", live.KickForce, old.KickForce );
 		Float( bad, "KickRange", live.KickRange, old.KickRange );
@@ -328,12 +327,6 @@ public static class TrinketParity
 			pierce += SlugPierce * Math.Max( 0, full - count );
 
 		var reload = t.ReloadBase;
-		var boreWait = 0f;
-		if ( bore > 0 )
-		{
-			boreWait = BoreReload * Progression.TraitMul( bore );
-			reload += boreWait;
-		}
 		if ( drum > 0 )
 			reload += DrumReload * Progression.TraitMul( drum );
 		if ( Has( levels, "BLOOM" ) )
@@ -355,8 +348,6 @@ public static class TrinketParity
 			reload *= ReloaderReload.At( reloader );
 
 		var speed = 1f;
-		if ( bore > 0 )
-			speed *= BoreSpeed;
 		if ( warhead > 0 )
 			speed *= WarheadSpeed.At( warhead );
 		if ( rush > 0 )
@@ -431,17 +422,18 @@ public static class TrinketParity
 			StickTime = 0f,
 			RangeCut = MathF.Max( 0f, rangeCut ),
 			RangePad = slug ? SlugPad : 0f,
+			RangeMul = 1f + (slug ? SlugRange * Math.Max( 0, full - count ) : 0f),
 			Falloff = 0f,
 			KickForce = KickForceTiers.At( kick ),
 			KickRange = KickRange,
 			StunTime = Has( levels, "STUN" ) ? StunTime : 0f,
-			StunRange = StunRange,
+			StunRange = 0f,
 			Cycle = cycle,
 			Burst = burst,
 			WalkStep = 0f,
 			Bite = Has( levels, "FRENZY" ),
 			Reload = MathF.Max( t.ReloadMin, reload ),
-			BoreWait = boreWait,
+			BoreWait = 0f,
 			BeamPad = t.LashPad,
 			BeamPerSecond = t.LashPerSecond,
 			BeamMaxHold = t.LashMaxHold,
@@ -472,7 +464,9 @@ public static class TrinketParity
 			return true;
 		if ( id == "DRUM" && owned.Contains( "ELECTRIFY" ) )
 			return true;
-		if ( id == "FETCH" && owned.Contains( "ELECTRIFY" ) )
+		if ( id == "FETCH" && (owned.Contains( "ELECTRIFY" ) || owned.Contains( "RETURN" )) )
+			return true;
+		if ( id == "RETURN" && owned.Contains( "FETCH" ) )
 			return true;
 		if ( id == "GHOST" && owned.Contains( "ELECTRIFY" ) )
 			return true;

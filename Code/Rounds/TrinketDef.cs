@@ -24,7 +24,8 @@ public enum TrinketHook
 public enum ActiveSkill
 {
 	None,
-	Repulse
+	Repulse,
+	Backdash
 }
 
 public enum GunStat
@@ -62,7 +63,8 @@ public enum GunStat
 	BounceDamage,
 	BounceSpeed,
 	ExtraSplash,
-	Pickup
+	Pickup,
+	RangeMul
 }
 
 public enum ModOp

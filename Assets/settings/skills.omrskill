@@ -1,10 +1,13 @@
 {
   "Repulse": {
-    "Cooldown": 8,
-    "Radius": 466.67,
-    "Force": 900,
+    "Cooldown": { "Level1": 8, "Level2": 6, "Level3": 4.5 },
+    "Radius": { "Level1": 466.67, "Level2": 583, "Level3": 700 },
+    "Force": { "Level1": 900, "Level2": 1200, "Level3": 1550 },
     "EdgeScale": 0.45,
-    "StunTime": 0.35
+    "StunTime": { "Level1": 0.35, "Level2": 0.45, "Level3": 0.6 }
+  },
+  "Backdash": {
+    "Cooldown": 3
   },
   "__references": [],
   "__version": 0

@@ -3,7 +3,7 @@
   "Title": "BLEED",
   "Blurb": "Any damage marks the body. It loses 1 health each second for 3s / 5s / 8s.",
   "Icon": "ui/traits/BLEED-64x64.png",
-  "Pack": "Nailgun",
+  "Pack": "Warrior",
   "MaxLevel": 3,
   "InPool": true,
   "Sort": 14,

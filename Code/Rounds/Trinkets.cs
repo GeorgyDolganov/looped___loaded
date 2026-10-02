@@ -225,6 +225,27 @@ public static class Trinkets
 
 	public static void Refresh() => ready = null;
 
+	public static int CatalogStamp()
+	{
+		var hash = 0;
+		foreach ( var card in ResourceLibrary.GetAll<TrinketDef>() )
+		{
+			if ( card is null )
+				continue;
+
+			hash = System.HashCode.Combine( hash, card.ResourcePath, card.Id, (int)card.Skill );
+		}
+
+		var fs = FileSystem.Mounted;
+		if ( fs is null )
+			return hash;
+
+		foreach ( var file in fs.FindFile( "trinkets", "*.trinket", false ) )
+			hash = System.HashCode.Combine( hash, file );
+
+		return hash;
+	}
+
 	static Index ready;
 
 	static Index Ensure()
@@ -233,10 +254,23 @@ public static class Trinkets
 			return ready;
 
 		var found = new List<TrinketDef>();
+		var seen = new HashSet<TrinketDef>();
 		foreach ( var card in ResourceLibrary.GetAll<TrinketDef>() )
 		{
-			if ( card is not null )
+			if ( card is not null && seen.Add( card ) )
 				found.Add( card );
+		}
+
+		var fs = FileSystem.Mounted;
+		if ( fs is not null )
+		{
+			foreach ( var file in fs.FindFile( "trinkets", "*.trinket", false ) )
+			{
+				var path = $"trinkets/{file}";
+				ResourceLibrary.TryGet<TrinketDef>( path, out var card );
+				if ( card is not null && seen.Add( card ) )
+					found.Add( card );
+			}
 		}
 
 		found.Sort( ( a, b ) =>

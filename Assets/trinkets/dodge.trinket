@@ -1,7 +1,7 @@
 {
   "Id": "DODGE",
   "Title": "DODGE",
-  "Pack": "Nailgun",
+  "Pack": "Entry",
   "MaxLevel": 3,
   "Sort": 16,
   "Icon": "ui/traits/DOGE-64x64.png",

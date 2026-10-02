@@ -1,0 +1,13 @@
+{
+  "Id": "BACKDASH",
+  "Title": "BACKDASH",
+  "Pack": "Entry",
+  "MaxLevel": 1,
+  "Sort": 1,
+  "Icon": "ui/traits/BACKDASH-64x64.png",
+  "Blurb": "ACTIVE · Activate to dash backward. 3s cooldown.",
+  "Skill": "Backdash",
+  "Mods": [],
+  "__references": [],
+  "__version": 0
+}

@@ -121,6 +121,7 @@ public struct GunRecipe
 	public float StickTime;
 	public float RangeCut;
 	public float RangePad;
+	public float RangeMul;
 	public float Falloff;
 	public float KickForce;
 	public float KickRange;
@@ -216,14 +217,27 @@ public static class ShotRange
 {
 	public static void Apply( ref GunRecipe recipe, GameLoop loop )
 	{
-		if ( recipe.RangeCut <= 0.0001f || recipe.Falloff > 1f )
+		if ( recipe.Falloff > 1f || recipe.Falloff < 0f )
 			return;
+
+		var mul = recipe.RangeMul > 0.0001f ? recipe.RangeMul : 1f;
+		if ( recipe.RangeCut <= 0.0001f )
+		{
+			if ( mul > 1.0001f )
+			{
+				recipe.Energy *= mul;
+				recipe.Falloff = -1f;
+			}
+
+			return;
+		}
 
 		var range = GameSettings.Traits.EnergyBase - recipe.RangeCut * Span( loop );
 		range = MathF.Max( range, Floor( loop ) );
 		range += MathF.Max( 0f, recipe.RangePad );
+		range *= mul;
 		recipe.Falloff = range;
-		recipe.Energy = MathF.Min( recipe.Energy, range );
+		recipe.Energy = MathF.Min( recipe.Energy * mul, range );
 	}
 
 	public static float Span( GameLoop loop )

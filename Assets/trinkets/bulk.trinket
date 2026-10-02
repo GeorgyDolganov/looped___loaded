@@ -1,7 +1,7 @@
 {
   "Id": "BULK",
   "Title": "BULK",
-  "Pack": "Warrior",
+  "Pack": "Junior",
   "MaxLevel": 3,
   "Sort": 7,
   "Icon": "ui/traits/BULK-64x64.png",

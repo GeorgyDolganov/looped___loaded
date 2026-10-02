@@ -234,8 +234,7 @@ public sealed class CityBoard : Component
 			if ( !plot.Working )
 				continue;
 
-			var extra = HasSameNeighbor( plot ) ? 1 : 0;
-			var power = plot.Level + extra;
+			var power = OrganPower( plot );
 
 			switch ( plot.Kind )
 			{
@@ -258,6 +257,120 @@ public sealed class CityBoard : Component
 			OfferCount = Math.Clamp( GameSettings.City.MinOffers + show, GameSettings.City.MinOffers, GameSettings.City.MaxOffers )
 		};
 	}
+
+	public OrganBonus BonusOf( CityPlot plot )
+	{
+		if ( plot is null || !plot.Occupied )
+			return default;
+
+		var title = Buildings.Title( plot.Kind );
+		if ( !plot.Working )
+		{
+			return new OrganBonus
+			{
+				Title = title,
+				Value = GameSettings.Text.City.NoBonuses,
+				Show = true
+			};
+		}
+
+		var mine = OrganPower( plot );
+		var with = KindPower( plot.Kind );
+		var without = PowerWithout( plot );
+		var value = plot.Kind switch
+		{
+			BuildingKind.Infirmary => $"+{Progression.RankValue( mine )} HP",
+			BuildingKind.Anvil => $"+{Progression.RankValue( mine )} DMG",
+			BuildingKind.Booster => DashLabel( with, without ),
+			BuildingKind.Brake => SlowLabel( with, without ),
+			_ => CardLabel( with, without )
+		};
+
+		return new OrganBonus
+		{
+			Title = GameSettings.Text.F( GameSettings.Text.City.Level, title, plot.Level ),
+			Value = value,
+			Neighbor = HasSameNeighbor( plot ),
+			Show = true
+		};
+	}
+
+	int OrganPower( CityPlot plot )
+	{
+		if ( plot is null || !plot.Working )
+			return 0;
+
+		return plot.Level + (HasSameNeighbor( plot ) ? 1 : 0);
+	}
+
+	int KindPower( BuildingKind kind )
+	{
+		var total = 0;
+		foreach ( var plot in plots )
+		{
+			if ( plot.Working && plot.Kind == kind )
+				total += OrganPower( plot );
+		}
+
+		return total;
+	}
+
+	int PowerWithout( CityPlot except )
+	{
+		var total = 0;
+		foreach ( var plot in plots )
+		{
+			if ( !plot.Working || plot == except || plot.Kind != except.Kind )
+				continue;
+
+			total += plot.Level + (HasSameNeighbor( plot, except ) ? 1 : 0);
+		}
+
+		return total;
+	}
+
+	static string DashLabel( int with, int without )
+	{
+		var cut = DashPercent( with ) - DashPercent( without );
+		return cut <= 0 ? "DASH CAPPED" : $"-{cut}% DASH";
+	}
+
+	static string SlowLabel( int with, int without )
+	{
+		var delta = SlowSeconds( with ) - SlowSeconds( without );
+		return delta <= 0.001f ? "SLOW CAPPED" : $"+{Seconds( delta )}s SLOW";
+	}
+
+	static string CardLabel( int with, int without )
+	{
+		var cut = ExtraCards( with ) - ExtraCards( without );
+		return cut <= 0 ? "CARDS CAPPED" : $"+{cut} CARDS";
+	}
+
+	static int DashPercent( int boost )
+	{
+		if ( boost <= 0 )
+			return 0;
+
+		return (int)MathF.Round( (1f - Progression.DashScale( boost )) * 100f );
+	}
+
+	static float SlowSeconds( int brake )
+	{
+		if ( brake <= 0 )
+			return 0f;
+
+		return 1f / MathF.Max( 0.001f, Progression.SlowDrain( brake ) );
+	}
+
+	static int ExtraCards( int show )
+	{
+		var offers = Math.Clamp( GameSettings.City.MinOffers + Math.Max( 0, show ), GameSettings.City.MinOffers, GameSettings.City.MaxOffers );
+		return offers - GameSettings.City.MinOffers;
+	}
+
+	static string Seconds( float value )
+		=> MathF.Max( 0f, value ).ToString( "0.##", System.Globalization.CultureInfo.InvariantCulture );
 
 	protected override void OnAwake() => BindScene();
 
@@ -1753,11 +1866,11 @@ public sealed class CityBoard : Component
 		return points;
 	}
 
-	bool HasSameNeighbor( CityPlot plot )
+	bool HasSameNeighbor( CityPlot plot, CityPlot except = null )
 	{
 		foreach ( var other in plots )
 		{
-			if ( other == plot || !other.Working || other.Kind != plot.Kind )
+			if ( other == plot || other == except || !other.Working || other.Kind != plot.Kind )
 				continue;
 
 			if ( Math.Abs( other.X - plot.X ) + Math.Abs( other.Y - plot.Y ) == 1 )

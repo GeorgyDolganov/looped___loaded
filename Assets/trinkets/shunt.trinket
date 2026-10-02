@@ -1,7 +1,7 @@
 {
   "Id": "SHUNT",
   "Title": "SHUNT",
-  "Pack": "Laser",
+  "Pack": "Junior",
   "MaxLevel": 1,
   "Sort": 38,
   "Icon": "ui/traits/SHUNT-64x64.png",

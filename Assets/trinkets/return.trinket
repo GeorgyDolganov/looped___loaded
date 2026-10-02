@@ -1,11 +1,14 @@
 {
   "Id": "RETURN",
   "Title": "RETURN",
-  "Pack": "Junior",
+  "Pack": "Entry",
   "MaxLevel": 3,
   "Sort": 52,
   "Icon": "ui/traits/RETURN-64x64.png",
   "Blurb": "Spent rounds chase you faster. Faster each rank.",
+  "Excludes": [
+    "trinkets/fetch.trinket"
+  ],
   "Mods": [
     {
       "Stat": "Pickup",
@@ -19,6 +22,14 @@
       }
     }
   ],
-  "__references": [],
+  "Notes": [
+    {
+      "Text": "Locks out FETCH",
+      "Sign": -1
+    }
+  ],
+  "__references": [
+    "trinkets/fetch.trinket"
+  ],
   "__version": 1
 }

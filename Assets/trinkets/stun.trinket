@@ -1,7 +1,7 @@
 {
   "Id": "STUN",
   "Title": "STUN",
-  "Pack": "Warrior",
+  "Pack": "Junior",
   "MaxLevel": 1,
   "Sort": 7,
   "Icon": "ui/traits/STUN-64x64.png",
@@ -13,14 +13,6 @@
       "Growth": "Flat",
       "Order": 900,
       "Value": 0.45
-    },
-    {
-      "Stat": "StunRange",
-      "Op": "Set",
-      "Growth": "Flat",
-      "Order": 0,
-      "Value": 160,
-      "Passive": true
     }
   ],
   "__references": [],

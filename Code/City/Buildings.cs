@@ -143,6 +143,14 @@ public sealed class CityPlot
 	public bool Working => Occupied && Level > 0;
 }
 
+public struct OrganBonus
+{
+	public string Title;
+	public string Value;
+	public bool Neighbor;
+	public bool Show;
+}
+
 public struct CityStats
 {
 	public int BonusHealth;

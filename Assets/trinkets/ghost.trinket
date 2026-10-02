@@ -1,7 +1,7 @@
 {
   "Id": "GHOST",
   "Title": "GHOST",
-  "Pack": "Junior",
+  "Pack": "Entry",
   "MaxLevel": 1,
   "Sort": 53,
   "Icon": "ui/traits/GHOST-64x64.png",

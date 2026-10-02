@@ -69,6 +69,7 @@ public sealed class Enemy : Component
 	readonly List<Vector3> span = new( 2 );
 	float freezeUntil;
 	float freezeScale = 1f;
+	StunMark stunFx;
 	float shotAt = -99f;
 	float telegraphUntil;
 	float attackUntil;
@@ -107,6 +108,11 @@ public sealed class Enemy : Component
 		Alive = true;
 		freezeUntil = 0f;
 		freezeScale = 1f;
+		if ( stunFx.IsValid() )
+		{
+			stunFx.GameObject.Destroy();
+			stunFx = null;
+		}
 		markUntil = 0f;
 		shotAt = Time.Now + Game.Random.Float( 0.12f, 0.45f );
 		telegraphUntil = 0f;
@@ -211,6 +217,12 @@ public sealed class Enemy : Component
 		shotAt = MathF.Max( shotAt, Time.Now + duration );
 		telegraphUntil = 0f;
 		attackUntil = MathF.Max( attackUntil, Time.Now + duration );
+
+		var crown = headTop > 1f ? headTop - 36f : 150f;
+		if ( !stunFx.IsValid() )
+			stunFx = StunMark.Spawn( this, crown );
+
+		stunFx.Arm( duration );
 	}
 
 	const float ShoveDrag = 6f;
@@ -349,6 +361,11 @@ public sealed class Enemy : Component
 	void Die()
 	{
 		Alive = false;
+		if ( stunFx.IsValid() )
+		{
+			stunFx.GameObject.Destroy();
+			stunFx = null;
+		}
 
 		GibChunk.Burst( Loop, Scene, hobo, WorldPosition, lastImpulse, LiveTint, Radius );
 
@@ -417,6 +434,13 @@ public sealed class Enemy : Component
 			blend = MathF.Max( blend, 0.55f );
 		}
 
+		if ( stunFx.IsValid() )
+		{
+			var pulse = 0.5f + 0.5f * MathF.Sin( Time.Now * 34f );
+			overlay = new Color( 1f, 0.78f, 0.18f );
+			blend = MathF.Max( blend, 0.62f + 0.3f * pulse );
+		}
+
 		if ( Kind == EnemyKind.Shooter && telegraphUntil > Time.Now )
 		{
 			overlay = Color.White;
@@ -476,6 +500,8 @@ public sealed class Enemy : Component
 		shotAt += dt;
 		if ( freezeUntil > 0f )
 			freezeUntil += dt;
+		if ( stunFx.IsValid() )
+			stunFx.Shift( dt );
 		if ( telegraphUntil > 0f )
 			telegraphUntil += dt;
 		if ( attackUntil > 0f )
@@ -742,6 +768,9 @@ public sealed class Enemy : Component
 		if ( frozen )
 			tint = Color.Lerp( tint, new Color( 0.45f, 0.9f, 1f ), 0.55f );
 
+		if ( stunFx.IsValid() )
+			tint = Color.Lerp( tint, new Color( 1f, 0.82f, 0.22f ), 0.42f + 0.28f * (0.5f + 0.5f * MathF.Sin( Time.Now * 34f )) );
+
 		if ( Kind == EnemyKind.Shooter && telegraphUntil > Time.Now )
 			tint = Color.Lerp( tint, Color.White, 0.45f );
 
@@ -791,6 +820,8 @@ public sealed class Enemy : Component
 					? Color.Lerp( Color.White, plateHits > 0 ? GlassCrackPlate : ShardguardTint, plateHits > 0 ? 0.35f : 0.45f )
 					: Color.White;
 				shieldMesh.Tint = Color.Lerp( baseTint, HurtTint, flash );
+				if ( stunFx.IsValid() )
+					shieldMesh.Tint = Color.Lerp( shieldMesh.Tint, new Color( 1f, 0.78f, 0.18f ), 0.55f );
 			}
 		}
 

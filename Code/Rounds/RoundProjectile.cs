@@ -398,7 +398,7 @@ public sealed class RoundProjectile : Component
 				if ( Flight.KickForce > 1f && gap <= Flight.KickRange )
 					target.Shove( away.Normal * Flight.KickForce );
 
-				if ( Flight.StunTime > 0.01f && travelled <= Flight.StunRange )
+				if ( Flight.StunTime > 0.01f )
 					target.Stun( Flight.StunTime );
 			}
 

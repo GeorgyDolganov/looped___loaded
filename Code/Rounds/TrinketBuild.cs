@@ -23,6 +23,7 @@ public sealed class BuildState
 	public int ExtraSplash;
 	public float RangeCut;
 	public float RangePad;
+	public float RangeMul = 1f;
 	public float KickForce;
 	public float KickRange;
 	public float StunTime;
@@ -81,6 +82,7 @@ public sealed class BuildState
 		GunStat.ExtraSplash => ExtraSplash,
 		GunStat.RangeCut => RangeCut,
 		GunStat.RangePad => RangePad,
+		GunStat.RangeMul => RangeMul,
 		GunStat.KickForce => KickForce,
 		GunStat.KickRange => KickRange,
 		GunStat.StunTime => StunTime,
@@ -121,6 +123,7 @@ public sealed class BuildState
 			case GunStat.ExtraSplash: ExtraSplash = (int)value; break;
 			case GunStat.RangeCut: RangeCut = value; break;
 			case GunStat.RangePad: RangePad = value; break;
+			case GunStat.RangeMul: RangeMul = value; break;
 			case GunStat.KickForce: KickForce = value; break;
 			case GunStat.KickRange: KickRange = value; break;
 			case GunStat.StunTime: StunTime = value; break;
@@ -201,6 +204,7 @@ public sealed class BuildState
 			StickTime = nail ? StickTime : 0f,
 			RangeCut = MathF.Max( 0f, RangeCut ),
 			RangePad = RangePad,
+			RangeMul = RangeMul > 0f ? RangeMul : 1f,
 			Falloff = Falloff,
 			KickForce = KickForce,
 			KickRange = KickRange,

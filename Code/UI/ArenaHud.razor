@@ -780,6 +780,18 @@
 	</div>
 	}
 
+	@if ( HoverTip.Show )
+	{
+		<div class="organ-tip">
+			<label class="name">@HoverTip.Title</label>
+			<label class="value">@HoverTip.Value</label>
+			@if ( HoverTip.Neighbor )
+			{
+				<label class="note">NEIGHBOR +1 RANK</label>
+			}
+		</div>
+	}
+
 	<div class="cursor-trail"></div>
 	<div class="cursor-aura">
 		<div class="cursor-ring"></div>
@@ -813,6 +825,7 @@
 			: Sandbox.UI.PointerEvents.None;
 
 		TickCursor();
+		TickOrganTip();
 		TickReloadCursor();
 		TickHover();
 		TickSettingDrag();
@@ -825,6 +838,7 @@
 	}
 
 	bool collectionListed;
+	int collectionStamp;
 	int revealedCollection = -1;
 
 	void TickCollectionList()
@@ -837,9 +851,11 @@
 			return;
 		}
 
-		if ( !collectionListed )
+		var stamp = Trinkets.CatalogStamp();
+		if ( !collectionListed || stamp != collectionStamp )
 		{
 			collectionListed = true;
+			collectionStamp = stamp;
 			Trinkets.Refresh();
 		}
 
@@ -1314,6 +1330,43 @@
 		}
 	}
 
+	OrganBonus HoverTip => Loop.IsValid() && Loop.Phase == RunPhase.City && Loop.City.IsValid()
+		? Loop.City.BonusOf( Loop.City.Hovered )
+		: default;
+
+	void TickOrganTip()
+	{
+		if ( !HoverTip.Show )
+		{
+			organTip = null;
+			return;
+		}
+
+		if ( !organTip.IsValid() )
+			organTip = FindHud( "organ-tip" );
+		if ( !organTip.IsValid() )
+			return;
+
+		var point = CursorOn();
+		var x = point.x + 36f;
+		var y = point.y - 72f;
+		if ( Panel is not null )
+		{
+			var bounds = Panel.Box.Rect;
+			if ( bounds.Width > 64f && bounds.Height > 64f )
+			{
+				x = Math.Clamp( x, 12f, bounds.Width - 188f );
+				y = Math.Clamp( y, 12f, bounds.Height - 96f );
+			}
+		}
+
+		organTip.Style.Position = Sandbox.UI.PositionMode.Absolute;
+		organTip.Style.Left = Sandbox.UI.Length.Pixels( x );
+		organTip.Style.Top = Sandbox.UI.Length.Pixels( y );
+		organTip.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
+		organTip.Style.Dirty();
+	}
+
 	List<CityBonus> CityBonusLines
 	{
 		get
@@ -1520,6 +1573,7 @@
 	Sandbox.UI.Panel dashCoach;
 	Sandbox.UI.Panel skillBar;
 	Sandbox.UI.Panel hotCard;
+	Sandbox.UI.Panel organTip;
 	int shopHover = -1;
 	const float HudScale = 0.8f;
 	const float TrayArtWidth = 2544f;
@@ -1985,8 +2039,9 @@
 			? System.HashCode.Combine( Loop.SlotBlurb( 0 ), Loop.SlotBlurb( 1 ), Loop.SlotBlurb( 2 ), Loop.SlotExists( 0 ), Loop.SlotExists( 1 ), Loop.SlotExists( 2 ), Loop.ActiveSlot, Loop.SaveCursor )
 			: System.HashCode.Combine( Loop.ActiveSlot, Loop.SaveCursor );
 
+		var tip = city && Loop.City.IsValid() ? HoverTip : default;
 		var f = city && Loop.City.IsValid()
-			? System.HashCode.Combine( Loop.City.Warehouse, (int)Loop.City.Selected, Loop.City.PlacementFacing, (int)Loop.City.Mode, string.Join( "|", CityBonusLines.Select( line => line.Name + line.Value ) ), Buildings.Blurb( Loop.City.Selected ), Buildings.Promise( Loop.City.Selected ) + Buildings.FrameCost( Loop.City.Selected, Loop.City.Placed( Loop.City.Selected ) ) )
+			? System.HashCode.Combine( Loop.City.Warehouse, (int)Loop.City.Selected, Loop.City.PlacementFacing, (int)Loop.City.Mode, string.Join( "|", CityBonusLines.Select( line => line.Name + line.Value ) ), Buildings.Blurb( Loop.City.Selected ), Buildings.Promise( Loop.City.Selected ) + Buildings.FrameCost( Loop.City.Selected, Loop.City.Placed( Loop.City.Selected ) ), System.HashCode.Combine( tip.Show, tip.Title, tip.Value, tip.Neighbor ) )
 			: 0;
 
 		var g = shop
@@ -2632,6 +2687,43 @@
 		font-weight: 700;
 		letter-spacing: 1px;
 		color: #f4ece0;
+	}
+
+	.organ-tip {
+		position: absolute;
+		width: 176px;
+		padding: 10px 12px;
+		flex-direction: column;
+		align-items: flex-start;
+		font-family: "Barlow Condensed";
+		background-color: rgba(14, 15, 17, 0.94);
+		border: 2px solid rgba(240, 180, 41, 0.75);
+		border-radius: 8px;
+		pointer-events: none;
+		z-index: 70;
+	}
+
+	.organ-tip .name {
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 1px;
+		color: #8e8b86;
+	}
+
+	.organ-tip .value {
+		font-size: 22px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #f4ece0;
+		margin-top: 2px;
+	}
+
+	.organ-tip .note {
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 1px;
+		color: #f0b429;
+		margin-top: 4px;
 	}
 
 	.slot .text {

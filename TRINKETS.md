@@ -29,38 +29,40 @@
 | Warrior | RARE | 5 | 2 |  |
 | Abomination | EPIC | 8 | 1 | yes |
 
-## Junior
+## Entry
 
 ### RICO
 
 | Field | Value |
 | --- | --- |
 | Id | RICO |
-| Pack | Junior |
+| Pack | Entry |
 | InPool | yes |
 | MaxLevel | 3 |
 | Bounces Add | 1 / 3 / 5 @500 |
 | Energy Mul | 1.25 / 1.6 / 2 @500 |
 
-## Warrior
+## Entry
 
 ### KICK
 
 | Field | Value |
 | --- | --- |
 | Id | KICK |
-| Pack | Warrior |
+| Pack | Entry |
 | InPool | yes |
 | MaxLevel | 3 |
 | KickForce Add | 480 / 760 / 1100 @900 |
 | KickRange Set | 1600 passive @0 |
+
+## Junior
 
 ### BULK
 
 | Field | Value |
 | --- | --- |
 | Id | BULK |
-| Pack | Warrior |
+| Pack | Junior |
 | InPool | yes |
 | MaxLevel | 3 |
 | Blurb | Rounds get huge. |
@@ -71,12 +73,11 @@
 | Field | Value |
 | --- | --- |
 | Id | STUN |
-| Pack | Warrior |
+| Pack | Junior |
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | *Doesn't affect boss. |
 | StunTime Add | 0.45 @900 |
-| StunRange Set | 160 passive @0 |
 
 ## Abomination
 
@@ -124,10 +125,7 @@
 | InPool | yes |
 | MaxLevel | 3 |
 | Blurb | Fill them with holes. |
-| Pierce Set | 1 / 1 / 2 @600 |
-| Reload Add | 0.35 x rank @700 |
-| BoreWait Set | 0.35 x rank @700 |
-| Speed Mul | 0.95 @800 |
+| Pierce Set | 1 / 2 / 3 @600 |
 
 ## Rifle
 
@@ -204,18 +202,20 @@
 | MaxLevel | 3 |
 | Speed Mul | 1.2 / 1.4 / 1.65 @800 |
 
-## Nailgun
+## Entry
 
 ### DODGE
 
 | Field | Value |
 | --- | --- |
 | Id | DODGE |
-| Pack | Nailgun |
+| Pack | Entry |
 | InPool | yes |
 | MaxLevel | 3 |
 | Blurb | Improve your chance of ignoring damage |
 | Dodge Set | 0.1 / 0.2 / 0.32 @900 |
+
+## Nailgun
 
 ### RELOADER
 
@@ -243,12 +243,14 @@
 | Requires | WARHEAD |
 | ExtraSplash Add | 1 / 2 / 3 @1210 |
 
+## Junior
+
 ### BLOOM
 
 | Field | Value |
 | --- | --- |
 | Id | BLOOM |
-| Pack | Rocket |
+| Pack | Junior |
 | InPool | yes |
 | MaxLevel | 1 |
 | Requires | WARHEAD |
@@ -260,7 +262,7 @@
 | Field | Value |
 | --- | --- |
 | Id | IGNORANCE |
-| Pack | Rocket |
+| Pack | Junior |
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Your explosions do not hurt you. |
@@ -310,14 +312,14 @@
 | Flag | Bite |
 | Speed Mul | 0.8 @800 |
 
-## Laser
+## Junior
 
 ### FOCUS
 
 | Field | Value |
 | --- | --- |
 | Id | FOCUS |
-| Pack | Laser |
+| Pack | Junior |
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | +1 damage while the beam stays on a body. |
@@ -331,7 +333,7 @@
 | Field | Value |
 | --- | --- |
 | Id | ARC |
-| Pack | Laser |
+| Pack | Junior |
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Jumps once to a near neighbor. |
@@ -345,7 +347,7 @@
 | Field | Value |
 | --- | --- |
 | Id | SHUNT |
-| Pack | Laser |
+| Pack | Junior |
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Ignores shields and plates. |
@@ -359,7 +361,7 @@
 | Field | Value |
 | --- | --- |
 | Id | LINGER |
-| Pack | Laser |
+| Pack | Junior |
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Remaining ticks finish where you let go. |
@@ -381,12 +383,14 @@
 | BounceDamage Add | 1 / 1 / 2 @900 |
 | BounceSpeed Add | 0.1 / 0.2 / 0.3 @900 |
 
+## Entry
+
 ### RETURN
 
 | Field | Value |
 | --- | --- |
 | Id | RETURN |
-| Pack | Junior |
+| Pack | Entry |
 | InPool | yes |
 | MaxLevel | 3 |
 | Blurb | Spent rounds chase you faster. Faster each rank. |
@@ -397,7 +401,7 @@
 | Field | Value |
 | --- | --- |
 | Id | GHOST |
-| Pack | Junior |
+| Pack | Entry |
 | InPool | yes |
 | MaxLevel | 1 |
 | Blurb | Rounds pass through panels, shards, and spinners. |

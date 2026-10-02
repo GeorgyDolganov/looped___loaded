@@ -1,7 +1,7 @@
 {
   "Id": "ARC",
   "Title": "ARC",
-  "Pack": "Laser",
+  "Pack": "Junior",
   "MaxLevel": 1,
   "Sort": 36,
   "Icon": "ui/traits/ARC-64x64.png",

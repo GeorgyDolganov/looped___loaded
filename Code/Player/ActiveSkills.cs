@@ -129,23 +129,35 @@ public sealed class ActiveSkills
 		switch ( slot.Card.Skill )
 		{
 			case ActiveSkill.Repulse:
-				var cfg = GameSettings.Skills.Repulse ?? new RepulseStats();
-				Repulse( loop, cfg );
-				cooldown = cfg.Cooldown;
+				var repulse = GameSettings.Skills.Repulse ?? new RepulseStats();
+				var repulseLevel = 1;
+				if ( loop.Inventory.IsValid() )
+					repulseLevel = Math.Max( 1, loop.Inventory.Loadout.TraitLevel( slot.Card ) );
+				Repulse( loop, repulse, repulseLevel );
+				cooldown = repulse.CooldownAt( repulseLevel );
 				break;
+			case ActiveSkill.Backdash:
+				if ( !Backdash( loop ) )
+					return;
+				cooldown = (GameSettings.Skills.Backdash ?? new BackdashStats()).Cooldown;
+				break;
+			default:
+				return;
 		}
 
 		slot.For = MathF.Max( 0.01f, cooldown );
 		slot.Left = slot.For;
 	}
 
-	static void Repulse( GameLoop loop, RepulseStats cfg )
+	static void Repulse( GameLoop loop, RepulseStats cfg, int level )
 	{
 		if ( !loop.Runner.IsValid() )
 			return;
 
 		var origin = loop.Runner.Flat;
-		var radius = MathF.Max( 1f, cfg.Radius );
+		var radius = MathF.Max( 1f, cfg.RadiusAt( level ) );
+		var force = cfg.ForceAt( level );
+		var stun = cfg.StunAt( level );
 		foreach ( var enemy in loop.Enemies )
 		{
 			if ( !enemy.IsValid() || !enemy.Alive )
@@ -158,13 +170,24 @@ public sealed class ActiveSkills
 
 			var dir = dist > 1f ? away / dist : Vector2.Right;
 			var falloff = MathX.Lerp( 1f, cfg.EdgeScale, dist / radius );
-			enemy.Shove( dir * (cfg.Force * falloff) );
-			enemy.Stun( cfg.StunTime );
+			enemy.Shove( dir * (force * falloff) );
+			enemy.Stun( stun );
 		}
 
 		var world = loop.Geometry.ToPlayWorld( origin );
 		RepulseWave.Spawn( loop.Scene, world, radius );
 		ArenaSounds.Repulse( world );
+	}
+
+	static bool Backdash( GameLoop loop )
+	{
+		if ( !loop.Runner.IsValid() )
+			return false;
+
+		loop.Runner.BackDash();
+		loop.Runner.Juke( -loop.Runner.Tangent );
+		ArenaSounds.Jump( loop.Runner.WorldPosition );
+		return true;
 	}
 
 	int IndexOf( TrinketDef card )
