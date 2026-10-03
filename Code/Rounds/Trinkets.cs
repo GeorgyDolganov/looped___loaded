@@ -372,23 +372,74 @@ public static class Trinkets
 		return fs.FileExists( path );
 	}
 
+	static readonly HashSet<string> Files = new( StringComparer.OrdinalIgnoreCase )
+	{
+		"arc.trinket",
+		"backdash.trinket",
+		"bloom.trinket",
+		"bore.trinket",
+		"buck.trinket",
+		"bulk.trinket",
+		"cassette.trinket",
+		"dodge.trinket",
+		"drum.trinket",
+		"electrify.trinket",
+		"fetch.trinket",
+		"focus.trinket",
+		"frenzy.trinket",
+		"ghost.trinket",
+		"ignorance.trinket",
+		"kick.trinket",
+		"linger.trinket",
+		"pin.trinket",
+		"pinball.trinket",
+		"ram.trinket",
+		"reloader.trinket",
+		"repulse.trinket",
+		"return.trinket",
+		"rico.trinket",
+		"rush.trinket",
+		"shunt.trinket",
+		"slug.trinket",
+		"stun.trinket",
+		"turret.trinket",
+		"warhead.trinket"
+	};
+
 	static bool Present( TrinketDef card )
 	{
 		if ( card is null )
 			return false;
 
-		if ( !Game.IsEditor )
+		var name = Leaf( card.ResourcePath );
+		if ( name is not null && Files.Contains( name ) )
 			return true;
 
-		var path = card.ResourcePath;
-		if ( string.IsNullOrWhiteSpace( path ) )
+		if ( !Game.IsEditor )
+			return false;
+
+		if ( string.IsNullOrWhiteSpace( card.ResourcePath ) )
 			return true;
 
 		var fs = FileSystem.Mounted;
 		if ( fs is null )
 			return true;
 
-		return fs.FileExists( path );
+		return fs.FileExists( card.ResourcePath );
+	}
+
+	static string Leaf( string path )
+	{
+		if ( string.IsNullOrWhiteSpace( path ) )
+			return null;
+
+		path = path.Replace( '\\', '/' );
+		var slash = path.LastIndexOf( '/' );
+		var name = slash >= 0 ? path[(slash + 1)..] : path;
+		if ( name.EndsWith( "_c", StringComparison.OrdinalIgnoreCase ) )
+			name = name[..^2];
+
+		return name;
 	}
 
 	static void Link( Dictionary<TrinketDef, HashSet<TrinketDef>> map, TrinketDef card, TrinketDef other )
