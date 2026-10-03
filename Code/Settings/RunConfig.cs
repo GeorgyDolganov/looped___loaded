@@ -3,7 +3,7 @@ namespace LoopedLoaded;
 [AssetType( Name = "Run Config", Extension = "omrrun", Category = "Looped Loaded" )]
 public class RunConfig : GameResource
 {
-	[Property] public int BossOfferLap { get; set; } = 10;
+	[Property] public int BossOfferLap { get; set; } = 20;
 	[Property] public int WinBiomass { get; set; } = 150;
 	[Property] public float AscendWinRatio { get; set; } = 1.5f;
 	[Property] public float AscendHealthRatio { get; set; } = 1.3f;

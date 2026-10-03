@@ -318,7 +318,7 @@ public class ProgressCopy
 	[Property] public ProgressStepCopy Lens { get; set; } = new()
 	{
 		Title = "BREAK THE LENS",
-		Blurb = "After lap 5, fight LENS."
+		Blurb = "After round 20, fight LENS."
 	};
 	[Property] public ProgressStepCopy Ring { get; set; } = new()
 	{

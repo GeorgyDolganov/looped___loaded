@@ -12,6 +12,12 @@
   "IsStandaloneOnly": false,
   "Metadata": {
     "StartupScene": "scenes/arena.scene",
-    "PrimaryAsset": "scenes/arena.scene"
+    "PrimaryAsset": "scenes/arena.scene",
+    "MinPlayers": 1,
+    "MaxPlayers": 1,
+    "RecommendedMinPlayers": 1,
+    "RecommendedMaxPlayers": 1,
+    "Coop": false,
+    "Versus": false
   }
 }

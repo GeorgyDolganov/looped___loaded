@@ -2253,57 +2253,23 @@ public sealed class GameLoop : Component
 
 		if ( Location == RunLocation.Glass )
 		{
-			SpawnGlassWave( lap, offset, hunt, mid, inner, outer, Add );
+			SpawnGlassWave( lap, offset, hunt, mid, inner, Add );
 			return;
 		}
 
 		var hp = BodyHealth( lap );
-		switch ( lap )
-		{
-			case 1:
-				Add( EnemyKind.Chaser, offset, hunt, hp );
-				break;
-			case 2:
-				Add( EnemyKind.Chaser, offset - 0.7f, hunt, hp );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.7f, hunt + 40f, hp );
-				break;
-			case 3:
-				Add( EnemyKind.Shield, offset, mid, hp );
-				Add( EnemyKind.Chaser, offset + 1.6f, hunt, hp );
-				Add( WaveCloak( EnemyKind.Chaser ), offset - 1.4f, inner, hp );
-				break;
-			case 4:
-				Add( EnemyKind.Shield, offset - 0.5f, mid, hp );
-				Add( EnemyKind.Shooter, offset + 1.8f, mid, hp );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 2.8f, hunt, hp );
-				break;
-			case 5:
-				Add( EnemyKind.Chaser, offset - 1.1f, hunt, hp );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.4f, hunt, hp );
-				Add( EnemyKind.Shooter, offset + 2.2f, mid, hp );
-				Add( EnemyKind.Chaser, offset + 3.4f, inner, hp );
-				break;
-			case 6:
-				Add( WaveCloak( EnemyKind.Chaser ), offset, hunt, hp );
-				Add( EnemyKind.Shield, offset + 2.1f, mid, hp );
-				Add( EnemyKind.Shooter, offset + 4.0f, mid, hp );
-				Add( EnemyKind.Shooter, offset - 2.2f, mid, hp );
-				break;
-			case 7:
-				Add( EnemyKind.Chaser, offset - 0.8f, hunt, hp );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 0.8f, outer - 40f, hp );
-				Add( EnemyKind.Shield, offset + 2.4f, mid, hp );
-				Add( EnemyKind.Shooter, offset + 4.2f, mid, hp );
-				break;
-			default:
-				Add( EnemyKind.Chaser, offset, hunt, hp );
-				Add( WaveCloak( EnemyKind.Chaser ), offset + 3.1f, hunt, hp );
-				Add( EnemyKind.Shield, offset + 1.5f, mid, hp );
-				Add( EnemyKind.Shield, offset + 3.6f, mid, hp );
-				Add( EnemyKind.Shooter, offset + 2.5f, mid, hp );
-				Add( EnemyKind.Shooter, offset + 5.0f, mid, hp );
-				break;
-		}
+		var count = RosterCount( lap );
+		Add( EnemyKind.Chaser, offset, hunt, hp );
+		if ( count >= 2 )
+			Add( WaveCloak( EnemyKind.Chaser ), offset + 3.1f, hunt, hp );
+		if ( count >= 3 )
+			Add( EnemyKind.Shield, offset + 1.5f, mid, hp );
+		if ( count >= 4 )
+			Add( EnemyKind.Shooter, offset + 2.5f, mid, hp );
+		if ( count >= 5 )
+			Add( EnemyKind.Shield, offset + 3.6f, mid, hp );
+		if ( count >= 6 )
+			Add( EnemyKind.Shooter, offset + 5.0f, outer - 40f, hp );
 
 		AddWaveExtras( lap, offset, hunt, mid, inner, Add, EnemyKind.Chaser );
 	}
@@ -2315,42 +2281,21 @@ public sealed class GameLoop : Component
 		return -MathF.PI * 0.5f + wrapped / MathF.PI * reach;
 	}
 
-	void SpawnGlassWave( int lap, float offset, float hunt, float mid, float inner, float outer, Action<EnemyKind, float, float, int> add )
+	void SpawnGlassWave( int lap, float offset, float hunt, float mid, float inner, Action<EnemyKind, float, float, int> add )
 	{
 		var hp = BodyHealth( lap );
-		switch ( lap )
-		{
-			case 1:
-				add( EnemyKind.Splinter, offset, hunt, hp );
-				break;
-			case 2:
-				add( EnemyKind.Splinter, offset - 0.6f, hunt, hp );
-				add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, hp );
-				break;
-			case 3:
-				add( EnemyKind.Shardguard, offset, mid, hp );
-				add( EnemyKind.Splinter, offset + 1.7f, hunt, hp );
-				add( WaveCloak( EnemyKind.Splinter ), offset - 1.5f, inner, hp );
-				break;
-			case 4:
-				add( EnemyKind.Shardguard, offset - 0.4f, mid, hp );
-				add( WaveCloak( EnemyKind.Splinter ), offset + 1.9f, hunt, hp );
-				add( EnemyKind.Shooter, offset + 3.2f, mid, hp );
-				break;
-			case 5:
-				add( EnemyKind.Splinter, offset - 1.0f, hunt, hp );
-				add( WaveCloak( EnemyKind.Splinter ), offset + 0.6f, hunt, hp );
-				add( EnemyKind.Shardguard, offset + 2.3f, mid, hp );
-				add( EnemyKind.Chaser, offset + 3.6f, inner, hp );
-				break;
-			default:
-				add( EnemyKind.Splinter, offset, hunt, hp );
-				add( EnemyKind.Splinter, offset + 3.0f, hunt, hp );
-				add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, hp );
-				add( EnemyKind.Shardguard, offset + 3.8f, mid, hp );
-				add( EnemyKind.Shooter, offset + 2.4f, mid, hp );
-				break;
-		}
+		var count = RosterCount( lap );
+		add( EnemyKind.Splinter, offset, hunt, hp );
+		if ( count >= 2 )
+			add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, hp );
+		if ( count >= 3 )
+			add( EnemyKind.Shardguard, offset + 3.8f, mid, hp );
+		if ( count >= 4 )
+			add( EnemyKind.Shooter, offset + 2.4f, mid, hp );
+		if ( count >= 5 )
+			add( EnemyKind.Splinter, offset + 3.0f, hunt, hp );
+		if ( count >= 6 )
+			add( EnemyKind.Chaser, offset + 3.6f, inner, hp );
 
 		AddWaveExtras( lap, offset, hunt, mid, inner, add, EnemyKind.Splinter );
 	}
@@ -2375,18 +2320,40 @@ public sealed class GameLoop : Component
 
 	int ExtraHealth( int lap ) => ScaleHealth( Progression.WaveHealth( WaveExtraHp( lap ), lap, LocationIndex ) );
 
-	static int WaveBodyHp( int lap )
+	static int RosterCount( int lap )
 	{
 		if ( lap <= 1 )
 			return 1;
-		if ( lap == 2 )
-			return 3;
-		if ( lap <= 5 )
-			return 4;
-		return 5;
+
+		var span = Math.Max( 1, GameSettings.Run.BossOfferLap - 1 );
+		var climb = Math.Clamp( (lap - 1f) / span, 0f, 1f );
+		return Math.Clamp( 2 + (int)MathF.Round( climb * 4f ), 2, 6 );
 	}
 
-	static int WaveExtraHp( int lap ) => lap <= 1 ? 1 : 3;
+	static int WaveBodyHp( int lap )
+	{
+		var boss = Math.Max( 2, GameSettings.Run.BossOfferLap );
+		var climb = Math.Clamp( (Math.Max( 1, lap ) - 1f) / (boss - 1), 0f, 1f );
+		var hp = (int)MathF.Round( 1f + climb * 9f );
+		if ( lap > boss )
+			hp += lap - boss;
+
+		return Math.Max( 1, hp );
+	}
+
+	static int WaveExtraHp( int lap )
+	{
+		if ( lap <= 1 )
+			return 1;
+
+		var boss = Math.Max( 2, GameSettings.Run.BossOfferLap );
+		var climb = Math.Clamp( (lap - 1f) / (boss - 1), 0f, 1f );
+		var hp = (int)MathF.Round( 2f + climb * 3f );
+		if ( lap > boss )
+			hp += (lap - boss) / 2;
+
+		return Math.Max( 1, hp );
+	}
 
 	EnemyKind WaveCloak( EnemyKind fallback ) => Locations.IsLast( Location ) ? EnemyKind.Glimmer : fallback;
 

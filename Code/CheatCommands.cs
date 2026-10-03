@@ -10,7 +10,7 @@ public static class CheatCommands
 	}
 
 	[ConCmd( "wave" )]
-	public static void Wave( int lap = 10 )
+	public static void Wave( int lap = 20 )
 	{
 		var loop = Game.ActiveScene?.GetAllComponents<GameLoop>().FirstOrDefault();
 		if ( !loop.IsValid() )

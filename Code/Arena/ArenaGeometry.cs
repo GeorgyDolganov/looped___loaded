@@ -128,11 +128,8 @@ public sealed class ArenaGeometry
 		ClearGeneratedPanels();
 
 		var rng = new Random( unchecked( seed * 48611 + Math.Max( 1, lap ) * 7919 ) );
-		var count = Math.Clamp( 1 + Math.Max( 1, lap ), 2, 6 );
-		if ( (count & 1) == 1 )
-			count = Math.Min( 6, count + 1 );
-		if ( (count & 1) == 1 )
-			count--;
+		var band = Math.Max( 1, GameSettings.Run.BossOfferLap / 3 );
+		var count = lap <= band ? 2 : lap <= band * 2 ? 4 : 6;
 
 		var each = count / 2;
 		var origin = (float)rng.NextDouble() * MathF.Tau;
@@ -167,7 +164,7 @@ public sealed class ArenaGeometry
 		var inner = CoreRadius + 110f;
 		var outer = TrackInner - 95f;
 		var before = Walls.Count;
-		var radial = lap >= 2 && rng.NextDouble() < 0.22 + lap * 0.05;
+		var radial = lap >= 2 && rng.NextDouble() < 0.22 + lap * 0.5 / Math.Max( 1, GameSettings.Run.BossOfferLap );
 
 		if ( radial )
 		{

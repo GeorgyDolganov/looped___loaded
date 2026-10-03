@@ -36,10 +36,20 @@ public static class Progression
 		=> Math.Max( 1, Whole( template * Threat( lap, location ) ) );
 
 	public static int WaveHealth( int template, int lap, int location = 0 )
-		=> lap <= 1 ? EnemyHealth( template, lap, location ) : Math.Max( 1, Whole( template * Threat( lap, location ) * C.WaveHealthScale ) );
+	{
+		if ( lap <= 1 )
+			return EnemyHealth( template, lap, location );
+
+		return Math.Max( 1, Whole( template * LocationMul( location ) * C.WaveHealthScale ) );
+	}
 
 	public static int ExtraBodies( int lap, int location = 0 )
-		=> Math.Clamp( (int)MathF.Round( ( Swarm( lap, location ) - 1f ) * C.ExtraBodiesScale ) - C.ExtraBodiesOffset, 0, C.ExtraBodiesMax );
+	{
+		var span = Math.Max( 1, GameSettings.Run.BossOfferLap - 1 );
+		var climb = ( Math.Max( 0, lap - 1 ) + Math.Max( 0, location ) ) / (float)span;
+		var count = (int)MathF.Round( climb * C.ExtraBodiesMax * C.ExtraBodiesScale ) - C.ExtraBodiesOffset;
+		return Math.Clamp( count, 0, C.ExtraBodiesMax );
+	}
 
 	public static int WaveCopies => Math.Max( 1, C.WaveCopies );
 
