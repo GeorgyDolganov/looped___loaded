@@ -119,6 +119,8 @@
   },
   "Shop": {
     "Title": "Chapel",
+    "StarterTitle": "TAKE ONE",
+    "Free": "FREE",
     "Blurb": "Bones {0}  ·  ALL ROUNDS  ·  BUY ANY, THEN GO",
     "BuyAll": "BUY ALL",
     "BuyAllBlurb": "Take every leftover card for {0} bones.",

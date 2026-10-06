@@ -5,7 +5,7 @@
   "MaxLevel": 3,
   "Sort": 17,
   "Icon": "ui/traits/RELOADER-64x64.png",
-  "Price": 5,
+  "Price": 10,
   "UnlockLap": 3,
   "Mods": [
     {

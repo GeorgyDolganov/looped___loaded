@@ -1,7 +1,7 @@
 {
   "MaxLevel": 3,
-  "RefreshPrice": 2,
-  "RefreshStep": 1,
+  "RefreshPrice": 4,
+  "RefreshStep": 2,
   "BaseDamage": 1,
   "MaxBouncesBase": 1,
   "EnergyBase": 5500,
@@ -9,43 +9,43 @@
   "ReloadMin": 0.2,
   "ProjectileRadius": 13,
   "Rifle": {
-    "Price": 3,
+    "Price": 6,
     "Weight": 5
   },
   "Shotgun": {
-    "Price": 3,
+    "Price": 6,
     "Weight": 5
   },
   "Nailgun": {
-    "Price": 3,
+    "Price": 6,
     "Weight": 4
   },
   "Laser": {
-    "Price": 4,
+    "Price": 8,
     "Weight": 3
   },
   "Rail": {
-    "Price": 4,
+    "Price": 8,
     "Weight": 3
   },
   "Rocket": {
-    "Price": 4,
+    "Price": 8,
     "Weight": 3
   },
   "Entry": {
-    "Price": 3,
+    "Price": 6,
     "Weight": 6
   },
   "Junior": {
-    "Price": 4,
+    "Price": 8,
     "Weight": 4
   },
   "Warrior": {
-    "Price": 6,
+    "Price": 10,
     "Weight": 2
   },
   "Abomination": {
-    "Price": 9,
+    "Price": 14,
     "Weight": 1,
     "Single": true
   },

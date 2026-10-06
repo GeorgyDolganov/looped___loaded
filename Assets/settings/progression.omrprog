@@ -2,7 +2,7 @@
   "ThreatRatio": 1.04,
   "SwarmRatio": 1.17,
   "PowerRatio": 1.6,
-  "CostRatio": 2,
+  "CostRatio": 2.5,
   "TraitRatio": 1.4,
   "PaceRatio": 1.018,
   "PaceCap": 1.4,

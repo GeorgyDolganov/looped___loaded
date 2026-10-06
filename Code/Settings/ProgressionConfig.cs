@@ -6,7 +6,7 @@ public class ProgressionConfig : GameResource
 	[Property] public float ThreatRatio { get; set; } = 1.04f;
 	[Property] public float SwarmRatio { get; set; } = 1.17f;
 	[Property] public float PowerRatio { get; set; } = 1.6f;
-	[Property] public float CostRatio { get; set; } = 2f;
+	[Property] public float CostRatio { get; set; } = 2.5f;
 	[Property] public float TraitRatio { get; set; } = 1.4f;
 	[Property] public float PaceRatio { get; set; } = 1.018f;
 	[Property] public float PaceCap { get; set; } = 1.4f;

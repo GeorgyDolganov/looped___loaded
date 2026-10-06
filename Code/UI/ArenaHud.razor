@@ -610,7 +610,7 @@
 		{
 			<div class="overlay choose shop over-hud">
 				<div class="shop-head">
-					<label class="overlay-title">@GameSettings.Text.Shop.Title</label>
+					<label class="overlay-title">@(Loop.StarterPick ? GameSettings.Text.Shop.StarterTitle : GameSettings.Text.Shop.Title)</label>
 				</div>
 				<div class="cards shop-cards">
 					@for ( var i = 0; i < Loop.Offers.Count; i++ )
@@ -663,13 +663,16 @@
 					}
 				</div>
 				<div class="cards shop-go">
-					<div class="card shop-go-btn @RefreshClass" onmouseover="@LeaveShop" onclick="@RefreshShop">
-						<img class="shop-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
-						<div class="shop-go-copy">
-							<label class="title">@GameSettings.Text.Shop.Refresh</label>
-							<label class="cost">@GameSettings.Text.F(GameSettings.Text.Shop.Cost, Loop.ShopRefreshCost)</label>
+					@if ( !Loop.StarterPick )
+					{
+						<div class="card shop-go-btn @RefreshClass" onmouseover="@LeaveShop" onclick="@RefreshShop">
+							<img class="shop-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
+							<div class="shop-go-copy">
+								<label class="title">@GameSettings.Text.Shop.Refresh</label>
+								<label class="cost">@GameSettings.Text.F(GameSettings.Text.Shop.Cost, Loop.ShopRefreshCost)</label>
+							</div>
 						</div>
-					</div>
+					}
 					<div class="card shop-go-btn" onmouseover="@LeaveShop" onclick="@FinishShop">
 						<img class="shop-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
 						<label class="title">@GameSettings.Text.Shop.Go</label>
@@ -1523,6 +1526,9 @@
 		if ( bought )
 			return GameSettings.Text.Shop.Bought;
 
+		if ( Loop.IsValid() && Loop.StarterPick )
+			return GameSettings.Text.Shop.Free;
+
 		if ( Loop.IsValid() && Loop.TraitLocked( trait ) )
 			return GameSettings.Text.Shop.Locked;
 
@@ -2062,7 +2068,7 @@
 			: 0;
 
 		var g = shop
-			? System.HashCode.Combine( Loop.Offers.Count, Loop.OfferStamp, Loop.ShopHasBundle, Loop.ShopCanBuyAll, Loop.ShopBuyAllCost, Loop.ShopRefreshCost )
+			? System.HashCode.Combine( Loop.Offers.Count, Loop.OfferStamp, Loop.ShopHasBundle, Loop.ShopCanBuyAll, Loop.ShopBuyAllCost, Loop.ShopRefreshCost, Loop.StarterPick )
 			: 0;
 
 		var h = System.HashCode.Combine(

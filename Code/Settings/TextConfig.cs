@@ -535,6 +535,8 @@ public class DecideCopy
 public class ShopCopy
 {
 	[Property] public string Title { get; set; } = "ARMORY";
+	[Property] public string StarterTitle { get; set; } = "TAKE ONE";
+	[Property] public string Free { get; set; } = "FREE";
 	[Property] public string Blurb { get; set; } = "SCRAP {0}  ·  ALL ROUNDS  ·  BUY ANY, THEN GO";
 	[Property] public string BuyAll { get; set; } = "BUY ALL";
 	[Property] public string BuyAllBlurb { get; set; } = "Take every leftover card for {0} scrap.";

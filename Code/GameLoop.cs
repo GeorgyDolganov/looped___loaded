@@ -116,7 +116,8 @@ public sealed class GameLoop : Component
 			return hash;
 		}
 	}
-	public int ShopBuyAllCost => Phase == RunPhase.PickTrait ? RemainingOfferCost() : 0;
+	public bool StarterPick => starterPick && Phase == RunPhase.PickTrait;
+	public int ShopBuyAllCost => Phase == RunPhase.PickTrait && !StarterPick ? RemainingOfferCost() : 0;
 	public int ShopRefreshCost => Math.Max( 1, GameSettings.Traits.RefreshPrice ) + shopRefreshUses * Math.Max( 0, GameSettings.Traits.RefreshStep );
 	public bool ShopHasBundle => Phase == RunPhase.PickTrait && OpenOfferCount() >= 2;
 	public bool ShopCanBuyAll => ShopHasBundle && Scrap >= ShopBuyAllCost && ShopBuyAllCost > 0;
@@ -179,6 +180,7 @@ public sealed class GameLoop : Component
 	float uiClickUntil;
 	bool pendingBoss;
 	int shopRefreshUses;
+	bool starterPick;
 	readonly List<ShopOffer> offers = new();
 	static readonly string[] OfferSlots = { "Slot1", "Slot2", "Slot3", "Slot4", "Slot5", "Slot6", "Slot7", "Slot8", "Slot9" };
 	bool bossWon;
@@ -1021,10 +1023,8 @@ public sealed class GameLoop : Component
 		}
 		runStartedAt = Time.Now;
 
-		SpawnWave( 1 );
-		Mouse.CursorType = "crosshair";
-		ArenaSounds.Fight();
-		Say( "intro" );
+		BeginTraitPick( true );
+		Mouse.CursorType = "pointer";
 	}
 
 	public void RegisterKill( EnemyKind kind, Vector2 origin )
@@ -1276,7 +1276,7 @@ public sealed class GameLoop : Component
 				}
 			}
 
-			if ( Input.Pressed( "Use" ) )
+			if ( !starterPick && Input.Pressed( "Use" ) )
 			{
 				TryBuyAll();
 				return;
@@ -1654,7 +1654,7 @@ public sealed class GameLoop : Component
 
 	public void ChooseRefreshShop()
 	{
-		if ( Halted || Phase != RunPhase.PickTrait )
+		if ( Halted || Phase != RunPhase.PickTrait || starterPick )
 			return;
 
 		var price = ShopRefreshCost;
@@ -1674,6 +1674,9 @@ public sealed class GameLoop : Component
 
 	public int PriceOf( TrinketDef trait )
 	{
+		if ( StarterPick )
+			return 0;
+
 		if ( !Inventory.IsValid() )
 			return Progression.TraitPrice( trait, 0, Lap, LocationIndex );
 
@@ -1837,12 +1840,14 @@ public sealed class GameLoop : Component
 		return added;
 	}
 
-	void BeginTraitPick()
+	void BeginTraitPick( bool opening = false )
 	{
+		starterPick = opening;
 		shopRefreshUses = 0;
 		RollShop();
 		Phase = RunPhase.PickTrait;
-		Say( "chapel" );
+		if ( !opening )
+			Say( "chapel" );
 	}
 
 	void RollShop()
@@ -1995,9 +2000,10 @@ public sealed class GameLoop : Component
 		if ( added.Length > 0 )
 			Announce( T.F( T.Announce.ShopAdded, added ) );
 		ArenaSounds.Pickup();
-		NoteProgress( ProgressGoal.BuyTrait );
+		if ( !starterPick )
+			NoteProgress( ProgressGoal.BuyTrait );
 
-		if ( OpenOfferCount() == 0 )
+		if ( starterPick || OpenOfferCount() == 0 )
 			LeaveShop();
 	}
 
@@ -2028,6 +2034,8 @@ public sealed class GameLoop : Component
 		if ( Phase != RunPhase.PickTrait )
 			return;
 
+		var opening = starterPick;
+		starterPick = false;
 		shopRefreshUses = 0;
 
 		var fight = pendingBoss;
@@ -2040,10 +2048,13 @@ public sealed class GameLoop : Component
 
 		Phase = RunPhase.Playing;
 
-		if ( fight )
+		if ( opening || fight )
 			ArenaSounds.Fight();
 		else
 			ArenaSounds.Change();
+
+		if ( opening )
+			Say( "intro" );
 
 		if ( fight )
 			Announce( Locations.FightHint( Location ) );
@@ -2170,6 +2181,7 @@ public sealed class GameLoop : Component
 			Runner.ApplyPace( lap );
 		}
 
+		starterPick = false;
 		SpawnWave( lap );
 		Phase = RunPhase.Playing;
 		Mouse.CursorType = "crosshair";

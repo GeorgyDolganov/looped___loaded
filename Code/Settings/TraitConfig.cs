@@ -4,8 +4,8 @@ namespace LoopedLoaded;
 public class TraitConfig : GameResource
 {
 	[Property] public int MaxLevel { get; set; } = 3;
-	[Property] public int RefreshPrice { get; set; } = 2;
-	[Property] public int RefreshStep { get; set; } = 1;
+	[Property] public int RefreshPrice { get; set; } = 4;
+	[Property] public int RefreshStep { get; set; } = 2;
 	[Property] public int BaseDamage { get; set; } = 1;
 	[Property] public int MaxBouncesBase { get; set; } = 1;
 	[Property] public float EnergyBase { get; set; } = 5500f;
@@ -18,29 +18,29 @@ public class TraitConfig : GameResource
 	[Property] public float LashMaxHold { get; set; } = 1.1f;
 	[Property] public float LashRange { get; set; } = 1600f;
 	[Property] public float LashWidth { get; set; } = 8f;
-	[Property] public TraitPackStats Rifle { get; set; } = new() { Price = 3, Weight = 5 };
-	[Property] public TraitPackStats Shotgun { get; set; } = new() { Price = 3, Weight = 5 };
-	[Property] public TraitPackStats Nailgun { get; set; } = new() { Price = 3, Weight = 4 };
-	[Property] public TraitPackStats Laser { get; set; } = new() { Price = 4, Weight = 3 };
-	[Property] public TraitPackStats Rail { get; set; } = new() { Price = 4, Weight = 3 };
-	[Property] public TraitPackStats Rocket { get; set; } = new() { Price = 4, Weight = 3 };
-	[Property] public TraitPackStats Entry { get; set; } = new() { Price = 3, Weight = 6 };
-	[Property] public TraitPackStats Junior { get; set; } = new() { Price = 4, Weight = 4 };
-	[Property] public TraitPackStats Warrior { get; set; } = new() { Price = 6, Weight = 2 };
-	[Property] public TraitPackStats Abomination { get; set; } = new() { Price = 9, Weight = 1, Single = true };
+	[Property] public TraitPackStats Rifle { get; set; } = new() { Price = 6, Weight = 5 };
+	[Property] public TraitPackStats Shotgun { get; set; } = new() { Price = 6, Weight = 5 };
+	[Property] public TraitPackStats Nailgun { get; set; } = new() { Price = 6, Weight = 4 };
+	[Property] public TraitPackStats Laser { get; set; } = new() { Price = 8, Weight = 3 };
+	[Property] public TraitPackStats Rail { get; set; } = new() { Price = 8, Weight = 3 };
+	[Property] public TraitPackStats Rocket { get; set; } = new() { Price = 8, Weight = 3 };
+	[Property] public TraitPackStats Entry { get; set; } = new() { Price = 6, Weight = 6 };
+	[Property] public TraitPackStats Junior { get; set; } = new() { Price = 8, Weight = 4 };
+	[Property] public TraitPackStats Warrior { get; set; } = new() { Price = 10, Weight = 2 };
+	[Property] public TraitPackStats Abomination { get; set; } = new() { Price = 14, Weight = 1, Single = true };
 
 	public TraitPackStats PackOf( TraitPack pack ) => pack switch
 	{
-		TraitPack.Rifle => Rifle ??= new() { Price = 3, Weight = 5 },
-		TraitPack.Shotgun => Shotgun ??= new() { Price = 3, Weight = 5 },
-		TraitPack.Nailgun => Nailgun ??= new() { Price = 3, Weight = 4 },
-		TraitPack.Laser => Laser ??= new() { Price = 4, Weight = 3 },
-		TraitPack.Rail => Rail ??= new() { Price = 4, Weight = 3 },
-		TraitPack.Entry => Entry ??= new() { Price = 3, Weight = 6 },
-		TraitPack.Junior => Junior ??= new() { Price = 4, Weight = 4 },
-		TraitPack.Warrior => Warrior ??= new() { Price = 6, Weight = 2 },
-		TraitPack.Abomination => Abomination ??= new() { Price = 9, Weight = 1, Single = true },
-		_ => Rocket ??= new() { Price = 4, Weight = 3 }
+		TraitPack.Rifle => Rifle ??= new() { Price = 6, Weight = 5 },
+		TraitPack.Shotgun => Shotgun ??= new() { Price = 6, Weight = 5 },
+		TraitPack.Nailgun => Nailgun ??= new() { Price = 6, Weight = 4 },
+		TraitPack.Laser => Laser ??= new() { Price = 8, Weight = 3 },
+		TraitPack.Rail => Rail ??= new() { Price = 8, Weight = 3 },
+		TraitPack.Entry => Entry ??= new() { Price = 6, Weight = 6 },
+		TraitPack.Junior => Junior ??= new() { Price = 8, Weight = 4 },
+		TraitPack.Warrior => Warrior ??= new() { Price = 10, Weight = 2 },
+		TraitPack.Abomination => Abomination ??= new() { Price = 14, Weight = 1, Single = true },
+		_ => Rocket ??= new() { Price = 8, Weight = 3 }
 	};
 
 	public int PackPrice( TraitPack pack ) => PackOf( pack ).Price;
@@ -65,7 +65,7 @@ public class TraitTiers
 
 public class TraitPackStats
 {
-	[Property] public int Price { get; set; } = 4;
+	[Property] public int Price { get; set; } = 6;
 	[Property] public int Weight { get; set; } = 1;
 	[Property] public bool Single { get; set; }
 }
