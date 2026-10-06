@@ -40,7 +40,7 @@ public static class Buildings
 		var first = FirstCost( kind );
 		var costs = new int[max];
 		for ( var i = 0; i < max; i++ )
-			costs[i] = Progression.Cost( first, i );
+			costs[i] = Progression.Cost( first, i, Progression.OrganRatio );
 		if ( costs.Length > 0 )
 			costs[0] += Math.Max( 0, copy );
 		return costs;

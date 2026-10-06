@@ -59,8 +59,13 @@ public static class Progression
 	public static int BossHealth( int lap, int location = 0 )
 		=> Math.Max( BossBaseHealth, Whole( BossBaseHealth * Threat( lap, location ) ) );
 
+	public const float OrganRatio = 2f;
+
 	public static int Cost( int first, int level )
-		=> Math.Max( 1, Whole( first * MathF.Pow( CostRatio, Math.Max( 0, level ) ) ) );
+		=> Cost( first, level, CostRatio );
+
+	public static int Cost( int first, int level, float ratio )
+		=> Math.Max( 1, Whole( first * MathF.Pow( ratio, Math.Max( 0, level ) ) ) );
 
 	public static int PackPrice( TraitPack pack ) => GameSettings.Traits.PackPrice( pack );
 
