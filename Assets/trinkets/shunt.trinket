@@ -23,13 +23,6 @@
       "WhenStat": "BeamTicks",
       "HasWhenMin": true,
       "WhenMin": 1
-    },
-    {
-      "Stat": "BeamWidth",
-      "Op": "Mul",
-      "Growth": "Flat",
-      "Order": 1600,
-      "Value": 0.85
     }
   ],
   "__references": [

@@ -15,13 +15,6 @@
   ],
   "Mods": [
     {
-      "Stat": "Bounces",
-      "Op": "Set",
-      "Growth": "Flat",
-      "Order": 520,
-      "Value": 0
-    },
-    {
       "Stat": "Reload",
       "Op": "Add",
       "Growth": "Flat",

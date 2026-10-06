@@ -330,9 +330,9 @@ public static class StatSheet
 		GunFlag.NoFriendlySplash => "Friendly splash off",
 		GunFlag.Nail => null,
 		GunFlag.BeamSear => "+1 damage while the beam stays",
-		GunFlag.BeamShunt => "Ignores shields",
+		GunFlag.BeamShunt => null,
 		GunFlag.BeamLinger => "Remaining ticks finish",
-		GunFlag.Fetch => "Flies straight back to you",
+		GunFlag.Fetch => null,
 		GunFlag.Return => "Spent rounds chase faster",
 		GunFlag.Ghost => "Passes through panels",
 		_ => null

@@ -295,7 +295,6 @@
 | Blurb | Flies straight back to you, through walls and bodies. |
 | Excludes | ELECTRIFY |
 | Flag | Fetch |
-| Bounces Set | 0 @520 |
 | Reload Add | 0.35 @700 |
 
 ## Rifle
@@ -355,7 +354,6 @@
 | Requires | ELECTRIFY |
 | Flag | BeamShunt |
 | BeamTick Mul | 1.25 @1510 |
-| BeamWidth Mul | 0.85 @1600 |
 
 ### LINGER
 

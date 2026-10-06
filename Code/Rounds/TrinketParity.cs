@@ -147,7 +147,6 @@ public static class TrinketParity
 	const float SearReload = 0.1f;
 	const float ArcTick = 1.15f;
 	const float ShuntTick = 1.25f;
-	const float ShuntWidth = 0.85f;
 	const float LingerReload = 0.12f;
 	const float FetchReload = 0.35f;
 	static int Run( Dictionary<string, int> levels, int bonus, ref int shown )
@@ -320,8 +319,6 @@ public static class TrinketParity
 			bounces += SlugBounce * Math.Max( 0, full - count );
 		if ( electrify > 0 )
 			bounces -= electrify;
-		if ( Has( levels, "FETCH" ) )
-			bounces = 0;
 
 		var pierce = bore <= 0 ? 0 : (int)BorePierce.At( bore );
 		if ( slug )
@@ -394,8 +391,6 @@ public static class TrinketParity
 		}
 
 		var width = t.LashWidth;
-		if ( Has( levels, "SHUNT" ) )
-			width *= ShuntWidth;
 
 		var beam = electrify > 0;
 		var auto = drum > 0 && electrify <= 0;
