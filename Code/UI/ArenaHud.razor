@@ -795,6 +795,48 @@
 		</div>
 	}
 
+	@if ( HoveredUpgrade is TrinketDef tip )
+	{
+		<div class="card shop-offer upgrade-tip" style="border-color: @TraitBorder(tip)">
+			<img class="shop-plate" src="ui/Arena UI/element_shop_left_btn.png" />
+			<div class="shop-body">
+				<img class="shop-icon" src="@tip.IconPath" />
+				<div class="shop-name">
+					<label class="title">@tip.ShownTitle</label>
+					@if ( Trinkets.IsWeapon( tip ) )
+					{
+						<label class="weapon">@GameSettings.Text.Shop.Weapon</label>
+					}
+				</div>
+				<label class="rarity" style="color: @TraitInk(tip)">@GameSettings.Text.RarityOf(tip.Pack)</label>
+				@if ( OfferBlurb( tip ) is { Length: > 0 } blurb )
+				{
+					<label class="blurb">@blurb</label>
+				}
+				@if ( OfferLocks( tip ) is { Length: > 0 } locks )
+				{
+					<label class="blurb">@locks</label>
+				}
+				@if ( OfferUnlocks( tip ) is { Length: > 0 } opens )
+				{
+					<label class="blurb">@opens</label>
+				}
+				<div class="stats">
+					@foreach ( var line in OfferStats( tip, true ) )
+					{
+						<label class="stat @line.Class">@line.Text</label>
+					}
+				</div>
+			</div>
+			<div class="shop-foot">
+				@if ( OfferRank( tip, true ) is { Length: > 0 } rank )
+				{
+					<label class="rank">@rank</label>
+				}
+			</div>
+		</div>
+	}
+
 	<div class="cursor-trail"></div>
 	<div class="cursor-aura">
 		<div class="cursor-ring"></div>
@@ -829,6 +871,8 @@
 
 		TickCursor();
 		TickOrganTip();
+		TickUpgradeHover();
+		TickUpgradeTip();
 		TickReloadCursor();
 		TickHover();
 		TickSettingDrag();
@@ -1242,8 +1286,188 @@
 
 	int TraitLevel( TrinketDef trait ) => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Loadout.TraitLevel( trait ) : 0;
 
+	bool ShowRunUpgrades => Loop.IsValid()
+		&& !Loop.Paused
+		&& !Loop.Talking
+		&& !Loop.InCity
+		&& !Loop.InMenu
+		&& Loop.Inventory.IsValid()
+		&& (Loop.Phase == RunPhase.Playing || Loop.Phase == RunPhase.PickTrait || Loop.Phase == RunPhase.DecideLap);
+
 	List<OwnedChip> WeaponChips => OwnedChips( true );
 	List<OwnedChip> GearChips => OwnedChips( false );
+
+	TrinketDef HoveredUpgrade
+	{
+		get
+		{
+			if ( string.IsNullOrEmpty( hoverChip ) || !ShowRunUpgrades )
+				return null;
+
+			var card = Trinkets.Find( hoverChip );
+			if ( card is null || TraitLevel( card ) <= 0 )
+				return null;
+
+			return card;
+		}
+	}
+
+	void TickUpgradeHover()
+	{
+		if ( Panel is null || !ShowRunUpgrades )
+		{
+			hoverChip = null;
+			hoverMiss = 0;
+			return;
+		}
+
+		if ( !TryHoveredChip( out var hit ) )
+			return;
+
+		if ( !string.IsNullOrEmpty( hit ) )
+		{
+			hoverChip = hit;
+			hoverMiss = 0;
+			return;
+		}
+
+		if ( hoverMiss < 3 )
+		{
+			hoverMiss++;
+			return;
+		}
+
+		hoverChip = null;
+	}
+
+	bool TryHoveredChip( out string id )
+	{
+		id = null;
+		var wanted = new List<string>();
+		foreach ( var chip in WeaponChips )
+			wanted.Add( chip.Id );
+		foreach ( var chip in GearChips )
+			wanted.Add( chip.Id );
+
+		var point = CursorOn();
+		var index = 0;
+		var ready = 0;
+		string hit = null;
+		foreach ( var child in Panel.Descendants )
+		{
+			if ( !child.HasClass( "upgrade-chip" ) )
+				continue;
+
+			if ( index < wanted.Count && ChipHit( child, point ) && hit is null )
+				hit = wanted[index];
+
+			if ( child.Box.Rect.Width > 1f && child.Box.Rect.Height > 1f )
+				ready++;
+
+			index++;
+		}
+
+		if ( index != wanted.Count || (wanted.Count > 0 && ready == 0) )
+			return false;
+
+		id = hit;
+		return true;
+	}
+
+	bool ChipHit( Sandbox.UI.Panel chip, Vector2 point )
+	{
+		if ( chip.HasHovered )
+			return true;
+
+		foreach ( var child in chip.Descendants )
+		{
+			if ( child.HasHovered )
+				return true;
+		}
+
+		var left = 0f;
+		var top = 0f;
+		var current = chip;
+		while ( current.IsValid() && current != Panel )
+		{
+			left += current.Box.Rect.Left;
+			top += current.Box.Rect.Top;
+			current = current.Parent;
+		}
+
+		var width = chip.Box.Rect.Width;
+		var height = chip.Box.Rect.Height;
+		if ( width < 1f || height < 1f )
+			return false;
+
+		const float pad = 4f;
+		return point.x >= left - pad && point.x <= left + width + pad
+			&& point.y >= top - pad && point.y <= top + height + pad;
+	}
+
+	void TickUpgradeTip()
+	{
+		if ( HoveredUpgrade is null )
+		{
+			upgradeTip = null;
+			return;
+		}
+
+		if ( !upgradeTip.IsValid() )
+			upgradeTip = FindHud( "upgrade-tip" );
+		if ( !upgradeTip.IsValid() )
+			return;
+
+		var point = CursorOn();
+		var w = upgradeTip.Box.Rect.Width;
+		var h = upgradeTip.Box.Rect.Height;
+		if ( w < 8f )
+			w = 240f;
+		if ( h < 8f )
+			h = 320f;
+
+		var x = UpgradeTipX();
+		var y = point.y - 8f;
+		if ( Panel is not null )
+		{
+			var bounds = Panel.Box.Rect;
+			if ( bounds.Width > 64f && bounds.Height > 64f )
+			{
+				var maxX = Math.Max( 12f, bounds.Width - w - 12f );
+				var maxY = Math.Max( 12f, bounds.Height - h - 12f );
+				x = Math.Clamp( x, 12f, maxX );
+				y = Math.Clamp( y, 12f, maxY );
+			}
+		}
+
+		upgradeTip.Style.Position = Sandbox.UI.PositionMode.Absolute;
+		upgradeTip.Style.Left = Sandbox.UI.Length.Pixels( x );
+		upgradeTip.Style.Top = Sandbox.UI.Length.Pixels( y );
+		upgradeTip.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
+		upgradeTip.Style.Dirty();
+	}
+
+	float UpgradeTipX()
+	{
+		const float fallback = 348f;
+		var host = FindHud( "upgrades-panel" );
+		if ( !host.IsValid() )
+			return fallback;
+
+		var x = host.Box.Rect.Left;
+		var width = host.Box.Rect.Width;
+		var current = host.Parent;
+		while ( current.IsValid() && current != Panel )
+		{
+			x += current.Box.Rect.Left;
+			current = current.Parent;
+		}
+
+		if ( width < 8f )
+			return fallback;
+
+		return x + width + 14f;
+	}
 
 	List<OwnedChip> OwnedChips( bool weapons )
 	{
@@ -1580,6 +1804,9 @@
 	Sandbox.UI.Panel skillBar;
 	Sandbox.UI.Panel hotCard;
 	Sandbox.UI.Panel organTip;
+	Sandbox.UI.Panel upgradeTip;
+	string hoverChip;
+	int hoverMiss;
 	int shopHover = -1;
 	const float HudScale = 0.8f;
 	const float TrayArtWidth = 2544f;
@@ -2039,7 +2266,7 @@
 			Loop.ExtractedRounds,
 			Loop.BurnedRounds,
 			Loop.ReturnedBiomass,
-			System.HashCode.Combine( Loop.ShotsFired, shopHover ) );
+			System.HashCode.Combine( Loop.ShotsFired, shopHover, hoverChip ) );
 
 		var e = saves
 			? System.HashCode.Combine( Loop.SlotBlurb( 0 ), Loop.SlotBlurb( 1 ), Loop.SlotBlurb( 2 ), Loop.SlotExists( 0 ), Loop.SlotExists( 1 ), Loop.SlotExists( 2 ), Loop.ActiveSlot, Loop.SaveCursor )
@@ -3282,6 +3509,7 @@
 
 	.overlay.over-hud {
 		background-color: transparent;
+		pointer-events: none;
 	}
 
 	.choice-plate {
@@ -4486,6 +4714,8 @@
 		flex-direction: row;
 		align-items: flex-start;
 		font-family: "Barlow Condensed";
+		z-index: 35;
+		pointer-events: none;
 	}
 
 	.run-stack {
@@ -4655,11 +4885,35 @@
 	.upgrade-chip {
 		margin-right: 10px;
 		margin-bottom: 2px;
+		padding: 0px 2px;
 		font-size: 14px;
 		font-weight: 700;
 		letter-spacing: 1px;
 		white-space: nowrap;
 		color: #f4ece0;
+		pointer-events: all;
+		cursor: pointer;
+	}
+
+	.upgrade-chip:hover {
+		color: #f0b429;
+	}
+
+	.card.shop-offer.upgrade-tip {
+		position: absolute;
+		left: -4000px;
+		top: 0px;
+		margin: 0px;
+		z-index: 85;
+		pointer-events: none;
+		cursor: default;
+		font-family: "Barlow Condensed";
+	}
+
+	.card.shop-offer.upgrade-tip:hover,
+	.card.shop-offer.upgrade-tip.hot {
+		transform: none;
+		background-color: rgba(14, 15, 17, 0.9);
 	}
 
 	.bar {
