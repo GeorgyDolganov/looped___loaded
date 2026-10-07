@@ -5,6 +5,9 @@ public sealed class GameSave
 	public int Version { get; set; } = 1;
 	public long SavedAt { get; set; }
 	public int Warehouse { get; set; }
+	public bool SacrificeUsed { get; set; }
+	public bool SacrificeUnlocked { get; set; }
+	public bool SacrificeIntroShown { get; set; }
 	public int FedBiomass { get; set; }
 	public int BestExtract { get; set; }
 	public int BestLine { get; set; } = -1;
@@ -32,7 +35,7 @@ public sealed class GameSave
 		}
 	}
 
-	public bool HasProgress => Warehouse > 0 || FedBiomass > 0 || BestExtract > 0 || HasPlot || BestLine >= 0 || Runs > 0 || Ascend > 0 || (Tasks is not null && Tasks.Count > 0);
+	public bool HasProgress => Warehouse > 0 || SacrificeUsed || SacrificeUnlocked || SacrificeIntroShown || FedBiomass > 0 || BestExtract > 0 || HasPlot || BestLine >= 0 || Runs > 0 || Ascend > 0 || (Tasks is not null && Tasks.Count > 0);
 
 	bool HasPlot
 	{

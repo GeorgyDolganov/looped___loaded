@@ -59,6 +59,9 @@ public sealed class GameLoop : Component
 	public bool NoticeVisible => NoticeAge < MathF.Max( NoticeDuration, 4f );
 
 	public int Lap { get; private set; } = 1;
+	public bool SacrificeUnlocked { get; private set; }
+	public bool SacrificeIntroShown { get; private set; }
+	bool sacrificeIntroPending;
 	int layoutSeed;
 	public float LapFraction => Phase == RunPhase.DecideLap ? 1f : Runner.IsValid() ? Runner.LapFraction : 0f;
 	public int Stash { get; private set; }
@@ -265,6 +268,8 @@ public sealed class GameLoop : Component
 		save.FedBiomass = FedBiomass;
 		save.Runs = Runs;
 		save.Ascend = Ascend;
+		save.SacrificeUnlocked = SacrificeUnlocked;
+		save.SacrificeIntroShown = SacrificeIntroShown;
 		save.Tasks = progress.Capture();
 		save.Talks = talk.Capture();
 		if ( !save.HasProgress && save.Talks.Count == 0 && !SaveStore.Exists( ActiveSlot ) )
@@ -342,6 +347,8 @@ public sealed class GameLoop : Component
 		BestLine = save.BestLine;
 		Runs = Math.Max( 0, save.Runs );
 		Ascend = Math.Max( 0, save.Ascend );
+		SacrificeUnlocked = save.SacrificeUnlocked || save.SacrificeUsed;
+		SacrificeIntroShown = save.SacrificeIntroShown;
 		City?.Apply( save );
 		FedBiomass = Math.Max( save.FedBiomass, City.IsValid() ? City.Warehouse : save.Warehouse );
 		progress.Apply( save.Tasks, City, BestLine, BestExtract );
@@ -952,6 +959,56 @@ public sealed class GameLoop : Component
 		}
 	}
 
+	public void ForgetSacrificeStart()
+	{
+		if ( City.IsValid() )
+			City.RestoreSacrifice();
+
+		if ( Phase is not (RunPhase.Playing or RunPhase.DecideLap or RunPhase.DecideRing or RunPhase.PickTrait) )
+			return;
+
+		Lap = 1;
+		if ( !Runner.IsValid() )
+			return;
+
+		Runner.ResetLap( Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f );
+		Runner.ApplyPace( 1 );
+	}
+
+	void NoteSacrificeUnlock()
+	{
+		if ( SacrificeUnlocked || Lap < Math.Max( 1, GameSettings.City.SacrificeUnlockLap ) )
+			return;
+
+		SacrificeUnlocked = true;
+		Autosave();
+	}
+
+	void TrySacrificeIntro()
+	{
+		if ( SacrificeIntroShown || !SacrificeUnlocked )
+			return;
+
+		if ( City.IsValid() && City.SacrificeUsed )
+			return;
+
+		if ( Lap < Math.Max( 1, GameSettings.City.SacrificeUnlockLap ) )
+			return;
+
+		SacrificeIntroShown = true;
+		sacrificeIntroPending = true;
+		Autosave();
+	}
+
+	public bool TakeSacrificeIntro()
+	{
+		if ( !sacrificeIntroPending )
+			return false;
+
+		sacrificeIntroPending = false;
+		return true;
+	}
+
 	public void Restart()
 	{
 		Runs++;
@@ -963,11 +1020,18 @@ public sealed class GameLoop : Component
 		if ( Inventory.IsValid() )
 			Inventory.ResetLoadout();
 
+		var startLap = City.IsValid() && City.SacrificeUsed
+			? Math.Max( 1, GameSettings.City.SacrificeLap )
+			: 1;
+		var startAngle = Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f;
+
 		if ( Runner.IsValid() )
 		{
 			Runner.GameObject.Enabled = true;
-			Runner.ResetToStart( Arena.IsValid() ? Arena.StartAngle : MathF.PI * 0.5f );
-			Runner.ApplyPace( 1 );
+			Runner.ResetToStart( startAngle );
+			if ( startLap > 1 )
+				Runner.JumpToLap( startLap, startAngle );
+			Runner.ApplyPace( startLap );
 		}
 
 		Phase = RunPhase.Playing;
@@ -978,13 +1042,15 @@ public sealed class GameLoop : Component
 			if ( Runner.IsValid() )
 			{
 				Runner.ApplyCity( stats );
-				Runner.ApplyPace( 1 );
+				Runner.ApplyPace( startLap );
 			}
 
 			if ( Inventory.IsValid() )
 			{
 				Inventory.ResetLoadout();
 				Inventory.Loadout.BonusDamage = stats.BonusDamage;
+				if ( startLap > 1 )
+					Inventory.GrowMag( startLap - 1 );
 			}
 
 			City.SetVisible( false );
@@ -996,7 +1062,8 @@ public sealed class GameLoop : Component
 		Catches = 0;
 		Losses = 0;
 		Stash = 1;
-		Lap = 1;
+		Lap = startLap;
+		NoteSacrificeUnlock();
 		Location = Locations.Start;
 		if ( Arena.IsValid() )
 			Arena.ApplyLocation( Location );
@@ -1725,6 +1792,8 @@ public sealed class GameLoop : Component
 		BestLine = -1;
 		Runs = 0;
 		Ascend = 0;
+		SacrificeUnlocked = false;
+		SacrificeIntroShown = false;
 		FedBiomass = 0;
 		ExtractedRounds = 0;
 		feedClosedOnDeath = false;
@@ -1750,6 +1819,7 @@ public sealed class GameLoop : Component
 			Phase = RunPhase.City;
 			Mouse.CursorType = "crosshair";
 			Say( "altar", WinNeed );
+			TrySacrificeIntro();
 			return;
 		}
 
@@ -1809,6 +1879,7 @@ public sealed class GameLoop : Component
 	{
 		pendingBoss = false;
 		Lap = Runner.Lap;
+		NoteSacrificeUnlock();
 		Runner.ApplyPace( Lap );
 		var added = GrantContinueRounds();
 		BeginTraitPick();
@@ -1820,6 +1891,7 @@ public sealed class GameLoop : Component
 	{
 		pendingBoss = true;
 		Lap = Runner.Lap;
+		NoteSacrificeUnlock();
 		Runner.ApplyPace( Lap );
 		var added = GrantContinueRounds();
 		BeginTraitPick();
@@ -2168,6 +2240,7 @@ public sealed class GameLoop : Component
 		}
 
 		Lap = lap;
+		NoteSacrificeUnlock();
 		Inventory?.ChamberAll();
 		pendingBoss = false;
 		bossWon = false;

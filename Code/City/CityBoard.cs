@@ -10,6 +10,7 @@ public sealed class CityBoard : Component
 	const float OrganBase = 78f;
 
 	public int Warehouse { get; private set; }
+	public bool SacrificeUsed { get; private set; }
 	public BuildingKind Selected { get; private set; } = BuildingKind.Infirmary;
 	public int PlacementFacing { get; private set; }
 	public CityMode Mode => Building ? CityMode.Build : CityMode.Shoot;
@@ -51,12 +52,29 @@ public sealed class CityBoard : Component
 		Warehouse += Math.Max( 0, rounds );
 	}
 
+	public bool TrySacrifice( int cost )
+	{
+		if ( SacrificeUsed || cost <= 0 || Warehouse < cost )
+			return false;
+
+		Warehouse -= cost;
+		SacrificeUsed = true;
+		Loop?.Autosave();
+		return true;
+	}
+
+	public void RestoreSacrifice()
+	{
+		SacrificeUsed = false;
+	}
+
 	public GameSave Capture( int bestExtract, int bestLine = -1 )
 	{
 		EnsureBuilt();
 		var save = new GameSave
 		{
 			Warehouse = Warehouse,
+			SacrificeUsed = SacrificeUsed,
 			BestExtract = bestExtract,
 			BestLine = bestLine
 		};
@@ -87,6 +105,7 @@ public sealed class CityBoard : Component
 		EnsureBuilt();
 		WipePlots();
 		Warehouse = save is null ? 0 : Math.Max( 0, save.Warehouse );
+		SacrificeUsed = save is not null && save.SacrificeUsed;
 		if ( save?.Plots is null )
 			return;
 
@@ -125,6 +144,7 @@ public sealed class CityBoard : Component
 	{
 		EnsureBuilt();
 		Warehouse = 0;
+		SacrificeUsed = false;
 		WipePlots();
 	}
 

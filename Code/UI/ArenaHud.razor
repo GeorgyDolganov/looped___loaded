@@ -197,6 +197,13 @@
 				<div class="altar-tray">
 					<img class="altar-back" src="ui/Arena UI/altar_back.png" />
 				</div>
+				@if ( Loop.SacrificeUnlocked && !Loop.City.SacrificeUsed )
+				{
+					<div class="altar-sacrifice" onclick="@OpenSacrifice">
+						<img class="altar-sacrifice-back" src="ui/Arena UI/small_button.png" />
+						<label>sacrifice</label>
+					</div>
+				}
 				<div class="bottom" style="bottom: @(OrganLift)px">
 					<div class="blueprint">
 							<img class="blueprint-back" src="ui/Arena UI/default_element_back.png" />
@@ -259,6 +266,23 @@
 						</div>
 					}
 				</div>
+				@if ( sacrificeOpen )
+				{
+					<div class="overlay sacrifice">
+						<div class="sacrifice-dim" onclick="@CloseSacrifice"></div>
+						<div class="sacrifice-plate">
+							<img class="sacrifice-back" src="ui/Arena UI/element_back_square.png" />
+							<div class="sacrifice-face">
+								<label class="sacrifice-line">Donate biomass to start the run from lap @GameSettings.City.SacrificeLap.</label>
+								<label class="sacrifice-cost">@GameSettings.City.SacrificeBiomass biomass</label>
+								<div class="sacrifice-go" onclick="@ConfirmSacrifice">
+									<img src="ui/Arena UI/small_button.png" />
+									<label>sacrifice</label>
+								</div>
+							</div>
+						</div>
+					</div>
+				}
 			</div>
 		}
 
@@ -882,6 +906,34 @@
 
 		if ( Loop.Phase != RunPhase.PickTrait )
 			shopHover = -1;
+
+		if ( Loop.Phase != RunPhase.City )
+			sacrificeOpen = false;
+		else if ( Loop.TakeSacrificeIntro() )
+			sacrificeOpen = true;
+	}
+
+	bool sacrificeOpen;
+
+	void OpenSacrifice()
+	{
+		Loop?.NoteUiClick();
+		sacrificeOpen = true;
+	}
+
+	void CloseSacrifice() => sacrificeOpen = false;
+
+	void ConfirmSacrifice()
+	{
+		Loop?.NoteUiClick();
+		var city = Loop?.City;
+		if ( !city.IsValid() )
+			return;
+
+		if ( !city.TrySacrifice( GameSettings.City.SacrificeBiomass ) )
+			return;
+
+		sacrificeOpen = false;
 	}
 
 	bool collectionListed;
@@ -2728,6 +2780,123 @@
 		top: 0px;
 		width: 100%;
 		height: 100%;
+	}
+
+	.altar-sacrifice {
+		position: absolute;
+		left: 16px;
+		bottom: 14%;
+		width: 220px;
+		aspect-ratio: 271 / 85;
+		align-items: center;
+		justify-content: center;
+		pointer-events: all;
+		cursor: pointer;
+		z-index: 4;
+	}
+
+	.altar-sacrifice-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.altar-sacrifice label {
+		position: relative;
+		font-family: "Barlow Condensed";
+		font-size: 16px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		color: #f0b429;
+	}
+
+	.overlay.sacrifice {
+		z-index: 30;
+		pointer-events: all;
+	}
+
+	.sacrifice-dim {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		pointer-events: all;
+	}
+
+	.sacrifice-plate {
+		position: relative;
+		width: 560px;
+		aspect-ratio: 477 / 415;
+		z-index: 1;
+		pointer-events: all;
+	}
+
+	.sacrifice-back {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.sacrifice-face {
+		position: absolute;
+		left: 12%;
+		top: 16%;
+		width: 76%;
+		height: 68%;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.sacrifice-line {
+		font-family: "Barlow Condensed";
+		font-size: 22px;
+		font-weight: 600;
+		letter-spacing: 1px;
+		text-align: center;
+		white-space: normal;
+		color: #cdc6ba;
+	}
+
+	.sacrifice-cost {
+		margin-top: 14px;
+		font-family: "Barlow Condensed";
+		font-size: 36px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		text-align: center;
+		color: #f4ece0;
+	}
+
+	.sacrifice-go {
+		position: relative;
+		width: 220px;
+		aspect-ratio: 271 / 85;
+		margin-top: 28px;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.sacrifice-go img {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.sacrifice-go label {
+		position: relative;
+		font-family: "Barlow Condensed";
+		font-size: 22px;
+		font-weight: 700;
+		letter-spacing: 2px;
+		color: #f0b429;
 	}
 
 	.altar-notches {

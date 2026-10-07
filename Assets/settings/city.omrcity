@@ -1,6 +1,9 @@
 {
   "MinOffers": 2,
   "MaxOffers": 5,
+  "SacrificeBiomass": 10,
+  "SacrificeLap": 3,
+  "SacrificeUnlockLap": 5,
   "Infirmary": {
     "FirstCost": 3,
     "MaxLevel": 3
