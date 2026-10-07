@@ -10,7 +10,6 @@ public static class Progression
 	public static float CostRatio => C.CostRatio;
 	public static float TraitRatio => C.TraitRatio;
 	public static float PaceRatio => C.PaceRatio;
-	public static float RoundRatio => C.RoundRatio;
 	public static int MaxSlots => C.MaxSlots;
 	public static int BossBaseHealth => C.BossBaseHealth;
 
@@ -54,7 +53,7 @@ public static class Progression
 	public static int WaveCopies => Math.Max( 1, C.WaveCopies );
 
 	public static int RoundsGranted( int arrivingLap )
-		=> Math.Clamp( Whole( MathF.Pow( RoundRatio, Math.Max( 0, arrivingLap - 2 ) ) ), C.RoundsGrantedMin, C.RoundsGrantedMax );
+		=> arrivingLap > 1 ? 1 : 0;
 
 	public static int BossHealth( int lap, int location = 0 )
 		=> Math.Max( BossBaseHealth, Whole( BossBaseHealth * Threat( lap, location ) ) );
