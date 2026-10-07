@@ -1,36 +1,69 @@
 {
   "Id": "FETCH",
   "Title": "FETCH",
+  "Blurb": "Bullet flies straight back to you, through walls and bodies.",
+  "Icon": "ui/traits/FETCH-64x64.png",
   "Pack": "Rail",
   "MaxLevel": 1,
+  "InPool": true,
   "Sort": 27,
-  "Icon": "ui/traits/FETCH-64x64.png",
-  "Blurb": "Flies straight back to you, through walls and bodies.",
+  "UnlockLap": 0,
+  "Price": 0,
+  "OwnedWeight": 0,
+  "Hook": "None",
+  "Skill": "None",
   "Flags": [
     "Fetch"
   ],
+  "Requires": [],
   "Excludes": [
-    "trinkets/electrify.trinket",
-    "trinkets/return.trinket"
+    {
+      "Id": "82644fab-c3f5-4d5a-8c08-0be9d1984af5",
+      "Path": "trinkets/electrify.trinket"
+    },
+    {
+      "Id": "c411b170-5c85-4613-848a-4f09403c2e09",
+      "Path": "trinkets/return.trinket"
+    }
   ],
   "Mods": [
     {
       "Stat": "Reload",
       "Op": "Add",
       "Growth": "Flat",
+      "Value": 0.35,
+      "Bias": 0,
+      "Tiers": null,
       "Order": 700,
-      "Value": 0.35
+      "Hidden": false,
+      "Passive": false,
+      "ByHook": false,
+      "AlsoFull": false,
+      "Points": false,
+      "Role": null,
+      "UseWhen": false,
+      "WhenStat": "Count",
+      "HasWhenMin": false,
+      "WhenMin": 0,
+      "HasWhenMax": false,
+      "WhenMax": 0
     }
   ],
   "Notes": [
     {
       "Text": "Locks out ELECTRIFY, RETURN",
-      "Sign": -1
+      "Sign": -1,
+      "Mixed": false,
+      "Top": false,
+      "When": "Always",
+      "Rank": 0
     }
   ],
-  "__references": [
-    "trinkets/electrify.trinket",
-    "trinkets/return.trinket"
-  ],
+  "Cap": 1,
+  "IsSkill": false,
+  "ShownTitle": "FETCH",
+  "ShownBlurb": "Bullet flies straight back to you, through walls and bodies.",
+  "IconPath": "ui/traits/FETCH-64x64.png",
+  "__references": [],
   "__version": 0
 }

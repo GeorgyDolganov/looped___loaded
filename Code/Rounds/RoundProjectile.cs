@@ -340,6 +340,9 @@ public sealed class RoundProjectile : Component
 
 	bool ScanTargets()
 	{
+		if ( returning )
+			return false;
+
 		foreach ( var target in Loop.Enemies )
 		{
 			if ( !target.IsValid() || !target.Alive || struck.Contains( target ) )
@@ -358,13 +361,6 @@ public sealed class RoundProjectile : Component
 			{
 				if ( Locations.IsBoss( target.Kind ) )
 					Loop.NoteArmor();
-
-				if ( Flight.Fetch )
-				{
-					struck.Add( target );
-					Flat = target.Flat + Direction * (reach + 4f);
-					continue;
-				}
 
 				if ( !BounceOff( target.Flat, normal, reach ) )
 					return true;
@@ -407,16 +403,9 @@ public sealed class RoundProjectile : Component
 			if ( !target.Alive )
 				Kills++;
 
-			if ( pierceLeft > 0 && !Flight.Fetch )
+			if ( pierceLeft > 0 )
 			{
 				pierceLeft--;
-				bored++;
-				Flat = target.Flat + Direction * (reach + 4f);
-				continue;
-			}
-
-			if ( Flight.Fetch )
-			{
 				bored++;
 				Flat = target.Flat + Direction * (reach + 4f);
 				continue;

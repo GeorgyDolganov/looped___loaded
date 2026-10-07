@@ -120,9 +120,6 @@ public sealed class PlayerAim : Component
 			var first = MathF.Min( PreviewLength, budget );
 			var bounceLeg = recipe.Falloff > 1f ? MathF.Min( PreviewBounceLength, MathF.Max( 0f, budget - first ) ) : PreviewBounceLength;
 			var flat = Arena.Geometry.PredictPath( Muzzle, heading, body, first, bounceLeg, bounces, ghost: recipe.Ghost );
-			if ( recipe.Fetch && Runner.IsValid() && flat.Count > 0 )
-				flat.Add( Runner.Flat );
-
 			PaintPath( Take( paths, i, "Aim Path" ), flat, tint, 3f );
 			if ( recipe.Splash > 1f && flat.Count > 0 )
 				PaintRing( Take( rings, i, "Aim Splash" ), flat[^1], recipe.Splash, recipe.FriendlySplash );
