@@ -5675,11 +5675,11 @@
           "BlurSpacing": 0.73,
           "CameraFadeFar": 0,
           "CameraFadeNear": 0,
-          "DepthFeather": 0,
+          "DepthFeather": 64,
           "FaceVelocity": false,
           "FogStrength": 1,
           "LeadingTrail": true,
-          "Lighting": true,
+          "Lighting": false,
           "MotionBlur": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
@@ -5687,7 +5687,7 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "Opaque": true,
+          "Opaque": false,
           "PlaybackSpeed": 1,
           "RenderOptions": {
             "GameLayer": true,
@@ -5724,7 +5724,7 @@
             "compiled": null
           },
           "StartingAnimationName": "Default",
-          "TextureFilter": "Point"
+          "TextureFilter": "Bilinear"
         },
         {
           "__type": "Sandbox.ParticleSphereEmitter",
