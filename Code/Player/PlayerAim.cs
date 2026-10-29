@@ -43,7 +43,7 @@ public sealed class PlayerAim : Component
 		if ( !Runner.IsValid() || !Arena.IsValid() )
 			return;
 
-		UpdateCursor();
+		SampleCursor();
 
 		var toCursor = Cursor - Runner.Flat;
 		if ( toCursor.Length > 1f )
@@ -58,6 +58,14 @@ public sealed class PlayerAim : Component
 			return;
 
 		UpdatePreview();
+	}
+
+	public void SampleCursor()
+	{
+		if ( !Arena.IsValid() || Arena.Geometry is null )
+			return;
+
+		UpdateCursor();
 	}
 
 	void UpdateCursor()

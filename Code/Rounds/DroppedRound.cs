@@ -3,17 +3,26 @@ namespace LoopedLoaded;
 public sealed class DroppedRound : Component
 {
 	const float ChaseSpeed = 220f;
+	const float RecallSpeed = 3600f;
 	const float StopGap = 0.02f;
 	const float BodyRadius = 13f;
+	const float CursorLift = 40f;
+	const float CursorGap = 92f;
+	const float CursorSize = 72f;
+	const string CursorPath = "ui/Arena UI/cursor_hand.png";
 
 	[Property] public Color Tint { get; set; } = ShotColors.Player;
 
 	public int SlotIndex { get; private set; }
 	public Vector2 Flat { get; private set; }
+	public bool Homing { get; private set; }
 
 	GameLoop loop;
 	GameObject shell;
+	GameObject cursor;
+	SpriteRenderer cursorHand;
 	PointLight glow;
+	Vector2 heading;
 	bool shellReady;
 
 	public void Place( GameLoop host, Vector2 flat, int slotIndex )
@@ -50,10 +59,46 @@ public sealed class DroppedRound : Component
 		FaceShell();
 	}
 
+	public void Recall( Vector2 player )
+	{
+		Homing = true;
+		var to = player - Flat;
+		if ( to.Length > 1f )
+			heading = to.Normal;
+	}
+
+	public void StopRecall() => Homing = false;
+
+	public bool FlyHome( Vector2 player, float playerRadius, float dt )
+	{
+		var to = player - Flat;
+		var dist = to.Length;
+		var reach = playerRadius + BodyRadius;
+		if ( dist <= reach )
+			return true;
+
+		heading = to / dist;
+		var gap = dist - reach;
+		var step = RecallSpeed * MathF.Max( 0f, dt );
+		if ( step >= gap )
+			return true;
+
+		SetFlat( Flat + heading * step );
+		return false;
+	}
+
 	void FaceShell()
 	{
+		var dir = Homing && heading.Length > 0.01f
+			? heading
+			: Tangent();
+		RoundProjectile.Face( shell, dir );
+	}
+
+	Vector2 Tangent()
+	{
 		var ang = MathF.Atan2( Flat.y, Flat.x );
-		RoundProjectile.Face( shell, new Vector2( -MathF.Sin( ang ), MathF.Cos( ang ) ) );
+		return new Vector2( -MathF.Sin( ang ), MathF.Cos( ang ) );
 	}
 
 	public float GapTo( float playerAngle )
@@ -110,5 +155,77 @@ public sealed class DroppedRound : Component
 
 		if ( glow.IsValid() )
 			glow.LightColor = ShotColors.Player * (2f + 4f * pulse);
+
+		PaintCursor();
+	}
+
+	bool CanHint() => !Homing && loop.IsValid() && !loop.IsFrozen;
+
+	Vector3 CursorSpot( float bob )
+	{
+		var aside = Vector3.Zero;
+		var camera = Scene.Camera;
+		if ( camera.IsValid() )
+		{
+			aside = -camera.WorldRotation.Up;
+			aside.z = 0f;
+			if ( aside.Length > 0.01f )
+				aside = aside.Normal * CursorGap;
+		}
+
+		return aside + Vector3.Up * (CursorLift + bob);
+	}
+
+	void PaintCursor()
+	{
+		if ( !CanHint() )
+		{
+			if ( cursor.IsValid() )
+				cursor.Enabled = false;
+			return;
+		}
+
+		EnsureCursor();
+		if ( !cursor.IsValid() || !cursorHand.IsValid() )
+			return;
+
+		cursor.Enabled = true;
+		var beat = 0.5f + 0.5f * MathF.Sin( Time.Now * 4.5f );
+		cursor.LocalPosition = CursorSpot( 8f * beat );
+		cursor.LocalScale = Vector3.One * (0.84f + 0.28f * beat);
+		cursorHand.Color = Color.White.WithAlpha( 0.72f + 0.28f * beat );
+	}
+
+	void EnsureCursor()
+	{
+		if ( cursor.IsValid() )
+			return;
+
+		var hand = Texture.Load( CursorPath );
+		if ( !hand.IsValid() )
+			return;
+
+		cursor = Scene.CreateObject();
+		cursor.Name = "Grab Cursor";
+		cursor.Parent = GameObject;
+		cursor.LocalPosition = CursorSpot( 0f );
+		cursor.LocalRotation = Rotation.Identity;
+
+		var go = Scene.CreateObject();
+		go.Name = "Grab Hand";
+		go.Parent = cursor;
+		go.LocalPosition = Vector3.Zero;
+		go.LocalRotation = Rotation.Identity;
+
+		cursorHand = go.AddComponent<SpriteRenderer>();
+		cursorHand.Sprite = Sprite.FromTexture( hand );
+		cursorHand.Size = new Vector2( CursorSize, CursorSize );
+		cursorHand.Billboard = SpriteRenderer.BillboardMode.Always;
+		cursorHand.Opaque = false;
+		cursorHand.Additive = false;
+		cursorHand.Lighting = false;
+		cursorHand.Shadows = false;
+		cursorHand.Color = Color.White;
+		cursorHand.TextureFilter = Sandbox.Rendering.FilterMode.Point;
 	}
 }

@@ -8,6 +8,8 @@ public sealed class RoundInventory : Component
 	[Property] public GameLoop Loop { get; set; }
 	[Property] public float PickupRadius { get; set; } = 145f;
 
+	const float DropGrabReach = 120f;
+
 	public RunLoadout Loadout { get; } = new();
 	public ActiveSkills Skills { get; } = new();
 	public List<RoundProjectile> Live { get; } = new();
@@ -139,6 +141,9 @@ public sealed class RoundInventory : Component
 		var down = Input.Down( "Attack1" );
 		var pressed = Input.Pressed( "Attack1" );
 
+		if ( pressed && TryGrabRound() )
+			return;
+
 		if ( Beaming )
 		{
 			if ( !beam.IsValid() || beam.Spent )
@@ -214,6 +219,36 @@ public sealed class RoundInventory : Component
 		BeginReload( recipe.Reload );
 	}
 
+	bool TryGrabRound()
+	{
+		if ( !Aim.IsValid() || !Runner.IsValid() )
+			return false;
+
+		Aim.SampleCursor();
+		var cursor = Aim.Cursor;
+		DroppedRound drop = null;
+		var bestDist = float.MaxValue;
+
+		foreach ( var candidate in Dropped )
+		{
+			if ( !candidate.IsValid() || candidate.Homing )
+				continue;
+
+			var dist = (candidate.Flat - cursor).Length;
+			if ( dist > DropGrabReach || dist >= bestDist )
+				continue;
+
+			drop = candidate;
+			bestDist = dist;
+		}
+
+		if ( drop is null )
+			return false;
+
+		drop.Recall( Runner.Flat );
+		return true;
+	}
+
 	public void TryPickup()
 	{
 		if ( !Loop.IsValid() || !Runner.IsValid() || Loop.IsFrozen )
@@ -231,7 +266,7 @@ public sealed class RoundInventory : Component
 				continue;
 			}
 
-			if ( (drop.Flat - flat).Length > reach )
+			if ( drop.Homing || (drop.Flat - flat).Length > reach )
 				continue;
 
 			if ( !Pocket( drop ) )
@@ -268,6 +303,22 @@ public sealed class RoundInventory : Component
 				continue;
 			}
 
+			if ( drop.Homing )
+			{
+				if ( !drop.FlyHome( Runner.Flat, Runner.PlayerRadius, RealTime.Delta ) )
+					continue;
+
+				if ( Pocket( drop ) )
+					Dropped.RemoveAt( i );
+				else
+				{
+					drop.StopRecall();
+					drop.SetFlat( Arena.Geometry.TrackPoint( MathF.Atan2( drop.Flat.y, drop.Flat.x ) ) );
+				}
+
+				continue;
+			}
+
 			drop.Roll( player, dashArc, track, pace );
 		}
 	}
@@ -281,7 +332,7 @@ public sealed class RoundInventory : Component
 			for ( var i = 0; i < Dropped.Count; i++ )
 			{
 				var drop = Dropped[i];
-				if ( !drop.IsValid() )
+				if ( !drop.IsValid() || drop.Homing )
 					continue;
 
 				var gap = drop.GapTo( playerBefore );
@@ -301,7 +352,7 @@ public sealed class RoundInventory : Component
 				for ( var i = 0; i < Dropped.Count; i++ )
 				{
 					var drop = Dropped[i];
-					if ( !drop.IsValid() )
+					if ( !drop.IsValid() || drop.Homing )
 						continue;
 
 					var gap = drop.GapTo( playerBefore );
