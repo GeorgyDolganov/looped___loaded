@@ -434,6 +434,7 @@ public class MenuCopy
 	[Property] public string Settings { get; set; } = "SETTINGS";
 	[Property] public string Quit { get; set; } = "QUIT";
 	[Property] public string ActiveSave { get; set; } = "ACTIVE SAVE — SLOT {0}";
+	[Property] public string SaveSlot { get; set; } = "SAVE SLOT";
 	[Property] public string NavigateHint { get; set; } = "NAVIGATE";
 	[Property] public string SelectHint { get; set; } = "ENTER SELECT";
 	[Property] public string Objective { get; set; } = "NEXT OBJECTIVE";

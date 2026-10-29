@@ -35,19 +35,13 @@
 		{
 			<div class="run-left">
 				<div class="run-stack">
-					<div class="hud-panel brief-panel">
-						<img class="brief-back" src="ui/Arena UI/element_back_two_floors.png" />
-						<div class="brief-face">
-							@if ( Loop.HasTask )
-							{
-								<label class="brief-kicker">@GameSettings.Text.Hud.Objective</label>
-								<label class="brief-title">@Loop.TaskTitle</label>
-								<label class="brief-blurb">@Loop.TaskBlurb</label>
-							}
-						</div>
-						<div class="brief-floor">
-							<label class="key">@GameSettings.Text.Hud.Fed</label>
-							<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+					<div class="hud-panel stat-panel">
+						<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
+						<div class="stat-face">
+							<div class="stat-row lead">
+								<label class="key">@GameSettings.Text.Hud.Fed</label>
+								<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+							</div>
 						</div>
 					</div>
 
@@ -170,19 +164,13 @@
 		{
 			<div class="city">
 				<div class="top-left">
-					<div class="hud-panel brief-panel">
-						<img class="brief-back" src="ui/Arena UI/element_back_two_floors.png" />
-						<div class="brief-face">
-							@if ( Loop.HasTask )
-							{
-								<label class="brief-kicker">@GameSettings.Text.Hud.Objective</label>
-								<label class="brief-title">@Loop.TaskTitle</label>
-								<label class="brief-blurb">@Loop.TaskBlurb</label>
-							}
-						</div>
-						<div class="brief-floor">
-							<label class="key">@GameSettings.Text.Hud.Fed</label>
-							<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+					<div class="hud-panel stat-panel">
+						<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
+						<div class="stat-face">
+							<div class="stat-row lead">
+								<label class="key">@GameSettings.Text.Hud.Fed</label>
+								<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+							</div>
 						</div>
 					</div>
 					<div class="city-controls">
@@ -373,12 +361,8 @@
 				<div class="objective">
 					<img class="obj-back" src="ui/Arena UI/element_back_double_two_floors.png" />
 					<div class="obj-face">
-						<label class="obj-kicker">@GameSettings.Text.Menu.Objective</label>
-						<label class="obj-title">@(Loop.HasTask ? Loop.TaskTitle : GameSettings.Text.Menu.ObjectiveDone)</label>
-						@if ( Loop.HasTask )
-						{
-							<label class="obj-blurb">@Loop.TaskBlurb</label>
-						}
+						<label class="obj-kicker">@GameSettings.Text.Menu.SaveSlot</label>
+						<label class="obj-title">@(Loop.ActiveSlot + 1)</label>
 					</div>
 					<div class="obj-biomass">
 						<label class="key">@GameSettings.Text.Hud.Fed</label>
@@ -5129,84 +5113,6 @@
 		margin-left: 12px;
 	}
 
-	.run-left .brief-panel {
-		width: 320px;
-		margin-bottom: 12px;
-	}
-
-	.brief-panel {
-		width: 100%;
-		aspect-ratio: 477 / 320;
-		padding: 0px;
-		border: 0px solid transparent;
-		border-radius: 0px;
-		background-color: transparent;
-		overflow: hidden;
-	}
-
-	.brief-back {
-		position: absolute;
-		left: 0px;
-		top: 0px;
-		width: 100%;
-		height: 100%;
-	}
-
-	.brief-face {
-		position: absolute;
-		left: 12%;
-		top: 13%;
-		width: 76%;
-		height: 40%;
-		flex-direction: column;
-		justify-content: center;
-	}
-
-	.brief-floor {
-		position: absolute;
-		left: 12%;
-		top: 67%;
-		width: 76%;
-		height: 18%;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.brief-kicker {
-		font-size: 14px;
-		font-weight: 600;
-		letter-spacing: 4px;
-		color: #f0b429;
-	}
-
-	.brief-title {
-		margin-top: 2px;
-		font-size: 26px;
-		font-weight: 700;
-		letter-spacing: 1px;
-		color: #f4ece0;
-	}
-
-	.brief-blurb {
-		margin-top: 2px;
-		font-size: 16px;
-		color: #8e8b86;
-	}
-
-	.brief-floor .key {
-		font-size: 17px;
-		font-weight: 600;
-		letter-spacing: 2px;
-		color: #a39c91;
-	}
-
-	.brief-floor .value {
-		font-size: 24px;
-		font-weight: 700;
-		color: #f4ece0;
-	}
-
 	.stat-panel {
 		width: 100%;
 		aspect-ratio: 477 / 217;
@@ -6059,9 +5965,10 @@
 	}
 
 	.obj-kicker {
-		font-size: 21px;
-		font-weight: 600;
-		letter-spacing: 4px;
+		font-size: 64px;
+		font-weight: 800;
+		letter-spacing: 3px;
+		line-height: 64px;
 		color: #f0b429;
 	}
 
