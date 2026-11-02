@@ -65,6 +65,7 @@ public sealed class GameLoop : Component
 	int layoutSeed;
 	public float LapFraction => Phase == RunPhase.DecideLap ? 1f : Runner.IsValid() ? Runner.LapFraction : 0f;
 	public int Stash { get; private set; }
+	public int RunBiomass => ScaleReward( Math.Max( 0, Stash ) );
 	public int HeartMax => MaxHealth + (City.IsValid() ? City.Stats().BonusHealth : 0);
 
 	public static bool CheatDodge { get; set; }

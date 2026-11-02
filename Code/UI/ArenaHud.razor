@@ -32,28 +32,16 @@
 						<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
 						<div class="stat-face">
 							<div class="stat-row lead">
-								<label class="key">@GameSettings.Text.Hud.Fed</label>
-								<label class="value fed-value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+								<label class="key">@GameSettings.Text.Hud.Scrap</label>
+								<label class="value scrap-value">@Loop.Scrap</label>
 							</div>
-						</div>
-					</div>
-
-					<div class="hud-panel upgrades-panel">
-						<img class="upgrades-back" src="ui/Arena UI/element_back_three_floors.png" />
-						<div class="upgrades-title">
-							<label>Upgrades</label>
-						</div>
-						<div class="upgrades-weapons">
-							@foreach ( var chip in WeaponChips )
-							{
-								<label class="upgrade-chip" @key="chip.Id">@chip.Label</label>
-							}
-						</div>
-						<div class="upgrades-gear">
-							@foreach ( var chip in GearChips )
-							{
-								<label class="upgrade-chip" @key="chip.Id">@chip.Label</label>
-							}
+							<div class="stat-row lead biomass-row">
+								<div class="biomass-key">
+									<label class="key">@GameSettings.Text.Hud.Biomass</label>
+									<div class="ask"><label>?</label></div>
+								</div>
+								<label class="value run-biomass-value">@Loop.RunBiomass</label>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -71,17 +59,22 @@
 			</div>
 
 			<div class="run-right">
-				<div class="hud-panel stat-panel">
-					<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
-					<div class="stat-face">
-						<div class="stat-row lead">
-							<label class="key">@GameSettings.Text.Hud.Scrap</label>
-							<label class="value scrap-value">@Loop.Scrap</label>
-						</div>
-						<div class="stat-row lead">
-							<label class="key">@GameSettings.Text.Hud.Stash</label>
-							<label class="value stash-value">@(Loop.City.IsValid() ? Loop.City.Warehouse : 0)</label>
-						</div>
+				<div class="hud-panel upgrades-panel">
+					<img class="upgrades-back" src="ui/Arena UI/element_back_three_floors.png" />
+					<div class="upgrades-title">
+						<label>Upgrades</label>
+					</div>
+					<div class="upgrades-weapons">
+						@foreach ( var chip in WeaponChips )
+						{
+							<label class="upgrade-chip" @key="chip.Id">@chip.Label</label>
+						}
+					</div>
+					<div class="upgrades-gear">
+						@foreach ( var chip in GearChips )
+						{
+							<label class="upgrade-chip" @key="chip.Id">@chip.Label</label>
+						}
 					</div>
 				</div>
 			</div>
@@ -805,6 +798,23 @@
 		</div>
 	}
 
+	@if ( ShowBiomassTip )
+	{
+		<div class="biomass-tip">
+			<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
+			<div class="stat-face">
+				<div class="stat-row lead">
+					<label class="key">@GameSettings.Text.Hud.Stash</label>
+					<label class="value stash-value">@(Loop.City.IsValid() ? Loop.City.Warehouse : 0)</label>
+				</div>
+				<div class="stat-row lead">
+					<label class="key">@GameSettings.Text.Hud.Fed</label>
+					<label class="value fed-value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+				</div>
+			</div>
+		</div>
+	}
+
 	@if ( HoveredUpgrade is TrinketDef tip )
 	{
 		<div class="card shop-offer upgrade-tip" style="border-color: @TraitBorder(tip)">
@@ -889,6 +899,8 @@
 		TickOrganTip();
 		TickUpgradeHover();
 		TickUpgradeTip();
+		TickBiomassHover();
+		TickBiomassTip();
 		TickReloadCursor();
 		TickHover();
 		TickSettingDrag();
@@ -1506,8 +1518,135 @@
 
 	float UpgradeTipX()
 	{
-		const float fallback = 348f;
+		const float gap = 14f;
+		const float fallbackWidth = 240f;
 		var host = FindHud( "upgrades-panel" );
+		if ( !host.IsValid() )
+			return 12f;
+
+		var x = host.Box.Rect.Left;
+		var width = host.Box.Rect.Width;
+		var current = host.Parent;
+		while ( current.IsValid() && current != Panel )
+		{
+			x += current.Box.Rect.Left;
+			current = current.Parent;
+		}
+
+		if ( width < 8f )
+			return 12f;
+
+		var tipW = upgradeTip.IsValid() ? upgradeTip.Box.Rect.Width : 0f;
+		if ( tipW < 8f )
+			tipW = fallbackWidth;
+
+		return Math.Max( 12f, x - tipW - gap );
+	}
+
+	bool ShowBiomassHud => Loop.IsValid()
+		&& !Loop.Paused
+		&& !Loop.Talking
+		&& !Loop.InCity
+		&& !Loop.InMenu
+		&& Loop.Inventory.IsValid();
+
+	bool ShowBiomassTip => biomassHover && ShowBiomassHud;
+
+	void TickBiomassHover()
+	{
+		if ( Panel is null || !ShowBiomassHud )
+		{
+			biomassHover = false;
+			biomassMiss = 0;
+			return;
+		}
+
+		if ( !TryHoveredBiomass( out var hit ) )
+			return;
+
+		if ( hit )
+		{
+			biomassHover = true;
+			biomassMiss = 0;
+			return;
+		}
+
+		if ( biomassMiss < 3 )
+		{
+			biomassMiss++;
+			return;
+		}
+
+		biomassHover = false;
+	}
+
+	bool TryHoveredBiomass( out bool hit )
+	{
+		hit = false;
+		Sandbox.UI.Panel row = null;
+		foreach ( var child in Panel.Descendants )
+		{
+			if ( !child.HasClass( "biomass-row" ) )
+				continue;
+
+			row = child;
+			break;
+		}
+
+		if ( !row.IsValid() || row.Box.Rect.Width < 1f || row.Box.Rect.Height < 1f )
+			return false;
+
+		hit = ChipHit( row, CursorOn() );
+		return true;
+	}
+
+	void TickBiomassTip()
+	{
+		if ( !ShowBiomassTip )
+		{
+			biomassTip = null;
+			return;
+		}
+
+		if ( !biomassTip.IsValid() )
+			biomassTip = FindHud( "biomass-tip" );
+		if ( !biomassTip.IsValid() )
+			return;
+
+		var point = CursorOn();
+		var w = biomassTip.Box.Rect.Width;
+		var h = biomassTip.Box.Rect.Height;
+		if ( w < 8f )
+			w = 320f;
+		if ( h < 8f )
+			h = 146f;
+
+		var x = BiomassTipX();
+		var y = point.y - 8f;
+		if ( Panel is not null )
+		{
+			var bounds = Panel.Box.Rect;
+			if ( bounds.Width > 64f && bounds.Height > 64f )
+			{
+				var maxX = Math.Max( 12f, bounds.Width - w - 12f );
+				var maxY = Math.Max( 12f, bounds.Height - h - 12f );
+				x = Math.Clamp( x, 12f, maxX );
+				y = Math.Clamp( y, 12f, maxY );
+			}
+		}
+
+		biomassTip.Style.Position = Sandbox.UI.PositionMode.Absolute;
+		biomassTip.Style.Left = Sandbox.UI.Length.Pixels( x );
+		biomassTip.Style.Top = Sandbox.UI.Length.Pixels( y );
+		biomassTip.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
+		biomassTip.Style.Dirty();
+	}
+
+	float BiomassTipX()
+	{
+		const float gap = 14f;
+		const float fallback = 678f;
+		var host = FindHud( "run-left" );
 		if ( !host.IsValid() )
 			return fallback;
 
@@ -1523,7 +1662,7 @@
 		if ( width < 8f )
 			return fallback;
 
-		return x + width + 14f;
+		return x + width + gap;
 	}
 
 	List<OwnedChip> OwnedChips( bool weapons )
@@ -1850,6 +1989,7 @@
 	Sandbox.UI.Label fedLabel;
 	Sandbox.UI.Label scrapLabel;
 	Sandbox.UI.Label stashLabel;
+	Sandbox.UI.Label runBiomassLabel;
 	Sandbox.UI.Label placeLabel;
 	Sandbox.UI.Label lapLabel;
 	Sandbox.UI.Label ammoLabel;
@@ -1879,8 +2019,11 @@
 	Sandbox.UI.Panel hotCard;
 	Sandbox.UI.Panel organTip;
 	Sandbox.UI.Panel upgradeTip;
+	Sandbox.UI.Panel biomassTip;
 	string hoverChip;
 	int hoverMiss;
+	bool biomassHover;
+	int biomassMiss;
 	int shopHover = -1;
 	const float HudScale = 0.8f;
 	const float TrayArtWidth = 2544f;
@@ -2163,6 +2306,7 @@
 		{
 			scrapLabel = null;
 			stashLabel = null;
+			runBiomassLabel = null;
 			placeLabel = null;
 			lapLabel = null;
 			ammoLabel = null;
@@ -2173,6 +2317,7 @@
 		var boss = Loop.InBossFight;
 		SetLabel( ref scrapLabel, "scrap-value", Loop.Scrap.ToString() );
 		SetLabel( ref stashLabel, "stash-value", stash.ToString() );
+		SetLabel( ref runBiomassLabel, "run-biomass-value", Loop.RunBiomass.ToString() );
 		SetLabel( ref ammoLabel, "ammo-count", MagLoaded.ToString() );
 		SetLabel( ref placeLabel, "place", boss ? Loop.BossName : "ROUND" );
 		SetLabel( ref lapLabel, "lap-value", boss ? Loop.BossHealth.ToString() : Loop.Lap.ToString() );
@@ -2564,7 +2709,7 @@
 			Loop.ExtractedRounds,
 			Loop.BurnedRounds,
 			Loop.ReturnedBiomass,
-			System.HashCode.Combine( shopHover, hoverChip ) );
+			System.HashCode.Combine( shopHover, hoverChip, biomassHover ) );
 
 		var e = saves
 			? System.HashCode.Combine( Loop.SlotBlurb( 0 ), Loop.SlotBlurb( 1 ), Loop.SlotBlurb( 2 ), Loop.SlotExists( 0 ), Loop.SlotExists( 1 ), Loop.SlotExists( 2 ), Loop.ActiveSlot, Loop.SaveCursor )
@@ -4531,8 +4676,8 @@
 
 	.shop-sheet {
 		position: absolute;
-		right: 20px;
-		top: 200px;
+		right: 12px;
+		top: 296px;
 		width: 288px;
 		height: 495px;
 		aspect-ratio: 477 / 820;
@@ -5165,6 +5310,8 @@
 		flex-direction: column;
 		align-items: stretch;
 		font-family: "Barlow Condensed";
+		z-index: 35;
+		pointer-events: none;
 	}
 
 	.hud-panel {
@@ -5259,7 +5406,7 @@
 	}
 
 	.upgrades-panel {
-		width: 320px;
+		width: 100%;
 		aspect-ratio: 477 / 448;
 		padding: 0px;
 		margin-bottom: 0px;
@@ -5329,6 +5476,30 @@
 
 	.upgrade-chip:hover {
 		color: #f0b429;
+	}
+
+	.biomass-row {
+		pointer-events: all;
+		cursor: pointer;
+	}
+
+	.stat-row.lead.biomass-row:hover .key,
+	.stat-row.lead.biomass-row:hover .value {
+		color: #f0b429;
+	}
+
+	.biomass-tip {
+		position: absolute;
+		left: -4000px;
+		top: 0px;
+		width: 320px;
+		aspect-ratio: 477 / 217;
+		margin: 0px;
+		padding: 0px;
+		z-index: 85;
+		pointer-events: none;
+		overflow: hidden;
+		font-family: "Barlow Condensed";
 	}
 
 	.card.shop-offer.upgrade-tip {
@@ -5449,6 +5620,52 @@
 		font-size: 24px;
 		font-weight: 700;
 		color: #f4ece0;
+	}
+
+	.run-left .stat-panel .stat-row.lead {
+		align-items: center;
+	}
+
+	.run-left .stat-panel .stat-row.lead .key,
+	.run-left .stat-panel .stat-row.lead .value {
+		font-size: 32px;
+		font-weight: 700;
+		line-height: 34px;
+		letter-spacing: 1px;
+		color: #f4ece0;
+	}
+
+	.run-left .stat-panel .biomass-key {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.run-left .stat-panel .ask {
+		width: 22px;
+		height: 22px;
+		margin-left: 10px;
+		border: 2px solid #f4ece0;
+		border-radius: 11px;
+		justify-content: center;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	.run-left .stat-panel .ask label {
+		font-size: 16px;
+		font-weight: 700;
+		line-height: 16px;
+		color: #f4ece0;
+	}
+
+	.run-left .stat-panel .biomass-row:hover .key,
+	.run-left .stat-panel .biomass-row:hover .value,
+	.run-left .stat-panel .biomass-row:hover .ask label {
+		color: #f0b429;
+	}
+
+	.run-left .stat-panel .biomass-row:hover .ask {
+		border-color: #f0b429;
 	}
 
 	.city .city-biomass .key,

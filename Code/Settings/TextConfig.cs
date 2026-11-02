@@ -372,6 +372,7 @@ public class HudCopy
 	[Property] public string Plain { get; set; } = "PLAIN";
 	[Property] public string Scrap { get; set; } = "SCRAP";
 	[Property] public string Stash { get; set; } = "STASH";
+	[Property] public string Biomass { get; set; } = "BIOMASS";
 	[Property] public string Best { get; set; } = "BEST";
 	[Property] public string Kills { get; set; } = "KILLS";
 	[Property] public string Caught { get; set; } = "SHOTS";
@@ -389,7 +390,7 @@ public class HudCopy
 	[Property] public string DashKey { get; set; } = "SPACE";
 	[Property] public string DashCoach { get; set; } = "PRESS SPACE TO DASH  ·  NO DAMAGE";
 	[Property] public string SlowKey { get; set; } = "RMB";
-	[Property] public string Fed { get; set; } = "TOTAL BIOMASS";
+	[Property] public string Fed { get; set; } = "BIOMASS TO WIN";
 	[Property] public string Threat { get; set; } = "THREAT {0}";
 	[Property] public string FedValue { get; set; } = "{0} / {1}";
 }

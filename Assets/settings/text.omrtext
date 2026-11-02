@@ -3,6 +3,7 @@
     "Plain": "NO TRINKETS",
     "Scrap": "BONES",
     "Stash": "STASHED BIOMASS",
+    "Biomass": "BIOMASS",
     "Best": "BEST",
     "Kills": "KILLS",
     "Caught": "CAUGHT",
@@ -14,6 +15,7 @@
     "HurtStamp": "-1",
     "DodgeStamp": "DODGED",
     "Task": "NEXT",
+    "Fed": "BIOMASS TO WIN",
     "FeedCount": "TOTAL BIOMASS {0} / {1}",
     "Ammo": "AMMO"
   },
