@@ -302,10 +302,7 @@ public sealed class GameLoop : Component
 		SaveStore.SetLastSlot( ActiveSlot );
 		ApplySave( SaveStore.Read( ActiveSlot ) );
 		RefreshSaves();
-		if ( HasActiveSave )
-			OpenCityFromMenu();
-		else
-			Restart();
+		CloseSaves();
 	}
 
 	public void DeleteSave( int index )
