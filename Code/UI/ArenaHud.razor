@@ -408,6 +408,10 @@
 										{
 											<label class="col-weapon">@GameSettings.Text.Shop.Weapon</label>
 										}
+										else if ( picked.IsSkill )
+										{
+											<label class="col-weapon">@GameSettings.Text.Shop.Active</label>
+										}
 										@if ( CollectionRank( picked ) is { Length: > 0 } rank )
 										{
 											<label class="col-rank">@rank</label>
@@ -633,6 +637,10 @@
 									{
 										<label class="weapon">@GameSettings.Text.Shop.Weapon</label>
 									}
+									else if ( trait.IsSkill )
+									{
+										<label class="weapon">@GameSettings.Text.Shop.Active</label>
+									}
 								</div>
 								<label class="rarity" style="color: @TraitInk(trait)">@GameSettings.Text.RarityOf(trait.Pack)</label>
 								@if ( OfferBlurb( trait ) is { Length: > 0 } blurb )
@@ -808,6 +816,10 @@
 					@if ( Trinkets.IsWeapon( tip ) )
 					{
 						<label class="weapon">@GameSettings.Text.Shop.Weapon</label>
+					}
+					else if ( tip.IsSkill )
+					{
+						<label class="weapon">@GameSettings.Text.Shop.Active</label>
 					}
 				</div>
 				<label class="rarity" style="color: @TraitInk(tip)">@GameSettings.Text.RarityOf(tip.Pack)</label>

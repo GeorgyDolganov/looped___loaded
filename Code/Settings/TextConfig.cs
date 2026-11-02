@@ -550,6 +550,7 @@ public class ShopCopy
 	[Property] public string OfferBlurb { get; set; } = "{0}  LV{1}";
 	[Property] public string OfferRank { get; set; } = "LV {0}";
 	[Property] public string Weapon { get; set; } = "WEAPON";
+	[Property] public string Active { get; set; } = "ACTIVE";
 	[Property] public string Unlocks { get; set; } = "Opens {0}.";
 	[Property] public string Key1 { get; set; } = "1";
 	[Property] public string Key2 { get; set; } = "2";
