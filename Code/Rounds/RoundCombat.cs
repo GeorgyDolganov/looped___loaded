@@ -38,9 +38,12 @@ public static class RoundCombat
 			loop.TryHurt( origin );
 	}
 
-	public static List<Vector3> Circle( ArenaGeometry geometry, Vector2 flat, float radius )
+	public static List<Vector3> Circle( ArenaGeometry geometry, Vector2 flat, float radius, int segments = -1 )
 	{
-		var segments = Math.Max( 3, GraphicsProfile.CircleSegments );
+		if ( segments < 3 )
+			segments = GraphicsProfile.CircleSegments;
+
+		segments = Math.Max( 3, segments );
 		var points = new List<Vector3>( segments + 1 );
 		for ( var i = 0; i <= segments; i++ )
 		{

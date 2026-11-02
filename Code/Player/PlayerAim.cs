@@ -190,6 +190,6 @@ public sealed class PlayerAim : Component
 		line.HeadWidth = 3.5f;
 		line.TailWidth = 3.5f;
 		line.Apply();
-		line.SetPoints( RoundCombat.Circle( Arena.Geometry, flat, radius ) );
+		line.SetPoints( RoundCombat.Circle( Arena.Geometry, flat, radius, 8 ) );
 	}
 }

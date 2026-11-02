@@ -1215,14 +1215,17 @@ public sealed class GameLoop : Component
 	{
 		for ( var i = 0; i < retired.Count; i++ )
 		{
-			var index = Enemies.IndexOf( retired[i] );
-			if ( index < 0 )
-				continue;
+			var enemy = retired[i];
+			var index = Enemies.IndexOf( enemy );
+			if ( index >= 0 )
+			{
+				var last = Enemies.Count - 1;
+				Enemies[index] = Enemies[last];
+				Enemies.RemoveAt( last );
+			}
 
-			var last = Enemies.Count - 1;
-			Enemies[index] = Enemies[last];
-			Enemies.RemoveAt( last );
-			corpses.Add( retired[i] );
+			if ( enemy.IsValid() )
+				enemy.GameObject.Destroy();
 		}
 
 		retired.Clear();

@@ -626,7 +626,7 @@ public sealed class RoundProjectile : Component
 		sparks.LocalPosition = Vector3.Zero;
 
 		var effect = sparks.AddComponent<ParticleEffect>();
-		effect.MaxParticles = GraphicsProfile.MaxParticles;
+		effect.MaxParticles = SparkBudget();
 		effect.Lifetime = 0.4f;
 		effect.LocalSpace = 0f;
 		effect.ApplyAlpha = true;
@@ -673,11 +673,27 @@ public sealed class RoundProjectile : Component
 		if ( !effect.IsValid() )
 			return;
 
-		effect.MaxParticles = GraphicsProfile.MaxParticles;
+		effect.MaxParticles = SparkBudget();
 		var frozen = Loop.IsValid() && Loop.IsFrozen;
 		var scale = Scene.IsValid() ? Scene.TimeScale : 1f;
 		effect.TimeScale = frozen || scale < 0.05f ? 0f : 1f / scale;
 		effect.InitialVelocity = new Vector3( -Direction.x, -Direction.y, 0f ) * 140f;
+	}
+
+	int SparkBudget()
+	{
+		var cap = GraphicsProfile.MaxParticles;
+		if ( cap <= 16 || !Loop.IsValid() || !Loop.Inventory.IsValid() )
+			return cap;
+
+		var live = Loop.Inventory.Live.Count;
+		if ( live > 12 )
+			return Math.Max( 8, cap / 4 );
+
+		if ( live > 6 )
+			return Math.Max( 12, cap / 2 );
+
+		return cap;
 	}
 
 	static ParticleFloat PerParticle( float min, float max ) => new()
@@ -703,7 +719,11 @@ public sealed class RoundProjectile : Component
 	{
 		trail.Add( point );
 
-		while ( trail.Count > GraphicsProfile.TrailPoints )
+		var keep = GraphicsProfile.TrailPoints;
+		if ( keep > 16 && Loop.IsValid() && Loop.Inventory.IsValid() && Loop.Inventory.Live.Count > 8 )
+			keep = 16;
+
+		while ( trail.Count > keep )
 			trail.RemoveAt( 0 );
 
 		trailLine?.SetPoints( trail );
@@ -731,7 +751,7 @@ public sealed class RoundProjectile : Component
 		splashRing.HeadWidth = 3.5f;
 		splashRing.TailWidth = 3.5f;
 		splashRing.Apply();
-		splashRing.SetPoints( RoundCombat.Circle( geometry, Flat, Flight.ExplosiveRadius ) );
+		splashRing.SetPoints( RoundCombat.Circle( geometry, Flat, Flight.ExplosiveRadius, 8 ) );
 	}
 }
 

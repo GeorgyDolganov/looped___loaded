@@ -15,21 +15,14 @@
 			<label>@Loop.Notice</label>
 		</div>
 
-		@if ( !Loop.InCity && !Loop.InMenu && Loop.HurtAmount > 0.01f )
-		{
-			<div class="hurt-veil" style="opacity: @HurtVeil"></div>
-			<div class="hurt-stamp">
-				<label>@GameSettings.Text.Hud.HurtStamp</label>
-			</div>
-		}
-
-		@if ( !Loop.InCity && !Loop.InMenu && Loop.DodgeAmount > 0.01f )
-		{
-			<div class="dodge-veil"></div>
-			<div class="dodge-stamp">
-				<label>@GameSettings.Text.Hud.DodgeStamp</label>
-			</div>
-		}
+		<div class="hurt-veil"></div>
+		<div class="hurt-stamp">
+			<label>@GameSettings.Text.Hud.HurtStamp</label>
+		</div>
+		<div class="dodge-veil"></div>
+		<div class="dodge-stamp">
+			<label>@GameSettings.Text.Hud.DodgeStamp</label>
+		</div>
 
 		@if ( !Loop.InCity && !Loop.InMenu && Loop.Inventory.IsValid() )
 		{
@@ -40,7 +33,7 @@
 						<div class="stat-face">
 							<div class="stat-row lead">
 								<label class="key">@GameSettings.Text.Hud.Fed</label>
-								<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+								<label class="value fed-value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
 							</div>
 						</div>
 					</div>
@@ -83,22 +76,19 @@
 					<div class="stat-face">
 						<div class="stat-row lead">
 							<label class="key">@GameSettings.Text.Hud.Scrap</label>
-							<label class="value">@Loop.Scrap</label>
+							<label class="value scrap-value">@Loop.Scrap</label>
 						</div>
 						<div class="stat-row lead">
 							<label class="key">@GameSettings.Text.Hud.Stash</label>
-							<label class="value">@(Loop.City.IsValid() ? Loop.City.Warehouse : 0)</label>
+							<label class="value stash-value">@(Loop.City.IsValid() ? Loop.City.Warehouse : 0)</label>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			@if ( Loop.DashCoach )
-			{
-				<div class="dash-coach">
-					<label>@GameSettings.Text.Hud.DashCoach</label>
-				</div>
-			}
+			<div class="dash-coach">
+				<label>@GameSettings.Text.Hud.DashCoach</label>
+			</div>
 			<div class="skill-bar">
 				@for ( var i = 0; i < ActiveSkills.SlotCount; i++ )
 				{
@@ -106,11 +96,15 @@
 					var card = SkillCard( index );
 					<div class="skill-slot @(card is null ? "empty" : "") @(SkillReady( index ) ? "ready" : "")">
 						<img class="skill-plate" src="ui/Arena UI/element_back_square.png" />
-						@if ( card is not null )
-						{
-							<img class="skill-icon" src="@card.IconPath" />
-						}
-						<div class="skill-shade"></div>
+						<div class="skill-art">
+							@if ( card is not null )
+							{
+								<img class="skill-icon" src="@card.IconPath" />
+							}
+						</div>
+						<div class="skill-veil">
+							<div class="skill-veil-fill"></div>
+						</div>
 						<label class="skill-key">@ActiveSkills.Keys[index]</label>
 					</div>
 				}
@@ -141,7 +135,7 @@
 								<img class="charge-layer" src="ui/Arena UI/dash.png" />
 							</div>
 						</div>
-						<label class="meter-hint @(Loop.DashCoach ? "coach" : "")">@GameSettings.Text.Hud.DashKey</label>
+						<label class="meter-hint dash-hint @(Loop.DashCoach ? "coach" : "")">@GameSettings.Text.Hud.DashKey</label>
 					</div>
 					@if ( SlowUnlocked )
 					{
@@ -169,7 +163,7 @@
 						<div class="stat-face">
 							<div class="stat-row lead">
 								<label class="key">@GameSettings.Text.Hud.Fed</label>
-								<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+								<label class="value fed-value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
 							</div>
 						</div>
 					</div>
@@ -366,7 +360,7 @@
 					</div>
 					<div class="obj-biomass">
 						<label class="key">@GameSettings.Text.Hud.Fed</label>
-						<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+						<label class="value fed-value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
 					</div>
 					<div class="obj-organs">
 						<label class="key">@GameSettings.Text.Menu.StatOrgans</label>
@@ -878,6 +872,8 @@
 			: Sandbox.UI.PointerEvents.None;
 
 		TickCursor();
+		TickClock();
+		TickReadouts();
 		TickOrganTip();
 		TickUpgradeHover();
 		TickUpgradeTip();
@@ -885,6 +881,7 @@
 		TickHover();
 		TickSettingDrag();
 		TickTraySize();
+		TickSkillCovers();
 		TickHurtVeil();
 		TickCollectionList();
 
@@ -1095,11 +1092,24 @@
 		if ( !Loop.IsValid() )
 			return;
 
-		var veil = FindHud( "hurt-veil" );
-		if ( !veil.IsValid() )
-			return;
+		if ( !hurtVeil.IsValid() )
+		{
+			hurtVeil = FindHud( "hurt-veil" );
+			hurtOpacity = -1f;
+		}
 
-		veil.Style.Opacity = Loop.HurtAmount * 0.55f;
+		var show = !Loop.InCity && !Loop.InMenu;
+		var opacity = show ? Loop.HurtAmount * 0.55f : 0f;
+		if ( hurtVeil.IsValid() && MathF.Abs( hurtOpacity - opacity ) > 0.001f )
+		{
+			hurtOpacity = opacity;
+			hurtVeil.Style.Opacity = opacity;
+		}
+
+		if ( !hurtStamp.IsValid() )
+			hurtStamp = FindHud( "hurt-stamp" );
+
+		SetFlag( hurtStamp, "on", show && Loop.HurtAmount > 0.01f );
 	}
 
 	SettingRow? trackScrub;
@@ -1279,7 +1289,6 @@
 
 	int FeedPercent => Loop.IsValid() && Loop.WinNeed > 0 ? (int)(Math.Clamp( Loop.FedBiomass / (float)Loop.WinNeed, 0f, 1f ) * 100f) : 0;
 	int HurtPercent => Loop.IsValid() ? (int)(Loop.HurtAmount * 100f) : 0;
-	string HurtVeil => (Loop.IsValid() ? Loop.HurtAmount * 0.55f : 0f).ToString( "0.###" );
 	ActiveSkills Skills => Loop.IsValid() && Loop.Inventory.IsValid() ? Loop.Inventory.Skills : null;
 	TrinketDef SkillCard( int index ) => Skills?.CardAt( index );
 	bool SkillReady( int index ) => Skills is not null && Skills.Ready( index );
@@ -1825,6 +1834,23 @@
 	float auraY;
 	float trailX;
 	float trailY;
+	Sandbox.UI.Label clockLabel;
+	Sandbox.UI.Label fedLabel;
+	Sandbox.UI.Label scrapLabel;
+	Sandbox.UI.Label stashLabel;
+	Sandbox.UI.Label placeLabel;
+	Sandbox.UI.Label lapLabel;
+	Sandbox.UI.Label ammoLabel;
+	Sandbox.UI.Label noticeLabel;
+	Sandbox.UI.Panel noticePanel;
+	Sandbox.UI.Panel hurtVeil;
+	Sandbox.UI.Panel hurtStamp;
+	float hurtOpacity = -1f;
+	Sandbox.UI.Panel dodgeVeil;
+	Sandbox.UI.Panel dodgeStamp;
+	Sandbox.UI.Panel dashHint;
+	int dodgeStep;
+	readonly List<string> heartShown = new();
 	Sandbox.UI.Panel auraPanel;
 	Sandbox.UI.Panel trailPanel;
 	Sandbox.UI.Panel shotCursor;
@@ -1924,25 +1950,54 @@
 		skillBar.Style.Position = Sandbox.UI.PositionMode.Absolute;
 		skillBar.Style.Bottom = Sandbox.UI.Length.Pixels( trayHeight + 12f );
 		skillBar.Style.Dirty();
+	}
+
+	void TickSkillCovers()
+	{
+		if ( Panel is null || !Loop.IsValid() || Loop.InCity || Loop.InMenu || !Loop.Inventory.IsValid() )
+			return;
 
 		var slot = 0;
-		foreach ( var child in skillBar.Children )
+		foreach ( var child in Panel.Descendants )
 		{
 			if ( !child.HasClass( "skill-slot" ) )
 				continue;
 
-			var shade = 0f;
-			if ( Skills is not null && Skills.CardAt( slot ) is not null )
-				shade = 1f - Skills.Charge( slot );
+			var card = Skills?.CardAt( slot );
+			SetFlag( child, "ready", card is not null && Skills.Ready( slot ) );
+			SetFlag( child, "empty", card is null );
 
+			var charge = card is null ? 1f : Skills.Charge( slot );
+			Sandbox.UI.Panel fill = null;
 			foreach ( var part in child.Descendants )
 			{
-				if ( !part.HasClass( "skill-shade" ) )
-					continue;
-
-				part.Style.Height = Sandbox.UI.Length.Percent( Math.Clamp( shade, 0f, 1f ) * 100f );
-				part.Style.Dirty();
+				if ( part.HasClass( "skill-veil-fill" ) )
+					fill = part;
 			}
+
+			if ( !fill.IsValid() )
+			{
+				slot++;
+				continue;
+			}
+
+			var remain = Math.Clamp( 1f - charge, 0f, 1f );
+			fill.Style.Left = Sandbox.UI.Length.Pixels( 0 );
+			fill.Style.Right = Sandbox.UI.Length.Pixels( 0 );
+			fill.Style.Top = Sandbox.UI.Length.Pixels( 0 );
+			fill.Style.Width = Sandbox.UI.Length.Auto;
+			if ( remain <= 0.001f )
+			{
+				fill.Style.Height = Sandbox.UI.Length.Pixels( 0 );
+				fill.Style.Bottom = Sandbox.UI.Length.Auto;
+			}
+			else
+			{
+				fill.Style.Height = Sandbox.UI.Length.Auto;
+				fill.Style.Bottom = Sandbox.UI.Length.Percent( (1f - remain) * 100f );
+			}
+
+			fill.Style.Dirty();
 
 			slot++;
 		}
@@ -1950,31 +2005,40 @@
 
 	void PlaceDashCoach( float trayHeight )
 	{
-		if ( !Loop.DashCoach )
-		{
-			dashCoach = null;
-			return;
-		}
-
 		if ( !dashCoach.IsValid() )
 			dashCoach = FindHud( "dash-coach" );
 
-		if ( !dashCoach.IsValid() )
-			return;
+		var show = Loop.IsValid() && Loop.DashCoach;
+		if ( dashCoach.IsValid() )
+		{
+			SetFlag( dashCoach, "on", show );
+			if ( show )
+			{
+				dashCoach.Style.Position = Sandbox.UI.PositionMode.Absolute;
+				dashCoach.Style.Bottom = Sandbox.UI.Length.Pixels( trayHeight + 14f );
+				dashCoach.Style.Right = Sandbox.UI.Length.Percent( 12f );
+				dashCoach.Style.Dirty();
+			}
+		}
 
-		dashCoach.Style.Position = Sandbox.UI.PositionMode.Absolute;
-		dashCoach.Style.Bottom = Sandbox.UI.Length.Pixels( trayHeight + 14f );
-		dashCoach.Style.Right = Sandbox.UI.Length.Percent( 12f );
-		dashCoach.Style.Dirty();
+		if ( !dashHint.IsValid() )
+			dashHint = FindHud( "dash-hint" );
+
+		SetFlag( dashHint, "coach", show );
 	}
 
 	void PlaceHealthIcons()
 	{
 		if ( !healthRow.IsValid() )
+		{
 			healthRow = FindHud( "hp-row" );
+			heartShown.Clear();
+		}
 
 		if ( !healthRow.IsValid() )
 			return;
+
+		PaintHearts();
 
 		var rowW = healthRow.Box.Rect.Width;
 		var rowH = healthRow.Box.Rect.Height;
@@ -2051,6 +2115,199 @@
 				}
 			}
 		}
+	}
+
+	void TickClock()
+	{
+		if ( !Loop.IsValid() || Loop.InCity || Loop.InMenu || !Loop.Inventory.IsValid() )
+		{
+			clockLabel = null;
+			return;
+		}
+
+		if ( !clockLabel.IsValid() )
+			clockLabel = FindHud( "lap-clock" ) as Sandbox.UI.Label;
+
+		if ( !clockLabel.IsValid() )
+			return;
+
+		var text = TimeText;
+		if ( clockLabel.Text != text )
+			clockLabel.Text = text;
+	}
+
+	void TickReadouts()
+	{
+		if ( !Loop.IsValid() )
+			return;
+
+		TickNotice();
+		TickDodge();
+
+		SetLabel( ref fedLabel, "fed-value", GameSettings.Text.F( GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed ) );
+
+		var run = !Loop.InCity && !Loop.InMenu && Loop.Inventory.IsValid();
+		if ( !run )
+		{
+			scrapLabel = null;
+			stashLabel = null;
+			placeLabel = null;
+			lapLabel = null;
+			ammoLabel = null;
+			return;
+		}
+
+		var stash = Loop.City.IsValid() ? Loop.City.Warehouse : 0;
+		var boss = Loop.InBossFight;
+		SetLabel( ref scrapLabel, "scrap-value", Loop.Scrap.ToString() );
+		SetLabel( ref stashLabel, "stash-value", stash.ToString() );
+		SetLabel( ref ammoLabel, "ammo-count", MagLoaded.ToString() );
+		SetLabel( ref placeLabel, "place", boss ? Loop.BossName : "ROUND" );
+		SetLabel( ref lapLabel, "lap-value", boss ? Loop.BossHealth.ToString() : Loop.Lap.ToString() );
+	}
+
+	void TickNotice()
+	{
+		if ( !noticePanel.IsValid() )
+		{
+			noticePanel = FindHud( "notice" );
+			noticeLabel = null;
+		}
+
+		if ( !noticePanel.IsValid() )
+			return;
+
+		var on = Loop.NoticeVisible && !Loop.InMenu;
+		SetFlag( noticePanel, "on", on );
+		SetFlag( noticePanel, "off", !on );
+		SetFlag( noticePanel, "hurt", Loop.HurtAmount > 0.2f );
+
+		if ( !noticeLabel.IsValid() )
+		{
+			foreach ( var child in noticePanel.Descendants )
+			{
+				if ( child is Sandbox.UI.Label label )
+				{
+					noticeLabel = label;
+					break;
+				}
+			}
+		}
+
+		SetText( noticeLabel, Loop.Notice );
+	}
+
+	void TickDodge()
+	{
+		if ( !dodgeVeil.IsValid() )
+		{
+			dodgeVeil = FindHud( "dodge-veil" );
+			dodgeStep = 0;
+		}
+
+		if ( !dodgeStamp.IsValid() )
+		{
+			dodgeStamp = FindHud( "dodge-stamp" );
+			dodgeStep = 0;
+		}
+
+		var want = !Loop.InCity && !Loop.InMenu && Loop.DodgeAmount > 0.01f;
+		if ( !want )
+		{
+			if ( dodgeStep != 0 )
+			{
+				dodgeStep = 0;
+				SetFlag( dodgeVeil, "on", false );
+				SetFlag( dodgeStamp, "on", false );
+			}
+
+			return;
+		}
+
+		if ( dodgeStep == 0 )
+		{
+			dodgeStep = 1;
+			SetFlag( dodgeVeil, "on", false );
+			SetFlag( dodgeStamp, "on", false );
+			return;
+		}
+
+		if ( dodgeStep == 1 )
+		{
+			dodgeStep = 2;
+			SetFlag( dodgeVeil, "on", true );
+			SetFlag( dodgeStamp, "on", true );
+		}
+	}
+
+	void PaintHearts()
+	{
+		var index = 0;
+		var hurt = Loop.HurtAmount > 0.08f;
+		var guard = Loop.DodgeAmount > 0.08f;
+		foreach ( var child in healthRow.Children )
+		{
+			if ( !child.HasClass( "hp" ) )
+				continue;
+
+			var live = index < Loop.Health;
+			SetFlag( child, "live", live );
+			SetFlag( child, "dead", !live );
+			SetFlag( child, "sting", live && hurt );
+			SetFlag( child, "guard", live && guard );
+
+			if ( child is Sandbox.UI.Image image )
+			{
+				var path = live ? "ui/Arena UI/health.png" : "ui/Arena UI/health_empty.png";
+				while ( heartShown.Count <= index )
+					heartShown.Add( null );
+
+				if ( heartShown[index] != path )
+				{
+					image.SetTexture( path );
+					heartShown[index] = path;
+				}
+			}
+
+			index++;
+		}
+	}
+
+	void SetLabel( ref Sandbox.UI.Label label, string className, string text )
+	{
+		if ( !label.IsValid() )
+			label = FindHud( className ) as Sandbox.UI.Label;
+
+		SetText( label, text );
+	}
+
+	static void SetText( Sandbox.UI.Label label, string text )
+	{
+		if ( !label.IsValid() || label.Text == text )
+			return;
+
+		label.Text = text;
+	}
+
+	static void SetFlag( Sandbox.UI.Panel panel, string className, bool on )
+	{
+		if ( !panel.IsValid() || panel.HasClass( className ) == on )
+			return;
+
+		panel.SetClass( className, on );
+	}
+
+	int SkillCards()
+	{
+		var skills = Skills;
+		if ( skills is null )
+			return 0;
+
+		var hash = 0;
+		for ( var i = 0; i < ActiveSkills.SlotCount; i++ )
+			hash = System.HashCode.Combine( hash, skills.CardAt( i )?.Id );
+
+		return hash;
 	}
 
 	void TickCursor()
@@ -2261,37 +2518,30 @@
 		var city = Loop.InCity;
 		var shop = Loop.Phase == RunPhase.PickTrait;
 		var saves = menu && Loop.MenuView == MenuPage.Saves;
-		var boss = Loop.InBossFight;
-		var mag = Loop.Inventory.IsValid() ? Loop.Inventory.MagLoaded : 0;
-
 		var a = System.HashCode.Combine(
-			Loop.Lap,
-			Loop.Health,
 			(int)Loop.Phase,
-			Loop.Stash,
-			Loop.Scrap,
-			Loop.Kills,
-			mag,
-			System.HashCode.Combine( Loop.HurtAmount > 0.01f, Loop.DodgeAmount > 0.01f, Loop.DodgeAmount > 0.08f ) );
+			Loop.HeartMax,
+			SlowUnlocked ? 1 : 0,
+			SkillCards(),
+			menu ? 1 : 0,
+			city ? 1 : 0,
+			Loop.Inventory.IsValid() ? 1 : 0 );
 
 		var b = System.HashCode.Combine(
-			Loop.Notice,
-			Loop.NoticeVisible,
-			TimeText,
-			System.HashCode.Combine( Loop.Paused, Loop.Talking, Loop.DashCoach, Loop.CollectionIndex, menu && Loop.MenuView == MenuPage.Collection ? Trinkets.Every.Count : 0 ),
+			Loop.Paused,
+			Loop.Talking,
+			Loop.CollectionIndex,
+			menu && Loop.MenuView == MenuPage.Collection ? Trinkets.Every.Count : 0,
 			(int)Loop.MenuView,
 			(int)Loop.MenuFocus,
 			(int)Loop.SettingCursor,
 			(int)UserSettings.Graphics );
 
 		var c = System.HashCode.Combine(
-			boss ? Loop.BossHealth : 0,
 			Loop.HasBossOffer,
-			boss,
 			Loop.CanPause,
 			(int)Loop.Location,
 			Loop.BestLine,
-			Loop.FedBiomass,
 			Loop.TaskDone );
 
 		var d = System.HashCode.Combine(
@@ -2302,7 +2552,7 @@
 			Loop.ExtractedRounds,
 			Loop.BurnedRounds,
 			Loop.ReturnedBiomass,
-			System.HashCode.Combine( Loop.ShotsFired, shopHover, hoverChip ) );
+			System.HashCode.Combine( shopHover, hoverChip ) );
 
 		var e = saves
 			? System.HashCode.Combine( Loop.SlotBlurb( 0 ), Loop.SlotBlurb( 1 ), Loop.SlotBlurb( 2 ), Loop.SlotExists( 0 ), Loop.SlotExists( 1 ), Loop.SlotExists( 2 ), Loop.ActiveSlot, Loop.SaveCursor )
@@ -2323,8 +2573,7 @@
 			menu ? UserSettings.Steps( SettingRow.Sfx ) : 0,
 			menu ? UserSettings.Steps( SettingRow.Shake ) : 0,
 			(int)OrganLift,
-			Loop.Ascend,
-			Skills?.Stamp ?? 0 );
+			Loop.Ascend );
 
 		return System.HashCode.Combine( a, b, c, d, e, f, g, h );
 	}
@@ -2451,6 +2700,8 @@
 		height: 100%;
 		background-color: #c4121c;
 		border: 28px solid #ff2a22;
+		opacity: 0;
+		pointer-events: none;
 	}
 
 	.hurt-stamp {
@@ -2458,6 +2709,12 @@
 		top: 26%;
 		width: 100%;
 		justify-content: center;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.hurt-stamp.on {
+		opacity: 1;
 	}
 
 	.hurt-stamp label {
@@ -2480,6 +2737,11 @@
 		background-color: rgba(140, 230, 255, 0.06);
 		border: 20px solid #9fefff;
 		opacity: 0;
+		pointer-events: none;
+		animation-name: none;
+	}
+
+	.dodge-veil.on {
 		animation-name: dodge-veil;
 		animation-duration: 0.6s;
 		animation-timing-function: ease-out;
@@ -2492,6 +2754,11 @@
 		width: 100%;
 		justify-content: center;
 		opacity: 0;
+		pointer-events: none;
+		animation-name: none;
+	}
+
+	.dodge-stamp.on {
 		animation-name: dodge-pop;
 		animation-duration: 0.6s;
 		animation-timing-function: ease-out;
@@ -5257,12 +5524,11 @@
 
 	.skill-slot {
 		position: relative;
-		width: 64px;
-		height: 64px;
+		width: 74px;
+		aspect-ratio: 477 / 415;
 		margin-left: 6px;
 		margin-right: 6px;
-		justify-content: center;
-		align-items: center;
+		overflow: hidden;
 	}
 
 	.skill-slot.empty {
@@ -5272,29 +5538,53 @@
 	.skill-plate {
 		position: absolute;
 		left: 0px;
+		right: 0px;
 		top: 0px;
-		width: 100%;
-		height: 100%;
+		bottom: 0px;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
 		z-index: 0;
+	}
+
+	.skill-art {
+		position: absolute;
+		left: 9.22%;
+		top: 8.92%;
+		width: 64px;
+		height: 64px;
+		overflow: hidden;
+		pointer-events: none;
+		z-index: 1;
 	}
 
 	.skill-icon {
 		position: absolute;
-		left: 11px;
-		top: 8px;
-		width: 42px;
-		height: 42px;
-		z-index: 1;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+		background-position: center;
 	}
 
-	.skill-shade {
+	.skill-veil {
 		position: absolute;
 		left: 0px;
+		right: 0px;
+		top: 0px;
 		bottom: 0px;
-		width: 100%;
-		height: 0%;
-		background-color: rgba( 0, 0, 0, 0.62 );
+		overflow: hidden;
+		pointer-events: none;
 		z-index: 2;
+	}
+
+	.skill-veil-fill {
+		position: absolute;
+		left: 0px;
+		right: 0px;
+		top: 0px;
+		background-color: rgba( 96, 96, 100, 0.82 );
 	}
 
 	.skill-key {
@@ -5319,9 +5609,15 @@
 		z-index: 40;
 		justify-content: flex-end;
 		pointer-events: none;
+		opacity: 0;
+		animation-name: none;
+	}
+
+	.dash-coach.on {
 		animation-name: dash-coach-in;
 		animation-duration: 0.18s;
 		animation-timing-function: ease-out;
+		animation-fill-mode: forwards;
 	}
 
 	.dash-coach label {

@@ -79,6 +79,9 @@ public sealed class Enemy : Component
 	float flankUntil;
 	Vector2 lastImpulse = Vector2.Right;
 	readonly EnemyDrive drive = new();
+	int markSlot;
+	int ringSegments;
+	int markDetail = -1;
 
 	bool Melee => Kind is EnemyKind.Chaser or EnemyKind.Splinter or EnemyKind.Glimmer
 		or EnemyKind.Shield or EnemyKind.Shardguard;
@@ -141,6 +144,9 @@ public sealed class Enemy : Component
 		moveVelocity = Vector2.Zero;
 		shove = Vector2.Zero;
 		lastImpulse = Vector2.Right;
+		markSlot = Loop.IsValid() ? Loop.Enemies.Count : 0;
+		ringSegments = 0;
+		markDetail = -1;
 		WorldPosition = new Vector3( Flat.x, Flat.y, 0f );
 		RebuildVisuals();
 
@@ -381,7 +387,10 @@ public sealed class Enemy : Component
 		ImpactFlash.Spawn( Scene, world, LiveTint, Locations.IsBoss( Kind ) ? 4.5f : 2.2f );
 
 		if ( !Loop.IsValid() )
+		{
+			GameObject.Destroy();
 			return;
+		}
 
 		Loop.Retire( this );
 
@@ -582,6 +591,7 @@ public sealed class Enemy : Component
 		if ( Locations.IsBoss( Kind ) || !Loop.IsValid() || !Arena.IsValid() )
 			return;
 
+		var nudges = 0;
 		foreach ( var other in Loop.Enemies )
 		{
 			if ( other == this || !other.IsValid() || !other.Alive || Locations.IsBoss( other.Kind ) )
@@ -599,6 +609,8 @@ public sealed class Enemy : Component
 			var overlap = reach - dist;
 			var moved = Nudge( away * (overlap * 0.5f) );
 			other.Nudge( -away * MathF.Max( 0f, overlap - moved ) );
+			if ( ++nudges >= 4 )
+				return;
 		}
 	}
 
@@ -825,13 +837,14 @@ public sealed class Enemy : Component
 			}
 		}
 
+		var marks = MarksThisFrame();
 		if ( outline.IsValid() )
 		{
 			if ( GraphicsProfile.CircleSegments < 3 )
 			{
 				outline.Clear();
 			}
-			else
+			else if ( marks )
 			{
 				outline.HeadTint = tint;
 				outline.TailTint = tint;
@@ -840,7 +853,8 @@ public sealed class Enemy : Component
 			}
 		}
 
-		PaintHealth( flash );
+		if ( marks )
+			PaintHealth( flash );
 	}
 
 	void BuildShield()
@@ -858,7 +872,7 @@ public sealed class Enemy : Component
 		shieldMesh.Model = model;
 		shieldMesh.MaterialOverride = Material.Load( "materials/sheild/sheild.vmat" );
 		shieldMesh.Tint = Color.White;
-		shieldMesh.RenderType = ModelRenderer.ShadowRenderType.On;
+		shieldMesh.RenderType = ModelRenderer.ShadowRenderType.Off;
 
 		var bounds = model.IsValid() ? model.Bounds : default;
 		var height = bounds.Size.z;
@@ -1006,9 +1020,33 @@ public sealed class Enemy : Component
 		PaintPips( rot, left + edge, right - edge, MaxHealth );
 	}
 
+	bool MarksThisFrame()
+	{
+		FxBudget.Touch();
+		var crowd = Loop.IsValid() ? Loop.Enemies.Count : 1;
+		var stride = crowd > 24 ? 3 : crowd > 12 ? 2 : 1;
+		return (FxBudget.Frame + markSlot) % stride == 0;
+	}
+
+	bool DetailedMarks()
+	{
+		if ( markDetail < 0 )
+			markDetail = (!Loop.IsValid() || Loop.Enemies.Count <= 8) ? 1 : 0;
+
+		return markDetail == 1;
+	}
+
 	void PaintPips( Rotation rot, Vector3 left, Vector3 right, int steps )
 	{
-		var want = steps > 1 && steps <= PipLimit ? steps - 1 : 0;
+		var want = DetailedMarks() && steps > 1 && steps <= PipLimit ? steps - 1 : 0;
+
+		while ( hpPips.Count > want )
+		{
+			var last = hpPips[^1];
+			hpPips.RemoveAt( hpPips.Count - 1 );
+			if ( last.IsValid() )
+				last.GameObject.Destroy();
+		}
 
 		while ( hpPips.Count < want )
 			hpPips.Add( MakeLine( "Hp Pip", MathF.Max( 2f, barWidth * 0.18f ), BarBack ) );
@@ -1080,9 +1118,22 @@ public sealed class Enemy : Component
 		return ratio > GameSettings.Boss.Phase3Health ? BarMid : BarLow;
 	}
 
+	int RingSegments()
+	{
+		var cap = Math.Max( 3, GraphicsProfile.CircleSegments );
+		if ( ringSegments > 0 )
+			return ringSegments;
+
+		var crowd = Loop.IsValid() ? Loop.Enemies.Count : 1;
+		ringSegments = crowd > 18 ? Math.Min( cap, 6 )
+			: crowd > 8 ? Math.Min( cap, 8 )
+			: Math.Min( cap, 12 );
+		return ringSegments;
+	}
+
 	List<Vector3> CirclePoints()
 	{
-		var segments = Math.Max( 3, GraphicsProfile.CircleSegments );
+		var segments = RingSegments();
 		if ( circle.Count != segments + 1 )
 		{
 			circle.Clear();

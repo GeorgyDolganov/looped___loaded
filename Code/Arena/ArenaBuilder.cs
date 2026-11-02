@@ -794,6 +794,14 @@ public sealed class ArenaBuilder : Component
 			if ( !bit.Rest && bit.Spin.Length > 0.05f )
 				bit.Body.WorldRotation *= Rotation.FromAxis( bit.Spin.Normal, MathX.RadianToDegree( bit.Spin.Length * dt ) );
 		}
+
+		while ( glassBits.Count > 48 )
+		{
+			var oldest = glassBits[0];
+			glassBits.RemoveAt( 0 );
+			if ( oldest.Body.IsValid() )
+				oldest.Body.Destroy();
+		}
 	}
 
 	sealed class GlassBit

@@ -556,7 +556,7 @@ public sealed class LaserBeam : Component
 		splashRing.HeadWidth = 3.5f;
 		splashRing.TailWidth = 3.5f;
 		splashRing.Apply();
-		splashRing.SetPoints( RoundCombat.Circle( loop.Geometry, splashAt, recipe.Splash ) );
+		splashRing.SetPoints( RoundCombat.Circle( loop.Geometry, splashAt, recipe.Splash, 8 ) );
 	}
 
 	public static Vector2 Reach( GameLoop loop, ArenaGeometry geometry, Vector2 origin, Vector2 heading, float range, float width )
