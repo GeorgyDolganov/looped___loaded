@@ -105,7 +105,7 @@ public static class TrinketParity
 		"FOCUS", "ARC", "SHUNT", "LINGER",
 		"PINBALL",
 		"FETCH", "RETURN", "GHOST",
-		"TURRET"
+		"TURRET", "REROLL"
 	};
 
 	static readonly Tier4 BuckPellets = new( 2f, 3f, 5f );

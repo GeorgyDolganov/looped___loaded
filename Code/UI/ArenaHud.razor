@@ -675,7 +675,7 @@
 							<img class="shop-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
 							<div class="shop-go-copy">
 								<label class="title">@GameSettings.Text.Shop.Refresh</label>
-								<label class="cost">@GameSettings.Text.F(GameSettings.Text.Shop.Cost, Loop.ShopRefreshCost)</label>
+								<label class="cost">@(Loop.ShopRefreshFree ? GameSettings.Text.Shop.Free : GameSettings.Text.F(GameSettings.Text.Shop.Cost, Loop.ShopRefreshCost))</label>
 							</div>
 						</div>
 					}
@@ -1920,7 +1920,7 @@
 		return GameSettings.Text.F( GameSettings.Text.Shop.Cost, Loop.PriceOf( trait ) );
 	}
 
-	string RefreshClass => Loop.IsValid() && Loop.Scrap < Loop.ShopRefreshCost ? "poor" : "";
+	string RefreshClass => Loop.IsValid() && !Loop.ShopRefreshFree && Loop.Scrap < Loop.ShopRefreshCost ? "poor" : "";
 
 	string OfferClass( TrinketDef trait, bool bought )
 	{
@@ -2700,7 +2700,7 @@
 			: 0;
 
 		var g = shop
-			? System.HashCode.Combine( Loop.Offers.Count, Loop.OfferStamp, Loop.ShopHasBundle, Loop.ShopCanBuyAll, Loop.ShopBuyAllCost, Loop.ShopRefreshCost, Loop.StarterPick )
+			? System.HashCode.Combine( Loop.Offers.Count, Loop.OfferStamp, Loop.ShopHasBundle, Loop.ShopCanBuyAll, Loop.ShopBuyAllCost, Loop.ShopRefreshCost, Loop.ShopRefreshFree ? 1 : 0, Loop.StarterPick )
 			: 0;
 
 		var h = System.HashCode.Combine(

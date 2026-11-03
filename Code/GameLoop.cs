@@ -123,6 +123,7 @@ public sealed class GameLoop : Component
 	public bool StarterPick => starterPick && Phase == RunPhase.PickTrait;
 	public int ShopBuyAllCost => Phase == RunPhase.PickTrait && !StarterPick ? RemainingOfferCost() : 0;
 	public int ShopRefreshCost => Math.Max( 1, GameSettings.Traits.RefreshPrice ) + shopRefreshUses * Math.Max( 0, GameSettings.Traits.RefreshStep );
+	public bool ShopRefreshFree => !freeRefreshSpent && Phase == RunPhase.PickTrait && !starterPick && OwnsReroll();
 	public bool ShopHasBundle => Phase == RunPhase.PickTrait && OpenOfferCount() >= 2;
 	public bool ShopCanBuyAll => ShopHasBundle && Scrap >= ShopBuyAllCost && ShopBuyAllCost > 0;
 
@@ -184,6 +185,7 @@ public sealed class GameLoop : Component
 	float uiClickUntil;
 	bool pendingBoss;
 	int shopRefreshUses;
+	bool freeRefreshSpent;
 	bool starterPick;
 	readonly List<ShopOffer> offers = new();
 	static readonly string[] OfferSlots = { "Slot1", "Slot2", "Slot3", "Slot4", "Slot5", "Slot6", "Slot7", "Slot8", "Slot9" };
@@ -1055,7 +1057,7 @@ public sealed class GameLoop : Component
 		}
 		Kills = 0;
 		Scrap = 0;
-		shopRefreshUses = 0;
+		ResetShopRefresh();
 		ShotsFired = 0;
 		Catches = 0;
 		Losses = 0;
@@ -1722,19 +1724,34 @@ public sealed class GameLoop : Component
 		if ( Halted || Phase != RunPhase.PickTrait || starterPick )
 			return;
 
-		var price = ShopRefreshCost;
-		if ( Scrap < price )
+		if ( ShopRefreshFree )
+			freeRefreshSpent = true;
+		else
 		{
-			ArenaSounds.Deny();
-			Announce( T.F( T.Announce.NeedScrap, price - Scrap ) );
-			return;
+			var price = ShopRefreshCost;
+			if ( Scrap < price )
+			{
+				ArenaSounds.Deny();
+				Announce( T.F( T.Announce.NeedScrap, price - Scrap ) );
+				return;
+			}
+
+			Scrap -= price;
+			shopRefreshUses++;
 		}
 
-		Scrap -= price;
-		shopRefreshUses++;
 		RollShop();
 		ArenaSounds.Pickup();
 		Announce( T.F( T.Announce.ShopRefresh, ShopRefreshCost, Scrap ) );
+	}
+
+	bool OwnsReroll()
+		=> Inventory.IsValid() && Inventory.Loadout.TraitLevel( Trinkets.Find( "REROLL" ) ) > 0;
+
+	void ResetShopRefresh()
+	{
+		shopRefreshUses = 0;
+		freeRefreshSpent = false;
 	}
 
 	public int PriceOf( TrinketDef trait )
@@ -1913,7 +1930,7 @@ public sealed class GameLoop : Component
 	void BeginTraitPick( bool opening = false )
 	{
 		starterPick = opening;
-		shopRefreshUses = 0;
+		ResetShopRefresh();
 		RollShop();
 		Phase = RunPhase.PickTrait;
 	}
@@ -2104,7 +2121,7 @@ public sealed class GameLoop : Component
 
 		var opening = starterPick;
 		starterPick = false;
-		shopRefreshUses = 0;
+		ResetShopRefresh();
 
 		var fight = pendingBoss;
 		pendingBoss = false;

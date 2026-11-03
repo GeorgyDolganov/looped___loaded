@@ -402,6 +402,7 @@ public static class Trinkets
 		"shunt.trinket",
 		"slug.trinket",
 		"stun.trinket",
+		"reroll.trinket",
 		"turret.trinket",
 		"warhead.trinket"
 	};
