@@ -45,6 +45,7 @@ public sealed class BuildState
 	public float BeamMaxHold;
 	public float BeamRange;
 	public float Falloff;
+	public bool FetchHarm;
 
 	public BuildState( int bonus )
 	{
@@ -232,6 +233,7 @@ public sealed class BuildState
 			Dodge = Dodge,
 			Pickup = Pickup,
 			Fetch = Has( GunFlag.Fetch ),
+			FetchHarm = FetchHarm,
 			Ghost = Has( GunFlag.Ghost )
 		};
 	}
@@ -436,7 +438,11 @@ public static class TrinketBuild
 					break;
 
 				foreach ( var flag in step.Card.Flags )
+				{
 					state.Mask |= flag;
+					if ( flag == GunFlag.Fetch && step.Level >= 2 )
+						state.FetchHarm = true;
+				}
 				break;
 			case TrinketStepKind.Freeze:
 				state.MirrorFull = false;

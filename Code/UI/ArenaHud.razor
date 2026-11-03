@@ -719,17 +719,22 @@
 
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.Dead )
 		{
-			<div class="overlay choose">
-				<label class="overlay-title">@GameSettings.Text.Decide.Dead</label>
-				<label class="blurb burned">@(Loop.BurnedRounds == 1 ? GameSettings.Text.F(GameSettings.Text.Decide.DeadBurnedOne, Loop.BurnedRounds) : GameSettings.Text.F(GameSettings.Text.Decide.DeadBurnedMany, Loop.BurnedRounds))</label>
-				@if ( Loop.ReturnedBiomass > 0 )
-				{
-					<label class="blurb returned">@(Loop.ReturnedBiomass == 1 ? GameSettings.Text.F(GameSettings.Text.Decide.DeadReturnedOne, Loop.ReturnedBiomass) : GameSettings.Text.F(GameSettings.Text.Decide.DeadReturnedMany, Loop.ReturnedBiomass))</label>
-				}
-				<div class="exit-hit" onclick="@GoCity">
-					<img class="choice-btn" src="ui/Arena UI/buttons_right.png" />
-					<div class="choice-label">
-						<label class="choice-name">@GameSettings.Text.Decide.Exit</label>
+			<div class="overlay choose dead">
+				<div class="choice-plate">
+					<img class="choice-back" src="ui/Arena UI/element_back_buttons.png" />
+					<div class="choice-copy">
+						<label class="choice-title">@GameSettings.Text.Decide.Dead</label>
+						<label class="blurb burned">@(Loop.BurnedRounds == 1 ? GameSettings.Text.F(GameSettings.Text.Decide.DeadBurnedOne, Loop.BurnedRounds) : GameSettings.Text.F(GameSettings.Text.Decide.DeadBurnedMany, Loop.BurnedRounds))</label>
+						@if ( Loop.ReturnedBiomass > 0 )
+						{
+							<label class="blurb returned">@(Loop.ReturnedBiomass == 1 ? GameSettings.Text.F(GameSettings.Text.Decide.DeadReturnedOne, Loop.ReturnedBiomass) : GameSettings.Text.F(GameSettings.Text.Decide.DeadReturnedMany, Loop.ReturnedBiomass))</label>
+						}
+					</div>
+					<div class="exit-hit" onclick="@GoCity">
+						<img class="choice-btn" src="ui/Arena UI/buttons_right.png" />
+						<div class="choice-label">
+							<label class="choice-name">@GameSettings.Text.Decide.Exit</label>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -4175,6 +4180,13 @@
 		color: #cdc6ba;
 	}
 
+	.overlay.dead .choice-copy .blurb {
+		width: 100%;
+		margin-top: 6px;
+		margin-bottom: 0px;
+		text-align: center;
+	}
+
 	.exit-hit {
 		position: relative;
 		width: 220px;
@@ -4182,6 +4194,16 @@
 		margin-top: 6px;
 		cursor: pointer;
 		pointer-events: all;
+		overflow: visible;
+	}
+
+	.overlay.dead .exit-hit {
+		position: absolute;
+		left: 31.22%;
+		top: 64.6%;
+		width: 37.56%;
+		height: 25.6%;
+		margin-top: 0px;
 		overflow: visible;
 	}
 

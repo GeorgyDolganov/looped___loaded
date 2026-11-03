@@ -483,9 +483,50 @@ public sealed class RoundProjectile : Component
 
 		Direction = to / dist;
 		var move = MathF.Min( step, dist - reach );
+		var from = Flat;
+		var finishes = move >= dist - reach - 0.05f;
 		Flat += Direction * move;
 		travelled += move;
+		GrazeReturn( from, finishes ? Loop.Runner.Flat : Flat );
 		return true;
+	}
+
+	void GrazeReturn( Vector2 from, Vector2 to )
+	{
+		if ( !Flight.FetchHarm || !Loop.IsValid() )
+			return;
+
+		Loop.BeginEnemyScan();
+		try
+		{
+			foreach ( var target in Loop.Enemies )
+			{
+				if ( !target.IsValid() || !target.Alive || struck.Contains( target ) )
+					continue;
+
+				var reach = target.Radius + Radius;
+				if ( RoundCombat.PointSegment( target.Flat, from, to ) > reach )
+					continue;
+
+				if ( target.BlocksDamage( Direction, this ) )
+					continue;
+
+				struck.Add( target );
+				var damage = ShotDamage( true );
+				if ( damage <= 0 )
+					continue;
+
+				target.Damage( damage, this );
+				TargetsHit++;
+				if ( !target.Alive )
+					Kills++;
+			}
+		}
+		finally
+		{
+			if ( Loop.IsValid() )
+				Loop.EndEnemyScan();
+		}
 	}
 
 	void Arrive()
@@ -527,9 +568,9 @@ public sealed class RoundProjectile : Component
 			Speed = launchSpeed * (1f + Ricochets * Flight.BounceSpeed);
 	}
 
-	int ShotDamage()
+	int ShotDamage( bool ignoreFalloff = false )
 	{
-		if ( Flight.Falloff > 1f && travelled > Flight.Falloff )
+		if ( !ignoreFalloff && Flight.Falloff > 1f && travelled > Flight.Falloff )
 			return 0;
 
 		var damage = Math.Max( 0, Flight.Damage );
@@ -808,3 +849,4 @@ sealed class ShotSparkFade : Component
 			GameObject.Destroy();
 	}
 }
+

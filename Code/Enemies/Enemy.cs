@@ -158,6 +158,17 @@ public sealed class Enemy : Component
 
 	float markUntil;
 
+	public bool BlocksDamage( Vector2 incoming, RoundProjectile source )
+	{
+		if ( Kind != EnemyKind.Shardguard )
+			return BlocksFrom( incoming, source );
+
+		if ( plateHits > 0 || !Loop.IsValid() || !Loop.Runner.IsValid() )
+			return false;
+
+		return ArenaGeometry.Dot( incoming, ShieldFacing ) < -0.22f;
+	}
+
 	public bool BlocksFrom( Vector2 incoming, RoundProjectile source, bool asBounce = false, Vector2 from = default, bool ignorePlate = false )
 	{
 		if ( Kind == EnemyKind.Core )

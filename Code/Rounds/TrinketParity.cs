@@ -203,6 +203,7 @@ public static class TrinketParity
 		Flag( bad, "BeamLinger", live.BeamLinger, old.BeamLinger );
 		Float( bad, "Dodge", live.Dodge, old.Dodge );
 		Flag( bad, "Fetch", live.Fetch, old.Fetch );
+		Flag( bad, "FetchHarm", live.FetchHarm, old.FetchHarm );
 		Float( bad, "Pickup", live.Pickup, old.Pickup );
 		Flag( bad, "Ghost", live.Ghost, old.Ghost );
 
@@ -446,6 +447,7 @@ public static class TrinketParity
 			Dodge = Has( levels, "DODGE" ) ? DodgeChance.At( Lv( levels, "DODGE" ) ) : 0f,
 			Pickup = Lv( levels, "RETURN" ) > 0 ? ReturnSpeed.At( Lv( levels, "RETURN" ) ) : 1f,
 			Fetch = Has( levels, "FETCH" ),
+			FetchHarm = Lv( levels, "FETCH" ) >= 2,
 			Ghost = Has( levels, "GHOST" )
 		};
 	}

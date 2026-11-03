@@ -1476,7 +1476,6 @@ public sealed class GameLoop : Component
 			feedClosedOnDeath = before < WinNeed && FedBiomass >= WinNeed;
 		}
 
-		Announce( T.Announce.RunOver );
 		Say( "dead" );
 		Autosave();
 		return true;

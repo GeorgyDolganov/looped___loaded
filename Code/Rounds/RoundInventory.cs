@@ -573,6 +573,7 @@ public sealed class RoundInventory : Component
 		StickTime = recipe.StickTime,
 		Nail = recipe.Nail,
 		Fetch = recipe.Fetch,
+		FetchHarm = recipe.FetchHarm,
 		Ghost = recipe.Ghost,
 		Volley = volley
 	};

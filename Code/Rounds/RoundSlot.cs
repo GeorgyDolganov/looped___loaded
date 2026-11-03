@@ -149,6 +149,7 @@ public struct GunRecipe
 	public float Dodge;
 	public float Pickup;
 	public bool Fetch;
+	public bool FetchHarm;
 	public bool Ghost;
 }
 
@@ -178,6 +179,7 @@ public struct RoundFlight
 	public float StickTime;
 	public bool Nail;
 	public bool Fetch;
+	public bool FetchHarm;
 	public bool Ghost;
 	public float FreezeDuration;
 	public float FreezeScale;

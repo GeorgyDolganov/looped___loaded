@@ -4,7 +4,7 @@
   "Blurb": "Bullet flies straight back to you, through walls and bodies.",
   "Icon": "ui/traits/FETCH-64x64.png",
   "Pack": "Rail",
-  "MaxLevel": 1,
+  "MaxLevel": 2,
   "InPool": true,
   "Sort": 27,
   "UnlockLap": 0,
@@ -57,9 +57,17 @@
       "Top": false,
       "When": "Always",
       "Rank": 0
+    },
+    {
+      "Text": "Deals damage on the way back",
+      "Sign": 1,
+      "Mixed": false,
+      "Top": false,
+      "When": "Always",
+      "Rank": 2
     }
   ],
-  "Cap": 1,
+  "Cap": 2,
   "IsSkill": false,
   "ShownTitle": "FETCH",
   "ShownBlurb": "Bullet flies straight back to you, through walls and bodies.",

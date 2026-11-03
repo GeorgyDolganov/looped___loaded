@@ -391,6 +391,8 @@ public static class StatSheet
 			AddText( rows, "Frenzy", now.Bite ? "+1" : "Flat", next.Bite ? "+1" : "Flat", preview );
 		if ( now.Fetch || next.Fetch )
 			AddText( rows, "Return", Flag( now.Fetch ), Flag( next.Fetch ), preview );
+		if ( now.FetchHarm || next.FetchHarm )
+			AddText( rows, "Return Dmg", Flag( now.FetchHarm ), Flag( next.FetchHarm ), preview );
 		if ( now.Ghost || next.Ghost )
 			AddText( rows, "Phase", Flag( now.Ghost ), Flag( next.Ghost ), preview );
 		if ( now.Beam || next.Beam )
