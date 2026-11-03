@@ -78,17 +78,53 @@ public sealed class ArenaCamera : Component
 
 		var rotation = Rotation.From( Pitch, Yaw, 0f );
 		camera.WorldRotation = rotation;
-		camera.WorldPosition = focus - rotation.Forward * pull;
+		var position = focus - rotation.Forward * pull;
+		if ( !city )
+			position -= rotation.Up * HudClearance( position, rotation );
+		camera.WorldPosition = position;
+	}
+
+	float HudClearance( Vector3 position, Rotation rotation )
+	{
+		if ( !Arena.IsValid() || Arena.Geometry is null )
+			return 0f;
+
+		var flat = new Vector3( position.x, position.y, 0f );
+		if ( flat.Length < 1f )
+			return 0f;
+
+		var near = flat.Normal * Arena.Geometry.BoundaryRadius;
+		var delta = near - position;
+		var depth = Vector3.Dot( delta, rotation.Forward );
+		if ( depth < 1f )
+			return 0f;
+
+		var ndcY = Vector3.Dot( delta, rotation.Up ) / depth / MathF.Tan( VerticalFov() * 0.5f );
+		var screenY = 0.5f - ndcY * 0.5f;
+		var aspect = Screen.Width / Math.Max( 1f, Screen.Height );
+		var tray = 0.8f * aspect * (286f / 2544f);
+		var overlap = screenY - (1f - tray + 0.012f);
+		if ( overlap <= 0f )
+			return 0f;
+
+		return VerticalSpan( pull ) * overlap;
 	}
 
 	float PullFor( float height )
+	{
+		return height * 0.5f / MathF.Max( 0.0001f, MathF.Tan( VerticalFov() * 0.5f ) );
+	}
+
+	float VerticalSpan( float distance ) => 2f * distance * MathF.Tan( VerticalFov() * 0.5f );
+
+	float VerticalFov()
 	{
 		var fov = MathX.DegreeToRadian( Math.Clamp( camera.FieldOfView, 1f, 179f ) );
 		var aspect = Screen.Width / Math.Max( 1f, Screen.Height );
 		if ( camera.FovAxis == CameraComponent.Axis.Horizontal )
 			fov = 2f * MathF.Atan( MathF.Tan( fov * 0.5f ) / aspect );
 
-		return height * 0.5f / MathF.Max( 0.0001f, MathF.Tan( fov * 0.5f ) );
+		return fov;
 	}
 
 	void ShakeIfHurt()
