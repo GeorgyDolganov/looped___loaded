@@ -1427,7 +1427,6 @@
 		foreach ( var chip in GearChips )
 			wanted.Add( chip.Id );
 
-		var point = CursorOn();
 		var index = 0;
 		var ready = 0;
 		string hit = null;
@@ -1436,7 +1435,7 @@
 			if ( !child.HasClass( "upgrade-chip" ) )
 				continue;
 
-			if ( index < wanted.Count && ChipHit( child, point ) && hit is null )
+			if ( index < wanted.Count && ChipHit( child ) && hit is null )
 				hit = wanted[index];
 
 			if ( child.Box.Rect.Width > 1f && child.Box.Rect.Height > 1f )
@@ -1452,7 +1451,7 @@
 		return true;
 	}
 
-	bool ChipHit( Sandbox.UI.Panel chip, Vector2 point )
+	bool ChipHit( Sandbox.UI.Panel chip )
 	{
 		if ( chip.HasHovered )
 			return true;
@@ -1463,24 +1462,14 @@
 				return true;
 		}
 
-		var left = 0f;
-		var top = 0f;
-		var current = chip;
-		while ( current.IsValid() && current != Panel )
-		{
-			left += current.Box.Rect.Left;
-			top += current.Box.Rect.Top;
-			current = current.Parent;
-		}
-
 		var width = chip.Box.Rect.Width;
 		var height = chip.Box.Rect.Height;
 		if ( width < 1f || height < 1f )
 			return false;
 
-		const float pad = 4f;
-		return point.x >= left - pad && point.x <= left + width + pad
-			&& point.y >= top - pad && point.y <= top + height + pad;
+		var mouse = chip.MousePosition;
+		const float pad = 6f;
+		return mouse.x >= -pad && mouse.y >= -pad && mouse.x <= width + pad && mouse.y <= height + pad;
 	}
 
 	void TickUpgradeTip()
@@ -1504,13 +1493,16 @@
 		if ( h < 8f )
 			h = 320f;
 
-		var x = UpgradeTipX();
-		var y = point.y - 8f;
+		var x = point.x - w - 18f;
+		var y = point.y - 24f;
 		if ( Panel is not null )
 		{
 			var bounds = Panel.Box.Rect;
 			if ( bounds.Width > 64f && bounds.Height > 64f )
 			{
+				if ( x < 12f )
+					x = point.x + 28f;
+
 				var maxX = Math.Max( 12f, bounds.Width - w - 12f );
 				var maxY = Math.Max( 12f, bounds.Height - h - 12f );
 				x = Math.Clamp( x, 12f, maxX );
@@ -1523,33 +1515,6 @@
 		upgradeTip.Style.Top = Sandbox.UI.Length.Pixels( y );
 		upgradeTip.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
 		upgradeTip.Style.Dirty();
-	}
-
-	float UpgradeTipX()
-	{
-		const float gap = 14f;
-		const float fallbackWidth = 240f;
-		var host = FindHud( "upgrades-panel" );
-		if ( !host.IsValid() )
-			return 12f;
-
-		var x = host.Box.Rect.Left;
-		var width = host.Box.Rect.Width;
-		var current = host.Parent;
-		while ( current.IsValid() && current != Panel )
-		{
-			x += current.Box.Rect.Left;
-			current = current.Parent;
-		}
-
-		if ( width < 8f )
-			return 12f;
-
-		var tipW = upgradeTip.IsValid() ? upgradeTip.Box.Rect.Width : 0f;
-		if ( tipW < 8f )
-			tipW = fallbackWidth;
-
-		return Math.Max( 12f, x - tipW - gap );
 	}
 
 	bool ShowBiomassHud => Loop.IsValid()
@@ -1605,7 +1570,7 @@
 		if ( !row.IsValid() || row.Box.Rect.Width < 1f || row.Box.Rect.Height < 1f )
 			return false;
 
-		hit = ChipHit( row, CursorOn() );
+		hit = ChipHit( row );
 		return true;
 	}
 
@@ -5483,6 +5448,11 @@
 		height: 28.2%;
 	}
 
+	.upgrades-weapons,
+	.upgrades-gear {
+		pointer-events: all;
+	}
+
 	.upgrade-chip {
 		margin-right: 10px;
 		margin-bottom: 2px;
@@ -5529,10 +5499,12 @@
 		left: -4000px;
 		top: 0px;
 		margin: 0px;
-		z-index: 85;
+		z-index: 120;
 		pointer-events: none;
 		cursor: default;
 		font-family: "Barlow Condensed";
+		animation-name: none;
+		opacity: 1;
 	}
 
 	.card.shop-offer.upgrade-tip:hover,
