@@ -2072,7 +2072,7 @@ public sealed class GameLoop : Component
 		if ( !starterPick )
 			NoteProgress( ProgressGoal.BuyTrait );
 
-		if ( starterPick || OpenOfferCount() == 0 )
+		if ( starterPick )
 			LeaveShop();
 	}
 
