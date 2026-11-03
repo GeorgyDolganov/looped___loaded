@@ -63,16 +63,17 @@ public class TextConfig : GameResource
 	public string RarityOf( TraitPack pack )
 	{
 		var rarity = (Traits ??= new()).Rarity ??= new();
-		return pack switch
+		var label = pack switch
 		{
-			TraitPack.Entry => Or( rarity.Common, "COMMON" ),
-			TraitPack.Junior => Or( rarity.Uncommon, "UNCOMMON" ),
-			TraitPack.Warrior => Or( rarity.Rare, "RARE" ),
-			TraitPack.Abomination => Or( rarity.Epic, "EPIC" ),
-			TraitPack.Rifle or TraitPack.Shotgun => Or( rarity.Common, "COMMON" ),
-			TraitPack.Nailgun => Or( rarity.Uncommon, "UNCOMMON" ),
-			_ => Or( rarity.Rare, "RARE" )
+			TraitPack.Entry => rarity.Common,
+			TraitPack.Junior => rarity.Uncommon,
+			TraitPack.Warrior => rarity.Rare,
+			TraitPack.Abomination => rarity.Epic,
+			TraitPack.Rifle or TraitPack.Shotgun => rarity.Common,
+			TraitPack.Nailgun => rarity.Uncommon,
+			_ => rarity.Rare
 		};
+		return label ?? "";
 	}
 
 	public BuildingCopy Building( BuildingKind kind )
@@ -90,27 +91,8 @@ public class TextConfig : GameResource
 
 	public string BuildingTitle( BuildingKind kind ) => Or( Building( kind ).Title, kind.ToString().ToUpperInvariant() );
 	public string BuildingPayoff( BuildingKind kind ) => Or( Building( kind ).Payoff, "" );
-	public string BuildingPromise( BuildingKind kind ) => F( PromiseTemplate( kind ), PromiseAmount( kind ) );
-	public string BuildingBlurb( BuildingKind kind ) => BlurbTemplate( kind );
-
-	static string PromiseTemplate( BuildingKind kind ) => kind switch
-	{
-		BuildingKind.Infirmary => "+{0} HP",
-		BuildingKind.Anvil => "+{0} DAMAGE",
-		BuildingKind.Booster => "{0}% SHORTER DASH COOLDOWN",
-		BuildingKind.Brake => "UNLOCKS THE SLOW METER",
-		_ => "+1 UPGRADE CARD AFTER EACH LAP"
-	};
-
-	static string BlurbTemplate( BuildingKind kind ) => kind switch
-	{
-		BuildingKind.Infirmary => "Raises max hp.",
-		BuildingKind.Anvil => "Rounds hit harder.",
-		BuildingKind.Booster => "Dash returns faster. Caps at 60%.",
-		BuildingKind.Brake => "RMB slows enemies and their shots. Caps at 4.55s.",
-		BuildingKind.Showcase => "Adds a chapel card. Only 5 cards.",
-		_ => ""
-	};
+	public string BuildingPromise( BuildingKind kind ) => F( Building( kind ).Promise, PromiseAmount( kind ) );
+	public string BuildingBlurb( BuildingKind kind ) => Building( kind ).Blurb ?? "";
 
 	static int PromiseAmount( BuildingKind kind )
 	{
@@ -189,7 +171,7 @@ public class TextConfig : GameResource
 	public string CityModeLabel( CityMode mode )
 	{
 		City ??= new();
-		return mode == CityMode.Build ? Or( City.ModeBuild, "BUILD" ) : Or( City.ModeShoot, "INJECT" );
+		return mode == CityMode.Build ? City.ModeBuild ?? "" : City.ModeShoot ?? "";
 	}
 
 	public static string Shown( string value )
@@ -226,11 +208,11 @@ public class PlaceCopy
 
 public class RarityCopy
 {
-	[Property] public string Common { get; set; } = "COMMON";
-	[Property] public string Uncommon { get; set; } = "UNCOMMON";
-	[Property] public string Rare { get; set; } = "RARE";
-	[Property] public string Epic { get; set; } = "EPIC";
-	[Property] public string Entry { get; set; } = "ENTRY";
+	[Property] public string Common { get; set; }
+	[Property] public string Uncommon { get; set; }
+	[Property] public string Rare { get; set; }
+	[Property] public string Epic { get; set; }
+	[Property] public string Entry { get; set; }
 }
 
 public class TraitsCopy
@@ -240,41 +222,11 @@ public class TraitsCopy
 
 public class BuildingsCopy
 {
-	[Property] public BuildingCopy Infirmary { get; set; } = new()
-	{
-		Title = "HEART",
-		Payoff = "+HP",
-		Promise = "+{0} HP",
-		Blurb = "Raises max hp."
-	};
-	[Property] public BuildingCopy Anvil { get; set; } = new()
-	{
-		Title = "MUSCLE",
-		Payoff = "+DMG",
-		Promise = "+{0} DAMAGE",
-		Blurb = "Rounds hit harder."
-	};
-	[Property] public BuildingCopy Booster { get; set; } = new()
-	{
-		Title = "ADRENAL",
-		Payoff = "DASH",
-		Promise = "{0}% SHORTER DASH COOLDOWN",
-		Blurb = "Dash returns faster. Caps at 60%."
-	};
-	[Property] public BuildingCopy Brake { get; set; } = new()
-	{
-		Title = "LUNGS",
-		Payoff = "SLOW",
-		Promise = "UNLOCKS THE SLOW METER",
-		Blurb = "RMB slows enemies and their shots. Caps at 4.55s."
-	};
-	[Property] public BuildingCopy Showcase { get; set; } = new()
-	{
-		Title = "LIVER",
-		Payoff = "+CARD",
-		Promise = "+1 UPGRADE CARD AFTER EACH LAP",
-		Blurb = "Adds a chapel card. Only 5 cards."
-	};
+	[Property] public BuildingCopy Infirmary { get; set; } = new();
+	[Property] public BuildingCopy Anvil { get; set; } = new();
+	[Property] public BuildingCopy Booster { get; set; } = new();
+	[Property] public BuildingCopy Brake { get; set; } = new();
+	[Property] public BuildingCopy Showcase { get; set; } = new();
 }
 
 public class ProgressStepCopy
@@ -285,285 +237,226 @@ public class ProgressStepCopy
 
 public class ProgressCopy
 {
-	[Property] public ProgressStepCopy Catch { get; set; } = new()
-	{
-		Title = "FIRE THE GUN",
-		Blurb = "LMB. Watch the reload. Kill something."
-	};
-	[Property] public ProgressStepCopy Lap { get; set; } = new()
-	{
-		Title = "FINISH A LAP",
-		Blurb = "Reach the north mark. Extract or risk another."
-	};
-	[Property] public ProgressStepCopy Extract { get; set; } = new()
-	{
-		Title = "BANK THE BIOMASS",
-		Blurb = "Extract stashed rounds to the altar."
-	};
-	[Property] public ProgressStepCopy Grow { get; set; } = new()
-	{
-		Title = "GROW A FRAME",
-		Blurb = "Place an organ frame on the altar grid."
-	};
-	[Property] public ProgressStepCopy Inject { get; set; } = new()
-	{
-		Title = "INJECT IT",
-		Blurb = "Inject the frame until it works."
-	};
-	[Property] public ProgressStepCopy Chapel { get; set; } = new()
-	{
-		Title = "BUY A TRINKET",
-		Blurb = "Spend bones in the chapel."
-	};
-	[Property] public ProgressStepCopy Lens { get; set; } = new()
-	{
-		Title = "BREAK THE LENS",
-		Blurb = "After round 20, fight LENS."
-	};
-	[Property] public ProgressStepCopy Ring { get; set; } = new()
-	{
-		Title = "RIDE THE NEXT RING",
-		Blurb = "Keep the stash. Sit on YARD."
-	};
-	[Property] public ProgressStepCopy Core { get; set; } = new()
-	{
-		Title = "BREAK THE CORE",
-		Blurb = "Ricochet the nucleus."
-	};
-	[Property] public ProgressStepCopy Done { get; set; } = new()
-	{
-		Title = "",
-		Blurb = ""
-	};
+	[Property] public ProgressStepCopy Catch { get; set; } = new();
+	[Property] public ProgressStepCopy Lap { get; set; } = new();
+	[Property] public ProgressStepCopy Extract { get; set; } = new();
+	[Property] public ProgressStepCopy Grow { get; set; } = new();
+	[Property] public ProgressStepCopy Inject { get; set; } = new();
+	[Property] public ProgressStepCopy Chapel { get; set; } = new();
+	[Property] public ProgressStepCopy Lens { get; set; } = new();
+	[Property] public ProgressStepCopy Ring { get; set; } = new();
+	[Property] public ProgressStepCopy Core { get; set; } = new();
+	[Property] public ProgressStepCopy Done { get; set; } = new();
 }
 
 public class PlacesCopy
 {
-	[Property] public string LineCleared { get; set; } = "{0} CLEARED";
-	[Property] public string LineOpen { get; set; } = "{0} CLEARED  ·  {1} OPEN";
-	[Property] public PlaceCopy Yard { get; set; } = new()
-	{
-		Code = "YARD",
-		Title = "The Yard",
-		Rule = "PANELS KICK",
-		Boss = "CORE",
-		FightCall = "CORE FIGHT",
-		FightHint = "THE CORE  ·  RICOCHET TO BREAK IT",
-		Armor = "ARMOR  ·  RICOCHET FIRST",
-		BossKeep = "Ricochet the nucleus. Keep the stash. Extract or ride the next ring.",
-		BossLast = "Ricochet the nucleus. Win: stash ×2, then altar."
-	};
-	[Property] public PlaceCopy Glass { get; set; } = new()
-	{
-		Code = "GLASS",
-		Title = "Glassworks",
-		Rule = "PANELS SHATTER",
-		Boss = "LENS",
-		FightCall = "LENS FIGHT",
-		FightHint = "THE LENS  ·  BREAK GLASS THEN HIT THE SIDE",
-		Armor = "ARMOR  ·  BREAK GLASS OR HIT THE SIDE",
-		BossKeep = "Shatter the glass, then hit the side. Keep the stash. Extract or ride the next ring.",
-		BossLast = "Shatter the glass, then hit the side. Win: stash ×2, then altar."
-	};
+	[Property] public string LineCleared { get; set; }
+	[Property] public string LineOpen { get; set; }
+	[Property] public PlaceCopy Yard { get; set; } = new();
+	[Property] public PlaceCopy Glass { get; set; } = new();
 }
 
 public class HudCopy
 {
-	[Property] public string Plain { get; set; } = "PLAIN";
-	[Property] public string Scrap { get; set; } = "SCRAP";
-	[Property] public string Stash { get; set; } = "STASH";
-	[Property] public string Biomass { get; set; } = "BIOMASS";
-	[Property] public string Best { get; set; } = "BEST";
-	[Property] public string Kills { get; set; } = "KILLS";
-	[Property] public string Caught { get; set; } = "SHOTS";
-	[Property] public string Dash { get; set; } = "DASH";
-	[Property] public string Slow { get; set; } = "SLOW";
-	[Property] public string HurtStamp { get; set; } = "-1";
-	[Property] public string DodgeStamp { get; set; } = "DODGED";
-	[Property] public string Task { get; set; } = "NEXT";
-	[Property] public string FeedCount { get; set; } = "TOTAL BIOMASS {0} / {1}";
-	[Property] public string Objective { get; set; } = "NEXT OBJECTIVE";
-	[Property] public string Trinkets { get; set; } = "GUN";
-	[Property] public string TrinketsNone { get; set; } = "PEA";
-	[Property] public string Health { get; set; } = "HEALTH";
-	[Property] public string Ammo { get; set; } = "AMMO";
-	[Property] public string DashKey { get; set; } = "SPACE";
-	[Property] public string DashCoach { get; set; } = "PRESS SPACE TO DASH  ·  NO DAMAGE";
-	[Property] public string SlowKey { get; set; } = "RMB";
-	[Property] public string Fed { get; set; } = "BIOMASS TO WIN";
-	[Property] public string Threat { get; set; } = "THREAT {0}";
-	[Property] public string FedValue { get; set; } = "{0} / {1}";
+	[Property] public string Plain { get; set; }
+	[Property] public string Scrap { get; set; }
+	[Property] public string Stash { get; set; }
+	[Property] public string Biomass { get; set; }
+	[Property] public string Best { get; set; }
+	[Property] public string Kills { get; set; }
+	[Property] public string Caught { get; set; }
+	[Property] public string Dash { get; set; }
+	[Property] public string Slow { get; set; }
+	[Property] public string HurtStamp { get; set; }
+	[Property] public string DodgeStamp { get; set; }
+	[Property] public string Task { get; set; }
+	[Property] public string FeedCount { get; set; }
+	[Property] public string Objective { get; set; }
+	[Property] public string Trinkets { get; set; }
+	[Property] public string TrinketsNone { get; set; }
+	[Property] public string Health { get; set; }
+	[Property] public string Ammo { get; set; }
+	[Property] public string DashKey { get; set; }
+	[Property] public string DashCoach { get; set; }
+	[Property] public string SlowKey { get; set; }
+	[Property] public string Fed { get; set; }
+	[Property] public string Threat { get; set; }
+	[Property] public string FedValue { get; set; }
 }
 
 public class PauseCopy
 {
-	[Property] public string Button { get; set; } = "PAUSE";
-	[Property] public string Kicker { get; set; } = "PAUSED";
-	[Property] public string Title { get; set; } = "ONE ROUND TRIP";
-	[Property] public string Blurb { get; set; } = "The ring holds. Trajectories wait.";
-	[Property] public string Resume { get; set; } = "RESUME";
-	[Property] public string ResumeBlurb { get; set; } = "Back to the lap. Nothing moved.";
-	[Property] public string Menu { get; set; } = "MENU";
-	[Property] public string MenuBlurb { get; set; } = "Leave the run. Altar stays.";
-	[Property] public string Quit { get; set; } = "QUIT";
-	[Property] public string QuitBlurb { get; set; } = "Close the game.";
-	[Property] public string Key1 { get; set; } = "1";
-	[Property] public string Key2 { get; set; } = "2";
-	[Property] public string Key3 { get; set; } = "3";
+	[Property] public string Button { get; set; }
+	[Property] public string Kicker { get; set; }
+	[Property] public string Title { get; set; }
+	[Property] public string Blurb { get; set; }
+	[Property] public string Resume { get; set; }
+	[Property] public string ResumeBlurb { get; set; }
+	[Property] public string Menu { get; set; }
+	[Property] public string MenuBlurb { get; set; }
+	[Property] public string Quit { get; set; }
+	[Property] public string QuitBlurb { get; set; }
+	[Property] public string Key1 { get; set; }
+	[Property] public string Key2 { get; set; }
+	[Property] public string Key3 { get; set; }
 }
 
 public class MenuCopy
 {
-	[Property] public string Kicker { get; set; } = "ONE MORE LAP";
-	[Property] public string Title { get; set; } = "Looped & Loaded";
-	[Property] public string Blurb { get; set; } = "Aim. Fire. Catch it back. Cash out to the altar — or beat the core and ride the next ring.";
-	[Property] public string SlotLine { get; set; } = "SLOT {0}  ·  {1}";
-	[Property] public string SlotNew { get; set; } = "NEW";
-	[Property] public string Continue { get; set; } = "CONTINUE";
-	[Property] public string Play { get; set; } = "PLAY";
-	[Property] public string ContinueBlurb { get; set; } = "Run with this altar's warehouse and buildings.";
-	[Property] public string PlayBlurb { get; set; } = "Start a run with one round. Extract or go again.";
-	[Property] public string City { get; set; } = "ALTAR";
-	[Property] public string CityBlurb { get; set; } = "Build frames and spend warehouse ammo.";
-	[Property] public string Saves { get; set; } = "SAVES";
-	[Property] public string SavesBlurb { get; set; } = "Autosave slots. Load or delete an altar.";
-	[Property] public string Collection { get; set; } = "COLLECTION";
-	[Property] public string Key1 { get; set; } = "1";
-	[Property] public string Key2 { get; set; } = "2";
-	[Property] public string Key3 { get; set; } = "3";
-	[Property] public string Tagline { get; set; } = "Bring the brains to the EKKE.";
-	[Property] public string Settings { get; set; } = "SETTINGS";
-	[Property] public string Quit { get; set; } = "QUIT";
-	[Property] public string ActiveSave { get; set; } = "ACTIVE SAVE — SLOT {0}";
-	[Property] public string SaveSlot { get; set; } = "SAVE SLOT";
-	[Property] public string NavigateHint { get; set; } = "NAVIGATE";
-	[Property] public string SelectHint { get; set; } = "ENTER SELECT";
-	[Property] public string Objective { get; set; } = "NEXT OBJECTIVE";
-	[Property] public string ObjectiveDone { get; set; } = "ALL OBJECTIVES DONE";
-	[Property] public string StatBiomass { get; set; } = "BIOMASS";
-	[Property] public string StatBest { get; set; } = "BEST";
-	[Property] public string StatOrgans { get; set; } = "ORGANS";
+	[Property] public string Kicker { get; set; }
+	[Property] public string Title { get; set; }
+	[Property] public string Blurb { get; set; }
+	[Property] public string SlotLine { get; set; }
+	[Property] public string SlotNew { get; set; }
+	[Property] public string Continue { get; set; }
+	[Property] public string Play { get; set; }
+	[Property] public string ContinueBlurb { get; set; }
+	[Property] public string PlayBlurb { get; set; }
+	[Property] public string City { get; set; }
+	[Property] public string CityBlurb { get; set; }
+	[Property] public string Saves { get; set; }
+	[Property] public string SavesBlurb { get; set; }
+	[Property] public string Collection { get; set; }
+	[Property] public string Key1 { get; set; }
+	[Property] public string Key2 { get; set; }
+	[Property] public string Key3 { get; set; }
+	[Property] public string Tagline { get; set; }
+	[Property] public string Settings { get; set; }
+	[Property] public string Quit { get; set; }
+	[Property] public string ActiveSave { get; set; }
+	[Property] public string SaveSlot { get; set; }
+	[Property] public string NavigateHint { get; set; }
+	[Property] public string SelectHint { get; set; }
+	[Property] public string Objective { get; set; }
+	[Property] public string ObjectiveDone { get; set; }
+	[Property] public string StatBiomass { get; set; }
+	[Property] public string StatBest { get; set; }
+	[Property] public string StatOrgans { get; set; }
 }
 
 public class OptionsCopy
 {
-	[Property] public string Kicker { get; set; } = "OPTIONS";
-	[Property] public string Title { get; set; } = "SETTINGS";
-	[Property] public string Tagline { get; set; } = "Saved the moment you change it.";
-	[Property] public string Graphics { get; set; } = "GRAPHICS";
-	[Property] public string GraphicsLow { get; set; } = "LOW";
-	[Property] public string GraphicsMedium { get; set; } = "MEDIUM";
-	[Property] public string GraphicsHigh { get; set; } = "HIGH";
-	[Property] public string Music { get; set; } = "MUSIC";
-	[Property] public string Sfx { get; set; } = "SOUND";
-	[Property] public string Shake { get; set; } = "SCREEN SHAKE";
-	[Property] public string Value { get; set; } = "{0}%";
-	[Property] public string Off { get; set; } = "OFF";
-	[Property] public string Back { get; set; } = "BACK";
-	[Property] public string AdjustHint { get; set; } = "ADJUST";
-	[Property] public string BackHint { get; set; } = "ESC BACK";
+	[Property] public string Kicker { get; set; }
+	[Property] public string Title { get; set; }
+	[Property] public string Tagline { get; set; }
+	[Property] public string Graphics { get; set; }
+	[Property] public string GraphicsLow { get; set; }
+	[Property] public string GraphicsMedium { get; set; }
+	[Property] public string GraphicsHigh { get; set; }
+	[Property] public string Music { get; set; }
+	[Property] public string Sfx { get; set; }
+	[Property] public string Shake { get; set; }
+	[Property] public string Value { get; set; }
+	[Property] public string Off { get; set; }
+	[Property] public string Back { get; set; }
+	[Property] public string AdjustHint { get; set; }
+	[Property] public string BackHint { get; set; }
 }
 
 public class SavesCopy
 {
-	[Property] public string Kicker { get; set; } = "AUTOSAVE";
-	[Property] public string Title { get; set; } = "AUTOSAVES";
-	[Property] public string Blurb { get; set; } = "Altar writes itself. Pick a slot, then load or delete.";
-	[Property] public string Slot { get; set; } = "SLOT {0}";
-	[Property] public string Empty { get; set; } = "EMPTY";
-	[Property] public string WithLine { get; set; } = "WH {0}  ·  BEST {1}  ·  {2}";
-	[Property] public string WithBuildings { get; set; } = "TOTAL BIOMASS {0}  ·  {1} ORGANS";
-	[Property] public string Load { get; set; } = "LOAD SLOT {0}";
-	[Property] public string LoadHas { get; set; } = "Use this altar.";
-	[Property] public string LoadEmpty { get; set; } = "Empty slot. Fresh altar.";
-	[Property] public string Delete { get; set; } = "DELETE SLOT {0}";
-	[Property] public string DeleteBlurb { get; set; } = "Wipe this altar. Cannot undo.";
-	[Property] public string Key1 { get; set; } = "1";
-	[Property] public string Key2 { get; set; } = "2";
-	[Property] public string Key3 { get; set; } = "3";
-	[Property] public string KeySpace { get; set; } = "SPACE";
-	[Property] public string KeyR { get; set; } = "R";
+	[Property] public string Kicker { get; set; }
+	[Property] public string Title { get; set; }
+	[Property] public string Blurb { get; set; }
+	[Property] public string Slot { get; set; }
+	[Property] public string Empty { get; set; }
+	[Property] public string WithLine { get; set; }
+	[Property] public string WithBuildings { get; set; }
+	[Property] public string Load { get; set; }
+	[Property] public string LoadHas { get; set; }
+	[Property] public string LoadEmpty { get; set; }
+	[Property] public string Delete { get; set; }
+	[Property] public string DeleteBlurb { get; set; }
+	[Property] public string Key1 { get; set; }
+	[Property] public string Key2 { get; set; }
+	[Property] public string Key3 { get; set; }
+	[Property] public string KeySpace { get; set; }
+	[Property] public string KeyR { get; set; }
 }
 
 public class DecideCopy
 {
-	[Property] public string LapClear { get; set; } = "ROUND {0} CLEAR";
-	[Property] public string LapBlurb { get; set; } = "TAKE IT HOME OR RISK ANOTHER";
-	[Property] public string Extract { get; set; } = "EXTRACT";
-	[Property] public string ExtractBankOne { get; set; } = "Bank {0} biomass. Return to the altar.";
-	[Property] public string ExtractBankMany { get; set; } = "Bank {0} biomass. Return to the altar.";
-	[Property] public string Boss { get; set; } = "BOSS";
-	[Property] public string OneMore { get; set; } = "ONE MORE ROUND";
-	[Property] public string OneMoreBlurb { get; set; } = "Chapel. Another DNA card. The board gets meaner.";
-	[Property] public string Fight { get; set; } = "FIGHT THE {0}";
-	[Property] public string RingClear { get; set; } = "RING CLEAR";
-	[Property] public string RingBlurb { get; set; } = "STASH {0}  ·  NEXT {1}  ·  {2}";
-	[Property] public string NextRing { get; set; } = "NEXT RING";
-	[Property] public string NextRingBlurb { get; set; } = "{0}  ·  {1}  ·  keep stash and upgrades.";
-	[Property] public string Dead { get; set; } = "RUN OVER";
-	[Property] public string DeadBurnedOne { get; set; } = "{0} ROUND BURNED";
-	[Property] public string DeadBurnedMany { get; set; } = "{0} ROUNDS BURNED";
-	[Property] public string DeadReturnedOne { get; set; } = "{0} BIOMASS RETURNED";
-	[Property] public string DeadReturnedMany { get; set; } = "{0} BIOMASS RETURNED";
-	[Property] public string DeadCityBlurb { get; set; } = "Leave the ring. Build with what you already banked.";
-	[Property] public string Exit { get; set; } = "Exit";
-	[Property] public string Extracted { get; set; } = "EXTRACTED";
-	[Property] public string ExtractedRoundsLabel { get; set; } = "ROUNDS";
-	[Property] public string ExtractedBiomassLabel { get; set; } = "EXTRACTED BIOMASS";
-	[Property] public string ExtractedOne { get; set; } = "{0} ROUND";
-	[Property] public string ExtractedMany { get; set; } = "{0} ROUNDS";
-	[Property] public string ExtractedCityBlurb { get; set; } = "Return to construction.";
-	[Property] public string ShowcaseKicker { get; set; } = "DONE";
-	[Property] public string ShowcaseCount { get; set; } = "{0} / {1}";
-	[Property] public string ShowcaseContinue { get; set; } = "Back to the altar.";
-	[Property] public string WonKicker { get; set; } = "THE FEEDING";
-	[Property] public string WonKickerAscend { get; set; } = "THE FEEDING  ·  ASCEND {0}";
-	[Property] public string Won { get; set; } = "EKKE IS FULL";
-	[Property] public string WonBlurb { get; set; } = "{0} BIOMASS ON THE ALTAR. THE MOUTH IS QUIET.";
-	[Property] public string WonAscend { get; set; } = "ASCEND {0}";
-	[Property] public string WonAscendBlurb { get; set; } = "Every organ and all biomass go to the EKKE.";
-	[Property] public string WonAscendHealth { get; set; } = "ENEMY HP ×{0:0.00}";
-	[Property] public string WonAscendReward { get; set; } = "BIOMASS & BONES ×{0:0.00}";
-	[Property] public string WonAscendFeed { get; set; } = "FEED {0} TO WIN";
-	[Property] public string WonKeep { get; set; } = "KEEP";
-	[Property] public string WonKeepBlurb { get; set; } = "Keep your organs and biomass. The offer returns every time you bank.";
-	[Property] public string City { get; set; } = "ALTAR";
-	[Property] public string Key1 { get; set; } = "1";
-	[Property] public string Key2 { get; set; } = "2";
-	[Property] public string Key3 { get; set; } = "3";
-	[Property] public string KeyR { get; set; } = "R";
+	[Property] public string LapClear { get; set; }
+	[Property] public string LapBlurb { get; set; }
+	[Property] public string Extract { get; set; }
+	[Property] public string ExtractTake { get; set; }
+	[Property] public string ExtractBankOne { get; set; }
+	[Property] public string ExtractBankMany { get; set; }
+	[Property] public string Boss { get; set; }
+	[Property] public string OneMore { get; set; }
+	[Property] public string NextAmmo { get; set; }
+	[Property] public string NextBiomass { get; set; }
+	[Property] public string OneMoreBlurb { get; set; }
+	[Property] public string Fight { get; set; }
+	[Property] public string RingClear { get; set; }
+	[Property] public string RingBlurb { get; set; }
+	[Property] public string NextRing { get; set; }
+	[Property] public string NextRingBlurb { get; set; }
+	[Property] public string Dead { get; set; }
+	[Property] public string DeadBurnedOne { get; set; }
+	[Property] public string DeadBurnedMany { get; set; }
+	[Property] public string DeadReturnedOne { get; set; }
+	[Property] public string DeadReturnedMany { get; set; }
+	[Property] public string DeadCityBlurb { get; set; }
+	[Property] public string Exit { get; set; }
+	[Property] public string Extracted { get; set; }
+	[Property] public string ExtractedRoundsLabel { get; set; }
+	[Property] public string ExtractedBiomassLabel { get; set; }
+	[Property] public string ExtractedOne { get; set; }
+	[Property] public string ExtractedMany { get; set; }
+	[Property] public string ExtractedCityBlurb { get; set; }
+	[Property] public string ShowcaseKicker { get; set; }
+	[Property] public string ShowcaseCount { get; set; }
+	[Property] public string ShowcaseContinue { get; set; }
+	[Property] public string WonKicker { get; set; }
+	[Property] public string WonKickerAscend { get; set; }
+	[Property] public string Won { get; set; }
+	[Property] public string WonBlurb { get; set; }
+	[Property] public string WonAscend { get; set; }
+	[Property] public string WonAscendBlurb { get; set; }
+	[Property] public string WonAscendHealth { get; set; }
+	[Property] public string WonAscendReward { get; set; }
+	[Property] public string WonAscendFeed { get; set; }
+	[Property] public string WonKeep { get; set; }
+	[Property] public string WonKeepBlurb { get; set; }
+	[Property] public string City { get; set; }
+	[Property] public string Key1 { get; set; }
+	[Property] public string Key2 { get; set; }
+	[Property] public string Key3 { get; set; }
+	[Property] public string KeyR { get; set; }
 }
 
 public class ShopCopy
 {
-	[Property] public string Title { get; set; } = "ARMORY";
-	[Property] public string StarterTitle { get; set; } = "TAKE ONE";
-	[Property] public string Free { get; set; } = "FREE";
-	[Property] public string Blurb { get; set; } = "SCRAP {0}  ·  ALL ROUNDS  ·  BUY ANY, THEN GO";
-	[Property] public string BuyAll { get; set; } = "BUY ALL";
-	[Property] public string BuyAllBlurb { get; set; } = "Take every leftover card for {0} scrap.";
-	[Property] public string Cost { get; set; } = "{0} SCRAP";
-	[Property] public string Refresh { get; set; } = "REFRESH";
-	[Property] public string Go { get; set; } = "GO";
-	[Property] public string GoBlurb { get; set; } = "Next lap. Keep leftover scrap.";
-	[Property] public string Bought { get; set; } = "BOUGHT";
-	[Property] public string Locked { get; set; } = "LOCKED";
-	[Property] public string OfferBlurb { get; set; } = "{0}  LV{1}";
-	[Property] public string OfferRank { get; set; } = "LV {0}";
-	[Property] public string Weapon { get; set; } = "WEAPON";
-	[Property] public string Active { get; set; } = "ACTIVE";
-	[Property] public string Unlocks { get; set; } = "Opens {0}.";
-	[Property] public string Key1 { get; set; } = "1";
-	[Property] public string Key2 { get; set; } = "2";
-	[Property] public string Key3 { get; set; } = "3";
-	[Property] public string Key4 { get; set; } = "4";
-	[Property] public string Key5 { get; set; } = "5";
-	[Property] public string Key6 { get; set; } = "6";
-	[Property] public string Key7 { get; set; } = "7";
-	[Property] public string Key8 { get; set; } = "8";
-	[Property] public string Key9 { get; set; } = "9";
-	[Property] public string KeyE { get; set; } = "E";
-	[Property] public string KeySpace { get; set; } = "SPACE";
+	[Property] public string Title { get; set; }
+	[Property] public string StarterTitle { get; set; }
+	[Property] public string Free { get; set; }
+	[Property] public string Blurb { get; set; }
+	[Property] public string BuyAll { get; set; }
+	[Property] public string BuyAllBlurb { get; set; }
+	[Property] public string Cost { get; set; }
+	[Property] public string Refresh { get; set; }
+	[Property] public string Go { get; set; }
+	[Property] public string GoBlurb { get; set; }
+	[Property] public string Bought { get; set; }
+	[Property] public string Locked { get; set; }
+	[Property] public string OfferBlurb { get; set; }
+	[Property] public string OfferRank { get; set; }
+	[Property] public string Weapon { get; set; }
+	[Property] public string Active { get; set; }
+	[Property] public string Unlocks { get; set; }
+	[Property] public string Key1 { get; set; }
+	[Property] public string Key2 { get; set; }
+	[Property] public string Key3 { get; set; }
+	[Property] public string Key4 { get; set; }
+	[Property] public string Key5 { get; set; }
+	[Property] public string Key6 { get; set; }
+	[Property] public string Key7 { get; set; }
+	[Property] public string Key8 { get; set; }
+	[Property] public string Key9 { get; set; }
+	[Property] public string KeyE { get; set; }
+	[Property] public string KeySpace { get; set; }
 
 	public string KeyOf( int index ) => index switch
 	{
@@ -582,192 +475,131 @@ public class ShopCopy
 
 public class HelpCopy
 {
-	[Property] public string Paused { get; set; } = "1 RESUME  ·  2 MENU  ·  3 QUIT";
-	[Property] public string Saves { get; set; } = "1-3 SELECT  ·  SPACE LOAD  ·  R DELETE  ·  ESC BACK";
-	[Property] public string Collection { get; set; } = "ARROWS BROWSE  ·  ESC BACK";
-	[Property] public string Menu { get; set; } = "1 PLAY  ·  2 ALTAR  ·  3 SAVES  ·  ESC QUIT";
-	[Property] public string CityBuild { get; set; } = "LMB PLACE  ·  WHEEL ROTATE  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
-	[Property] public string CityShoot { get; set; } = "LMB INJECT  ·  1-5 TYPE  ·  SPACE/R RUN  ·  ESC PAUSE";
-	[Property] public string DecideLapBoss { get; set; } = "CLICK  ·  1 ALTAR  ·  2 STAY  ·  3 FIGHT THE {0}  ·  ESC PAUSE";
-	[Property] public string DecideLap { get; set; } = "CLICK  ·  1 ALTAR  ·  2 STAY  ·  ESC PAUSE";
-	[Property] public string DecideRingNext { get; set; } = "CLICK  ·  1 ALTAR  ·  2 NEXT RING  ·  ESC PAUSE";
-	[Property] public string DecideRing { get; set; } = "CLICK  ·  1 ALTAR  ·  ESC PAUSE";
-	[Property] public string Shop { get; set; } = "CLICK A CARD  ·  1-{0} BUY  ·  E ALL  ·  REFRESH  ·  SPACE GO  ·  ESC PAUSE";
-	[Property] public string Dead { get; set; } = "CLICK ALTAR  ·  R ALTAR  ·  ESC MENU";
-	[Property] public string Extracted { get; set; } = "SPACE CONTINUE";
-	[Property] public string Won { get; set; } = "1 ASCEND  ·  2 KEEP  ·  ESC MENU";
-	[Property] public string BossGlass { get; set; } = "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
-	[Property] public string BossYard { get; set; } = "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
-	[Property] public string PlayGlassSkip { get; set; } = "PANELS SHATTER  ·  E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
-	[Property] public string PlayGlass { get; set; } = "PANELS SHATTER  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
-	[Property] public string PlaySkip { get; set; } = "E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE";
-	[Property] public string Play { get; set; } = "MOUSE AIM · LMB FIRE · SPACE DASH · R RESTART  ·  ESC PAUSE";
+	[Property] public string Paused { get; set; }
+	[Property] public string Saves { get; set; }
+	[Property] public string Collection { get; set; }
+	[Property] public string Menu { get; set; }
+	[Property] public string CityBuild { get; set; }
+	[Property] public string CityShoot { get; set; }
+	[Property] public string DecideLapBoss { get; set; }
+	[Property] public string DecideLap { get; set; }
+	[Property] public string DecideRingNext { get; set; }
+	[Property] public string DecideRing { get; set; }
+	[Property] public string Shop { get; set; }
+	[Property] public string Dead { get; set; }
+	[Property] public string Extracted { get; set; }
+	[Property] public string Won { get; set; }
+	[Property] public string BossGlass { get; set; }
+	[Property] public string BossYard { get; set; }
+	[Property] public string PlayGlassSkip { get; set; }
+	[Property] public string PlayGlass { get; set; }
+	[Property] public string PlaySkip { get; set; }
+	[Property] public string Play { get; set; }
 }
 
 public class AnnounceCopy
 {
-	[Property] public string AimFire { get; set; } = "AIM. FIRE.";
-	[Property] public string SlotPicked { get; set; } = "SLOT {0}";
-	[Property] public string SlotDeleted { get; set; } = "SLOT {0} DELETED";
-	[Property] public string StartRun { get; set; } = "ONE LAP. ONE GUN. CASH OUT OR GO AGAIN.";
-	[Property] public string TargetDown { get; set; } = "TARGET DOWN";
-	[Property] public string ScrapGain { get; set; } = "+{0} BONES";
-	[Property] public string RoundChamberedHits { get; set; } = "ROUND {0} CHAMBERED  +{1}";
-	[Property] public string RoundChambered { get; set; } = "ROUND {0} CHAMBERED";
-	[Property] public string RoundStatus { get; set; } = "ROUND {0} {1}";
-	[Property] public string RoundLost { get; set; } = "ROUND {0} LOST";
-	[Property] public string SelectChambered { get; set; } = "SELECT A CHAMBERED ROUND";
-	[Property] public string StillInFlight { get; set; } = "ROUNDS STILL IN FLIGHT";
-	[Property] public string LostOnRing { get; set; } = "ROUNDS LOST ON THE RING";
-	[Property] public string Recovered { get; set; } = "RECOVERED";
-	[Property] public string Linked { get; set; } = "LINKED";
-	[Property] public string HealthLeft { get; set; } = "-1  ·  {0} LEFT";
-	[Property] public string RunOver { get; set; } = "RUN OVER";
-	[Property] public string RingClear { get; set; } = "RING CLEAR";
-	[Property] public string FinalClear { get; set; } = "NO MORE ROUNDS  ·  ×2";
-	[Property] public string RingClearNext { get; set; } = "RING CLEAR  ·  {0}  ·  {1}";
-	[Property] public string FinalBank { get; set; } = "NO MORE ROUNDS  ·  ×2  ·  +{0}";
-	[Property] public string ArenaSkip { get; set; } = "ARENA CLEAR  ·  E SKIP LAP";
-	[Property] public string LapClear { get; set; } = "ROUND {0} CLEAR";
-	[Property] public string CityDeposit { get; set; } = "ALTAR  ·  +{0} WAREHOUSE";
-	[Property] public string Won { get; set; } = "EKKE IS FULL";
-	[Property] public string Ascended { get; set; } = "ASCEND {0}  ·  FEED {1}";
-	[Property] public string City { get; set; } = "ALTAR";
-	[Property] public string ContinueRounds { get; set; } = "+1 ROUND  ·  +1 BIOMASS";
-	[Property] public string StashMax { get; set; } = "BIOMASS MAX";
-	[Property] public string BossContinue { get; set; } = "{0}  ·  +{1}  ·  STASH {2}";
-	[Property] public string NeedScrap { get; set; } = "NEED {0} SCRAP";
-	[Property] public string ShopAdded { get; set; } = "{0} ADDED TO THE SHOP";
-	[Property] public string ShopRefresh { get; set; } = "REFRESH  ·  NEXT {0}  ·  {1} SCRAP";
-	[Property] public string TraitBought { get; set; } = "{0} LV{1}  ·  {2} SCRAP";
-	[Property] public string Armed { get; set; } = "ARMED  ·  {0} SCRAP";
-	[Property] public string PlaceRule { get; set; } = "{0}  ·  {1}";
-	[Property] public string CorePhase { get; set; } = "CORE PHASE {0}";
-	[Property] public string LensPhase { get; set; } = "LENS PHASE {0}  ·  NEW GLASS";
-	[Property] public string LensOpen { get; set; } = "LENS OPEN  ·  HIT THE SIDE";
+	[Property] public string AimFire { get; set; }
+	[Property] public string SlotPicked { get; set; }
+	[Property] public string SlotDeleted { get; set; }
+	[Property] public string StartRun { get; set; }
+	[Property] public string TargetDown { get; set; }
+	[Property] public string ScrapGain { get; set; }
+	[Property] public string RoundChamberedHits { get; set; }
+	[Property] public string RoundChambered { get; set; }
+	[Property] public string RoundStatus { get; set; }
+	[Property] public string RoundLost { get; set; }
+	[Property] public string SelectChambered { get; set; }
+	[Property] public string StillInFlight { get; set; }
+	[Property] public string LostOnRing { get; set; }
+	[Property] public string Recovered { get; set; }
+	[Property] public string Linked { get; set; }
+	[Property] public string HealthLeft { get; set; }
+	[Property] public string RunOver { get; set; }
+	[Property] public string RingClear { get; set; }
+	[Property] public string FinalClear { get; set; }
+	[Property] public string RingClearNext { get; set; }
+	[Property] public string FinalBank { get; set; }
+	[Property] public string ArenaSkip { get; set; }
+	[Property] public string LapClear { get; set; }
+	[Property] public string CityDeposit { get; set; }
+	[Property] public string Won { get; set; }
+	[Property] public string Ascended { get; set; }
+	[Property] public string City { get; set; }
+	[Property] public string ContinueRounds { get; set; }
+	[Property] public string StashMax { get; set; }
+	[Property] public string BossContinue { get; set; }
+	[Property] public string NeedScrap { get; set; }
+	[Property] public string ShopAdded { get; set; }
+	[Property] public string ShopRefresh { get; set; }
+	[Property] public string TraitBought { get; set; }
+	[Property] public string Armed { get; set; }
+	[Property] public string PlaceRule { get; set; }
+	[Property] public string CorePhase { get; set; }
+	[Property] public string LensPhase { get; set; }
+	[Property] public string LensOpen { get; set; }
 }
 
 public class CityCopy
 {
-	[Property] public string ModeBuild { get; set; } = "BUILD";
-	[Property] public string ModeShoot { get; set; } = "INJECT";
-	[Property] public string WarehouseHud { get; set; } = "BIOMASS {0}";
-	[Property] public string ShootFire { get; set; } = "INJECT  ·  LMB INJECT";
-	[Property] public string UpgradeReflects { get; set; } = "UPGRADE · REFLECTS";
-	[Property] public string Frame { get; set; } = "FRAME";
-	[Property] public string LevelReflects { get; set; } = "{0} LV{1}  ·  REFLECTS";
-	[Property] public string Level { get; set; } = "{0} LV{1}";
-	[Property] public string TitleStageHits { get; set; } = "{0}  ·  {1}  ·  {2} HITS";
-	[Property] public string WheelRotate { get; set; } = "{0}  ·  WHEEL ROTATE";
-	[Property] public string PlaceRotate { get; set; } = "{0}  ·  LMB PLACE  ·  WHEEL ROTATE";
-	[Property] public string FrameRemove { get; set; } = "{0} FRAME  ·  LMB REMOVE";
-	[Property] public string LevelMaxReflects { get; set; } = "{0} LV{1}  ·  MAX  ·  REFLECTS";
-	[Property] public string LevelStageHits { get; set; } = "{0} LV{1}  ·  {2}  ·  {3} HITS";
-	[Property] public string PlacedFrame { get; set; } = "{0} FRAME";
-	[Property] public string Removed { get; set; } = "{0} REMOVED";
-	[Property] public string WarehouseEmpty { get; set; } = "NOT ENOUGH BIOMASS";
-	[Property] public string DashCap { get; set; } = "DASH COOLDOWN CAPPED";
-	[Property] public string SlowCap { get; set; } = "SLOW DURATION CAPPED";
-	[Property] public string CardCap { get; set; } = "ONLY 5 CARDS";
-	[Property] public string FrameHits { get; set; } = "FRAME  ·  {0} HITS TO WORK";
-	[Property] public string ClickToCraft { get; set; } = "Click to Craft";
-	[Property] public string SwitchToInject { get; set; } = "Switch to Inject Mode";
-	[Property] public string ClickToInject { get; set; } = "Click to Inject";
-	[Property] public string HpTag { get; set; } = "+1 HP";
-	[Property] public string DmgTag { get; set; } = "+1 DMG";
-	[Property] public string Now { get; set; } = "NOW";
-	[Property] public string Then { get; set; } = "THEN";
-	[Property] public string Unlocks { get; set; } = "UNLOCKS";
-	[Property] public string CardTag { get; set; } = "+1 CARD";
-	[Property] public string NoBonuses { get; set; } = "NO BONUSES YET";
-	[Property] public string BonusHp { get; set; } = "HP+{0}";
-	[Property] public string BonusDmg { get; set; } = "DMG+{0}";
-	[Property] public string BonusDash { get; set; } = "DASH";
-	[Property] public string BonusSlow { get; set; } = "SLOW";
-	[Property] public string BonusCards { get; set; } = "{0} CARDS";
+	[Property] public string ModeBuild { get; set; }
+	[Property] public string ModeShoot { get; set; }
+	[Property] public string WarehouseHud { get; set; }
+	[Property] public string ShootFire { get; set; }
+	[Property] public string UpgradeReflects { get; set; }
+	[Property] public string Frame { get; set; }
+	[Property] public string LevelReflects { get; set; }
+	[Property] public string Level { get; set; }
+	[Property] public string TitleStageHits { get; set; }
+	[Property] public string WheelRotate { get; set; }
+	[Property] public string PlaceRotate { get; set; }
+	[Property] public string FrameRemove { get; set; }
+	[Property] public string LevelMaxReflects { get; set; }
+	[Property] public string LevelStageHits { get; set; }
+	[Property] public string PlacedFrame { get; set; }
+	[Property] public string Removed { get; set; }
+	[Property] public string WarehouseEmpty { get; set; }
+	[Property] public string DashCap { get; set; }
+	[Property] public string SlowCap { get; set; }
+	[Property] public string CardCap { get; set; }
+	[Property] public string FrameHits { get; set; }
+	[Property] public string ClickToCraft { get; set; }
+	[Property] public string SwitchToInject { get; set; }
+	[Property] public string ClickToInject { get; set; }
+	[Property] public string HpTag { get; set; }
+	[Property] public string DmgTag { get; set; }
+	[Property] public string Now { get; set; }
+	[Property] public string Then { get; set; }
+	[Property] public string Unlocks { get; set; }
+	[Property] public string CardTag { get; set; }
+	[Property] public string NoBonuses { get; set; }
+	[Property] public string BonusHp { get; set; }
+	[Property] public string BonusDmg { get; set; }
+	[Property] public string BonusDash { get; set; }
+	[Property] public string BonusSlow { get; set; }
+	[Property] public string BonusCards { get; set; }
 }
 
 public class TalkCopy
 {
-	[Property] public string Name { get; set; } = "EKKE";
-	[Property] public string Advance { get; set; } = "CLICK";
-	[Property] public string Skip { get; set; } = "ESC SKIP";
-	[Property] public List<string> Intro { get; set; } = new()
-	{
-		"I am EKKE. I am hungry.",
-		"You run the ring clockwise. You never turn back.",
-		"Aim with the mouse. LMB fires. Wait out the reload. SPACE dashes."
-	};
-	[Property] public List<string> Bones { get; set; } = new()
-	{
-		"Bones.",
-		"The chapel trades them for gun flesh. What you don't spend, you keep."
-	};
-	[Property] public List<string> SkipLap { get; set; } = new()
-	{
-		"Nothing left alive.",
-		"Press E to end the lap."
-	};
-	[Property] public List<string> Lap { get; set; } = new()
-	{
-		"EXTRACT carries the stash to my altar.",
-		"ONE MORE ROUND pays more. Die, and it burns."
-	};
-	[Property] public List<string> Boss { get; set; } = new()
-	{
-		"The {0} is ready for you.",
-		"Fight it. Or EXTRACT, and bring me what you already have."
-	};
-	[Property] public List<string> Chapel { get; set; } = new()
-	{
-		"Every card grows your gun and costs you something.",
-		"Read the price. SPACE when you are done."
-	};
-	[Property] public List<string> Lens { get; set; } = new()
-	{
-		"The front is armor.",
-		"Break the glass, then hit the side."
-	};
-	[Property] public List<string> Core { get; set; } = new()
-	{
-		"A straight shot dies on the armor.",
-		"Ricochet into the nucleus."
-	};
-	[Property] public List<string> Ring { get; set; } = new()
-	{
-		"Take the stash home, or ride the NEXT RING.",
-		"Your gun comes with you. The board does not."
-	};
-	[Property] public List<string> Yard { get; set; } = new()
-	{
-		"These panels kick. The wall you passed is already gone.",
-		"Some of them stay hidden until your shot gets close."
-	};
-	[Property] public List<string> Dead { get; set; } = new()
-	{
-		"The stash burned. A third crawled back to me.",
-		"Click EXIT."
-	};
-	[Property] public List<string> Altar { get; set; } = new()
-	{
-		"Keys 1-5 pick an organ. Click an empty cell to GROW it.",
-		"Feed me {0} biomass."
-	};
-	[Property] public List<string> Frame { get; set; } = new()
-	{
-		"A frame is not an organ yet.",
-		"Click it. INJECT until it beats."
-	};
-	[Property] public List<string> Organ { get; set; } = new()
-	{
-		"It beats. It is yours.",
-		"Set the same organ beside it, and it ranks up."
-	};
-	[Property] public List<string> Won { get; set; } = new()
-	{
-		"...I am full.",
-		"For now."
-	};
+	[Property] public string Name { get; set; }
+	[Property] public string Advance { get; set; }
+	[Property] public string Skip { get; set; }
+	[Property] public List<string> Intro { get; set; } = new();
+	[Property] public List<string> Bones { get; set; } = new();
+	[Property] public List<string> SkipLap { get; set; } = new();
+	[Property] public List<string> Lap { get; set; } = new();
+	[Property] public List<string> Boss { get; set; } = new();
+	[Property] public List<string> Chapel { get; set; } = new();
+	[Property] public List<string> Lens { get; set; } = new();
+	[Property] public List<string> Core { get; set; } = new();
+	[Property] public List<string> Ring { get; set; } = new();
+	[Property] public List<string> Yard { get; set; } = new();
+	[Property] public List<string> Dead { get; set; } = new();
+	[Property] public List<string> Altar { get; set; } = new();
+	[Property] public List<string> Frame { get; set; } = new();
+	[Property] public List<string> Organ { get; set; } = new();
+	[Property] public List<string> Won { get; set; } = new();
 
 	public void Ensure()
 	{

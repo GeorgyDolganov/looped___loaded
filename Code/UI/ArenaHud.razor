@@ -321,7 +321,7 @@
 					<div class="rail-list">
 						@foreach ( var row in MainRows )
 						{
-							<div class="rail-row plated @(Loop.MenuFocus == row.Item ? "on" : "")" onmouseover="@(() => Loop.FocusMenu( row.Item ))" onclick="@(() => PickRow( row.Item ))">
+							<div class="rail-row plated @(Loop.MenuFocus == row.Item ? "on" : "") @(MenuGapAfter( row.Item ) ? "split" : "")" onmouseover="@(() => Loop.FocusMenu( row.Item ))" onclick="@(() => PickRow( row.Item ))">
 								<img class="row-plate" src="ui/Arena UI/element_shop_bottom_btn.png" />
 								<div class="row-tint"></div>
 								<div class="rivet a"></div>
@@ -558,6 +558,7 @@
 						<img class="choice-btn" src="ui/Arena UI/buttons_left.png" />
 						<div class="choice-label">
 							<label class="choice-name">@GameSettings.Text.Decide.Extract</label>
+							<label class="choice-sub">@GameSettings.Text.F(GameSettings.Text.Decide.ExtractTake, Loop.RunBiomass)</label>
 						</div>
 					</div>
 					@if ( Loop.HasBossOffer )
@@ -575,6 +576,8 @@
 							<img class="choice-btn" src="ui/Arena UI/buttons_right.png" />
 							<div class="choice-label">
 								<label class="choice-name">@GameSettings.Text.Decide.OneMore</label>
+								<label class="choice-sub">@GameSettings.Text.Decide.NextAmmo</label>
+								<label class="choice-sub">@GameSettings.Text.Decide.NextBiomass</label>
 							</div>
 						</div>
 					}
@@ -986,6 +989,12 @@
 		Loop?.ActivateMenu( item );
 	}
 
+	bool MenuGapAfter( MenuChoice item )
+	{
+		var saved = Loop.IsValid() && Loop.HasActiveSave;
+		return saved ? item == MenuChoice.Upgrades : item == MenuChoice.Continue;
+	}
+
 	List<(MenuChoice Item, string Title, string Key)> MainRows
 	{
 		get
@@ -993,7 +1002,7 @@
 			var copy = GameSettings.Text.Menu;
 			var rows = new List<(MenuChoice Item, string Title, string Key)>
 			{
-				(MenuChoice.Continue, Loop.IsValid() && Loop.HasActiveSave ? copy.Continue : copy.Play, copy.Key1)
+				(MenuChoice.Continue, Loop.IsValid() && Loop.HasActiveSave ? "ARENA" : copy.Play, copy.Key1)
 			};
 			if ( Loop.IsValid() && Loop.HasActiveSave )
 				rows.Add( (MenuChoice.Upgrades, "ALTAR", copy.Key2) );
@@ -4140,6 +4149,7 @@
 		top: 64.6%;
 		width: 37%;
 		height: 25.6%;
+		overflow: visible;
 	}
 
 	.choice-hit.right {
@@ -4167,7 +4177,7 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		padding: 16px 28px;
+		padding: 8px 18px;
 		z-index: 1;
 	}
 
@@ -4186,6 +4196,18 @@
 		font-weight: 700;
 		letter-spacing: 1px;
 		color: #f4ece0;
+	}
+
+	.choice-sub {
+		width: 100%;
+		margin-top: 2px;
+		text-align: center;
+		white-space: normal;
+		font-size: 15px;
+		font-weight: 600;
+		line-height: 17px;
+		letter-spacing: 0px;
+		color: #cdc6ba;
 	}
 
 	.exit-hit {
@@ -6176,14 +6198,18 @@
 	}
 
 	.rail-row.plated {
-		width: 300px;
+		width: 252px;
 		height: auto;
 		aspect-ratio: 438 / 158;
-		padding: 0px 22px;
-		margin-bottom: 8px;
+		padding: 0px 18px;
+		margin-bottom: 6px;
 		background-color: transparent;
 		border-left-width: 0px;
 		overflow: hidden;
+	}
+
+	.rail-row.plated.split {
+		margin-bottom: 36px;
 	}
 
 	.rail-row.plated .row-plate {
@@ -6198,6 +6224,11 @@
 	.rail-row.plated .row-title {
 		position: relative;
 		z-index: 2;
+	}
+
+	.rail-row.plated .row-title {
+		font-size: 30px;
+		letter-spacing: 1px;
 	}
 
 	.rail-row.plated .row-key {
@@ -6256,20 +6287,20 @@
 	}
 
 	.rail-list.quiet .rail-row.plated {
-		width: 300px;
+		width: 252px;
 		height: auto;
 		aspect-ratio: 438 / 158;
-		padding: 0px 22px;
-		margin-bottom: 8px;
+		padding: 0px 18px;
+		margin-bottom: 6px;
 		background-color: transparent;
 	}
 
 	.rail-list.quiet .rail-row.plated .row-title {
 		position: relative;
 		z-index: 2;
-		font-size: 38px;
+		font-size: 30px;
 		font-weight: 700;
-		letter-spacing: 2px;
+		letter-spacing: 1px;
 		color: #efe6d8;
 	}
 

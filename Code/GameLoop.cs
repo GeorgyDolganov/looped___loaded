@@ -1650,9 +1650,7 @@ public sealed class GameLoop : Component
 		Phase = RunPhase.DecideLap;
 		ArenaSounds.Tele();
 		NoteProgress( ProgressGoal.FinishLap );
-		if ( HasBossOffer )
-			Say( "boss", BossName );
-		else
+		if ( !HasBossOffer )
 			Say( "lap" );
 	}
 
@@ -1919,8 +1917,6 @@ public sealed class GameLoop : Component
 		shopRefreshUses = 0;
 		RollShop();
 		Phase = RunPhase.PickTrait;
-		if ( !opening )
-			Say( "chapel" );
 	}
 
 	void RollShop()

@@ -13,10 +13,6 @@
 			<div class="ekke-copy">
 				<label class="ekke-name">@GameSettings.Text.Talk.Name</label>
 				<label class="ekke-words">* @TalkText</label>
-				<div class="ekke-foot">
-					<label class="ekke-skip">@GameSettings.Text.Talk.Skip</label>
-					<label class="ekke-next @(Ready ? "on" : "")">@GameSettings.Text.Talk.Advance</label>
-				</div>
 			</div>
 		</div>
 	</div>
@@ -27,7 +23,6 @@
 	[Parameter] public GameLoop Loop { get; set; }
 
 	string TalkText => Loop.IsValid() ? Loop.TalkText : "";
-	bool Ready => Loop.IsValid() && Loop.TalkReady;
 
 	void Advance() => Loop?.AdvanceTalk();
 
@@ -36,7 +31,7 @@
 		if ( !Loop.IsValid() )
 			return 0;
 
-		return System.HashCode.Combine( Loop.TalkCursor, Loop.TalkText, Loop.TalkReady );
+		return System.HashCode.Combine( Loop.TalkCursor, Loop.TalkText );
 	}
 }
 
@@ -108,7 +103,7 @@
 
 	.ekke .ekke-name {
 		font-family: "Barlow Condensed";
-		font-size: 16px;
+		font-size: 34px;
 		font-weight: 700;
 		letter-spacing: 4px;
 		color: #f0b429;
@@ -116,12 +111,11 @@
 
 	.ekke-copy {
 		flex-direction: column;
-		justify-content: space-between;
+		justify-content: center;
+		align-items: flex-start;
 		flex-grow: 1;
 		height: 100%;
 		padding-left: 18px;
-		padding-top: 6px;
-		padding-bottom: 4px;
 	}
 
 	.ekke .ekke-words {
@@ -131,48 +125,7 @@
 		color: #f4ece0;
 		white-space: normal;
 		letter-spacing: 0.4px;
+		margin-top: 12px;
 	}
 
-	.ekke-foot {
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: flex-end;
-		width: 100%;
-	}
-
-	.ekke .ekke-skip {
-		font-family: "Barlow Condensed";
-		font-size: 16px;
-		font-weight: 600;
-		letter-spacing: 2px;
-		color: #8e8b86;
-	}
-
-	.ekke .ekke-next {
-		font-family: "Barlow Condensed";
-		font-size: 16px;
-		font-weight: 700;
-		letter-spacing: 2px;
-		color: #f0b429;
-		opacity: 0;
-	}
-
-	.ekke .ekke-next.on {
-		opacity: 1;
-		animation-name: ekke-next;
-		animation-duration: 0.7s;
-		animation-iteration-count: infinite;
-	}
-
-	@@keyframes ekke-next {
-		0% {
-			opacity: 0.15;
-		}
-		50% {
-			opacity: 1;
-		}
-		100% {
-			opacity: 0.15;
-		}
-	}
 </style>

@@ -17,7 +17,13 @@
     "Task": "NEXT",
     "Fed": "BIOMASS TO WIN",
     "FeedCount": "TOTAL BIOMASS {0} / {1}",
-    "Ammo": "AMMO"
+    "Ammo": "AMMO",
+    "Objective": "NEXT OBJECTIVE",
+    "Trinkets": "GUN",
+    "TrinketsNone": "PEA",
+    "Health": "HEALTH",
+    "Threat": "THREAT {0}",
+    "FedValue": "{0} / {1}"
   },
   "Pause": {
     "Button": "PAUSE",
@@ -51,7 +57,19 @@
     "Collection": "COLLECTION",
     "Key1": "1",
     "Key2": "2",
-    "Key3": "3"
+    "Key3": "3",
+    "Tagline": "Bring the brains to the EKKE.",
+    "Settings": "SETTINGS",
+    "Quit": "QUIT",
+    "ActiveSave": "ACTIVE SAVE — SLOT {0}",
+    "SaveSlot": "SAVE SLOT",
+    "NavigateHint": "NAVIGATE",
+    "SelectHint": "ENTER SELECT",
+    "Objective": "NEXT OBJECTIVE",
+    "ObjectiveDone": "ALL OBJECTIVES DONE",
+    "StatBiomass": "BIOMASS",
+    "StatBest": "BEST",
+    "StatOrgans": "ORGANS"
   },
   "Saves": {
     "Kicker": "AUTOSAVE",
@@ -76,10 +94,13 @@
     "LapClear": "ROUND {0} CLEAR",
     "LapBlurb": "TAKE IT HOME OR RISK ANOTHER",
     "Extract": "EXTRACT",
+    "ExtractTake": "Bank {0} Biomass",
     "ExtractBankOne": "Bank {0} BIOMASS. Build your body.",
     "ExtractBankMany": "Bank {0} BIOMASSs. Build your body.",
     "Boss": "BOSS",
     "OneMore": "ONE MORE ROUND",
+    "NextAmmo": "+1 Ammo",
+    "NextBiomass": "+1 Biomass",
     "OneMoreBlurb": "Stay on the arena. It gets harder.",
     "Fight": "FIGHT THE {0}",
     "RingClear": "ARENA CLEAR",
@@ -135,6 +156,7 @@
     "OfferBlurb": "{0}  LV{1}",
     "OfferRank": "LV {0}",
     "Weapon": "WEAPON",
+    "Active": "ACTIVE",
     "Unlocks": "Opens {0}.",
     "Key1": "1",
     "Key2": "2",
@@ -380,30 +402,23 @@
     "Advance": "CLICK",
     "Skip": "ESC SKIP",
     "Intro": [
-      "I am EKKE. I am hungry.",
-      "You run the ring clockwise. You never turn back.",
-      "Aim with the mouse. LMB fires. Wait out the reload. SPACE dashes."
+      "I am EKKE and I am hungry.",
+      "Aim with your mouse and left-click to shoot. Press Space to dash."
     ],
     "Bones": [
       "Bones.",
-      "The chapel trades them for gun flesh. What you don't spend, you keep."
+      "You automatically earn them by killing enemies. The Chapel trades them for upgrades."
     ],
     "SkipLap": [
       "Nothing left alive.",
       "Press E to end the lap."
     ],
     "Lap": [
-      "EXTRACT carries the stash to my altar.",
-      "ONE MORE ROUND pays more. Die, and it burns."
+      "EXTRACT carries the biomass to my altar.",
+      "ONE MORE ROUND gives you more ammo and biomass. Die, and it burns."
     ],
-    "Boss": [
-      "The {0} is ready for you.",
-      "Fight it. Or EXTRACT, and bring me what you already have."
-    ],
-    "Chapel": [
-      "Every card grows your gun and costs you something.",
-      "Read the price. SPACE when you are done."
-    ],
+    "Boss": [],
+    "Chapel": [],
     "Lens": [
       "The front is armor.",
       "Break the glass, then hit the side."
@@ -421,19 +436,18 @@
       "Some of them stay hidden until your shot gets close."
     ],
     "Dead": [
-      "The stash burned. A third crawled back to me.",
-      "Click EXIT."
+      "Most of your biomass burned up, but you managed to salvage a third."
     ],
     "Altar": [
-      "Keys 1-5 pick an organ. Click an empty cell to GROW it.",
-      "Feed me {0} biomass."
+      "Pick an organ to build. Click an empty cell to grow it.",
+      "You will need biomass for this."
     ],
     "Frame": [
-      "A frame is not an organ yet.",
-      "Click it. INJECT until it beats."
+      "This is not an organ yet.",
+      "Click it. Inject Biomass until it beats."
     ],
     "Organ": [
-      "It beats. It is yours.",
+      "It beats.",
       "Set the same organ beside it, and it ranks up."
     ],
     "Won": [
