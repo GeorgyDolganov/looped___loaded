@@ -63,22 +63,21 @@ public sealed class RoundInventory : Component
 
 	public void GrowMag( int amount )
 	{
-		var room = Progression.MaxSlots - MagCap;
-		if ( room <= 0 || amount <= 0 )
+		if ( amount <= 0 )
 			return;
 
-		var add = Math.Min( amount, room );
-		MagCap += add;
-		MagLoaded = Math.Min( MagCap, MagLoaded + add );
+		MagCap += amount;
+		MagLoaded = Math.Min( MagCap, MagLoaded + amount );
 	}
 
-	public void ChamberAll()
+	public void ChamberAll( bool keepCooldowns = false )
 	{
 		recovering = true;
 		ClearShots();
 		ClearDropped();
 		MagLoaded = MagCap;
-		Skills.ReadyAll();
+		if ( !keepCooldowns )
+			Skills.ReadyAll();
 		ReloadLeft = 0f;
 		ReloadFor = 0f;
 		BurstLeft = 0;

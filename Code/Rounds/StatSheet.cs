@@ -48,6 +48,13 @@ public static class StatSheet
 			return lines;
 
 		rank = Math.Max( 1, rank );
+		if ( card.Skill == ActiveSkill.Barrier )
+		{
+			var barrier = GameSettings.Skills.Barrier ?? new BarrierStats();
+			top.Add( new StatLine( $"Lasts {barrier.Duration:0.##} seconds", 1 ) );
+			top.Add( new StatLine( $"Cooldown {barrier.CooldownAt( rank ):0.##} seconds", 1 ) );
+		}
+
 		if ( card.Mods is not null )
 		{
 			foreach ( var mod in card.Mods )

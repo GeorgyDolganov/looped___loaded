@@ -14,6 +14,7 @@
     "SlowKey": "RMB",
     "HurtStamp": "-1",
     "DodgeStamp": "DODGED",
+    "BlockStamp": "Blocked.",
     "Task": "NEXT",
     "Fed": "BIOMASS TO WIN",
     "FeedCount": "TOTAL BIOMASS {0} / {1}",

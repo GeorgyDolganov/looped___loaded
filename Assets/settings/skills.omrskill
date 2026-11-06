@@ -9,6 +9,10 @@
   "Backdash": {
     "Cooldown": 3
   },
+  "Barrier": {
+    "Cooldown": { "Level1": 37, "Level2": 30, "Level3": 24 },
+    "Duration": 3
+  },
   "__references": [],
   "__version": 0
 }

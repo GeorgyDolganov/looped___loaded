@@ -374,6 +374,7 @@ public static class Trinkets
 	{
 		"arc.trinket",
 		"backdash.trinket",
+		"barrier.trinket",
 		"bloom.trinket",
 		"bore.trinket",
 		"buck.trinket",

@@ -270,6 +270,7 @@ public class HudCopy
 	[Property] public string Slow { get; set; }
 	[Property] public string HurtStamp { get; set; }
 	[Property] public string DodgeStamp { get; set; }
+	[Property] public string BlockStamp { get; set; } = "Blocked.";
 	[Property] public string Task { get; set; }
 	[Property] public string FeedCount { get; set; }
 	[Property] public string Objective { get; set; }

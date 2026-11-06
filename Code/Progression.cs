@@ -10,7 +10,6 @@ public static class Progression
 	public static float CostRatio => C.CostRatio;
 	public static float TraitRatio => C.TraitRatio;
 	public static float PaceRatio => C.PaceRatio;
-	public static int MaxSlots => C.MaxSlots;
 	public static int BossBaseHealth => C.BossBaseHealth;
 
 	public static float LocationMul( int location ) => MathF.Pow( ThreatRatio, Math.Max( 0, location ) );

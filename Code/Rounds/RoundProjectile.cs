@@ -79,6 +79,7 @@ public sealed class RoundProjectile : Component
 	bool exploded;
 	bool lensInside;
 	bool returning;
+	float homeTime;
 	float travelled;
 	float launchSpeed;
 
@@ -101,6 +102,7 @@ public sealed class RoundProjectile : Component
 		TargetsHit = 0;
 		Kills = 0;
 		travelled = 0f;
+		homeTime = 0f;
 		struck.Clear();
 		trail.Clear();
 		WorldPosition = geometry.ToPlayWorld( Flat );
@@ -474,20 +476,33 @@ public sealed class RoundProjectile : Component
 
 		var to = Loop.Runner.Flat - Flat;
 		var dist = to.Length;
-		var reach = Loop.Runner.PlayerRadius + Radius;
+		var reach = Loop.Runner.PlayerRadius + Radius + 12f;
 		if ( dist <= reach )
 		{
 			Arrive();
 			return false;
 		}
 
+		// Never let the player outrun a returning round (clear boost / dash can exceed bullet speed).
+		var runner = Loop.Runner;
+		var chase = runner.Speed * runner.SpeedScale * (runner.Dashing ? 3f : 1f) * 1.5f;
+		var boost = Speed > 1f ? MathF.Max( 1f, chase / Speed ) : 1f;
+		homeTime += step / MathF.Max( 1f, Speed );
+		boost *= 1f + MathF.Min( 3f, homeTime * 1.5f );
+
 		Direction = to / dist;
-		var move = MathF.Min( step, dist - reach );
+		var move = MathF.Min( step * boost, dist - reach );
 		var from = Flat;
 		var finishes = move >= dist - reach - 0.05f;
 		Flat += Direction * move;
 		travelled += move;
 		GrazeReturn( from, finishes ? Loop.Runner.Flat : Flat );
+		if ( finishes )
+		{
+			Arrive();
+			return false;
+		}
+
 		return true;
 	}
 

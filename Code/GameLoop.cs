@@ -87,6 +87,18 @@ public sealed class GameLoop : Component
 	public float PainYaw { get; private set; }
 	public float HurtAmount => Math.Clamp( 1f - (Time.Now - lastHurtAt) / GameSettings.Run.HurtFlash, 0f, 1f );
 	public bool Invulnerable => Time.Now < invulnUntil;
+	public bool BarrierUp => Time.Now < barrierUntil;
+
+	public float BarrierLeft => MathF.Max( 0f, barrierUntil - Time.Now );
+	public bool DodgeBlocked { get; private set; }
+
+	public void RaiseBarrier( float seconds )
+	{
+		var wasUp = BarrierUp;
+		barrierUntil = Time.Now + MathF.Max( 0.05f, seconds );
+		if ( !wasUp )
+			BarrierAura.Spawn( this );
+	}
 	public float DodgeAmount => Math.Clamp( 1f - (Time.Now - lastDodgeAt) / DodgeFlash.Duration, 0f, 1f );
 	public bool DodgeGuard => Invulnerable && lastDodgeAt > lastHurtAt;
 	public float DodgeYaw { get; private set; }
@@ -176,6 +188,7 @@ public sealed class GameLoop : Component
 	float noticeAt = -99f;
 	float runStartedAt;
 	float invulnUntil;
+	float barrierUntil;
 	float lastHurtAt = -99f;
 	float lastDodgeAt = -99f;
 	float armorNoticeAt = -99f;
@@ -489,6 +502,7 @@ public sealed class GameLoop : Component
 		lastDodgeAt = -99f;
 		PainYaw = 0f;
 		invulnUntil = 0f;
+		barrierUntil = 0f;
 		ClearPause();
 		MenuView = MenuPage.Title;
 		MenuFocus = MenuChoice.Continue;
@@ -933,6 +947,8 @@ public sealed class GameLoop : Component
 			dashCoachUntil += dt;
 		if ( invulnUntil > 0f )
 			invulnUntil += dt;
+		if ( barrierUntil > 0f )
+			barrierUntil += dt;
 
 		Runner?.ShiftTime( dt );
 
@@ -1073,6 +1089,7 @@ public sealed class GameLoop : Component
 		ReturnedBiomass = 0;
 		feedClosedOnDeath = false;
 		invulnUntil = 0f;
+		barrierUntil = 0f;
 		lastHurtAt = -99f;
 		lastDodgeAt = -99f;
 		Dodges = 0;
@@ -1445,6 +1462,18 @@ public sealed class GameLoop : Component
 		if ( Phase != RunPhase.Playing || TryDodge( from, heading ) )
 			return false;
 
+		if ( BarrierUp )
+		{
+			barrierUntil = 0f;
+			invulnUntil = Time.Now + GameSettings.Run.IFrames;
+
+			DodgeBlocked = true;
+			lastDodgeAt = Time.Now;
+			DodgeFlash.Spawn( Scene, Runner.GameObject, Geometry.ToPlayWorld( Runner.Flat ), from - Runner.Flat, Runner.PlayerRadius );
+			ArenaSounds.Dodge( Runner.WorldPosition );
+			return true;
+		}
+
 		PainYaw = YawToward( from );
 		Health--;
 		lastHurtAt = Time.Now;
@@ -1500,6 +1529,7 @@ public sealed class GameLoop : Component
 			return false;
 
 		Dodges++;
+		DodgeBlocked = false;
 		DodgeYaw = YawToward( from );
 		lastDodgeAt = Time.Now;
 		invulnUntil = Time.Now + GameSettings.Run.IFrames;
@@ -1589,7 +1619,7 @@ public sealed class GameLoop : Component
 			Geometry.ClearBossWalls();
 		}
 
-		Inventory?.ChamberAll();
+		Inventory?.ChamberAll( keepCooldowns: true );
 
 		if ( LocationIndex > BestLine )
 			BestLine = LocationIndex;
@@ -1646,7 +1676,7 @@ public sealed class GameLoop : Component
 			return;
 
 		VacuumBones();
-		Inventory?.ChamberAll();
+		Inventory?.ChamberAll( keepCooldowns: true );
 		skipHinted = false;
 		Phase = RunPhase.DecideLap;
 		ArenaSounds.Tele();
@@ -1896,10 +1926,10 @@ public sealed class GameLoop : Component
 		Lap = Runner.Lap;
 		NoteSacrificeUnlock();
 		Runner.ApplyPace( Lap );
-		var added = GrantContinueRounds();
+		GrantContinueRounds();
 		BeginTraitPick();
 		ArenaSounds.Pickup();
-		Announce( added > 0 ? T.Announce.ContinueRounds : T.Announce.StashMax );
+		Announce( T.Announce.ContinueRounds );
 	}
 
 	void ContinueBoss()
@@ -1918,13 +1948,8 @@ public sealed class GameLoop : Component
 	{
 		var want = Progression.RoundsGranted( Lap );
 		Inventory?.GrowMag( want );
-		var room = Progression.MaxSlots - Stash;
-		if ( room <= 0 )
-			return 0;
-
-		var added = Math.Min( want, room );
-		Stash += added;
-		return added;
+		Stash += want;
+		return want;
 	}
 
 	void BeginTraitPick( bool opening = false )
@@ -2460,7 +2485,7 @@ public sealed class GameLoop : Component
 		if ( !HasNextRing )
 			return;
 
-		Inventory?.ChamberAll();
+		Inventory?.ChamberAll( keepCooldowns: true );
 		NoteProgress( ProgressGoal.RideNextRing );
 		if ( Health < HeartMax )
 			Health += GameSettings.Run.RingHeal;

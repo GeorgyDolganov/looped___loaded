@@ -23,6 +23,9 @@
 		<div class="dodge-stamp">
 			<label>@GameSettings.Text.Hud.DodgeStamp</label>
 		</div>
+		<div class="dodge-stamp block-stamp">
+			<label>@GameSettings.Text.Hud.BlockStamp</label>
+		</div>
 
 		@if ( !Loop.InCity && !Loop.InMenu && Loop.Inventory.IsValid() )
 		{
@@ -764,6 +767,69 @@
 	</div>
 	}
 
+	@if ( HoveredUpgrade is TrinketDef tip )
+	{
+		<div class="card shop-offer upgrade-tip" style="border-color: @TraitBorder(tip)">
+			<img class="shop-plate" src="ui/Arena UI/element_shop_left_btn.png" />
+			<div class="shop-body">
+				<img class="shop-icon" src="@tip.IconPath" />
+				<div class="shop-name">
+					<label class="title">@tip.ShownTitle</label>
+					@if ( Trinkets.IsWeapon( tip ) )
+					{
+						<label class="weapon">@GameSettings.Text.Shop.Weapon</label>
+					}
+					else if ( tip.IsSkill )
+					{
+						<label class="weapon">@GameSettings.Text.Shop.Active</label>
+					}
+				</div>
+				<label class="rarity" style="color: @TraitInk(tip)">@GameSettings.Text.RarityOf(tip.Pack)</label>
+				@if ( OfferBlurb( tip ) is { Length: > 0 } tipBlurb )
+				{
+					<label class="blurb">@tipBlurb</label>
+				}
+				@if ( OfferLocks( tip ) is { Length: > 0 } tipLocks )
+				{
+					<label class="blurb">@tipLocks</label>
+				}
+				@if ( OfferUnlocks( tip ) is { Length: > 0 } tipOpens )
+				{
+					<label class="blurb">@tipOpens</label>
+				}
+				<div class="stats">
+					@foreach ( var line in OfferStats( tip, true ) )
+					{
+						<label class="stat @line.Class">@line.Text</label>
+					}
+				</div>
+			</div>
+			<div class="shop-foot">
+				@if ( OfferRank( tip, true ) is { Length: > 0 } tipRank )
+				{
+					<label class="rank">@tipRank</label>
+				}
+			</div>
+		</div>
+	}
+
+	@if ( ShowBiomassTip )
+	{
+		<div class="biomass-tip">
+			<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
+			<div class="stat-face">
+				<div class="stat-row lead">
+					<label class="key">@GameSettings.Text.Hud.Stash</label>
+					<label class="value">@(Loop.City.IsValid() ? Loop.City.Warehouse : 0)</label>
+				</div>
+				<div class="stat-row lead">
+					<label class="key">@GameSettings.Text.Hud.Fed</label>
+					<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+				</div>
+			</div>
+		</div>
+	}
+
 	@if ( HoverTip.Show )
 	{
 		<div class="organ-tip">
@@ -811,8 +877,8 @@
 		TickUpgradeHover();
 		TickBiomassHover();
 		TickHover();
-		tipLook.Chip = HoveredUpgrade?.Id;
-		tipLook.Biomass = ShowBiomassTip;
+		PlaceUpgradeTip();
+		PlaceBiomassTip();
 		TickSettingDrag();
 		TickTraySize();
 		TickSkillCovers();
@@ -1571,6 +1637,71 @@
 		organTip.Style.Dirty();
 	}
 
+	void PlaceUpgradeTip()
+	{
+		if ( HoveredUpgrade is null )
+		{
+			upgradeTipPanel = null;
+			return;
+		}
+
+		if ( !upgradeTipPanel.IsValid() )
+			upgradeTipPanel = FindHud( "upgrade-tip" );
+		PlaceTip( upgradeTipPanel, 240f, 320f, true );
+	}
+
+	void PlaceBiomassTip()
+	{
+		if ( !ShowBiomassTip )
+		{
+			biomassTipPanel = null;
+			return;
+		}
+
+		if ( !biomassTipPanel.IsValid() )
+			biomassTipPanel = FindHud( "biomass-tip" );
+		PlaceTip( biomassTipPanel, 320f, 146f, false );
+	}
+
+	void PlaceTip( Sandbox.UI.Panel tip, float fallbackW, float fallbackH, bool leftOfCursor )
+	{
+		if ( !tip.IsValid() || Panel is null )
+			return;
+
+		var scale = Panel.ScaleFromScreen;
+		if ( scale <= 0.0001f )
+			scale = 1f;
+
+		var point = CursorOn();
+		var w = tip.Box.Rect.Width * scale;
+		var h = tip.Box.Rect.Height * scale;
+		if ( w < 8f )
+			w = fallbackW;
+		if ( h < 8f )
+			h = fallbackH;
+
+		var x = leftOfCursor ? point.x - w - 18f : point.x + 24f;
+		var y = leftOfCursor ? point.y - 24f : point.y + 18f;
+		var boundsW = Panel.Box.Rect.Width * scale;
+		var boundsH = Panel.Box.Rect.Height * scale;
+		if ( boundsW > 64f && boundsH > 64f )
+		{
+			if ( x < 12f )
+				x = point.x + 28f;
+			else if ( x + w > boundsW - 12f )
+				x = point.x - w - 18f;
+
+			x = Math.Clamp( x, 12f, Math.Max( 12f, boundsW - w - 12f ) );
+			y = Math.Clamp( y, 12f, Math.Max( 12f, boundsH - h - 12f ) );
+		}
+
+		tip.Style.Position = Sandbox.UI.PositionMode.Absolute;
+		tip.Style.Left = Sandbox.UI.Length.Pixels( x );
+		tip.Style.Top = Sandbox.UI.Length.Pixels( y );
+		tip.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
+		tip.Style.Dirty();
+	}
+
 	List<CityBonus> CityBonusLines
 	{
 		get
@@ -1756,6 +1887,8 @@
 	float hurtOpacity = -1f;
 	Sandbox.UI.Panel dodgeVeil;
 	Sandbox.UI.Panel dodgeStamp;
+	Sandbox.UI.Panel blockStamp;
+	bool dodgeWasBlock;
 	Sandbox.UI.Panel dashHint;
 	int dodgeStep;
 	readonly List<string> heartShown = new();
@@ -1788,7 +1921,8 @@
 	bool biomassHover;
 	int biomassMiss;
 	readonly ShopLook shopLook = new();
-	readonly TipLook tipLook = new();
+	Sandbox.UI.Panel upgradeTipPanel;
+	Sandbox.UI.Panel biomassTipPanel;
 	readonly List<Sandbox.UI.Panel> chipPanels = new();
 	Sandbox.UI.Panel biomassRow;
 	const float HudScale = 0.8f;
@@ -2197,6 +2331,12 @@
 			dodgeStep = 0;
 		}
 
+		if ( !blockStamp.IsValid() )
+		{
+			blockStamp = FindHud( "block-stamp" );
+			dodgeStep = 0;
+		}
+
 		var want = !Loop.InCity && !Loop.InMenu && Loop.DodgeAmount > 0.01f;
 		if ( !want )
 		{
@@ -2205,16 +2345,23 @@
 				dodgeStep = 0;
 				SetFlag( dodgeVeil, "on", false );
 				SetFlag( dodgeStamp, "on", false );
+				SetFlag( blockStamp, "on", false );
 			}
 
 			return;
 		}
 
+		var blocked = Loop.DodgeBlocked;
+		if ( dodgeStep != 0 && blocked != dodgeWasBlock )
+			dodgeStep = 0;
+
 		if ( dodgeStep == 0 )
 		{
 			dodgeStep = 1;
+			dodgeWasBlock = blocked;
 			SetFlag( dodgeVeil, "on", false );
 			SetFlag( dodgeStamp, "on", false );
+			SetFlag( blockStamp, "on", false );
 			return;
 		}
 
@@ -2222,7 +2369,8 @@
 		{
 			dodgeStep = 2;
 			SetFlag( dodgeVeil, "on", true );
-			SetFlag( dodgeStamp, "on", true );
+			SetFlag( dodgeStamp, "on", !blocked );
+			SetFlag( blockStamp, "on", blocked );
 		}
 	}
 
@@ -2342,15 +2490,6 @@
 		if ( sheet.Look != shopLook )
 			sheet.Look = shopLook;
 
-		var hover = GameObject.GetComponent<HudHover>();
-		if ( !hover.IsValid() )
-			hover = GameObject.AddComponent<HudHover>();
-		if ( hover.Loop != Loop )
-			hover.Loop = Loop;
-		if ( hover.Hud != this )
-			hover.Hud = this;
-		if ( hover.Look != tipLook )
-			hover.Look = tipLook;
 	}
 
 	void TickHover()
@@ -2521,7 +2660,8 @@
 			city ? (int)OrganLift : 0,
 			Loop.Ascend );
 
-		return System.HashCode.Combine( a, b, c, d, e, f, g, h );
+		var tipState = System.HashCode.Combine( HoveredUpgrade?.Id, HoveredUpgrade is null ? 0 : TraitLevel( HoveredUpgrade ), ShowBiomassTip ? 1 : 0, Loop.RunBiomass, Loop.FedBiomass, Loop.City.IsValid() ? Loop.City.Warehouse : 0 );
+		return System.HashCode.Combine( System.HashCode.Combine( a, b, c, d, e, f, g, h ), tipState );
 	}
 }
 
@@ -2709,6 +2849,11 @@
 		animation-duration: 0.6s;
 		animation-timing-function: ease-out;
 		animation-fill-mode: forwards;
+	}
+
+	.dodge-stamp.block-stamp label {
+		color: #fff0b0;
+		text-shadow: 0px 0px 28px rgba(255, 205, 50, 0.95);
 	}
 
 	.dodge-stamp label {
@@ -5526,10 +5671,10 @@
 
 	.skill-art {
 		position: absolute;
-		left: 9.22%;
-		top: 8.92%;
-		width: 64px;
-		height: 64px;
+		left: 10.5%;
+		top: 10.5%;
+		width: 79%;
+		height: 79.5%;
 		overflow: hidden;
 		pointer-events: none;
 		z-index: 1;
@@ -5538,9 +5683,9 @@
 	.skill-icon {
 		position: absolute;
 		left: 0px;
-		top: 0px;
+		top: -7.5%;
 		width: 100%;
-		height: 100%;
+		height: 115%;
 		background-size: 100% 100%;
 		background-repeat: no-repeat;
 		background-position: center;

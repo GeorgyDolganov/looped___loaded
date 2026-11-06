@@ -60,11 +60,11 @@ public class ShooterStats
 	[Property] public float Orbit { get; set; } = 0.55f;
 	[Property] public float OrbitOuterPad { get; set; } = 40f;
 	[Property] public float FlankHold { get; set; } = 0.9f;
-	[Property] public float Interval { get; set; } = 1.65f;
-	[Property] public float IntervalFloor { get; set; } = 0.8f;
+	[Property] public float Interval { get; set; } = 2.475f;
+	[Property] public float IntervalFloor { get; set; } = 1.2f;
 	[Property] public float Telegraph { get; set; } = 0.28f;
 	[Property] public float TelegraphFloor { get; set; } = 0.14f;
-	[Property] public float ShotSpeed { get; set; } = 560f;
+	[Property] public float ShotSpeed { get; set; } = 373.33f;
 	[Property] public float LeadMinDistance { get; set; } = 80f;
 }
 

@@ -141,6 +141,15 @@ public sealed class ActiveSkills
 					return;
 				cooldown = (GameSettings.Skills.Backdash ?? new BackdashStats()).Cooldown;
 				break;
+			case ActiveSkill.Barrier:
+				var barrier = GameSettings.Skills.Barrier ?? new BarrierStats();
+				var barrierLevel = 1;
+				if ( loop.Inventory.IsValid() )
+					barrierLevel = Math.Max( 1, loop.Inventory.Loadout.TraitLevel( slot.Card ) );
+				loop.RaiseBarrier( barrier.Duration );
+				ArenaSounds.Pickup();
+				cooldown = barrier.CooldownAt( barrierLevel );
+				break;
 			default:
 				return;
 		}

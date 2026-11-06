@@ -5,6 +5,7 @@ public class SkillConfig : GameResource
 {
 	[Property] public RepulseStats Repulse { get; set; } = new();
 	[Property] public BackdashStats Backdash { get; set; } = new();
+	[Property] public BarrierStats Barrier { get; set; } = new();
 }
 
 public class RepulseStats
@@ -27,6 +28,15 @@ public class RepulseStats
 
 		return tiers.At( Math.Clamp( level, 1, 3 ) );
 	}
+}
+
+public class BarrierStats
+{
+	// One lap at base speed: 2 * PI * 1000 / 255 = ~24.6s. Level 1 cooldown = 1.5 laps = ~37s.
+	[Property] public TraitTiers Cooldown { get; set; } = new() { Level1 = 37f, Level2 = 30f, Level3 = 24f };
+	[Property] public float Duration { get; set; } = 3f;
+
+	public float CooldownAt( int level ) => Cooldown is null ? 37f : Cooldown.At( Math.Clamp( level, 1, 3 ) );
 }
 
 public class BackdashStats

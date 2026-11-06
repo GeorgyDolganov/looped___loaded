@@ -25,7 +25,8 @@ public enum ActiveSkill
 {
 	None,
 	Repulse,
-	Backdash
+	Backdash,
+	Barrier
 }
 
 public enum GunStat
@@ -138,8 +139,7 @@ public class TrinketDef : GameResource
 	public int Cap => MaxLevel > 0 ? MaxLevel : Math.Max( 1, GameSettings.Traits.MaxLevel );
 	public bool IsSkill => Skill != ActiveSkill.None;
 	public string ShownTitle => string.IsNullOrWhiteSpace( Title ) ? Id : Title;
-	public string ShownBlurb => Blurb ?? "";
-	public string IconPath => string.IsNullOrWhiteSpace( Icon ) ? "ui/traits/stick.png" : Icon;
+	public string ShownBlurb => Blurb ?? "";	public string IconPath => string.IsNullOrWhiteSpace( Icon ) ? "ui/traits/stick.png" : Icon;
 }
 
 public class TrinketMod

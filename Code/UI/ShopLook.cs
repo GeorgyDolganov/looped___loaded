@@ -6,10 +6,3 @@ public sealed class ShopLook
 
 	public float Bottom = -1f;
 }
-
-public sealed class TipLook
-{
-	public string Chip;
-	public bool Biomass;
-}
-
