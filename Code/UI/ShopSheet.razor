@@ -86,15 +86,14 @@
 
 	void ApplyBottom( bool force )
 	{
-		if ( Panel is null || Look is null || Look.Bottom < 0f )
+		if ( Panel is null )
 			return;
 
-		if ( !force && MathF.Abs( placedBottom - Look.Bottom ) < 0.5f )
-			return;
-
-		placedBottom = Look.Bottom;
+		// Sit below the upgrades panel (top 12 + 288 * 448/477 height) with a small gap.
+		var top = Sandbox.UI.Length.Pixels( 12f + 288f * (448f / 477f) + 12f );
 		Panel.Style.Position = Sandbox.UI.PositionMode.Absolute;
-		Panel.Style.Bottom = Sandbox.UI.Length.Pixels( Look.Bottom );
+		Panel.Style.Top = top;
+		Panel.Style.Bottom = Sandbox.UI.Length.Auto;
 		Panel.Style.Dirty();
 	}
 
@@ -111,6 +110,7 @@
 	.shop-sheet {
 		position: absolute;
 		right: 12px;
+		top: 294px;
 		width: 288px;
 		aspect-ratio: 477 / 820;
 		padding: 0px;
