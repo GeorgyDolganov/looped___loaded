@@ -74,6 +74,7 @@ PS
 {
 	#include "common/pixel.hlsl"
 	RenderState( CullMode, F_RENDER_BACKFACES ? NONE : DEFAULT );
+	BoolAttribute( DoNotCastShadows, F_DO_NOT_CAST_SHADOWS ? true : false );
 		
 	SamplerState g_sSampler0 < Filter( POINT ); AddressU( WRAP ); AddressV( WRAP ); >;
 	CreateInputTexture2D( Texture_ps_0, Srgb, 8, "None", "_color", ",0/,0/0", DefaultFile( "materials/dev/white_color.tga" ) );

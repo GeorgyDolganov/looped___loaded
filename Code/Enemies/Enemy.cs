@@ -472,6 +472,7 @@ public sealed class Enemy : Component
 			if ( !mesh.Renderer.IsValid() )
 				continue;
 
+			Blocks.NoEnemyShadow( mesh.Renderer );
 			mesh.Renderer.Tint = Color.Lerp( mesh.Tint, overlay, blend );
 			if ( Bleeding )
 				mesh.Renderer.Tint = Color.Lerp( mesh.Renderer.Tint, new Color( 0.42f, 0.02f, 0.05f ), 0.55f );
@@ -839,6 +840,7 @@ public sealed class Enemy : Component
 
 			if ( shieldMesh.IsValid() )
 			{
+				Blocks.NoEnemyShadow( shieldMesh );
 				var baseTint = Kind == EnemyKind.Shardguard
 					? Color.Lerp( Color.White, plateHits > 0 ? GlassCrackPlate : ShardguardTint, plateHits > 0 ? 0.35f : 0.45f )
 					: Color.White;
@@ -883,7 +885,7 @@ public sealed class Enemy : Component
 		shieldMesh.Model = model;
 		shieldMesh.MaterialOverride = Material.Load( "materials/sheild/sheild.vmat" );
 		shieldMesh.Tint = Color.White;
-		shieldMesh.RenderType = ModelRenderer.ShadowRenderType.Off;
+		Blocks.NoEnemyShadow( shieldMesh );
 
 		var bounds = model.IsValid() ? model.Bounds : default;
 		var height = bounds.Size.z;

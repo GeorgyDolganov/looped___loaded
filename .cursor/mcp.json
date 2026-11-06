@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sbox": {
+      "command": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\sbox\\bin\\managed\\sbox-cli.exe",
+      "args": [
+        "--connect",
+        "c:\\Users\\mksyo\\Documents\\GitHub\\looped___loaded"
+      ]
+    }
+  }
+}

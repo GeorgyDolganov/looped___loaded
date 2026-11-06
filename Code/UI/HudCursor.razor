@@ -1,0 +1,330 @@
+@namespace LoopedLoaded
+@inherits PanelComponent
+
+<root class="cursor-root">
+	<div class="cursor-trail"></div>
+	<div class="cursor-aura">
+		<div class="cursor-ring"></div>
+		<div class="cursor-dot"></div>
+	</div>
+	<div class="shot-cursor">
+		<div class="reload-track"></div>
+		@for ( var i = 0; i < ReloadMarks; i++ )
+		{
+			<div class="reload-mark"></div>
+		}
+	</div>
+</root>
+
+@code
+{
+	[Property] public GameLoop Loop { get; set; }
+
+	const int ReloadMarks = 24;
+
+	Sandbox.UI.Panel auraPanel;
+	Sandbox.UI.Panel trailPanel;
+	Sandbox.UI.Panel shotCursor;
+	readonly List<Sandbox.UI.Panel> reloadMarks = new();
+	bool reloadLaidOut;
+	float auraX;
+	float auraY;
+	float trailX;
+	float trailY;
+	float placedAuraX = float.NaN;
+	float placedAuraY = float.NaN;
+	float placedTrailX = float.NaN;
+	float placedTrailY = float.NaN;
+	float placedShotX = float.NaN;
+	float placedShotY = float.NaN;
+
+	protected override void OnTreeFirstBuilt()
+	{
+		Panel.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
+		Panel.Style.ZIndex = 100;
+	}
+
+	protected override void OnUpdate()
+	{
+		if ( Panel is null || !Loop.IsValid() )
+			return;
+
+		TickCursor();
+		TickReloadCursor();
+	}
+
+	protected override int BuildHash() => 1;
+
+	void TickCursor()
+	{
+		var show = Loop.WantsUiCursor;
+
+		if ( !auraPanel.IsValid() )
+			auraPanel = Find( "cursor-aura" );
+		if ( !trailPanel.IsValid() )
+			trailPanel = Find( "cursor-trail" );
+
+		var want = CursorOn();
+		var snap = !show || (trailX == 0f && trailY == 0f);
+		var drag = MathF.Min( 1f, RealTime.Delta * 9f );
+
+		auraX = want.x;
+		auraY = want.y;
+
+		if ( snap )
+		{
+			trailX = want.x;
+			trailY = want.y;
+		}
+		else
+		{
+			trailX = MathX.Lerp( trailX, want.x, drag );
+			trailY = MathX.Lerp( trailY, want.y, drag );
+		}
+
+		Place( auraPanel, ref placedAuraX, ref placedAuraY, auraX, auraY, show );
+		Place( trailPanel, ref placedTrailX, ref placedTrailY, trailX, trailY, show );
+	}
+
+	Vector2 CursorOn()
+	{
+		var origin = Panel;
+		if ( origin is null )
+			return Vector2.Zero;
+
+		var scale = origin.ScaleFromScreen;
+		if ( scale <= 0.0001f )
+			scale = 1f;
+
+		return Mouse.Position * scale;
+	}
+
+	Sandbox.UI.Panel Find( string className )
+	{
+		if ( Panel is null )
+			return null;
+
+		foreach ( var child in Panel.Descendants )
+		{
+			if ( child.HasClass( className ) )
+				return child;
+		}
+
+		return null;
+	}
+
+	static void Place( Sandbox.UI.Panel target, ref float placedX, ref float placedY, float x, float y, bool show )
+	{
+		if ( !target.IsValid() )
+			return;
+
+		if ( !show )
+		{
+			if ( target.HasClass( "on" ) )
+				target.SetClass( "on", false );
+			placedX = float.NaN;
+			return;
+		}
+
+		var move = float.IsNaN( placedX ) || MathF.Abs( placedX - x ) >= 0.5f || MathF.Abs( placedY - y ) >= 0.5f;
+		if ( !target.HasClass( "on" ) )
+		{
+			target.SetClass( "on", true );
+			move = true;
+		}
+
+		if ( !move )
+			return;
+
+		placedX = x;
+		placedY = y;
+		target.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
+		target.Style.Left = Sandbox.UI.Length.Pixels( x );
+		target.Style.Top = Sandbox.UI.Length.Pixels( y );
+		target.Style.Dirty();
+	}
+
+	void TickReloadCursor()
+	{
+		if ( !shotCursor.IsValid() || reloadMarks.Count != ReloadMarks )
+			BindReloadMarks();
+
+		var show = ShowReloadCursor();
+		var point = CursorOn();
+		Place( shotCursor, ref placedShotX, ref placedShotY, point.x, point.y, show );
+		if ( !show || reloadMarks.Count == 0 )
+			return;
+
+		if ( !reloadLaidOut )
+			LayoutReloadMarks();
+
+		var amount = Loop.Inventory.Reload01;
+		for ( var i = 0; i < reloadMarks.Count; i++ )
+			reloadMarks[i].SetClass( "on", amount * reloadMarks.Count >= i + 0.001f );
+	}
+
+	bool ShowReloadCursor()
+	{
+		if ( !Loop.Inventory.IsValid() )
+			return false;
+
+		if ( Loop.InCity || Loop.InMenu || Loop.WantsUiCursor )
+			return false;
+
+		return Loop.Inventory.ReloadLeft > 0.02f;
+	}
+
+	void BindReloadMarks()
+	{
+		shotCursor = Find( "shot-cursor" );
+		reloadMarks.Clear();
+		reloadLaidOut = false;
+		if ( Panel is null )
+			return;
+
+		foreach ( var child in Panel.Descendants )
+		{
+			if ( child.HasClass( "reload-mark" ) )
+				reloadMarks.Add( child );
+		}
+	}
+
+	void LayoutReloadMarks()
+	{
+		var count = reloadMarks.Count;
+		if ( count == 0 )
+			return;
+
+		const float center = 32f;
+		const float radius = 24f;
+		for ( var i = 0; i < count; i++ )
+		{
+			var ang = -MathF.PI * 0.5f + MathF.Tau * i / count;
+			var mark = reloadMarks[i];
+			mark.Style.Position = Sandbox.UI.PositionMode.Absolute;
+			mark.Style.Left = Sandbox.UI.Length.Pixels( center + MathF.Cos( ang ) * radius );
+			mark.Style.Top = Sandbox.UI.Length.Pixels( center + MathF.Sin( ang ) * radius );
+			mark.Style.Dirty();
+		}
+
+		reloadLaidOut = true;
+	}
+}
+
+<style>
+	.cursor-root {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		z-index: 100;
+	}
+
+	.cursor-aura,
+	.cursor-trail {
+		position: absolute;
+		width: 72px;
+		height: 72px;
+		margin-left: -36px;
+		margin-top: -36px;
+		pointer-events: none;
+		z-index: 80;
+		opacity: 0;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.cursor-aura.on,
+	.cursor-trail.on {
+		opacity: 1;
+	}
+
+	.cursor-trail {
+		z-index: 79;
+		width: 28px;
+		height: 28px;
+		margin-left: -14px;
+		margin-top: -14px;
+		border-radius: 14px;
+		background-color: rgba(240, 180, 41, 0.28);
+	}
+
+	.cursor-ring {
+		width: 72px;
+		height: 72px;
+		border-radius: 36px;
+		border: 2px solid rgba(240, 180, 41, 0.55);
+	}
+
+	.cursor-aura.on .cursor-ring {
+		animation-name: cursor-pulse;
+		animation-duration: 1.15s;
+		animation-timing-function: ease-out;
+		animation-iteration-count: infinite;
+	}
+
+	.cursor-dot {
+		position: absolute;
+		width: 10px;
+		height: 10px;
+		border-radius: 5px;
+		background-color: #f0b429;
+	}
+
+	.shot-cursor {
+		position: absolute;
+		width: 64px;
+		height: 64px;
+		margin-left: -32px;
+		margin-top: -32px;
+		pointer-events: none;
+		z-index: 90;
+		opacity: 0;
+	}
+
+	.shot-cursor.on {
+		opacity: 1;
+	}
+
+	.reload-track {
+		position: absolute;
+		left: 8px;
+		top: 8px;
+		width: 48px;
+		height: 48px;
+		border-radius: 24px;
+		border: 2px solid rgba(82, 209, 255, 0.38);
+	}
+
+	.reload-mark {
+		position: absolute;
+		width: 6px;
+		height: 6px;
+		margin-left: -3px;
+		margin-top: -3px;
+		border-radius: 3px;
+		background-color: rgba(82, 209, 255, 0);
+		pointer-events: none;
+	}
+
+	.reload-mark.on {
+		background-color: #52d1ff;
+	}
+
+	@@keyframes cursor-pulse {
+		0% {
+			opacity: 0.9;
+			transform: scale( 0.72 );
+		}
+		70% {
+			opacity: 0.15;
+			transform: scale( 1.18 );
+		}
+		100% {
+			opacity: 0;
+			transform: scale( 1.28 );
+		}
+	}
+</style>

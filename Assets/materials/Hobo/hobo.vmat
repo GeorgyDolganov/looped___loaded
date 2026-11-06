@@ -2,9 +2,11 @@
 
 Layer0
 {
-	shader "materials/shaders/nearest.shader"
+	shader "materials/shaders/nearest_unshadowed.shader"
 
 	Texture_ps_0 "textures/hobo.jpg"
+
+	F_DO_NOT_CAST_SHADOWS 1
 
 	//---- Fog ----
 	g_bFogEnabled "1"

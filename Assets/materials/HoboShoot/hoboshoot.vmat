@@ -1,6 +1,6 @@
 Layer0
 {
-	shader "materials/shaders/nearest.shader"
+	shader "materials/shaders/nearest_unshadowed.shader"
 
 	Texture_ps_0 "textures/hoboShootTexture.png"
 

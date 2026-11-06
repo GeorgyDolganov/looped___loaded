@@ -9,7 +9,7 @@ public sealed class PolyLine : Component
 	[Property] public bool HardCaps { get; set; }
 	[Property] public bool Solid { get; set; }
 
-	readonly List<GameObject> nodes = new();
+	readonly List<Vector3> points = new();
 	LineRenderer line;
 	bool styled;
 	Color styledHead;
@@ -45,6 +45,7 @@ public sealed class PolyLine : Component
 		line.StartCap = cap;
 		line.EndCap = cap;
 		line.Opaque = Solid;
+		line.CastShadows = false;
 
 		line.Color = new Gradient(
 			new Gradient.ColorFrame( 0f, TailTint ),
@@ -57,35 +58,19 @@ public sealed class PolyLine : Component
 
 	static bool Same( Color a, Color b ) => a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
 
-	public void SetPoints( List<Vector3> points )
+	public void SetPoints( List<Vector3> source )
 	{
 		EnsureLine();
 
-		if ( points is null || points.Count < 2 )
+		if ( source is null || source.Count < 2 )
 		{
 			line.Enabled = false;
 			return;
 		}
 
-		while ( nodes.Count < points.Count )
-		{
-			var node = Scene.CreateObject();
-			node.Name = $"Node {nodes.Count}";
-			node.Parent = GameObject;
-			nodes.Add( node );
-		}
-
-		while ( nodes.Count > points.Count )
-		{
-			var last = nodes[^1];
-			nodes.RemoveAt( nodes.Count - 1 );
-			last.Destroy();
-		}
-
-		for ( var i = 0; i < points.Count; i++ )
-			nodes[i].WorldPosition = points[i];
-
-		line.Points = nodes;
+		points.Clear();
+		points.AddRange( source );
+		line.VectorPoints = points;
 		line.Enabled = true;
 	}
 
@@ -103,9 +88,11 @@ public sealed class PolyLine : Component
 		line = GameObject.AddComponent<LineRenderer>();
 		line.Lighting = false;
 		line.Opaque = false;
+		line.CastShadows = false;
 		line.EndCap = SceneLineObject.CapStyle.Rounded;
 		line.StartCap = SceneLineObject.CapStyle.Rounded;
-		line.Points = nodes;
+		line.UseVectorPoints = true;
+		line.VectorPoints = points;
 
 		Apply();
 	}

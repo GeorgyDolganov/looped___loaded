@@ -11,6 +11,9 @@ public sealed class EkkePortrait : ScenePanel
 	GameObject rig;
 	SkinnedModelRenderer portrait;
 	bool ready;
+	float renderClock;
+
+	const float RenderInterval = 1f / 30f;
 
 	public override void Tick()
 	{
@@ -23,12 +26,20 @@ public sealed class EkkePortrait : ScenePanel
 		if ( !ready )
 			return;
 
-		RenderScene = scene;
+		if ( RenderScene != scene )
+			RenderScene = scene;
 		var dt = MathF.Min( Time.Delta, 0.05f );
 		scene.GameTick( dt );
 		if ( !Loop.TalkReady )
 			EkkeLook.Pulse();
 		EkkeLook.Drive( portrait );
+
+		renderClock += RealTime.Delta;
+		if ( renderClock < RenderInterval )
+			return;
+
+		renderClock = 0f;
+		RenderNextFrame();
 	}
 
 	public override void OnDeleted()
@@ -80,7 +91,7 @@ public sealed class EkkePortrait : ScenePanel
 		EkkeLook.Bind( portrait );
 
 		RenderScene = scene;
-		RenderOnce = false;
+		RenderOnce = true;
 		scene.GameTick( 0.016f );
 		Frame();
 		ready = true;

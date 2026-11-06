@@ -22,7 +22,10 @@ public sealed class HudFace : ScenePanel
 	int seenHealth = -1;
 	int seenDodges = -1;
 	int seenMag = -1;
-	int faceFrame;
+	float faceClock;
+	float faceStep;
+
+	const float FaceInterval = 1f / 30f;
 
 	public override void Tick()
 	{
@@ -41,15 +44,24 @@ public sealed class HudFace : ScenePanel
 		if ( !ready )
 			return;
 
-		RenderScene = scene;
-		faceFrame++;
-		if ( GraphicsProfile.HudFaceStride > 1 && (faceFrame % GraphicsProfile.HudFaceStride) != 0 )
+		if ( RenderScene != scene )
+		{
+			RenderScene = scene;
+			RenderNextFrame();
+		}
+
+		faceClock += RealTime.Delta;
+		faceStep += Time.Delta;
+		if ( faceClock < FaceInterval * GraphicsProfile.HudFaceStride )
 			return;
 
-		var dt = MathF.Min( Time.Delta, 0.05f );
+		var dt = MathF.Min( faceStep, 0.1f );
+		faceClock = 0f;
+		faceStep = 0f;
 		Step( dt );
 		Pose();
 		scene.GameTick( dt );
+		RenderNextFrame();
 	}
 
 	public override void OnDeleted()
@@ -96,7 +108,7 @@ public sealed class HudFace : ScenePanel
 		portrait.Sequence.Looping = true;
 
 		RenderScene = scene;
-		RenderOnce = false;
+		RenderOnce = true;
 		scene.GameTick( 0.016 );
 		Frame();
 		ready = true;

@@ -350,6 +350,7 @@ public sealed class GameBootstrap : Component
 			light.LightColor = new Color( 0.78f, 0.76f, 0.72f );
 			light.SkyColor = new Color( 0.06f, 0.06f, 0.07f );
 			light.Shadows = true;
+			light.ContactShadows = true;
 		}
 
 		if ( Scene.GetAllComponents<AmbientLight>().Any() )

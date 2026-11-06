@@ -60,11 +60,54 @@
           "__guid": "9f2c4d10-3a51-4e88-9b7c-51d3a7e10003",
           "__enabled": true,
           "Flags": 0,
-          "ContactShadows": true,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
+          "BakeLightIndex": -1,
+          "ContactShadows": false,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Disabled",
           "FogStrength": 1,
+          "IncludeStaticShadowCasters": false,
+          "Intensity": 1,
           "LightColor": "0.78,0.76,0.72,1",
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -77,6 +120,7 @@
           "ShadowHardness": 0,
           "Shadows": true,
           "SkyColor": "0.06,0.06,0.07,1",
+          "Temperature": 6500,
           "Visualizer": {}
         }
       ],
@@ -411,6 +455,8 @@
           "DashCooldown": 1.1,
           "DashDistance": 280,
           "DashDuration": 0.17,
+          "JukeDistance": 38,
+          "JukeTime": 0.34,
           "Loop": {
             "_type": "component",
             "component_id": "06d37ac4-3205-5414-b634-5c05ec763628",
@@ -679,9 +725,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -739,9 +791,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -799,9 +857,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -859,9 +923,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -919,9 +989,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -979,9 +1055,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1039,9 +1121,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1099,9 +1187,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1159,9 +1253,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1219,9 +1319,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1279,9 +1385,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1339,9 +1451,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1399,9 +1517,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1459,9 +1583,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1519,9 +1649,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1579,9 +1715,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1639,9 +1781,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1699,9 +1847,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1759,9 +1913,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1819,9 +1979,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1879,9 +2045,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1939,9 +2111,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1999,9 +2177,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2059,9 +2243,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2119,9 +2309,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2179,9 +2375,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2239,9 +2441,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2299,9 +2507,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2359,9 +2573,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2419,9 +2639,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2479,9 +2705,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2539,9 +2771,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2695,9 +2933,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2755,9 +2999,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2815,9 +3065,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2875,9 +3131,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2935,9 +3197,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -2995,9 +3263,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3055,9 +3329,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3115,9 +3395,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3175,9 +3461,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3235,9 +3527,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3295,9 +3593,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3355,9 +3659,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3415,9 +3725,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3475,9 +3791,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3535,9 +3857,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3595,9 +3923,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3655,9 +3989,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3715,9 +4055,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3775,9 +4121,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3835,9 +4187,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3895,9 +4253,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -3955,9 +4319,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -4015,9 +4385,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -4075,9 +4451,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -4135,9 +4517,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -4195,9 +4583,15 @@
                   "CreateAttachments": false,
                   "LodOverride": null,
                   "MaterialGroup": null,
-                  "MaterialOverride": "materials/default.vmat",
+                  "MaterialOverride": {
+                    "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                    "Path": "materials/default.vmat"
+                  },
                   "Materials": null,
-                  "Model": "models/dev/box.vmdl",
+                  "Model": {
+                    "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                    "Path": "models/dev/box.vmdl"
+                  },
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -4258,9 +4652,15 @@
                       "CreateAttachments": false,
                       "LodOverride": null,
                       "MaterialGroup": null,
-                      "MaterialOverride": "materials/default.vmat",
+                      "MaterialOverride": {
+                        "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                        "Path": "materials/default.vmat"
+                      },
                       "Materials": null,
-                      "Model": "models/dev/box.vmdl",
+                      "Model": {
+                        "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                        "Path": "models/dev/box.vmdl"
+                      },
                       "OnComponentDestroy": null,
                       "OnComponentDisabled": null,
                       "OnComponentEnabled": null,
@@ -4304,9 +4704,15 @@
                       "CreateAttachments": false,
                       "LodOverride": null,
                       "MaterialGroup": null,
-                      "MaterialOverride": "materials/default.vmat",
+                      "MaterialOverride": {
+                        "Id": "eaa543a0-3df1-48b8-9cfd-1a27c5fc3dc7",
+                        "Path": "materials/default.vmat"
+                      },
                       "Materials": null,
-                      "Model": "models/dev/box.vmdl",
+                      "Model": {
+                        "Id": "8a84e5a0-01f8-0000-f0db-b088f8010000",
+                        "Path": "models/dev/box.vmdl"
+                      },
                       "OnComponentDestroy": null,
                       "OnComponentDisabled": null,
                       "OnComponentEnabled": null,
@@ -4441,6 +4847,7 @@
           "Gravity": true,
           "GravityScale": 1,
           "ImpactDamage": 0,
+          "InertiaScale": 1,
           "LinearDamping": 0,
           "Locking": {
             "X": false,
@@ -4489,14 +4896,56 @@
           "__guid": "8c3b3028-bc33-41f4-bedd-89ca2e2db51b",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
           "ConeInner": 15,
           "ConeOuter": 51.951218,
           "Contribution": "Diffuse, Specular, Transmissive",
           "Cookie": null,
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.83256,0.81395,1",
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4506,7 +4955,8 @@
           "Radius": 2000,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4532,14 +4982,56 @@
           "__guid": "16a4c420-9e7b-4f06-ad48-036c27c75bdf",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
           "ConeInner": 15,
           "ConeOuter": 51.951218,
           "Contribution": "Diffuse, Specular, Transmissive",
           "Cookie": null,
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.83256,0.81395,1",
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4549,7 +5041,8 @@
           "Radius": 2000,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4575,14 +5068,56 @@
           "__guid": "f5b328af-3031-48bc-8822-322b76de9595",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
           "ConeInner": 15,
           "ConeOuter": 47.92683,
           "Contribution": "Diffuse, Specular, Transmissive",
           "Cookie": null,
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.10003,0,1",
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4592,7 +5127,8 @@
           "Radius": 1000,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4618,14 +5154,56 @@
           "__guid": "78091389-ad9b-4048-85d4-51de5158d882",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
           "ConeInner": 15,
           "ConeOuter": 47.92683,
           "Contribution": "Diffuse, Specular, Transmissive",
           "Cookie": null,
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.10003,0,1",
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4635,7 +5213,8 @@
           "Radius": 1000,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4661,11 +5240,13 @@
           "__guid": "c2d440f9-1647-4b50-8e9c-1ed2806c4c7b",
           "__enabled": true,
           "Flags": 0,
+          "__version": 2,
+          "BakeVersion": 0,
+          "BlendDistance": 0,
           "Bounds": {
             "Mins": "-711.79248,-662.044556,-16",
             "Maxs": "700.117065,702.064087,433.146881"
           },
-          "Contrast": 1,
           "DistanceTexture": null,
           "InsideGeometry": "Relocate",
           "IrradianceTexture": null,
@@ -4678,7 +5259,12 @@
           "OnComponentUpdate": null,
           "ProbeDensity": 6,
           "RelocationTexture": null,
-          "RenderExcludeTags": ""
+          "RenderExcludeTags": "",
+          "RuntimeContrast": 1,
+          "RuntimeIntensity": 1,
+          "RuntimeSaturation": 1,
+          "RuntimeTint": "1,1,1,1",
+          "ViewBias": 5
         }
       ],
       "Children": []
@@ -4704,14 +5290,56 @@
           "__guid": "777daa0a-9117-43b0-8f65-ee09d2db2aa9",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
           "ConeInner": 15,
           "ConeOuter": 50.487804,
           "Contribution": "Diffuse, Specular, Transmissive",
           "Cookie": null,
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "0.57534,0.61596,0.62791,1",
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4721,7 +5349,8 @@
           "Radius": 4000,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4747,14 +5376,56 @@
           "__guid": "1ac2a999-1dce-4afa-8f5a-c91759207307",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
           "ConeInner": 15,
           "ConeOuter": 50.487804,
           "Contribution": "Diffuse, Specular, Transmissive",
           "Cookie": null,
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "0.91373,0.98039,1,1",
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4764,7 +5435,8 @@
           "Radius": 4000,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4790,11 +5462,55 @@
           "__guid": "dc2d67be-f0da-46f9-9825-433e42efb326",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0.32520324,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.47814,0.05116,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4804,7 +5520,8 @@
           "Radius": 478.03967,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4830,11 +5547,55 @@
           "__guid": "c79ffde3-1c43-435a-940e-74087860ee73",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0.32520324,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.47814,0.05116,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4844,7 +5605,8 @@
           "Radius": 478.03967,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4870,11 +5632,55 @@
           "__guid": "0b0ea42d-c5ac-4b9b-a058-df19691ff911",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0.32520324,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.47814,0.05116,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4884,7 +5690,8 @@
           "Radius": 478.03967,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4910,11 +5717,55 @@
           "__guid": "1ebd3987-1948-460a-a17b-1b0a738f47d8",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0,0,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4924,7 +5775,8 @@
           "Radius": 1115.9252,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4950,11 +5802,55 @@
           "__guid": "a6c13625-0873-4bfb-b9d3-68796d05c8de",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0,0,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -4964,7 +5860,8 @@
           "Radius": 1115.9252,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -4990,11 +5887,55 @@
           "__guid": "c319779f-5d7e-4419-9210-f7d7b14fa4d1",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0,0,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5004,7 +5945,8 @@
           "Radius": 1350.0007,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5030,11 +5972,55 @@
           "__guid": "844457fb-05db-461d-8052-0b576f6d5607",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0,0,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5044,7 +6030,8 @@
           "Radius": 1350.0007,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5070,11 +6057,55 @@
           "__guid": "a3ee7346-f46d-4d9f-9faf-eb37881c5278",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0,0,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5084,7 +6115,8 @@
           "Radius": 1350.0007,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5110,11 +6142,55 @@
           "__guid": "4210bd59-82f4-4171-a831-bbd4ed7fa2ab",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0,0,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5124,7 +6200,8 @@
           "Radius": 1350.0007,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5150,11 +6227,55 @@
           "__guid": "96371d32-3e6f-4dac-85d2-a9b320c43ca8",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,1,1,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5164,7 +6285,8 @@
           "Radius": 1350.0007,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5190,11 +6312,55 @@
           "__guid": "4764aa50-0dbe-4855-8fd8-f8b3968447ca",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0,0,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5204,7 +6370,8 @@
           "Radius": 1115.9252,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5230,11 +6397,55 @@
           "__guid": "39244b2c-efeb-4b78-9763-3ae58ef8818b",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0,0,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5244,7 +6455,8 @@
           "Radius": 1115.9252,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5270,11 +6482,55 @@
           "__guid": "59b8609c-647b-4b20-afeb-34b000a67392",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0.32520324,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.47814,0.05116,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5284,7 +6540,8 @@
           "Radius": 478.03967,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5310,11 +6567,55 @@
           "__guid": "ddd4b875-53d7-408d-93f1-4adf99b1a14b",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0.32520324,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.47814,0.05116,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5324,7 +6625,8 @@
           "Radius": 478.03967,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5350,11 +6652,55 @@
           "__guid": "0f44af30-d5e6-46fa-ad3e-ea9eba36677a",
           "__enabled": true,
           "Flags": 0,
+          "__version": 1,
+          "AnimationCurve": [
+            {
+              "x": 0,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 0.5,
+              "y": 1,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            },
+            {
+              "x": 1,
+              "y": 0,
+              "in": 0,
+              "out": 0,
+              "mode": "Mirrored"
+            }
+          ],
+          "AnimationDuration": 2,
+          "AnimationEnabled": false,
+          "AnimationGradient": {
+            "blend": "Linear",
+            "color": [
+              {
+                "t": 0.5,
+                "c": "1,1,1,1"
+              }
+            ],
+            "alpha": []
+          },
+          "AnimationPattern": "Flicker",
+          "AnimationSpeed": 1,
+          "AnimationTimeOffset": 0,
           "Attenuation": 0.32520324,
+          "BakeLightIndex": -1,
+          "ConstantAttenuation": 0,
           "Contribution": "Diffuse, Specular, Transmissive",
           "FogMode": "Enabled",
           "FogStrength": 1,
+          "Intensity": 1,
           "LightColor": "1,0.47814,0.05116,1",
+          "LinearAttenuation": 0,
+          "MixedShadows": false,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5364,7 +6710,8 @@
           "Radius": 478.03967,
           "ShadowBias": 0,
           "ShadowHardness": 0,
-          "Shadows": true
+          "Shadows": true,
+          "Temperature": 6500
         }
       ],
       "Children": []
@@ -5479,6 +6826,7 @@
           "Gravity": true,
           "GravityScale": 1,
           "ImpactDamage": 0,
+          "InertiaScale": 1,
           "LinearDamping": 0,
           "Locking": {
             "X": false,
@@ -5681,6 +7029,7 @@
           "LeadingTrail": true,
           "Lighting": false,
           "MotionBlur": false,
+          "NormalTexture": null,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -5689,6 +7038,8 @@
           "OnComponentUpdate": null,
           "Opaque": false,
           "PlaybackSpeed": 1,
+          "Refraction": false,
+          "RefractionStrength": 8,
           "RenderOptions": {
             "GameLayer": true,
             "OverlayLayer": false,
@@ -5713,7 +7064,10 @@
                   "LoopEnd": -1,
                   "Frames": [
                     {
-                      "Texture": "textures/particles/smoke/smoke_loop_a.vtex",
+                      "Texture": {
+                        "Id": "efde0367-4120-44af-851c-c8df4a2d9269",
+                        "Path": "textures/particles/smoke/smoke_loop_a.vtex"
+                      },
                       "BroadcastMessages": []
                     }
                   ]

@@ -684,36 +684,6 @@
 						<label class="title">@GameSettings.Text.Shop.Go</label>
 					</div>
 				</div>
-				<div class="shop-sheet">
-					<img class="sheet-back" src="ui/Arena UI/element_back_long.png" />
-					<div class="sheet-body">
-					<label class="sheet-kicker">WEAPON</label>
-					@foreach ( var row in ShopWeapon )
-					{
-						<div class="sheet-row">
-							<label class="key">@row.Label</label>
-							<div class="vals">
-								<label class="now">@row.Now</label>
-								@if ( row.Next != "" )
-								{
-									<label class="arrow">→</label>
-									<label class="next @row.NextClass">@row.Next</label>
-								}
-							</div>
-						</div>
-					}
-					<label class="sheet-kicker">HERO</label>
-					@foreach ( var row in ShopHero )
-					{
-						<div class="sheet-row">
-							<label class="key">@row.Label</label>
-							<div class="vals">
-								<label class="now">@row.Now</label>
-							</div>
-						</div>
-					}
-					</div>
-				</div>
 			</div>
 		}
 
@@ -806,81 +776,6 @@
 		</div>
 	}
 
-	@if ( ShowBiomassTip )
-	{
-		<div class="biomass-tip">
-			<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
-			<div class="stat-face">
-				<div class="stat-row lead">
-					<label class="key">@GameSettings.Text.Hud.Stash</label>
-					<label class="value stash-value">@(Loop.City.IsValid() ? Loop.City.Warehouse : 0)</label>
-				</div>
-				<div class="stat-row lead">
-					<label class="key">@GameSettings.Text.Hud.Fed</label>
-					<label class="value fed-value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
-				</div>
-			</div>
-		</div>
-	}
-
-	@if ( HoveredUpgrade is TrinketDef tip )
-	{
-		<div class="card shop-offer upgrade-tip" style="border-color: @TraitBorder(tip)">
-			<img class="shop-plate" src="ui/Arena UI/element_shop_left_btn.png" />
-			<div class="shop-body">
-				<img class="shop-icon" src="@tip.IconPath" />
-				<div class="shop-name">
-					<label class="title">@tip.ShownTitle</label>
-					@if ( Trinkets.IsWeapon( tip ) )
-					{
-						<label class="weapon">@GameSettings.Text.Shop.Weapon</label>
-					}
-					else if ( tip.IsSkill )
-					{
-						<label class="weapon">@GameSettings.Text.Shop.Active</label>
-					}
-				</div>
-				<label class="rarity" style="color: @TraitInk(tip)">@GameSettings.Text.RarityOf(tip.Pack)</label>
-				@if ( OfferBlurb( tip ) is { Length: > 0 } blurb )
-				{
-					<label class="blurb">@blurb</label>
-				}
-				@if ( OfferLocks( tip ) is { Length: > 0 } locks )
-				{
-					<label class="blurb">@locks</label>
-				}
-				@if ( OfferUnlocks( tip ) is { Length: > 0 } opens )
-				{
-					<label class="blurb">@opens</label>
-				}
-				<div class="stats">
-					@foreach ( var line in OfferStats( tip, true ) )
-					{
-						<label class="stat @line.Class">@line.Text</label>
-					}
-				</div>
-			</div>
-			<div class="shop-foot">
-				@if ( OfferRank( tip, true ) is { Length: > 0 } rank )
-				{
-					<label class="rank">@rank</label>
-				}
-			</div>
-		</div>
-	}
-
-	<div class="cursor-trail"></div>
-	<div class="cursor-aura">
-		<div class="cursor-ring"></div>
-		<div class="cursor-dot"></div>
-	</div>
-	<div class="shot-cursor">
-		<div class="reload-track"></div>
-		@for ( var i = 0; i < ReloadMarks; i++ )
-		{
-			<div class="reload-mark"></div>
-		}
-	</div>
 </root>
 
 @code
@@ -890,6 +785,12 @@
 	protected override void OnTreeFirstBuilt()
 	{
 		Panel.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
+		hudMisses.Clear();
+	}
+
+	protected override void OnTreeBuilt()
+	{
+		hudMisses.Clear();
 	}
 
 	protected override void OnUpdate()
@@ -897,20 +798,21 @@
 		if ( Panel is null || !Loop.IsValid() )
 			return;
 
-		Panel.Style.PointerEvents = Loop.WantsUiCursor || Loop.CanPause
+		var takePointer = Loop.WantsUiCursor || Loop.CanPause
 			? Sandbox.UI.PointerEvents.All
 			: Sandbox.UI.PointerEvents.None;
+		if ( Panel.Style.PointerEvents != takePointer )
+			Panel.Style.PointerEvents = takePointer;
 
-		TickCursor();
+		EnsureParts();
 		TickClock();
 		TickReadouts();
 		TickOrganTip();
 		TickUpgradeHover();
-		TickUpgradeTip();
 		TickBiomassHover();
-		TickBiomassTip();
-		TickReloadCursor();
 		TickHover();
+		tipLook.Chip = HoveredUpgrade?.Id;
+		tipLook.Biomass = ShowBiomassTip;
 		TickSettingDrag();
 		TickTraySize();
 		TickSkillCovers();
@@ -918,7 +820,7 @@
 		TickCollectionList();
 
 		if ( Loop.Phase != RunPhase.PickTrait )
-			shopHover = -1;
+			shopLook.Index = -1;
 
 		if ( Loop.Phase != RunPhase.City )
 			sacrificeOpen = false;
@@ -1297,8 +1199,8 @@
 	void BuyAllOffers() => Loop?.ChooseBuyAll();
 	void FinishShop() => Loop?.ChooseShopGo();
 	void RefreshShop() => Loop?.ChooseRefreshShop();
-	void HoverShop( int index ) => shopHover = index;
-	void LeaveShop() => shopHover = -1;
+	void HoverShop( int index ) => shopLook.Index = index;
+	void LeaveShop() => shopLook.Index = -1;
 	void PickOrgan( BuildingKind kind )
 	{
 		if ( !Loop.IsValid() || !Loop.City.IsValid() )
@@ -1432,28 +1334,45 @@
 		foreach ( var chip in GearChips )
 			wanted.Add( chip.Id );
 
-		var index = 0;
+		if ( chipPanels.Count != wanted.Count || (chipPanels.Count > 0 && !chipPanels[0].IsValid()) )
+			BindUpgradeChips();
+
+		if ( chipPanels.Count != wanted.Count )
+			return false;
+
 		var ready = 0;
 		string hit = null;
-		foreach ( var child in Panel.Descendants )
+		for ( var i = 0; i < chipPanels.Count; i++ )
 		{
-			if ( !child.HasClass( "upgrade-chip" ) )
-				continue;
+			var child = chipPanels[i];
+			if ( !child.IsValid() )
+				return false;
 
-			if ( index < wanted.Count && ChipHit( child ) && hit is null )
-				hit = wanted[index];
+			if ( ChipHit( child ) && hit is null )
+				hit = wanted[i];
 
 			if ( child.Box.Rect.Width > 1f && child.Box.Rect.Height > 1f )
 				ready++;
-
-			index++;
 		}
 
-		if ( index != wanted.Count || (wanted.Count > 0 && ready == 0) )
+		if ( wanted.Count > 0 && ready == 0 )
 			return false;
 
 		id = hit;
 		return true;
+	}
+
+	void BindUpgradeChips()
+	{
+		chipPanels.Clear();
+		if ( Panel is null )
+			return;
+
+		foreach ( var child in Panel.Descendants )
+		{
+			if ( child.HasClass( "upgrade-chip" ) )
+				chipPanels.Add( child );
+		}
 	}
 
 	bool ChipHit( Sandbox.UI.Panel chip )
@@ -1475,51 +1394,6 @@
 		var mouse = chip.MousePosition;
 		const float pad = 6f;
 		return mouse.x >= -pad && mouse.y >= -pad && mouse.x <= width + pad && mouse.y <= height + pad;
-	}
-
-	void TickUpgradeTip()
-	{
-		if ( HoveredUpgrade is null )
-		{
-			upgradeTip = null;
-			return;
-		}
-
-		if ( !upgradeTip.IsValid() )
-			upgradeTip = FindHud( "upgrade-tip" );
-		if ( !upgradeTip.IsValid() )
-			return;
-
-		var point = CursorOn();
-		var w = upgradeTip.Box.Rect.Width;
-		var h = upgradeTip.Box.Rect.Height;
-		if ( w < 8f )
-			w = 240f;
-		if ( h < 8f )
-			h = 320f;
-
-		var x = point.x - w - 18f;
-		var y = point.y - 24f;
-		if ( Panel is not null )
-		{
-			var bounds = Panel.Box.Rect;
-			if ( bounds.Width > 64f && bounds.Height > 64f )
-			{
-				if ( x < 12f )
-					x = point.x + 28f;
-
-				var maxX = Math.Max( 12f, bounds.Width - w - 12f );
-				var maxY = Math.Max( 12f, bounds.Height - h - 12f );
-				x = Math.Clamp( x, 12f, maxX );
-				y = Math.Clamp( y, 12f, maxY );
-			}
-		}
-
-		upgradeTip.Style.Position = Sandbox.UI.PositionMode.Absolute;
-		upgradeTip.Style.Left = Sandbox.UI.Length.Pixels( x );
-		upgradeTip.Style.Top = Sandbox.UI.Length.Pixels( y );
-		upgradeTip.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
-		upgradeTip.Style.Dirty();
 	}
 
 	bool ShowBiomassHud => Loop.IsValid()
@@ -1562,86 +1436,14 @@
 	bool TryHoveredBiomass( out bool hit )
 	{
 		hit = false;
-		Sandbox.UI.Panel row = null;
-		foreach ( var child in Panel.Descendants )
-		{
-			if ( !child.HasClass( "biomass-row" ) )
-				continue;
+		if ( !biomassRow.IsValid() )
+			biomassRow = FindHud( "biomass-row" );
 
-			row = child;
-			break;
-		}
-
-		if ( !row.IsValid() || row.Box.Rect.Width < 1f || row.Box.Rect.Height < 1f )
+		if ( !biomassRow.IsValid() || biomassRow.Box.Rect.Width < 1f || biomassRow.Box.Rect.Height < 1f )
 			return false;
 
-		hit = ChipHit( row );
+		hit = ChipHit( biomassRow );
 		return true;
-	}
-
-	void TickBiomassTip()
-	{
-		if ( !ShowBiomassTip )
-		{
-			biomassTip = null;
-			return;
-		}
-
-		if ( !biomassTip.IsValid() )
-			biomassTip = FindHud( "biomass-tip" );
-		if ( !biomassTip.IsValid() )
-			return;
-
-		var point = CursorOn();
-		var w = biomassTip.Box.Rect.Width;
-		var h = biomassTip.Box.Rect.Height;
-		if ( w < 8f )
-			w = 320f;
-		if ( h < 8f )
-			h = 146f;
-
-		var x = BiomassTipX();
-		var y = point.y - 8f;
-		if ( Panel is not null )
-		{
-			var bounds = Panel.Box.Rect;
-			if ( bounds.Width > 64f && bounds.Height > 64f )
-			{
-				var maxX = Math.Max( 12f, bounds.Width - w - 12f );
-				var maxY = Math.Max( 12f, bounds.Height - h - 12f );
-				x = Math.Clamp( x, 12f, maxX );
-				y = Math.Clamp( y, 12f, maxY );
-			}
-		}
-
-		biomassTip.Style.Position = Sandbox.UI.PositionMode.Absolute;
-		biomassTip.Style.Left = Sandbox.UI.Length.Pixels( x );
-		biomassTip.Style.Top = Sandbox.UI.Length.Pixels( y );
-		biomassTip.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
-		biomassTip.Style.Dirty();
-	}
-
-	float BiomassTipX()
-	{
-		const float gap = 14f;
-		const float fallback = 678f;
-		var host = FindHud( "run-left" );
-		if ( !host.IsValid() )
-			return fallback;
-
-		var x = host.Box.Rect.Left;
-		var width = host.Box.Rect.Width;
-		var current = host.Parent;
-		while ( current.IsValid() && current != Panel )
-		{
-			x += current.Box.Rect.Left;
-			current = current.Parent;
-		}
-
-		if ( width < 8f )
-			return fallback;
-
-		return x + width + gap;
 	}
 
 	List<OwnedChip> OwnedChips( bool weapons )
@@ -1814,20 +1616,20 @@
 		? GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankOne, stash )
 		: GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankMany, stash );
 
-	List<StatLine> OfferStats( TrinketDef trait, bool bought )
+	public List<StatLine> OfferStats( TrinketDef trait, bool bought )
 	{
 		var level = TraitLevel( trait );
 		var rank = bought ? Math.Max( 1, level ) : Math.Min( trait?.Cap ?? 1, level + 1 );
 		return StatSheet.Effects( trait, rank );
 	}
 
-	string OfferBlurb( TrinketDef trait )
+	public string OfferBlurb( TrinketDef trait )
 	{
 		var text = trait?.ShownBlurb;
 		return string.IsNullOrWhiteSpace( text ) ? "" : text;
 	}
 
-	string OfferLocks( TrinketDef trait )
+	public string OfferLocks( TrinketDef trait )
 	{
 		if ( trait is null || trait.Id == "BORE" )
 			return "";
@@ -1866,13 +1668,13 @@
 		return names.Count == 0 ? "" : "Locks out " + string.Join( ", ", names );
 	}
 
-	string OfferUnlocks( TrinketDef trait )
+	public string OfferUnlocks( TrinketDef trait )
 	{
 		var names = Trinkets.Unlocks( trait );
 		return names.Length == 0 ? "" : GameSettings.Text.F( GameSettings.Text.Shop.Unlocks, names );
 	}
 
-	string OfferRank( TrinketDef trait, bool bought )
+	public string OfferRank( TrinketDef trait, bool bought )
 	{
 		if ( !Trinkets.ShowRank( trait ) )
 			return "";
@@ -1881,27 +1683,6 @@
 		var shown = bought ? Math.Max( 1, level ) : Math.Min( trait.Cap, level + 1 );
 		return GameSettings.Text.F( GameSettings.Text.Shop.OfferRank, shown );
 	}
-
-	TrinketDef ShopPreview
-	{
-		get
-		{
-			if ( !Loop.IsValid() || Loop.Phase != RunPhase.PickTrait )
-				return null;
-
-			if ( shopHover < 0 || shopHover >= Loop.Offers.Count )
-				return null;
-
-			var offer = Loop.Offers[shopHover];
-			if ( offer.Bought || Loop.TraitLocked( offer.Trait ) )
-				return null;
-
-			return offer.Trait;
-		}
-	}
-
-	List<SheetRow> ShopWeapon => StatSheet.Weapon( Loop, ShopPreview );
-	List<SheetRow> ShopHero => StatSheet.Hero( Loop );
 
 	string OfferCost( TrinketDef trait, bool bought )
 	{
@@ -1936,13 +1717,13 @@
 		return "upgrade";
 	}
 
-	string TraitBorder( TrinketDef trait )
+	public string TraitBorder( TrinketDef trait )
 	{
 		var c = Trinkets.PackColor( trait );
 		return $"rgba({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)}, 0.85)";
 	}
 
-	string TraitInk( TrinketDef trait )
+	public string TraitInk( TrinketDef trait )
 	{
 		var pack = trait.Pack;
 		if ( pack is TraitPack.Rifle or TraitPack.Shotgun or TraitPack.Entry )
@@ -1960,10 +1741,6 @@
 		return $"rgb({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)})";
 	}
 
-	float auraX;
-	float auraY;
-	float trailX;
-	float trailY;
 	Sandbox.UI.Label clockLabel;
 	Sandbox.UI.Label fedLabel;
 	Sandbox.UI.Label scrapLabel;
@@ -1982,28 +1759,38 @@
 	Sandbox.UI.Panel dashHint;
 	int dodgeStep;
 	readonly List<string> heartShown = new();
-	Sandbox.UI.Panel auraPanel;
-	Sandbox.UI.Panel trailPanel;
-	Sandbox.UI.Panel shotCursor;
-	readonly List<Sandbox.UI.Panel> reloadMarks = new();
-	bool reloadLaidOut;
-	const int ReloadMarks = 24;
-	Sandbox.UI.Panel trayPanel;
 	Sandbox.UI.Panel trayFrame;
-	Sandbox.UI.Panel shopSheet;
+	float skillBarBottom = -1f;
+	float dashCoachBottom = -1f;
+	int heartLayout = -1;
+	bool chargeLayersPlaced;
+	float dashReveal = -1f;
+	float slowReveal = -1f;
+	readonly Sandbox.UI.Panel[] skillSlots = new Sandbox.UI.Panel[ActiveSkills.SlotCount];
+	readonly Sandbox.UI.Panel[] skillFills = new Sandbox.UI.Panel[ActiveSkills.SlotCount];
+	readonly float[] skillRemain = { -1f, -1f, -1f, -1f };
+	bool skillCoversBound;
+	bool menuPicking;
+	bool hoverBound;
+	RunPhase hoverPhase;
+	int hoverGeneration;
+	int pickingGeneration = -1;
+	readonly List<Sandbox.UI.Panel> hoverCards = new();
+	readonly List<Sandbox.UI.Panel> menuOverlays = new();
 	Sandbox.UI.Panel healthRow;
 	Sandbox.UI.Panel dashSlot;
 	Sandbox.UI.Panel dashCoach;
 	Sandbox.UI.Panel skillBar;
 	Sandbox.UI.Panel hotCard;
 	Sandbox.UI.Panel organTip;
-	Sandbox.UI.Panel upgradeTip;
-	Sandbox.UI.Panel biomassTip;
 	string hoverChip;
 	int hoverMiss;
 	bool biomassHover;
 	int biomassMiss;
-	int shopHover = -1;
+	readonly ShopLook shopLook = new();
+	readonly TipLook tipLook = new();
+	readonly List<Sandbox.UI.Panel> chipPanels = new();
+	Sandbox.UI.Panel biomassRow;
 	const float HudScale = 0.8f;
 	const float TrayArtWidth = 2544f;
 	const float TrayArtHeight = 286f;
@@ -2034,12 +1821,6 @@
 		PlaceHealthIcons();
 		PlaceChargeMeters();
 
-		if ( !trayPanel.IsValid() )
-			trayPanel = FindHud( "tray-back" );
-
-		if ( !trayPanel.IsValid() )
-			return;
-
 		var screenW = Panel.Box.Rect.Width;
 		var screenH = Panel.Box.Rect.Height;
 		if ( screenW <= 1f || screenH <= 1f )
@@ -2048,74 +1829,79 @@
 		if ( !trayFrame.IsValid() )
 			trayFrame = FindHud( "tray-frame" );
 
-		var width = trayFrame.IsValid() && trayFrame.Box.Rect.Width > 1f
-			? trayFrame.Box.Rect.Width
-			: screenW * HudScale;
+		if ( !trayFrame.IsValid() )
+			return;
+
+		var width = trayFrame.Box.Rect.Width > 1f ? trayFrame.Box.Rect.Width : screenW * HudScale;
 		var height = width * (TrayArtHeight / TrayArtWidth);
-		trayPanel.Style.Position = Sandbox.UI.PositionMode.Absolute;
-		trayPanel.Style.Left = Sandbox.UI.Length.Pixels( 0 );
-		trayPanel.Style.Top = Sandbox.UI.Length.Auto;
-		trayPanel.Style.Bottom = Sandbox.UI.Length.Pixels( 0 );
-		trayPanel.Style.Width = Sandbox.UI.Length.Pixels( width );
-		trayPanel.Style.Height = Sandbox.UI.Length.Pixels( height );
-		trayPanel.Style.Dirty();
 
-		if ( !shopSheet.IsValid() )
-			shopSheet = FindHud( "shop-sheet" );
-
-		if ( shopSheet.IsValid() )
-		{
-			shopSheet.Style.Bottom = Sandbox.UI.Length.Pixels( height + 16f );
-			shopSheet.Style.Dirty();
-		}
+		if ( Loop.IsValid() && Loop.Phase == RunPhase.PickTrait )
+			shopLook.Bottom = height + 16f;
 
 		PlaceDashCoach( height );
 		PlaceSkillBar( height );
 	}
 
+	static void PlaceBottom( Sandbox.UI.Panel panel, float bottom, ref float placed )
+	{
+		if ( !panel.IsValid() || MathF.Abs( placed - bottom ) < 0.5f )
+			return;
+
+		panel.Style.Position = Sandbox.UI.PositionMode.Absolute;
+		panel.Style.Bottom = Sandbox.UI.Length.Pixels( bottom );
+		panel.Style.Dirty();
+		placed = bottom;
+	}
+
 	void PlaceSkillBar( float trayHeight )
 	{
 		if ( !skillBar.IsValid() )
+		{
 			skillBar = FindHud( "skill-bar" );
+			skillBarBottom = -1f;
+			skillCoversBound = false;
+		}
 
-		if ( !skillBar.IsValid() )
-			return;
-
-		skillBar.Style.Position = Sandbox.UI.PositionMode.Absolute;
-		skillBar.Style.Bottom = Sandbox.UI.Length.Pixels( trayHeight + 12f );
-		skillBar.Style.Dirty();
+		PlaceBottom( skillBar, trayHeight + 12f, ref skillBarBottom );
 	}
 
 	void TickSkillCovers()
 	{
 		if ( Panel is null || !Loop.IsValid() || Loop.InCity || Loop.InMenu || !Loop.Inventory.IsValid() )
+		{
+			skillCoversBound = false;
+			return;
+		}
+
+		if ( !skillCoversBound || !skillSlots[0].IsValid() )
+			BindSkillCovers();
+
+		if ( !skillCoversBound )
 			return;
 
-		var slot = 0;
-		foreach ( var child in Panel.Descendants )
+		for ( var slot = 0; slot < ActiveSkills.SlotCount; slot++ )
 		{
-			if ( !child.HasClass( "skill-slot" ) )
-				continue;
+			var child = skillSlots[slot];
+			if ( !child.IsValid() )
+			{
+				skillCoversBound = false;
+				return;
+			}
 
 			var card = Skills?.CardAt( slot );
 			SetFlag( child, "ready", card is not null && Skills.Ready( slot ) );
 			SetFlag( child, "empty", card is null );
 
-			var charge = card is null ? 1f : Skills.Charge( slot );
-			Sandbox.UI.Panel fill = null;
-			foreach ( var part in child.Descendants )
-			{
-				if ( part.HasClass( "skill-veil-fill" ) )
-					fill = part;
-			}
-
+			var fill = skillFills[slot];
 			if ( !fill.IsValid() )
-			{
-				slot++;
 				continue;
-			}
 
+			var charge = card is null ? 1f : Skills.Charge( slot );
 			var remain = Math.Clamp( 1f - charge, 0f, 1f );
+			if ( MathF.Abs( skillRemain[slot] - remain ) < 0.001f )
+				continue;
+
+			skillRemain[slot] = remain;
 			fill.Style.Left = Sandbox.UI.Length.Pixels( 0 );
 			fill.Style.Right = Sandbox.UI.Length.Pixels( 0 );
 			fill.Style.Top = Sandbox.UI.Length.Pixels( 0 );
@@ -2132,15 +1918,50 @@
 			}
 
 			fill.Style.Dirty();
+		}
+	}
+
+	void BindSkillCovers()
+	{
+		for ( var i = 0; i < ActiveSkills.SlotCount; i++ )
+		{
+			skillSlots[i] = null;
+			skillFills[i] = null;
+			skillRemain[i] = -1f;
+		}
+
+		var slot = 0;
+		foreach ( var child in Panel.Descendants )
+		{
+			if ( !child.HasClass( "skill-slot" ) )
+				continue;
+
+			if ( slot >= ActiveSkills.SlotCount )
+				break;
+
+			skillSlots[slot] = child;
+			foreach ( var part in child.Descendants )
+			{
+				if ( !part.HasClass( "skill-veil-fill" ) )
+					continue;
+
+				skillFills[slot] = part;
+				break;
+			}
 
 			slot++;
 		}
+
+		skillCoversBound = slot == ActiveSkills.SlotCount;
 	}
 
 	void PlaceDashCoach( float trayHeight )
 	{
 		if ( !dashCoach.IsValid() )
+		{
 			dashCoach = FindHud( "dash-coach" );
+			dashCoachBottom = -1f;
+		}
 
 		var show = Loop.IsValid() && Loop.DashCoach;
 		if ( dashCoach.IsValid() )
@@ -2148,10 +1969,15 @@
 			SetFlag( dashCoach, "on", show );
 			if ( show )
 			{
-				dashCoach.Style.Position = Sandbox.UI.PositionMode.Absolute;
-				dashCoach.Style.Bottom = Sandbox.UI.Length.Pixels( trayHeight + 14f );
-				dashCoach.Style.Right = Sandbox.UI.Length.Percent( 12f );
-				dashCoach.Style.Dirty();
+				var bottom = trayHeight + 14f;
+				if ( MathF.Abs( dashCoachBottom - bottom ) >= 0.5f )
+				{
+					dashCoach.Style.Position = Sandbox.UI.PositionMode.Absolute;
+					dashCoach.Style.Bottom = Sandbox.UI.Length.Pixels( bottom );
+					dashCoach.Style.Right = Sandbox.UI.Length.Percent( 12f );
+					dashCoach.Style.Dirty();
+					dashCoachBottom = bottom;
+				}
 			}
 		}
 
@@ -2167,6 +1993,7 @@
 		{
 			healthRow = FindHud( "hp-row" );
 			heartShown.Clear();
+			heartLayout = -1;
 		}
 
 		if ( !healthRow.IsValid() )
@@ -2179,8 +2006,13 @@
 		if ( rowW <= 1f || rowH <= 1f )
 			return;
 
-		var ratio = rowW / rowH;
 		var count = Math.Max( Loop.HeartMax, 1 );
+		var layout = System.HashCode.Combine( count, (int)rowW, (int)rowH );
+		if ( layout == heartLayout )
+			return;
+
+		heartLayout = layout;
+		var ratio = rowW / rowH;
 		var size = 0f;
 		for ( var rows = 1; rows <= count; rows++ )
 		{
@@ -2213,7 +2045,12 @@
 	void PlaceChargeMeters()
 	{
 		if ( !dashSlot.IsValid() )
+		{
 			dashSlot = FindHud( "dash-slot" );
+			chargeLayersPlaced = false;
+			dashReveal = -1f;
+			slowReveal = -1f;
+		}
 
 		if ( !dashSlot.IsValid() )
 			return;
@@ -2223,14 +2060,17 @@
 			if ( !meter.HasClass( "charge-meter" ) )
 				continue;
 
-			var fraction = meter.HasClass( "slow" )
+			var slow = meter.HasClass( "slow" );
+			var fraction = slow
 				? Math.Clamp( SlowPercent / 100f, 0f, 1f )
 				: Math.Clamp( DashPercent / 100f, 0f, 1f );
 			var revealW = fraction >= 0.999f ? ChargeMeterWidth : ChargeMeterWidth * fraction;
+			var placed = slow ? slowReveal : dashReveal;
+			var widthChanged = MathF.Abs( placed - revealW ) >= 0.5f;
 
 			foreach ( var layer in meter.Descendants )
 			{
-				if ( layer.HasClass( "charge-layer" ) )
+				if ( !chargeLayersPlaced && layer.HasClass( "charge-layer" ) )
 				{
 					layer.Style.Width = Sandbox.UI.Length.Pixels( ChargeMeterWidth );
 					layer.Style.Height = Sandbox.UI.Length.Pixels( ChargeMeterHeight );
@@ -2239,7 +2079,7 @@
 					layer.Style.Dirty();
 				}
 
-				if ( layer.HasClass( "charge-reveal" ) )
+				if ( widthChanged && layer.HasClass( "charge-reveal" ) )
 				{
 					layer.Style.Left = Sandbox.UI.Length.Pixels( 0 );
 					layer.Style.Top = Sandbox.UI.Length.Pixels( 0 );
@@ -2248,7 +2088,17 @@
 					layer.Style.Dirty();
 				}
 			}
+
+			if ( !widthChanged )
+				continue;
+
+			if ( slow )
+				slowReveal = revealW;
+			else
+				dashReveal = revealW;
 		}
+
+		chargeLayersPlaced = true;
 	}
 
 	void TickClock()
@@ -2446,37 +2296,6 @@
 		return hash;
 	}
 
-	void TickCursor()
-	{
-		var show = Loop.IsValid() && Loop.WantsUiCursor;
-
-		if ( !auraPanel.IsValid() )
-			auraPanel = FindHud( "cursor-aura" );
-		if ( !trailPanel.IsValid() )
-			trailPanel = FindHud( "cursor-trail" );
-
-		var want = CursorOn();
-		var snap = !show || (trailX == 0f && trailY == 0f);
-		var drag = MathF.Min( 1f, RealTime.Delta * 9f );
-
-		auraX = want.x;
-		auraY = want.y;
-
-		if ( snap )
-		{
-			trailX = want.x;
-			trailY = want.y;
-		}
-		else
-		{
-			trailX = MathX.Lerp( trailX, want.x, drag );
-			trailY = MathX.Lerp( trailY, want.y, drag );
-		}
-
-		PlaceCursor( auraPanel, auraX, auraY, show );
-		PlaceCursor( trailPanel, trailX, trailY, show );
-	}
-
 	Vector2 CursorOn()
 	{
 		var origin = Panel;
@@ -2490,9 +2309,11 @@
 		return Mouse.Position * scale;
 	}
 
+	readonly HashSet<string> hudMisses = new();
+
 	Sandbox.UI.Panel FindHud( string className )
 	{
-		if ( Panel is null )
+		if ( Panel is null || hudMisses.Contains( className ) )
 			return null;
 
 		foreach ( var child in Panel.Descendants )
@@ -2501,85 +2322,35 @@
 				return child;
 		}
 
+		hudMisses.Add( className );
 		return null;
 	}
 
-	static void PlaceCursor( Sandbox.UI.Panel target, float x, float y, bool show )
+	void EnsureParts()
 	{
-		if ( !target.IsValid() )
-			return;
+		var cursor = GameObject.GetComponent<HudCursor>();
+		if ( !cursor.IsValid() )
+			cursor = GameObject.AddComponent<HudCursor>();
+		if ( cursor.Loop != Loop )
+			cursor.Loop = Loop;
 
-		target.SetClass( "on", show );
-		target.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
-		target.Style.Left = Sandbox.UI.Length.Pixels( x );
-		target.Style.Top = Sandbox.UI.Length.Pixels( y );
-		target.Style.Dirty();
-	}
+		var sheet = GameObject.GetComponent<ShopSheet>();
+		if ( !sheet.IsValid() )
+			sheet = GameObject.AddComponent<ShopSheet>();
+		if ( sheet.Loop != Loop )
+			sheet.Loop = Loop;
+		if ( sheet.Look != shopLook )
+			sheet.Look = shopLook;
 
-	void TickReloadCursor()
-	{
-		if ( !shotCursor.IsValid() || reloadMarks.Count != ReloadMarks )
-			BindReloadMarks();
-
-		var show = ShowReloadCursor();
-		var point = CursorOn();
-		PlaceCursor( shotCursor, point.x, point.y, show );
-		if ( !show || reloadMarks.Count == 0 )
-			return;
-
-		if ( !reloadLaidOut )
-			LayoutReloadMarks();
-
-		var amount = Loop.Inventory.Reload01;
-		for ( var i = 0; i < reloadMarks.Count; i++ )
-			reloadMarks[i].SetClass( "on", amount * reloadMarks.Count >= i + 0.001f );
-	}
-
-	bool ShowReloadCursor()
-	{
-		if ( !Loop.IsValid() || !Loop.Inventory.IsValid() )
-			return false;
-
-		if ( Loop.InCity || Loop.InMenu || Loop.WantsUiCursor )
-			return false;
-
-		return Loop.Inventory.ReloadLeft > 0.02f;
-	}
-
-	void BindReloadMarks()
-	{
-		shotCursor = FindHud( "shot-cursor" );
-		reloadMarks.Clear();
-		reloadLaidOut = false;
-		if ( Panel is null )
-			return;
-
-		foreach ( var child in Panel.Descendants )
-		{
-			if ( child.HasClass( "reload-mark" ) )
-				reloadMarks.Add( child );
-		}
-	}
-
-	void LayoutReloadMarks()
-	{
-		var count = reloadMarks.Count;
-		if ( count == 0 )
-			return;
-
-		const float center = 32f;
-		const float radius = 24f;
-		for ( var i = 0; i < count; i++ )
-		{
-			var ang = -MathF.PI * 0.5f + MathF.Tau * i / count;
-			var mark = reloadMarks[i];
-			mark.Style.Position = Sandbox.UI.PositionMode.Absolute;
-			mark.Style.Left = Sandbox.UI.Length.Pixels( center + MathF.Cos( ang ) * radius );
-			mark.Style.Top = Sandbox.UI.Length.Pixels( center + MathF.Sin( ang ) * radius );
-			mark.Style.Dirty();
-		}
-
-		reloadLaidOut = true;
+		var hover = GameObject.GetComponent<HudHover>();
+		if ( !hover.IsValid() )
+			hover = GameObject.AddComponent<HudHover>();
+		if ( hover.Loop != Loop )
+			hover.Loop = Loop;
+		if ( hover.Hud != this )
+			hover.Hud = this;
+		if ( hover.Look != tipLook )
+			hover.Look = tipLook;
 	}
 
 	void TickHover()
@@ -2590,59 +2361,99 @@
 			return;
 		}
 
-		Sandbox.UI.Panel over = null;
-		foreach ( var child in Panel.Descendants )
-		{
-			if ( child.HasHovered )
-				over = child;
-		}
+		var card = HoveredCard();
+		if ( card == hotCard )
+			return;
 
-		var card = over;
-		while ( card.IsValid() && !card.HasClass( "card" ) )
-			card = card.Parent;
+		var previous = hotCard;
+		if ( previous.IsValid() )
+			previous.SetClass( "hot", false );
 
-		var picking = false;
-		foreach ( var child in Panel.Descendants )
-		{
-			if ( !child.HasClass( "card" ) )
-				continue;
+		if ( card.IsValid() )
+			card.SetClass( "hot", true );
 
-			var on = child == card;
-			if ( child.HasClass( "hot" ) != on )
-				child.SetClass( "hot", on );
-
-			if ( on )
-				picking = true;
-		}
-
-		foreach ( var child in Panel.Descendants )
-		{
-			if ( !child.HasClass( "overlay" ) )
-				continue;
-
-			child.SetClass( "picking", picking && child.HasClass( "menu" ) );
-		}
-
-		if ( card.IsValid() && card != hotCard && (hotCard is null || hotCard.IsValid()) )
+		if ( card.IsValid() && (previous is null || previous.IsValid()) )
 			ArenaSounds.MenuMove();
 
 		hotCard = card.IsValid() ? card : null;
+		SetMenuPicking( card.IsValid() );
+	}
+
+	Sandbox.UI.Panel HoveredCard()
+	{
+		if ( Panel is null )
+			return null;
+
+		if ( !hoverBound || Loop.Phase != hoverPhase || (hoverCards.Count > 0 && !hoverCards[0].IsValid()) )
+			BindHover();
+
+		Sandbox.UI.Panel hit = null;
+		foreach ( var card in hoverCards )
+		{
+			if ( !card.IsValid() || !CardHit( card ) )
+				continue;
+
+			hit = card;
+		}
+
+		return hit;
+	}
+
+	void BindHover()
+	{
+		hoverCards.Clear();
+		menuOverlays.Clear();
+		foreach ( var child in Panel.Descendants )
+		{
+			if ( child.HasClass( "card" ) )
+				hoverCards.Add( child );
+			else if ( child.HasClass( "overlay" ) && child.HasClass( "menu" ) )
+				menuOverlays.Add( child );
+		}
+
+		hoverBound = true;
+		hoverPhase = Loop.Phase;
+		hoverGeneration++;
+	}
+
+	static bool CardHit( Sandbox.UI.Panel card )
+	{
+		var width = card.Box.Rect.Width;
+		var height = card.Box.Rect.Height;
+		if ( width < 1f || height < 1f )
+			return false;
+
+		var mouse = card.MousePosition;
+		return mouse.x >= 0f && mouse.y >= 0f && mouse.x <= width && mouse.y <= height;
 	}
 
 	void ClearHover()
 	{
-		if ( Panel is null )
-			return;
-
-		foreach ( var child in Panel.Descendants )
-		{
-			if ( child.HasClass( "hot" ) )
-				child.SetClass( "hot", false );
-			if ( child.HasClass( "picking" ) )
-				child.SetClass( "picking", false );
-		}
+		if ( hotCard.IsValid() )
+			hotCard.SetClass( "hot", false );
 
 		hotCard = null;
+		SetMenuPicking( false );
+	}
+
+	void SetMenuPicking( bool on )
+	{
+		if ( !on && !menuPicking )
+			return;
+
+		if ( menuPicking == on && pickingGeneration == hoverGeneration && hoverBound )
+			return;
+
+		menuPicking = on;
+		if ( !hoverBound )
+			return;
+
+		pickingGeneration = hoverGeneration;
+		foreach ( var overlay in menuOverlays )
+		{
+			if ( overlay.IsValid() )
+				overlay.SetClass( "picking", on );
+		}
 	}
 
 	protected override int BuildHash()
@@ -2687,8 +2498,7 @@
 			Loop.BestExtract,
 			Loop.ExtractedRounds,
 			Loop.BurnedRounds,
-			Loop.ReturnedBiomass,
-			System.HashCode.Combine( shopHover, hoverChip, biomassHover ) );
+			Loop.ReturnedBiomass );
 
 		var e = saves
 			? System.HashCode.Combine( Loop.SlotBlurb( 0 ), Loop.SlotBlurb( 1 ), Loop.SlotBlurb( 2 ), Loop.SlotExists( 0 ), Loop.SlotExists( 1 ), Loop.SlotExists( 2 ), Loop.ActiveSlot, Loop.SaveCursor )
@@ -2700,7 +2510,7 @@
 			: 0;
 
 		var g = shop
-			? System.HashCode.Combine( Loop.Offers.Count, Loop.OfferStamp, Loop.ShopHasBundle, Loop.ShopCanBuyAll, Loop.ShopBuyAllCost, Loop.ShopRefreshCost, Loop.ShopRefreshFree ? 1 : 0, Loop.StarterPick )
+			? System.HashCode.Combine( Loop.OfferStamp, Loop.ShopRefreshCost, Loop.ShopRefreshFree ? 1 : 0, Loop.StarterPick, Loop.Scrap )
 			: 0;
 
 		var h = System.HashCode.Combine(
@@ -2708,7 +2518,7 @@
 			menu ? UserSettings.Steps( SettingRow.Music ) : 0,
 			menu ? UserSettings.Steps( SettingRow.Sfx ) : 0,
 			menu ? UserSettings.Steps( SettingRow.Shake ) : 0,
-			(int)OrganLift,
+			city ? (int)OrganLift : 0,
 			Loop.Ascend );
 
 		return System.HashCode.Combine( a, b, c, d, e, f, g, h );
@@ -4686,9 +4496,7 @@
 	.shop-sheet {
 		position: absolute;
 		right: 12px;
-		top: 296px;
 		width: 288px;
-		height: 495px;
 		aspect-ratio: 477 / 820;
 		padding: 0px;
 		background-color: transparent;
@@ -4902,10 +4710,6 @@
 		border-width: 0px;
 	}
 
-	.shop-cards {
-		align-items: stretch;
-	}
-
 	.shop-body {
 		position: relative;
 		z-index: 1;
@@ -5050,6 +4854,23 @@
 		transform: scale( 1.08 ) translateY( -12px );
 		border-color: #f0b429;
 		background-color: rgba(240, 180, 41, 0.18);
+	}
+
+	.card.shop-offer,
+	.card.shop-go-btn {
+		overflow: visible;
+		border-radius: 0px;
+		animation-name: none;
+		transition: transform 0s linear, border-color 0s linear, background-color 0s linear, opacity 0s linear;
+	}
+
+	.card.shop-offer:hover,
+	.card.shop-offer.hot,
+	.card.shop-offer:active,
+	.card.shop-go-btn:hover,
+	.card.shop-go-btn.hot,
+	.card.shop-go-btn:active {
+		transform: none;
 	}
 
 	.shop-go-btn:hover,
@@ -5203,94 +5024,6 @@
 
 	.card .stat.mixed {
 		color: #f0b429;
-	}
-
-	.cursor-aura,
-	.cursor-trail {
-		position: absolute;
-		width: 72px;
-		height: 72px;
-		margin-left: -36px;
-		margin-top: -36px;
-		pointer-events: none;
-		z-index: 80;
-		opacity: 0;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.cursor-aura.on,
-	.cursor-trail.on {
-		opacity: 1;
-	}
-
-	.cursor-trail {
-		z-index: 79;
-		width: 28px;
-		height: 28px;
-		margin-left: -14px;
-		margin-top: -14px;
-		border-radius: 14px;
-		background-color: rgba(240, 180, 41, 0.28);
-	}
-
-	.cursor-ring {
-		width: 72px;
-		height: 72px;
-		border-radius: 36px;
-		border: 2px solid rgba(240, 180, 41, 0.55);
-		animation-name: cursor-pulse;
-		animation-duration: 1.15s;
-		animation-timing-function: ease-out;
-		animation-iteration-count: infinite;
-	}
-
-	.cursor-dot {
-		position: absolute;
-		width: 10px;
-		height: 10px;
-		border-radius: 5px;
-		background-color: #f0b429;
-	}
-
-	.shot-cursor {
-		position: absolute;
-		width: 64px;
-		height: 64px;
-		margin-left: -32px;
-		margin-top: -32px;
-		pointer-events: none;
-		z-index: 90;
-		opacity: 0;
-	}
-
-	.shot-cursor.on {
-		opacity: 1;
-	}
-
-	.reload-track {
-		position: absolute;
-		left: 8px;
-		top: 8px;
-		width: 48px;
-		height: 48px;
-		border-radius: 24px;
-		border: 2px solid rgba(82, 209, 255, 0.38);
-	}
-
-	.reload-mark {
-		position: absolute;
-		width: 6px;
-		height: 6px;
-		margin-left: -3px;
-		margin-top: -3px;
-		border-radius: 3px;
-		background-color: rgba(82, 209, 255, 0);
-		pointer-events: none;
-	}
-
-	.reload-mark.on {
-		background-color: #52d1ff;
 	}
 
 	.run-left {
@@ -6782,21 +6515,6 @@
 
 	.collection .col-back .rail-row.back {
 		margin-top: 14px;
-	}
-
-	@@keyframes cursor-pulse {
-		0% {
-			opacity: 0.9;
-			transform: scale( 0.72 );
-		}
-		70% {
-			opacity: 0.15;
-			transform: scale( 1.18 );
-		}
-		100% {
-			opacity: 0;
-			transform: scale( 1.28 );
-		}
 	}
 </style>
 

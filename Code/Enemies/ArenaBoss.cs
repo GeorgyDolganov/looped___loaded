@@ -118,7 +118,7 @@ public sealed class ArenaBoss : Component
 		while ( spokes.Count < count )
 		{
 			var go = Blocks.SpawnBox( GameObject, $"Spoke {spokes.Count}", Vector3.Zero, Rotation.Identity,
-				new Vector3( 260f, 22f, 90f ), SpokeTint );
+				new Vector3( 260f, 22f, 90f ), SpokeTint, false );
 			spokes.Add( go );
 			spokeWalls.Add( geo.AddBossPanel( Vector2.Zero, Vector2.Right ) );
 		}

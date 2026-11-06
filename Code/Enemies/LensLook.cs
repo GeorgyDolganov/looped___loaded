@@ -22,6 +22,7 @@ public static class LensLook
 
 		var renderer = go.AddComponent<SkinnedModelRenderer>();
 		renderer.Model = model;
+		Blocks.NoEnemyShadow( renderer );
 		renderer.UseAnimGraph = false;
 		renderer.CreateBoneObjects = false;
 		renderer.Sequence.Name = IdleSequence;
@@ -34,6 +35,7 @@ public static class LensLook
 		if ( !skin.IsValid() )
 			return;
 
+		Blocks.NoEnemyShadow( skin );
 		skin.UseAnimGraph = false;
 		if ( skin.Sequence.Name == IdleSequence )
 			return;

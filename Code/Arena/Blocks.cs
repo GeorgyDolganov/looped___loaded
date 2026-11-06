@@ -35,9 +35,40 @@ public static class Blocks
 		renderer.Model = model;
 		renderer.MaterialOverride = Flat;
 		renderer.Tint = tint;
-		renderer.RenderType = shadows ? ModelRenderer.ShadowRenderType.On : ModelRenderer.ShadowRenderType.Off;
+		if ( shadows )
+			renderer.RenderType = ModelRenderer.ShadowRenderType.On;
+		else
+			NoShadow( renderer );
 
 		return go;
+	}
+
+	public static void NoShadow( ModelRenderer renderer )
+	{
+		if ( !renderer.IsValid() )
+			return;
+
+		renderer.RenderType = ModelRenderer.ShadowRenderType.Off;
+		var shown = renderer.SceneObject;
+		if ( !shown.IsValid() )
+			return;
+
+		shown.Flags.CastShadows = false;
+		shown.Flags.WantsPrePass = false;
+	}
+
+	public static void NoEnemyShadow( ModelRenderer renderer )
+	{
+		NoShadow( renderer );
+		if ( !renderer.IsValid() )
+			return;
+
+		var shown = renderer.SceneObject;
+		if ( !shown.IsValid() )
+			return;
+
+		shown.Flags.IsOpaque = false;
+		shown.Flags.IsTranslucent = true;
 	}
 
 	public static GameObject SpawnBox( GameObject parent, string name, Vector3 position, Rotation rotation, Vector3 size, Color tint, bool shadows = true )

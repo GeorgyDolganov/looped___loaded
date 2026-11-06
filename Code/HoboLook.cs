@@ -49,6 +49,7 @@ public static class HoboLook
 
 		var renderer = go.AddComponent<SkinnedModelRenderer>();
 		renderer.Model = model;
+		Quiet( renderer );
 		renderer.UseAnimGraph = false;
 		renderer.CreateBoneObjects = false;
 		renderer.Sequence.Name = "idle";
@@ -57,6 +58,8 @@ public static class HoboLook
 			Hide( renderer );
 		return renderer;
 	}
+
+	static void Quiet( SkinnedModelRenderer skin ) => Blocks.NoEnemyShadow( skin );
 
 	static void Hide( SkinnedModelRenderer skin )
 	{
@@ -105,6 +108,7 @@ public static class HoboLook
 		if ( !skin.IsValid() )
 			return;
 
+		Quiet( skin );
 		skin.UseAnimGraph = false;
 		var name = velocity.Length <= 40f ? "idle" : "run";
 		if ( skin.Sequence.Name != name )
@@ -114,7 +118,11 @@ public static class HoboLook
 		}
 
 		if ( attacking )
-			CopyUpper( skin, EnsureOverlay( skin ) );
+		{
+			var overlay = EnsureOverlay( skin );
+			Quiet( overlay );
+			CopyUpper( skin, overlay );
+		}
 		else
 			DropOverlay( skin );
 

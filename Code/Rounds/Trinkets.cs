@@ -20,7 +20,6 @@ public static class Trinkets
 
 	public static bool IsWeapon( TrinketDef card )
 	{
-		Refresh();
 		if ( card is null || card.Id == "BORE" || Live( card.Requires ).Count > 0 )
 			return false;
 
@@ -51,7 +50,6 @@ public static class Trinkets
 
 	public static string Unlocks( TrinketDef card )
 	{
-		Refresh();
 		if ( card is null )
 			return "";
 
