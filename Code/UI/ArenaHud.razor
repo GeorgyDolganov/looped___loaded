@@ -767,6 +767,35 @@
 	</div>
 	}
 
+	@if ( ShowBiomassTip )
+	{
+		<div class="biomass-tip">
+			<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
+			<div class="stat-face">
+				<div class="stat-row lead">
+					<label class="key">@GameSettings.Text.Hud.Stash</label>
+					<label class="value">@(Loop.City.IsValid() ? Loop.City.Warehouse : 0)</label>
+				</div>
+				<div class="stat-row lead">
+					<label class="key">@GameSettings.Text.Hud.Fed</label>
+					<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
+				</div>
+			</div>
+		</div>
+	}
+
+	@if ( HoverTip.Show )
+	{
+		<div class="organ-tip">
+			<label class="name">@HoverTip.Title</label>
+			<label class="value">@HoverTip.Value</label>
+			@if ( HoverTip.Neighbor )
+			{
+				<label class="note">NEIGHBOR +1 RANK</label>
+			}
+		</div>
+	}
+
 	@if ( HoveredUpgrade is TrinketDef tip )
 	{
 		<div class="card shop-offer upgrade-tip" style="border-color: @TraitBorder(tip)">
@@ -813,35 +842,6 @@
 		</div>
 	}
 
-	@if ( ShowBiomassTip )
-	{
-		<div class="biomass-tip">
-			<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
-			<div class="stat-face">
-				<div class="stat-row lead">
-					<label class="key">@GameSettings.Text.Hud.Stash</label>
-					<label class="value">@(Loop.City.IsValid() ? Loop.City.Warehouse : 0)</label>
-				</div>
-				<div class="stat-row lead">
-					<label class="key">@GameSettings.Text.Hud.Fed</label>
-					<label class="value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
-				</div>
-			</div>
-		</div>
-	}
-
-	@if ( HoverTip.Show )
-	{
-		<div class="organ-tip">
-			<label class="name">@HoverTip.Title</label>
-			<label class="value">@HoverTip.Value</label>
-			@if ( HoverTip.Neighbor )
-			{
-				<label class="note">NEIGHBOR +1 RANK</label>
-			}
-		</div>
-	}
-
 </root>
 
 @code
@@ -851,6 +851,7 @@
 	protected override void OnTreeFirstBuilt()
 	{
 		Panel.Style.PointerEvents = Sandbox.UI.PointerEvents.None;
+		Panel.Style.ZIndex = 60;
 		hudMisses.Clear();
 	}
 
@@ -869,6 +870,10 @@
 			: Sandbox.UI.PointerEvents.None;
 		if ( Panel.Style.PointerEvents != takePointer )
 			Panel.Style.PointerEvents = takePointer;
+
+		// Stay above sibling root panels (ShopSheet sits at 40) so tooltips draw on top of them.
+		if ( Panel.Style.ZIndex != 60 )
+			Panel.Style.ZIndex = 60;
 
 		EnsureParts();
 		TickClock();
@@ -5400,6 +5405,7 @@
 		top: 0px;
 		margin: 0px;
 		z-index: 120;
+		background-color: rgb(14, 15, 17);
 		pointer-events: none;
 		cursor: default;
 		font-family: "Barlow Condensed";
@@ -5410,7 +5416,7 @@
 	.card.shop-offer.upgrade-tip:hover,
 	.card.shop-offer.upgrade-tip.hot {
 		transform: none;
-		background-color: rgba(14, 15, 17, 0.9);
+		background-color: rgb(14, 15, 17);
 	}
 
 	.bar {
