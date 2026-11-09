@@ -63,7 +63,7 @@
 
 			<div class="run-right">
 				<div class="hud-panel upgrades-panel">
-					<img class="upgrades-back" src="ui/Arena UI/element_back_three_floors.png" />
+					<img class="upgrades-back" src="ui/Arena UI/element_back_three_floors_long.png" />
 					<div class="upgrades-title">
 						<label>Upgrades</label>
 					</div>
@@ -80,6 +80,40 @@
 						}
 					</div>
 				</div>
+
+				@if ( ShowSheet )
+				{
+					<div class="shop-sheet">
+						<img class="sheet-back" src="ui/Arena UI/element_back_long.png" />
+						<div class="sheet-body">
+							<label class="sheet-kicker">WEAPON</label>
+							@foreach ( var row in StatSheet.Weapon( Loop, SheetPreview ) )
+							{
+								<div class="sheet-row">
+									<label class="key">@row.Label</label>
+									<div class="vals">
+										<label class="now">@row.Now</label>
+										@if ( row.Next != "" )
+										{
+											<label class="arrow">→</label>
+											<label class="next @row.NextClass">@row.Next</label>
+										}
+									</div>
+								</div>
+							}
+							<label class="sheet-kicker">HERO</label>
+							@foreach ( var row in StatSheet.Hero( Loop ) )
+							{
+								<div class="sheet-row">
+									<label class="key">@row.Label</label>
+									<div class="vals">
+										<label class="now">@row.Now</label>
+									</div>
+								</div>
+							}
+						</div>
+					</div>
+				}
 			</div>
 
 			<div class="dash-coach">
@@ -871,7 +905,6 @@
 		if ( Panel.Style.PointerEvents != takePointer )
 			Panel.Style.PointerEvents = takePointer;
 
-		// Stay above sibling root panels (ShopSheet sits at 40) so tooltips draw on top of them.
 		if ( Panel.Style.ZIndex != 60 )
 			Panel.Style.ZIndex = 60;
 
@@ -2487,14 +2520,23 @@
 		if ( cursor.Loop != Loop )
 			cursor.Loop = Loop;
 
-		var sheet = GameObject.GetComponent<ShopSheet>();
-		if ( !sheet.IsValid() )
-			sheet = GameObject.AddComponent<ShopSheet>();
-		if ( sheet.Loop != Loop )
-			sheet.Loop = Loop;
-		if ( sheet.Look != shopLook )
-			sheet.Look = shopLook;
+	}
 
+	bool ShowSheet => Loop.IsValid() && !Loop.Paused && Loop.Phase == RunPhase.PickTrait;
+
+	TrinketDef SheetPreview
+	{
+		get
+		{
+			if ( !ShowSheet || shopLook.Index < 0 || shopLook.Index >= Loop.Offers.Count )
+				return null;
+
+			var offer = Loop.Offers[shopLook.Index];
+			if ( offer.Bought || Loop.TraitLocked( offer.Trait ) )
+				return null;
+
+			return offer.Trait;
+		}
 	}
 
 	void TickHover()
@@ -2654,7 +2696,7 @@
 			: 0;
 
 		var g = shop
-			? System.HashCode.Combine( Loop.OfferStamp, Loop.ShopRefreshCost, Loop.ShopRefreshFree ? 1 : 0, Loop.StarterPick, Loop.Scrap )
+			? System.HashCode.Combine( System.HashCode.Combine( Loop.OfferStamp, Loop.ShopRefreshCost, Loop.ShopRefreshFree ? 1 : 0, Loop.StarterPick, Loop.Scrap ), shopLook.Index )
 			: 0;
 
 		var h = System.HashCode.Combine(
@@ -4644,10 +4686,12 @@
 	}
 
 	.shop-sheet {
-		position: absolute;
-		right: 12px;
+		position: relative;
 		width: 288px;
-		aspect-ratio: 477 / 820;
+		height: 549px;
+		margin-top: 12px;
+		flex-shrink: 0;
+		flex-grow: 0;
 		padding: 0px;
 		background-color: transparent;
 		border-width: 0px;
@@ -4674,7 +4718,16 @@
 		padding: 0px;
 		flex-direction: column;
 		align-items: stretch;
-		overflow: scroll;
+		overflow-x: hidden;
+		overflow-y: scroll;
+		scrollbar-width: 8px;
+		scrollbar-gutter: stable;
+		scrollbar-color: #f0b429 rgba(0, 0, 0, 0.55);
+		pointer-events: all;
+	}
+
+	.sheet-body > * {
+		flex-shrink: 0;
 	}
 
 	.sheet-lead {
@@ -4710,6 +4763,7 @@
 		color: #f0b429;
 		margin-top: 14px;
 		margin-bottom: 6px;
+		flex-shrink: 0;
 	}
 
 	.shop-sheet .sheet-kicker:first-child {
@@ -4721,7 +4775,9 @@
 		width: 100%;
 		justify-content: space-between;
 		align-items: baseline;
-		margin-bottom: 3px;
+		margin-bottom: 1px;
+		padding-right: 12px;
+		flex-shrink: 0;
 	}
 
 	.sheet-row .key {
@@ -5301,7 +5357,7 @@
 
 	.upgrades-panel {
 		width: 100%;
-		aspect-ratio: 477 / 448;
+		aspect-ratio: 477 / 523;
 		padding: 0px;
 		margin-bottom: 0px;
 		border: 0px solid transparent;
@@ -5332,8 +5388,8 @@
 	}
 
 	.upgrades-title {
-		top: 10.5%;
-		height: 12.5%;
+		top: 9%;
+		height: 10.7%;
 		justify-content: center;
 		align-content: center;
 	}
@@ -5346,13 +5402,13 @@
 	}
 
 	.upgrades-weapons {
-		top: 31.5%;
-		height: 21.5%;
+		top: 27%;
+		height: 18.4%;
 	}
 
 	.upgrades-gear {
-		top: 62.8%;
-		height: 28.2%;
+		top: 53.7%;
+		height: 37%;
 	}
 
 	.upgrades-weapons,
