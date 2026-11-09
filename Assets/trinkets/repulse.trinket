@@ -5,7 +5,7 @@
   "MaxLevel": 3,
   "Sort": 55,
   "Icon": "ui/traits/REPULSE-64x64.png",
-	"Blurb": "Activate to blast nearby enemies away. Radius 467 / 583 / 700. Cooldown 8s / 6s / 4.5s.",
+	"Blurb": "Activate to blast nearby enemies away.",
   "Skill": "Repulse",
   "Mods": [],
   "__references": [],

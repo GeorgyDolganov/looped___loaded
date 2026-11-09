@@ -55,6 +55,13 @@ public static class StatSheet
 			top.Add( new StatLine( $"Cooldown {barrier.CooldownAt( rank ):0.##} seconds", 1 ) );
 		}
 
+		if ( card.Skill == ActiveSkill.Repulse )
+		{
+			var repulse = GameSettings.Skills.Repulse ?? new RepulseStats();
+			top.Add( new StatLine( $"Radius {repulse.RadiusAt( rank ):0}", 1 ) );
+			top.Add( new StatLine( $"Cooldown {repulse.CooldownAt( rank ):0.##} seconds", 1 ) );
+		}
+
 		if ( card.Mods is not null )
 		{
 			foreach ( var mod in card.Mods )
