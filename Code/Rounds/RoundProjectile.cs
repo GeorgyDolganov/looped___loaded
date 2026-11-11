@@ -201,6 +201,7 @@ public sealed class RoundProjectile : Component
 		if ( returning )
 			return Home( step );
 
+		var start = Flat;
 		var travel = step;
 		var guard = 0;
 		while ( travel > 0.001f && guard++ < 8 )
@@ -232,6 +233,9 @@ public sealed class RoundProjectile : Component
 
 		BendLens();
 		Contain();
+		if ( HitShield( start ) )
+			return false;
+
 		if ( HitTarget() )
 			return false;
 
@@ -324,6 +328,29 @@ public sealed class RoundProjectile : Component
 		}
 
 		lensInside = inside;
+	}
+
+	// Lens shields: one touch breaks them and stops the round, whatever its upgrades (pierce, ghost, ...).
+	bool HitShield( Vector2 from )
+	{
+		if ( returning || Loop.Shields.Count == 0 )
+			return false;
+
+		for ( var i = Loop.Shields.Count - 1; i >= 0; i-- )
+		{
+			if ( i >= Loop.Shields.Count )
+				continue;
+
+			var shield = Loop.Shields[i];
+			if ( !shield.IsValid() || !shield.Crosses( from, Flat, Radius ) )
+				continue;
+
+			shield.Shatter();
+			Die( true );
+			return true;
+		}
+
+		return false;
 	}
 
 	bool HitTarget()

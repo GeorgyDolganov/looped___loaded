@@ -33,6 +33,7 @@ public sealed class GameLoop : Component
 	public ArenaGeometry Geometry => Arena.Geometry;
 	public List<Enemy> Enemies { get; } = new();
 	public List<EnemyShot> Shots { get; } = new();
+	public List<LensShield> Shields { get; } = new();
 	public List<BonePickup> Bones { get; } = new();
 	public List<GibChunk> Gibs { get; } = new();
 	readonly List<Enemy> retired = new();
@@ -1594,7 +1595,9 @@ public sealed class GameLoop : Component
 			return;
 
 		armorNoticeAt = Time.Now + 0.85f;
-		Announce( T.PlaceArmor( Location ) );
+		var text = T.PlaceArmor( Location );
+		if ( !string.IsNullOrEmpty( text ) )
+			Announce( text );
 	}
 
 	public void BeatBoss()
@@ -2167,7 +2170,11 @@ public sealed class GameLoop : Component
 			Say( "intro" );
 
 		if ( fight )
-			Announce( Locations.FightHint( Location ) );
+		{
+			var hint = Locations.FightHint( Location );
+			if ( !string.IsNullOrEmpty( hint ) )
+				Announce( hint );
+		}
 	}
 
 	void DropBlockedOffers()
@@ -2240,6 +2247,8 @@ public sealed class GameLoop : Component
 			{
 				Inventory.ResetLoadout();
 				Inventory.Loadout.BonusDamage = stats.BonusDamage;
+				var rounds = Math.Max( 1, GameSettings.Run.BossOfferLap );
+				Inventory.GrowMag( rounds - 1 );
 			}
 
 			City.SetVisible( false );
@@ -2526,7 +2535,8 @@ public sealed class GameLoop : Component
 		if ( !Arena.IsValid() )
 			return;
 
-		Arena.RollLayout( lap, unchecked( layoutSeed + LocationIndex * 104729 ) );
+		var lensFight = InBossFight && Location == RunLocation.Glass;
+		Arena.RollLayout( lap, unchecked( layoutSeed + LocationIndex * 104729 ), !lensFight );
 		NudgeLiveRounds();
 	}
 

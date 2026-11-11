@@ -34,7 +34,7 @@
 					<div class="hud-panel stat-panel">
 						<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
 						<div class="stat-face">
-							<div class="stat-row lead">
+							<div class="stat-row lead scrap-row">
 								<label class="key">@GameSettings.Text.Hud.Scrap</label>
 								<label class="value scrap-value">@Loop.Scrap</label>
 							</div>
@@ -191,7 +191,16 @@
 					<div class="hud-panel stat-panel">
 						<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
 						<div class="stat-face">
-							<div class="stat-row lead">
+							<div class="stat-row lead city-biomass">
+								<label class="key">BIOMASS</label>
+								<label class="value">@Loop.City.Warehouse</label>
+							</div>
+						</div>
+					</div>
+					<div class="hud-panel stat-panel">
+						<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
+						<div class="stat-face">
+							<div class="stat-row lead fed-row">
 								<label class="key">@GameSettings.Text.Hud.Fed</label>
 								<label class="value fed-value">@GameSettings.Text.F(GameSettings.Text.Hud.FedValue, Loop.FedBiomass, Loop.WinNeed)</label>
 							</div>
@@ -253,15 +262,6 @@
 					}
 				</div>
 				<div class="city-side">
-					<div class="hud-panel stat-panel">
-						<img class="stat-back" src="ui/Arena UI/default_element_back.png" />
-						<div class="stat-face">
-							<div class="stat-row lead city-biomass">
-								<label class="key">BIOMASS</label>
-								<label class="value">@Loop.City.Warehouse</label>
-							</div>
-						</div>
-					</div>
 					@if ( CityBonusLines.Count > 0 )
 					{
 						<div class="city-stats">
@@ -1495,6 +1495,15 @@
 		if ( width < 1f || height < 1f )
 			return false;
 
+		// Chips scrolled out of the clipped list must not react to a cursor over something else.
+		var list = chip.Parent;
+		if ( list.IsValid() && list.HasClass( "upgrades-gear" ) )
+		{
+			var inside = list.MousePosition;
+			if ( inside.x < 0f || inside.y < 0f || inside.x > list.Box.Rect.Width || inside.y > list.Box.Rect.Height )
+				return false;
+		}
+
 		var mouse = chip.MousePosition;
 		const float pad = 6f;
 		return mouse.x >= -pad && mouse.y >= -pad && mouse.x <= width + pad && mouse.y <= height + pad;
@@ -1613,9 +1622,7 @@
 				RunPhase.Extracted => GameSettings.Text.Help.Extracted,
 				RunPhase.Won => GameSettings.Text.Help.Won,
 				_ => Loop.InBossFight
-					? Loop.Location == RunLocation.Glass
-						? GameSettings.Text.Help.BossGlass
-						: GameSettings.Text.Help.BossYard
+					? ""
 					: Loop.Location == RunLocation.Glass
 						? Loop.CanSkipLap
 							? GameSettings.Text.Help.PlayGlassSkip
@@ -3427,7 +3434,7 @@
 	.city-side {
 		position: absolute;
 		right: 20px;
-		top: 86px;
+		top: 18px;
 		width: 288px;
 		flex-direction: column;
 		align-items: stretch;
@@ -5409,6 +5416,11 @@
 	.upgrades-gear {
 		top: 53.7%;
 		height: 37%;
+		overflow-x: hidden;
+		overflow-y: scroll;
+		scrollbar-width: 8px;
+		scrollbar-gutter: stable;
+		scrollbar-color: #f0b429 rgba(0, 0, 0, 0.55);
 	}
 
 	.upgrades-weapons,
@@ -5420,6 +5432,7 @@
 		margin-right: 10px;
 		margin-bottom: 2px;
 		padding: 0px 2px;
+		flex-shrink: 0;
 		font-size: 14px;
 		font-weight: 700;
 		letter-spacing: 1px;
@@ -5604,6 +5617,11 @@
 		color: #f4ece0;
 	}
 
+	.run-left .stat-panel .stat-row.lead.scrap-row .key,
+	.run-left .stat-panel .stat-row.lead.scrap-row .value {
+		color: #f0b429;
+	}
+
 	.run-left .stat-panel .biomass-key {
 		flex-direction: row;
 		align-items: center;
@@ -5643,6 +5661,21 @@
 		font-weight: 700;
 		letter-spacing: 0px;
 		color: #f4ece0;
+	}
+
+	.stat-row.lead.fed-row {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.stat-row.lead.fed-row .key {
+		text-align: center;
+	}
+
+	.stat-row.lead.fed-row .value {
+		margin-top: 2px;
+		text-align: center;
 	}
 
 	.tray-frame {

@@ -490,8 +490,6 @@ public class HelpCopy
 	[Property] public string Dead { get; set; }
 	[Property] public string Extracted { get; set; }
 	[Property] public string Won { get; set; }
-	[Property] public string BossGlass { get; set; }
-	[Property] public string BossYard { get; set; }
 	[Property] public string PlayGlassSkip { get; set; }
 	[Property] public string PlayGlass { get; set; }
 	[Property] public string PlaySkip { get; set; }
@@ -537,8 +535,6 @@ public class AnnounceCopy
 	[Property] public string Armed { get; set; }
 	[Property] public string PlaceRule { get; set; }
 	[Property] public string CorePhase { get; set; }
-	[Property] public string LensPhase { get; set; }
-	[Property] public string LensOpen { get; set; }
 }
 
 public class CityCopy

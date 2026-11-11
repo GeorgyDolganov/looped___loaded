@@ -186,8 +186,6 @@
     "Dead": "CLICK ALTAR  ·  R ALTAR  ·  ESC MENU",
     "Extracted": "SPACE CONTINUE",
     "Won": "1 ASCEND  ·  2 KEEP  ·  ESC MENU",
-    "BossGlass": "BREAK GLASS THEN HIT THE SIDE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE",
-    "BossYard": "RICOCHET TO BREAK THE CORE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE",
     "PlayGlassSkip": "PANELS SHATTER  ·  E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE",
     "PlayGlass": "PANELS SHATTER  ·  LMB FIRE · 1-9 ROUNDS · SPACE DASH · R RESTART  ·  ESC PAUSE",
     "PlaySkip": "E SKIP LAP  ·  LMB FIRE  ·  SPACE DASH  ·  R RESTART  ·  ESC PAUSE",
@@ -230,9 +228,7 @@
     "TraitBought": "{0} LV{1}  ·  {2} BONES",
     "Armed": "ARMED  ·  {0} BONES",
     "PlaceRule": "{0}  ·  {1}",
-    "CorePhase": "CORE PHASE {0}",
-    "LensPhase": "LENS PHASE {0}  ·  NEW GLASS",
-    "LensOpen": "LENS OPEN  ·  HIT THE SIDE"
+    "CorePhase": "CORE PHASE {0}"
   },
   "City": {
     "ModeBuild": "GROW",
@@ -332,11 +328,7 @@
       "Title": "Glassworks",
       "Rule": "PANELS SHATTER",
       "Boss": "LENS",
-      "FightCall": "LENS FIGHT",
-      "FightHint": "THE LENS  ·  BREAK GLASS THEN HIT THE SIDE",
-      "Armor": "ARMOR  ·  BREAK GLASS OR HIT THE SIDE",
-      "BossKeep": "Shatter the glass, then hit the side. Keep the stash. Extract or ride the next ring.",
-      "BossLast": "Shatter the glass, then hit the side. Win: stash ×2, then altar."
+      "FightCall": "LENS FIGHT"
     }
   },
   "Progress": {
@@ -420,10 +412,7 @@
     ],
     "Boss": [],
     "Chapel": [],
-    "Lens": [
-      "The front is armor.",
-      "Break the glass, then hit the side."
-    ],
+    "Lens": [],
     "Core": [
       "A straight shot dies on the armor.",
       "Ricochet into the nucleus."

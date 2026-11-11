@@ -175,7 +175,7 @@ public sealed class Enemy : Component
 			return !asBounce && (source is null || source.Ricochets <= 0);
 
 		if ( Kind == EnemyKind.Lens )
-			return BlocksLens( incoming, source, from );
+			return false;
 
 		if ( Kind != EnemyKind.Shield && Kind != EnemyKind.Shardguard )
 			return false;
@@ -201,19 +201,6 @@ public sealed class Enemy : Component
 		}
 
 		return false;
-	}
-
-	bool BlocksLens( Vector2 incoming, RoundProjectile source, Vector2 fromHint )
-	{
-		var lens = GetComponent<ArenaLens>();
-		if ( lens is not null && !lens.Open )
-			return true;
-
-		var fromCenter = fromHint.Length > 1f
-			? fromHint
-			: source is not null && source.Flat.Length > 1f ? source.Flat : incoming;
-		var radial = fromCenter.Length > 1f ? fromCenter.Normal : Vector2.Right;
-		return MathF.Abs( ArenaGeometry.Dot( incoming.Normal, radial ) ) > GameSettings.Boss.LensBlock;
 	}
 
 	public void Mark( float duration )

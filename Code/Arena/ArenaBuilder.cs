@@ -103,14 +103,14 @@ public sealed class ArenaBuilder : Component
 		ClearShards();
 	}
 
-	public void RollLayout( int lap, int seed )
+	public void RollLayout( int lap, int seed, bool withGlass = true )
 	{
 		if ( geometry is null )
 			BindScene();
 
 		Geometry.GlassRules = Location == RunLocation.Glass;
 		Geometry.ClearBossWalls();
-		Geometry.GeneratePanels( lap, seed, SpinWallLength() );
+		Geometry.GeneratePanels( lap, seed, SpinWallLength(), withGlass );
 		RebuildPanels();
 		RebuildSpinners();
 		ClearShards();

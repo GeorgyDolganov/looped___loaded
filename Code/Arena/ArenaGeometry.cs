@@ -123,11 +123,18 @@ public sealed class ArenaGeometry
 		GlassBroken = 0;
 	}
 
-	public void GeneratePanels( int lap, int seed, float spinLength )
+	public void GeneratePanels( int lap, int seed, float spinLength, bool withGlass = true )
 	{
 		ClearGeneratedPanels();
 
 		var rng = new Random( unchecked( seed * 48611 + Math.Max( 1, lap ) * 7919 ) );
+
+		if ( !withGlass )
+		{
+			GenerateSpinners( rng, spinLength, BossSpinnerCount );
+			return;
+		}
+
 		var band = Math.Max( 1, GameSettings.Run.BossOfferLap / 3 );
 		var count = lap <= band ? 2 : lap <= band * 2 ? 4 : 6;
 
@@ -156,6 +163,29 @@ public sealed class ArenaGeometry
 				glass++;
 			if ( spin < each && TryAddSpin( rng, angle, spinLength ) )
 				spin++;
+		}
+	}
+
+	const int BossSpinnerCount = 3;
+
+	void GenerateSpinners( Random rng, float spinLength, int total )
+	{
+		var origin = (float)rng.NextDouble() * MathF.Tau;
+		var slice = MathF.Tau / total;
+		var placed = 0;
+
+		for ( var i = 0; i < total; i++ )
+		{
+			var angle = origin + slice * i + ( (float)rng.NextDouble() - 0.5f ) * slice * 0.3f;
+			if ( TryAddSpin( rng, angle, spinLength ) )
+				placed++;
+		}
+
+		var guard = 0;
+		while ( placed < total && guard++ < 24 )
+		{
+			if ( TryAddSpin( rng, (float)rng.NextDouble() * MathF.Tau, spinLength ) )
+				placed++;
 		}
 	}
 

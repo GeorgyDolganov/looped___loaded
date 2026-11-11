@@ -6,9 +6,6 @@ public class BossConfig : GameResource
 	[Property] public float Phase2Health { get; set; } = 0.66f;
 	[Property] public float Phase3Health { get; set; } = 0.33f;
 	[Property] public float LensRadius { get; set; } = 88f;
-	[Property] public float LensBlock { get; set; } = 0.55f;
-	[Property] public int LensBreakPhase1 { get; set; } = 2;
-	[Property] public int LensBreakLater { get; set; } = 3;
 	[Property] public CoreBossStats Core { get; set; } = new();
 	[Property] public LensBossStats Lens { get; set; } = new();
 
@@ -70,4 +67,9 @@ public class LensBossStats
 	[Property] public int BurstPhase3 { get; set; } = 6;
 	[Property] public float FreezeShotLock { get; set; } = 0.2f;
 	[Property] public float LeadMinSpeed { get; set; } = 80f;
+	[Property] public int ShieldCount { get; set; } = 6;
+	[Property] public float ShieldRadius { get; set; } = 300f;
+	[Property] public float ShieldGap { get; set; } = 12f;
+	[Property] public float ShieldThickness { get; set; } = 14f;
+	[Property] public float ShieldHeight { get; set; } = 70f;
 }

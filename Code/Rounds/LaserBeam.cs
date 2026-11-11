@@ -125,6 +125,15 @@ public sealed class LaserBeam : Component
 			if ( wallHit )
 				end = wall.Position;
 
+			var shield = LensShield.Nearest( loop, pos, pos + dir * span, width * 0.5f, out var shieldAt );
+			if ( shield is not null )
+			{
+				shield.Shatter();
+				span = shieldAt;
+				end = pos + dir * span;
+				wallHit = false;
+			}
+
 			var hits = Straight( pos, dir, span, width, hurt, skip );
 			var stopped = false;
 			var stop = default( Contact );

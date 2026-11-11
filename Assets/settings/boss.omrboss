@@ -2,9 +2,6 @@
   "Phase2Health": 0.66,
   "Phase3Health": 0.33,
   "LensRadius": 88,
-  "LensBlock": 0.55,
-  "LensBreakPhase1": 2,
-  "LensBreakLater": 3,
   "Core": {
     "FirstShot": 0.9,
     "FirstPulse": 2.4,
@@ -49,7 +46,12 @@
     "BurstPhase2": 4,
     "BurstPhase3": 6,
     "FreezeShotLock": 0.2,
-    "LeadMinSpeed": 80
+    "LeadMinSpeed": 80,
+    "ShieldCount": 6,
+    "ShieldRadius": 300,
+    "ShieldGap": 12,
+    "ShieldThickness": 14,
+    "ShieldHeight": 70
   },
   "__references": [],
   "__version": 0

@@ -139,6 +139,14 @@ public sealed class TurretDrone : Component
 		tracerLeft = TracerTime;
 		ImpactFlash.Spawn( Scene, Muzzle, Tint, 0.35f );
 
+		var shield = LensShield.Nearest( Loop, flat, contact, 6f, out var shieldAt );
+		if ( shield is not null )
+		{
+			tracerEnd = Loop.Geometry.ToPlayWorld( flat + aim * shieldAt ) + Vector3.Up * 50f;
+			shield.Shatter();
+			return;
+		}
+
 		if ( target.BlocksFrom( aim, null, false, contact ) )
 		{
 			if ( Locations.IsBoss( target.Kind ) )
