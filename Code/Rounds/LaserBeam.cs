@@ -128,7 +128,7 @@ public sealed class LaserBeam : Component
 			var shield = LensShield.Nearest( loop, pos, pos + dir * span, width * 0.5f, out var shieldAt );
 			if ( shield is not null )
 			{
-				shield.Shatter();
+				shield.Hit( GameSettings.Boss.Lens.ShieldBeamCooldown );
 				span = shieldAt;
 				end = pos + dir * span;
 				wallHit = false;

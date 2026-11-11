@@ -5,14 +5,23 @@ namespace LoopedLoaded;
 public sealed class LensShield : Component
 {
 	static readonly Color ShieldTint = new Color( 0.55f, 0.85f, 0.95f );
+	static readonly Color CrackedTint = new Color( 0.95f, 0.98f, 1f );
+
+	int hitsLeft = 2;
+	float lastHit = -99f;
 
 	GameLoop loop;
+	GameObject visual;
 	Vector2 center;
 	Vector2 along;
+	float angle;
+	float radius;
+	float turn;
 	float halfLength;
 	float halfThick;
 
-	public static LensShield Spawn( GameObject parent, GameLoop loop, Vector2 center, Vector2 along, float length, float thickness, float height )
+	// turn: +1 orbits counter-clockwise, -1 clockwise, at a fixed speed from the boss config.
+	public static LensShield Spawn( GameObject parent, GameLoop loop, float angle, float radius, float turn, float length, float thickness, float height )
 	{
 		var go = parent.Scene.CreateObject();
 		go.Name = "Lens Shield";
@@ -20,18 +29,46 @@ public sealed class LensShield : Component
 
 		var shield = go.AddComponent<LensShield>();
 		shield.loop = loop;
-		shield.center = center;
-		shield.along = along.Normal;
+		shield.angle = angle;
+		shield.radius = radius;
+		shield.turn = turn;
 		shield.halfLength = length * 0.5f;
 		shield.halfThick = thickness * 0.5f;
+		shield.hitsLeft = Math.Max( 1, GameSettings.Boss.Lens.ShieldHits );
+		shield.Place();
 
-		var world = loop.Geometry.ToPlayWorld( center );
+		var world = loop.Geometry.ToPlayWorld( shield.center );
 		go.WorldPosition = world;
-		Blocks.SpawnBox( go, "Shield Box", world, Blocks.FlatFacing( shield.along ),
+		shield.visual = Blocks.SpawnBox( go, "Shield Box", world, Blocks.FlatFacing( shield.along ),
 			new Vector3( length, thickness, height ), ShieldTint, false );
 
 		loop.Shields.Add( shield );
 		return shield;
+	}
+
+	void Place()
+	{
+		var normal = ArenaGeometry.FromAngle( angle );
+		center = normal * radius;
+		along = new Vector2( -normal.y, normal.x );
+	}
+
+	protected override void OnUpdate()
+	{
+		if ( !loop.IsValid() || loop.IsFrozen )
+			return;
+
+		var degrees = GameSettings.Boss.Lens.ShieldDegreesPerSecond;
+		angle += turn * MathX.DegreeToRadian( degrees ) * RealTime.Delta;
+		Place();
+
+		var world = loop.Geometry.ToPlayWorld( center );
+		GameObject.WorldPosition = world;
+		if ( visual.IsValid() )
+		{
+			visual.WorldPosition = world;
+			visual.WorldRotation = Blocks.FlatFacing( along );
+		}
 	}
 
 	// Nearest shield touched by something of the given radius travelling a -> b, with the distance to first contact.
@@ -95,10 +132,24 @@ public sealed class LensShield : Component
 		return enter <= leave;
 	}
 
-	public void Shatter()
+	// One hit on the shield. Breaks it once the configured number of hits has landed.
+	// cooldown > 0 ignores hits that arrive sooner than that after the last one (for continuous beams).
+	public void Hit( float cooldown = 0f )
 	{
 		if ( !GameObject.IsValid() )
 			return;
+
+		if ( cooldown > 0f && RealTime.Now - lastHit < cooldown )
+			return;
+
+		lastHit = RealTime.Now;
+		hitsLeft--;
+
+		if ( hitsLeft > 0 )
+		{
+			Crack();
+			return;
+		}
 
 		if ( loop.IsValid() )
 		{
@@ -109,6 +160,20 @@ public sealed class LensShield : Component
 		}
 
 		GameObject.Destroy();
+	}
+
+	void Crack()
+	{
+		if ( loop.IsValid() )
+		{
+			var world = loop.Geometry.ToPlayWorld( center );
+			ImpactFlash.Spawn( Scene, world, CrackedTint, 0.8f );
+			ArenaSounds.Crack( world );
+		}
+
+		var renderer = visual.IsValid() ? visual.GetComponent<ModelRenderer>() : null;
+		if ( renderer.IsValid() )
+			renderer.Tint = CrackedTint;
 	}
 
 	protected override void OnDestroy()

@@ -67,8 +67,12 @@ public class LensBossStats
 	[Property] public int BurstPhase3 { get; set; } = 6;
 	[Property] public float FreezeShotLock { get; set; } = 0.2f;
 	[Property] public float LeadMinSpeed { get; set; } = 80f;
-	[Property] public int ShieldCount { get; set; } = 6;
+	[Property] public int ShieldCount { get; set; } = 8;
 	[Property] public float ShieldRadius { get; set; } = 300f;
+	[Property] public float ShieldRowGap { get; set; } = 40f;
+	[Property] public int ShieldHits { get; set; } = 2;
+	[Property] public float ShieldBeamCooldown { get; set; } = 0.25f;
+	[Property] public float ShieldDegreesPerSecond { get; set; } = 15f;
 	[Property] public float ShieldGap { get; set; } = 12f;
 	[Property] public float ShieldThickness { get; set; } = 14f;
 	[Property] public float ShieldHeight { get; set; } = 70f;

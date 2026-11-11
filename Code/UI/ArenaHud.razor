@@ -624,21 +624,22 @@
 
 		@if ( !Loop.Paused && Loop.Phase == RunPhase.DecideRing )
 		{
-			<div class="overlay choose over-hud">
+			<div class="overlay choose ring over-hud">
 				<label class="overlay-title">@GameSettings.Text.Decide.RingClear</label>
-				<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.RingBlurb, Loop.Stash, Loop.NextRingCode, Loop.NextRingRule)</label>
 				<div class="cards">
 					<div class="card" onclick="@ChooseExtract">
-						<label class="key">@GameSettings.Text.Decide.Key1</label>
-						<label class="title">@GameSettings.Text.Decide.Extract</label>
-						<label class="blurb">@ExtractBank(Loop.Stash)</label>
+						<img class="ring-plate" src="ui/Arena UI/buttons_right.png" />
+						<div class="ring-copy">
+							<label class="title">@GameSettings.Text.Decide.Extract</label>
+						</div>
 					</div>
 					@if ( Loop.HasNextRing )
 					{
 						<div class="card" onclick="@ChooseNextRing">
-							<label class="key">@GameSettings.Text.Decide.Key2</label>
-							<label class="title">@GameSettings.Text.Decide.NextRing</label>
-							<label class="blurb">@GameSettings.Text.F(GameSettings.Text.Decide.NextRingBlurb, Loop.NextRingCode, Loop.NextRingRule)</label>
+							<img class="ring-plate" src="ui/Arena UI/buttons_left.png" />
+							<div class="ring-copy">
+								<label class="title">@GameSettings.Text.Decide.NextRing</label>
+							</div>
 						</div>
 					}
 				</div>
@@ -1787,10 +1788,6 @@
 		BuildingKind.Brake => "ui/Arena UI/lungs.png",
 		_ => "ui/Arena UI/liver.png"
 	};
-
-	string ExtractBank( int stash ) => stash == 1
-		? GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankOne, stash )
-		: GameSettings.Text.F( GameSettings.Text.Decide.ExtractBankMany, stash );
 
 	public List<StatLine> OfferStats( TrinketDef trait, bool bought )
 	{
@@ -4649,6 +4646,56 @@
 
 	.overlay.victory .card:hover,
 	.overlay.victory .card.hot {
+		border-color: transparent;
+		background-color: transparent;
+	}
+
+	.overlay.ring .card {
+		position: relative;
+		width: 260px;
+		height: 109px;
+		aspect-ratio: 272 / 114;
+		padding: 0px;
+		background-color: transparent;
+		border-width: 0px;
+		border-radius: 0px;
+		align-items: center;
+		justify-content: center;
+		overflow: visible;
+		flex-shrink: 0;
+	}
+
+	.overlay.ring .ring-plate {
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		width: 100%;
+		height: 100%;
+	}
+
+	.overlay.ring .ring-copy {
+		position: absolute;
+		left: 8%;
+		top: 0px;
+		width: 84%;
+		height: 100%;
+		z-index: 1;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.overlay.ring .card .title {
+		width: 100%;
+		margin-top: 0px;
+		text-align: center;
+		white-space: normal;
+		font-size: 32px;
+	}
+
+	.overlay.ring .card:hover,
+	.overlay.ring .card.hot,
+	.overlay.ring .card:active {
 		border-color: transparent;
 		background-color: transparent;
 	}

@@ -143,7 +143,7 @@ public sealed class TurretDrone : Component
 		if ( shield is not null )
 		{
 			tracerEnd = Loop.Geometry.ToPlayWorld( flat + aim * shieldAt ) + Vector3.Up * 50f;
-			shield.Shatter();
+			shield.Hit();
 			return;
 		}
 

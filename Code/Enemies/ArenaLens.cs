@@ -82,21 +82,25 @@ public sealed class ArenaLens : Component
 			return;
 
 		var lens = GameSettings.Boss.Lens;
-		var count = Math.Max(3, lens.ShieldCount);
-		var radius = MathF.Max(1f, lens.ShieldRadius);
+		var count = Math.Max( 3, lens.ShieldCount );
+		var middle = MathF.Max( 1f, lens.ShieldRadius );
 
-		// Flat shields touching a circle of this radius meet corner to corner, so the
-		// side of the polygon is the longest a shield can be; the gap keeps neighbours apart.
-		var side = 2f * radius * MathF.Tan( MathF.PI / count );
+		// Two rows straddle the ShieldRadius circle: the empty band between them is centred on it.
+		var push = (MathF.Max( 0f, lens.ShieldRowGap ) + lens.ShieldThickness) * 0.5f;
+		var inner = MathF.Max( 1f, middle - push );
+		var outer = middle + push;
+
+		// Flat shields touching a circle meet corner to corner, so the side of the polygon is the
+		// longest a shield can be. Both rows share the inner row's length so nothing overlaps.
+		var side = 2f * inner * MathF.Tan( MathF.PI / count );
 		var length = MathF.Max( 20f, side - lens.ShieldGap );
 		var offset = Game.Random.Float( 0f, MathF.Tau / count );
 
 		for ( var i = 0; i < count; i++ )
 		{
 			var angle = offset + MathF.Tau * i / count;
-			var normal = ArenaGeometry.FromAngle( angle );
-			var along = new Vector2( -normal.y, normal.x );
-			shields.Add( LensShield.Spawn( GameObject, loop, normal * radius, along, length, lens.ShieldThickness, lens.ShieldHeight ) );
+			shields.Add( LensShield.Spawn( GameObject, loop, angle, inner, -1f, length, lens.ShieldThickness, lens.ShieldHeight ) );
+			shields.Add( LensShield.Spawn( GameObject, loop, angle, outer, 1f, length, lens.ShieldThickness, lens.ShieldHeight ) );
 		}
 
 		ArenaSounds.Tele();

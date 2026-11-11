@@ -345,7 +345,7 @@ public sealed class RoundProjectile : Component
 			if ( !shield.IsValid() || !shield.Crosses( from, Flat, Radius ) )
 				continue;
 
-			shield.Shatter();
+			shield.Hit();
 			Die( true );
 			return true;
 		}

@@ -47,8 +47,12 @@
     "BurstPhase3": 6,
     "FreezeShotLock": 0.2,
     "LeadMinSpeed": 80,
-    "ShieldCount": 6,
+    "ShieldCount": 8,
     "ShieldRadius": 300,
+    "ShieldRowGap": 40,
+    "ShieldHits": 2,
+    "ShieldBeamCooldown": 0.25,
+    "ShieldDegreesPerSecond": 15,
     "ShieldGap": 12,
     "ShieldThickness": 14,
     "ShieldHeight": 70

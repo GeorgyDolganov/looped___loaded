@@ -12,7 +12,7 @@ public class ProgressionConfig : GameResource
 	[Property] public float PaceCap { get; set; } = 1.4f;
 	[Property] public float DashRatio { get; set; } = 1.16f;
 	[Property] public float DashScaleFloor { get; set; } = 0.40f;
-	[Property] public int BossBaseHealth { get; set; } = 18;
+	[Property] public int BossBaseHealth { get; set; } = 36;
 	[Property] public float ExtraBodiesScale { get; set; } = 1f;
 	[Property] public int ExtraBodiesOffset { get; set; } = 0;
 	[Property] public int ExtraBodiesMax { get; set; } = 14;

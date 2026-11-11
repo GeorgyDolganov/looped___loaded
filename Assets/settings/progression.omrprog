@@ -8,7 +8,7 @@
   "PaceCap": 1.4,
   "DashRatio": 1.16,
   "DashScaleFloor": 0.4,
-  "BossBaseHealth": 18,
+  "BossBaseHealth": 36,
   "ExtraBodiesScale": 1,
   "ExtraBodiesOffset": 0,
   "ExtraBodiesMax": 14,
