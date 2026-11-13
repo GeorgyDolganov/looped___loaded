@@ -438,6 +438,8 @@ public class ShopCopy
 	[Property] public string BuyAllBlurb { get; set; }
 	[Property] public string Cost { get; set; }
 	[Property] public string Refresh { get; set; }
+	[Property] public string Lock { get; set; }
+	[Property] public string Unlock { get; set; }
 	[Property] public string Go { get; set; }
 	[Property] public string GoBlurb { get; set; }
 	[Property] public string Bought { get; set; }

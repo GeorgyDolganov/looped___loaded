@@ -128,7 +128,7 @@ public sealed class GameLoop : Component
 		{
 			var hash = offers.Count;
 			foreach ( var offer in offers )
-				hash = System.HashCode.Combine( hash, offer.Trait?.Id, offer.Bought, TraitLocked( offer.Trait ) );
+				hash = System.HashCode.Combine( hash, offer.Trait?.Id, offer.Bought, TraitLocked( offer.Trait ), offer.Held );
 
 			return hash;
 		}
@@ -136,6 +136,7 @@ public sealed class GameLoop : Component
 	public bool StarterPick => starterPick && Phase == RunPhase.PickTrait;
 	public int ShopBuyAllCost => Phase == RunPhase.PickTrait && !StarterPick ? RemainingOfferCost() : 0;
 	public int ShopRefreshCost => Math.Max( 1, GameSettings.Traits.RefreshPrice ) + shopRefreshUses * Math.Max( 0, GameSettings.Traits.RefreshStep );
+	public int ShopLockCost => Math.Max( 0, GameSettings.Traits.LockPrice );
 	public bool ShopRefreshFree => !freeRefreshSpent && Phase == RunPhase.PickTrait && !starterPick && OwnsReroll();
 	public bool ShopHasBundle => Phase == RunPhase.PickTrait && OpenOfferCount() >= 2;
 	public bool ShopCanBuyAll => ShopHasBundle && Scrap >= ShopBuyAllCost && ShopBuyAllCost > 0;
@@ -1778,6 +1779,41 @@ public sealed class GameLoop : Component
 		Announce( T.F( T.Announce.ShopRefresh, ShopRefreshCost, Scrap ) );
 	}
 
+	public void ChooseToggleHold( int index )
+	{
+		if ( Halted || Phase != RunPhase.PickTrait || starterPick )
+			return;
+
+		if ( index < 0 || index >= offers.Count )
+			return;
+
+		var offer = offers[index];
+		if ( offer.Bought || offer.Trait is null || TraitLocked( offer.Trait ) )
+		{
+			ArenaSounds.Deny();
+			return;
+		}
+
+		if ( offer.Held )
+		{
+			offer.Held = false;
+			ArenaSounds.MenuOk();
+			return;
+		}
+
+		var price = ShopLockCost;
+		if ( Scrap < price )
+		{
+			ArenaSounds.Deny();
+			Announce( T.F( T.Announce.NeedScrap, price - Scrap ) );
+			return;
+		}
+
+		Scrap -= price;
+		offer.Held = true;
+		ArenaSounds.MenuOk();
+	}
+
 	bool OwnsReroll()
 		=> Inventory.IsValid() && Inventory.Loadout.TraitLevel( Trinkets.Find( "REROLL" ) ) > 0;
 
@@ -1984,16 +2020,57 @@ public sealed class GameLoop : Component
 		var count = City.IsValid() ? City.Stats().OfferCount : GameSettings.City.MinOffers;
 		count = Math.Clamp( count, GameSettings.City.MinOffers, GameSettings.City.MaxOffers );
 
-		offers.Clear();
 		var taken = new List<TrinketDef>();
-		for ( var i = 0; i < count; i++ )
+		var slots = new List<ShopOffer>();
+		var held = 0;
+		if ( !starterPick )
+		{
+			foreach ( var old in offers )
+			{
+				var keep = old.Held && !old.Bought && old.Trait is not null
+					&& !Trinkets.Blocked( old.Trait, loadout )
+					&& loadout.TraitLevel( old.Trait ) < old.Trait.Cap;
+
+				slots.Add( keep ? old : null );
+				if ( !keep )
+					continue;
+
+				held++;
+				taken.Add( old.Trait );
+				available.Remove( old.Trait );
+			}
+		}
+
+		offers.Clear();
+		while ( slots.Count > 0 && slots[slots.Count - 1] is null )
+			slots.RemoveAt( slots.Count - 1 );
+
+		var fresh = Math.Max( 0, count - held );
+		for ( var i = 0; i < slots.Count && fresh > 0; i++ )
+		{
+			if ( slots[i] is not null )
+				continue;
+
+			if ( !TryTakeTrait( available, loadout, Scrap, taken, out var trait ) )
+				break;
+
+			taken.Add( trait );
+			slots[i] = new ShopOffer { Trait = trait, LeftPlate = Game.Random.Int( 0, 1 ) == 0 };
+			fresh--;
+		}
+
+		slots.RemoveAll( slot => slot is null );
+		while ( fresh > 0 )
 		{
 			if ( !TryTakeTrait( available, loadout, Scrap, taken, out var trait ) )
 				break;
 
 			taken.Add( trait );
-			offers.Add( new ShopOffer { Trait = trait, LeftPlate = Game.Random.Int( 0, 1 ) == 0 } );
+			slots.Add( new ShopOffer { Trait = trait, LeftPlate = Game.Random.Int( 0, 1 ) == 0 } );
+			fresh--;
 		}
+
+		offers.AddRange( slots );
 	}
 
 	bool TryTakeTrait( List<TrinketDef> available, RunLoadout loadout, int budget, List<TrinketDef> taken, out TrinketDef pick )
@@ -2625,5 +2702,6 @@ public sealed class ShopOffer
 	public TrinketDef Trait { get; set; }
 	public bool Bought { get; set; }
 	public bool LeftPlate { get; set; }
+	public bool Held { get; set; }
 }
 

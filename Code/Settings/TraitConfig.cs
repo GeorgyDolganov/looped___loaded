@@ -6,6 +6,7 @@ public class TraitConfig : GameResource
 	[Property] public int MaxLevel { get; set; } = 3;
 	[Property] public int RefreshPrice { get; set; } = 4;
 	[Property] public int RefreshStep { get; set; } = 2;
+	[Property] public int LockPrice { get; set; } = 5;
 	[Property] public int BaseDamage { get; set; } = 1;
 	[Property] public int MaxBouncesBase { get; set; } = 1;
 	[Property] public float EnergyBase { get; set; } = 5500f;

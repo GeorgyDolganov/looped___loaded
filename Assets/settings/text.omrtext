@@ -150,6 +150,8 @@
     "BuyAllBlurb": "Take every leftover card for {0} bones.",
     "Cost": "{0} BONES",
     "Refresh": "REFRESH",
+    "Lock": "LOCK",
+    "Unlock": "UNLOCK",
     "Go": "GO",
     "GoBlurb": "Next round. Keep leftover bones.",
     "Bought": "BOUGHT",

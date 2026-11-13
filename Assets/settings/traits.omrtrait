@@ -2,6 +2,7 @@
   "MaxLevel": 3,
   "RefreshPrice": 4,
   "RefreshStep": 2,
+  "LockPrice": 5,
   "BaseDamage": 1,
   "MaxBouncesBase": 1,
   "EnergyBase": 5500,
