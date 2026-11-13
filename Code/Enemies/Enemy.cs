@@ -44,6 +44,10 @@ public sealed class Enemy : Component
 	const string ShieldModelPath = "models/sheild.vmdl";
 	const float ShieldHeight = 220f;
 	const float ShieldGap = 36f;
+	const int PlateHitsToBreak = 2;
+	const int PlateBurstDamage = 4;
+	const float PlateFlashTime = 0.12f;
+	const float PlateShakeAmp = 12f;
 
 	GameObject body;
 	GameObject shieldPlate;
@@ -75,6 +79,8 @@ public sealed class Enemy : Component
 	float attackUntil;
 	float attackReadyAt;
 	int plateHits;
+	bool plateBroken;
+	float plateHitAt = -99f;
 	Vector2 shootFlank;
 	float flankUntil;
 	Vector2 lastImpulse = Vector2.Right;
@@ -122,6 +128,8 @@ public sealed class Enemy : Component
 		attackUntil = 0f;
 		attackReadyAt = 0f;
 		plateHits = 0;
+		plateBroken = false;
+		plateHitAt = -99f;
 		shootFlank = Vector2.Zero;
 		flankUntil = 0f;
 		Radius = kind switch
@@ -158,16 +166,7 @@ public sealed class Enemy : Component
 
 	float markUntil;
 
-	public bool BlocksDamage( Vector2 incoming, RoundProjectile source )
-	{
-		if ( Kind != EnemyKind.Shardguard )
-			return BlocksFrom( incoming, source );
-
-		if ( plateHits > 0 || !Loop.IsValid() || !Loop.Runner.IsValid() )
-			return false;
-
-		return ArenaGeometry.Dot( incoming, ShieldFacing ) < -0.22f;
-	}
+	public bool BlocksDamage( Vector2 incoming, RoundProjectile source ) => BlocksFrom( incoming, source );
 
 	public bool BlocksFrom( Vector2 incoming, RoundProjectile source, bool asBounce = false, Vector2 from = default, bool ignorePlate = false )
 	{
@@ -190,17 +189,38 @@ public sealed class Enemy : Component
 		if ( ArenaGeometry.Dot( incoming, facing ) >= -0.22f )
 			return false;
 
-		if ( Kind != EnemyKind.Shardguard )
+		return !plateBroken;
+	}
+
+	public bool SoakPlate( int damage )
+	{
+		if ( plateBroken || (Kind != EnemyKind.Shield && Kind != EnemyKind.Shardguard) )
+			return false;
+
+		if ( damage <= 0 )
 			return true;
 
-		if ( plateHits <= 0 )
-		{
-			plateHits = 1;
-			ArenaSounds.Crack( Arena.IsValid() ? Arena.Geometry.ToPlayWorld( Flat ) : WorldPosition );
+		plateHits++;
+		plateHitAt = Time.Now;
+		if ( plateHits < PlateHitsToBreak && damage < PlateBurstDamage )
 			return true;
-		}
 
-		return false;
+		plateBroken = true;
+		var world = shieldPlate.IsValid() ? shieldPlate.WorldPosition : WorldPosition;
+		ArenaSounds.Crack( world );
+		return true;
+	}
+
+	void DropPlate()
+	{
+		var plate = shieldPlate;
+		shieldPlate = null;
+		shieldMesh = null;
+		if ( !plate.IsValid() )
+			return;
+
+		plate.Enabled = false;
+		plate.Destroy();
 	}
 
 	public void Mark( float duration )
@@ -817,12 +837,25 @@ public sealed class Enemy : Component
 
 		PaintDressed( flash, frozen );
 
+		if ( plateBroken && shieldPlate.IsValid() && Time.Now - plateHitAt >= PlateFlashTime )
+			DropPlate();
+
 		if ( shieldPlate.IsValid() )
 		{
 			shieldPlate.Enabled = true;
 			var plateRotation = Ease( shieldPlate.WorldRotation, Blocks.FlatFacing( ShieldFacing ), 10f );
 			var facing = plateRotation.Forward;
-			shieldPlate.WorldPosition = WorldPosition + facing.WithZ( 0f ) * shieldReach + Vector3.Up * shieldLift;
+			var age = Time.Now - plateHitAt;
+			var kick = 0f;
+			var white = 0f;
+			if ( age >= 0f && age < PlateFlashTime )
+			{
+				var fade = 1f - age / PlateFlashTime;
+				kick = MathF.Sin( age * 140f ) * PlateShakeAmp * fade;
+				white = 1f;
+			}
+
+			shieldPlate.WorldPosition = WorldPosition + facing.WithZ( 0f ) * shieldReach + Vector3.Up * shieldLift + plateRotation.Right * kick;
 			shieldPlate.WorldRotation = plateRotation;
 
 			if ( shieldMesh.IsValid() )
@@ -831,9 +864,10 @@ public sealed class Enemy : Component
 				var baseTint = Kind == EnemyKind.Shardguard
 					? Color.Lerp( Color.White, plateHits > 0 ? GlassCrackPlate : ShardguardTint, plateHits > 0 ? 0.35f : 0.45f )
 					: Color.White;
-				shieldMesh.Tint = Color.Lerp( baseTint, HurtTint, flash );
-				if ( stunFx.IsValid() )
+				shieldMesh.Tint = baseTint;
+				if ( stunFx.IsValid() && white <= 0f )
 					shieldMesh.Tint = Color.Lerp( shieldMesh.Tint, new Color( 1f, 0.78f, 0.18f ), 0.55f );
+				shieldMesh.Attributes.Set( "HitFlash", white );
 			}
 		}
 
@@ -933,7 +967,7 @@ public sealed class Enemy : Component
 			headTop = HoboLook.TopOf( height, hoboModel );
 		}
 
-		if ( Kind == EnemyKind.Shield || Kind == EnemyKind.Shardguard )
+		if ( Kind == EnemyKind.Shardguard || (Kind == EnemyKind.Shield && !plateBroken) )
 			BuildShield();
 
 		var tint = LiveTint;

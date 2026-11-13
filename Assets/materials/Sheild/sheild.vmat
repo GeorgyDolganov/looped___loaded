@@ -1,6 +1,6 @@
 Layer0
 {
-	shader "materials/shaders/nearest.shader"
+	shader "materials/shaders/nearest_flashing.shader"
 
 	Texture_ps_0 "textures/Sheild.png"
 

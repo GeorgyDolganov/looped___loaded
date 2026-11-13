@@ -149,6 +149,7 @@ public sealed class TurretDrone : Component
 
 		if ( target.BlocksFrom( aim, null, false, contact ) )
 		{
+			target.SoakPlate( 1 );
 			if ( Locations.IsBoss( target.Kind ) )
 				Loop.NoteArmor();
 

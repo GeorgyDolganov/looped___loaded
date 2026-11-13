@@ -140,16 +140,26 @@ public sealed class LaserBeam : Component
 			var depth = 0;
 			foreach ( var contact in hits )
 			{
-				if ( contact.Body.BlocksFrom( dir, null, ricochets > 0, contact.At, recipe.BeamShunt ) )
-				{
-					if ( Locations.IsBoss( contact.Body.Kind ) )
-						loop.NoteArmor();
+			if ( contact.Body.BlocksFrom( dir, null, ricochets > 0, contact.At, recipe.BeamShunt ) )
+			{
+				if ( Locations.IsBoss( contact.Body.Kind ) )
+					loop.NoteArmor();
 
-					stopped = true;
-					stop = contact;
-					end = contact.At;
-					break;
-				}
+				latches.Add( new Latch
+				{
+					Body = contact.Body,
+					At = contact.At,
+					Bolt = bolt,
+					Depth = depth,
+					Ricochets = ricochets,
+					Segment = hop,
+					Incoming = dir
+				} );
+				stopped = true;
+				stop = contact;
+				end = contact.At;
+				break;
+			}
 
 				latches.Add( new Latch
 				{
@@ -344,6 +354,7 @@ public sealed class LaserBeam : Component
 		var hit = Math.Max( 1, recipe.BeamHit );
 		var staged = new List<(int Bolt, Enemy Body, int Next)>();
 		var shielded = new Dictionary<int, int>();
+		var soaked = new HashSet<Enemy>();
 		Enemy nearest = null;
 		var nearestDist = float.MaxValue;
 		Vector2 nearestAt = default;
@@ -357,16 +368,31 @@ public sealed class LaserBeam : Component
 			if ( shielded.TryGetValue( latch.Bolt, out var blockedSeg ) && blockedSeg == latch.Segment && latch.Depth > 0 )
 				continue;
 
+			if ( soaked.Contains( enemy ) )
+				continue;
+
 			var incoming = latch.Incoming;
 			if ( incoming.LengthSquared < 0.0001f )
 				incoming = aimDir;
 			else
 				incoming = incoming.Normal;
 
+			var key = (latch.Bolt, enemy);
+			sear.TryGetValue( key, out var prior );
+			var damage = hit;
+			if ( recipe.BeamSear && prior > 0 )
+				damage += 1;
+			if ( recipe.RampPierce )
+				damage += latch.Depth;
+			if ( recipe.BounceDamage > 0 && latch.Ricochets > 0 )
+				damage += latch.Ricochets * recipe.BounceDamage;
+
 			if ( enemy.BlocksFrom( incoming, null, latch.Ricochets > 0, latch.At, recipe.BeamShunt ) )
 			{
 				if ( Locations.IsBoss( enemy.Kind ) )
 					loop.NoteArmor();
+				soaked.Add( enemy );
+				enemy.SoakPlate( damage );
 				shielded[latch.Bolt] = latch.Segment;
 				continue;
 			}
@@ -378,16 +404,6 @@ public sealed class LaserBeam : Component
 				nearest = enemy;
 				nearestAt = latch.At;
 			}
-
-			var key = (latch.Bolt, enemy);
-			sear.TryGetValue( key, out var prior );
-			var damage = hit;
-			if ( recipe.BeamSear && prior > 0 )
-				damage += 1;
-			if ( recipe.RampPierce )
-				damage += latch.Depth;
-			if ( recipe.BounceDamage > 0 && latch.Ricochets > 0 )
-				damage += latch.Ricochets * recipe.BounceDamage;
 
 			enemy.Damage( damage, 0f, 1f );
 

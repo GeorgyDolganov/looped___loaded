@@ -388,6 +388,7 @@ public sealed class RoundProjectile : Component
 
 			if ( target.BlocksFrom( Direction, this ) )
 			{
+				target.SoakPlate( ShotDamage() );
 				if ( Locations.IsBoss( target.Kind ) )
 					Loop.NoteArmor();
 
@@ -551,7 +552,10 @@ public sealed class RoundProjectile : Component
 					continue;
 
 				if ( target.BlocksDamage( Direction, this ) )
+				{
+					target.SoakPlate( ShotDamage( true ) );
 					continue;
+				}
 
 				struck.Add( target );
 				var damage = ShotDamage( true );
