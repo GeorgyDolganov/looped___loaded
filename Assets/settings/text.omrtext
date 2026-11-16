@@ -414,14 +414,18 @@
     ],
     "Boss": [],
     "Chapel": [],
-    "Lens": [],
+    "Lens": [
+      "A traitor. Once, he was just like you—a fighter in the arena.",
+      "He would gift me the bones and biomass he had acquired, and I would refine his body.",
+      "One day, he decided that he no longer needed me. He decided that he could rise up against me.",
+      "Prove to him that he is wrong."
+    ],
     "Core": [
       "A straight shot dies on the armor.",
       "Ricochet into the nucleus."
     ],
     "Ring": [
-      "Take the stash home, or ride the NEXT RING.",
-      "Your gun comes with you. The board does not."
+      "This is what happens to those who go against me."
     ],
     "Yard": [
       "These panels kick. The wall you passed is already gone.",

@@ -26,6 +26,7 @@ public sealed class RoundInventory : Component
 	public bool Beaming { get; private set; }
 	public float BeamHeld { get; private set; }
 	bool beamTail;
+	bool grabHeld;
 	public bool Ready => ReloadLeft <= 0.001f && !Beaming && MagLoaded > 0;
 	public float Reload01
 	{
@@ -140,7 +141,17 @@ public sealed class RoundInventory : Component
 		var down = Input.Down( "Attack1" );
 		var pressed = Input.Pressed( "Attack1" );
 
+		if ( !down )
+			grabHeld = false;
+
 		if ( pressed && TryGrabRound() )
+		{
+			grabHeld = true;
+			return;
+		}
+
+		// The click that recalled a round must not keep firing auto weapons (Drum) while held.
+		if ( grabHeld && !Beaming )
 			return;
 
 		if ( Beaming )
