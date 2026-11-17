@@ -28,6 +28,10 @@
     {
       "Id": "2ae91674-2b89-4176-acdd-013908e5810f",
       "Path": "trinkets/ghost.trinket"
+    },
+    {
+      "Id": "9b188c34-2c7e-4f55-a3e0-a605bad66a9d",
+      "Path": "trinkets/bulk.trinket"
     }
   ],
   "Mods": [

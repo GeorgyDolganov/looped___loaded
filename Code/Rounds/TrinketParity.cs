@@ -79,6 +79,7 @@ public static class TrinketParity
 		fails += Blocked( Set( "FETCH", "RETURN" ), ref shown );
 		fails += Blocked( Set( "GHOST" ), ref shown );
 		fails += Blocked( Set( "ELECTRIFY", "GHOST" ), ref shown );
+		fails += Blocked( Set( "ELECTRIFY", "BULK" ), ref shown );
 		fails += Blocked( Set( "WARHEAD", "PINBALL" ), ref shown );
 		for ( var i = 0; i < 200; i++ )
 		{
@@ -458,7 +459,7 @@ public static class TrinketParity
 			return true;
 		if ( (id is "CASSETTE" or "BLOOM" or "IGNORANCE") && !owned.Contains( "WARHEAD" ) )
 			return true;
-		if ( id == "ELECTRIFY" && (owned.Contains( "DRUM" ) || owned.Contains( "FETCH" ) || owned.Contains( "GHOST" )) )
+		if ( id == "ELECTRIFY" && (owned.Contains( "DRUM" ) || owned.Contains( "FETCH" ) || owned.Contains( "GHOST" ) || owned.Contains( "BULK" )) )
 			return true;
 		if ( id == "DRUM" && owned.Contains( "ELECTRIFY" ) )
 			return true;
@@ -467,6 +468,8 @@ public static class TrinketParity
 		if ( id == "RETURN" && owned.Contains( "FETCH" ) )
 			return true;
 		if ( id == "GHOST" && owned.Contains( "ELECTRIFY" ) )
+			return true;
+		if ( id == "BULK" && owned.Contains( "ELECTRIFY" ) )
 			return true;
 		if ( id == "FRENZY" && !owned.Contains( "DRUM" ) )
 			return true;
