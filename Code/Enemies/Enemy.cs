@@ -747,7 +747,7 @@ public sealed class Enemy : Component
 			}
 
 			shotAt = Time.Now + interval;
-			EnemyShot.Fire( Loop, Flat, LeadDirection(), GameSettings.Enemies.Shooter.ShotSpeed * Pressure );
+			EnemyShot.Fire( Loop, Flat, LeadDirection(), GameSettings.Enemies.Shooter.ShotSpeed );
 			attackUntil = Time.Now + HoboLook.PlayShoot( hobo );
 		}
 	}
@@ -774,7 +774,7 @@ public sealed class Enemy : Component
 		var to = runner.Flat - Flat;
 		var gun = GameSettings.Enemies.Shooter;
 		var dist = MathF.Max( gun.LeadMinDistance, to.Length );
-		var travel = dist / (gun.ShotSpeed * Pressure);
+		var travel = dist / gun.ShotSpeed;
 		return runner.Flat + runner.Tangent * (runner.Speed * travel);
 	}
 
