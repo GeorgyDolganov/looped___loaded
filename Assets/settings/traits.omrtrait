@@ -9,53 +9,30 @@
   "ReloadBase": 0.7,
   "ReloadMin": 0.2,
   "ProjectileRadius": 13,
-  "Rifle": {
-    "Price": 6,
-    "Weight": 5
-  },
-  "Shotgun": {
-    "Price": 6,
-    "Weight": 5
-  },
-  "Nailgun": {
-    "Price": 6,
-    "Weight": 4
-  },
-  "Laser": {
-    "Price": 8,
-    "Weight": 3
-  },
-  "Rail": {
-    "Price": 8,
-    "Weight": 3
-  },
-  "Rocket": {
-    "Price": 8,
-    "Weight": 3
-  },
-  "Entry": {
-    "Price": 6,
-    "Weight": 6
-  },
-  "Junior": {
-    "Price": 8,
-    "Weight": 4
-  },
-  "Warrior": {
-    "Price": 10,
-    "Weight": 2
-  },
-  "Abomination": {
-    "Price": 14,
-    "Weight": 1,
-    "Single": true
-  },
   "DrumCycle": 0.16,
   "LashPad": 0.4,
   "LashPerSecond": 0.5,
   "LashMaxHold": 1.1,
   "LashRange": 1600,
   "LashWidth": 8,
+  "Rarities": {
+    "Common": {
+      "Price": 6,
+      "Weight": 6
+    },
+    "Uncommon": {
+      "Price": 8,
+      "Weight": 4
+    },
+    "Rare": {
+      "Price": 10,
+      "Weight": 2
+    },
+    "Epic": {
+      "Price": 14,
+      "Weight": 1
+    }
+  },
   "__references": [],
   "__version": 0
 }

@@ -65,14 +65,12 @@ public static class Progression
 	public static int Cost( int first, int level, float ratio )
 		=> Math.Max( 1, Whole( first * MathF.Pow( ratio, Math.Max( 0, level ) ) ) );
 
-	public static int PackPrice( TraitPack pack ) => GameSettings.Traits.PackPrice( pack );
-
 	public static int TraitPrice( TrinketDef card, int ownedLevel, int lap = 1, int location = 0 )
 	{
 		if ( card is null )
 			return 1;
 
-		var first = card.Price > 0 ? card.Price : PackPrice( card.Pack );
+		var first = card.Price > 0 ? card.Price : GameSettings.Traits.RarityPrice( card.Rarity );
 		return Math.Max( 1, Whole( Cost( first, Math.Max( 0, ownedLevel ) ) * Swarm( lap, location ) ) );
 	}
 

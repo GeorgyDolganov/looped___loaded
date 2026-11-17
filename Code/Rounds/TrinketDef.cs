@@ -1,17 +1,11 @@
 namespace LoopedLoaded;
 
-public enum TraitPack
+public enum Rarity
 {
-	Rifle,
-	Shotgun,
-	Nailgun,
-	Laser,
-	Rail,
-	Rocket,
-	Entry,
-	Junior,
-	Warrior,
-	Abomination
+	Common,
+	Uncommon,
+	Rare,
+	Epic
 }
 
 public enum TrinketHook
@@ -121,7 +115,7 @@ public class TrinketDef : GameResource
 	[Property] public string Title { get; set; }
 	[Property] public string Blurb { get; set; }
 	[Property] public string Icon { get; set; }
-	[Property] public TraitPack Pack { get; set; }
+	[Property] public Rarity Rarity { get; set; }
 	[Property] public int MaxLevel { get; set; }
 	[Property] public bool InPool { get; set; } = true;
 	[Property] public int Sort { get; set; }

@@ -1,7 +1,7 @@
 {
   "Id": "DRUM",
   "Title": "DRUM",
-  "Pack": "Rifle",
+  "Rarity": "Uncommon",
   "MaxLevel": 3,
   "Sort": 11,
   "Icon": "ui/traits/DRUM-three-bullets-64x64.png",

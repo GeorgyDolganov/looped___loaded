@@ -3,7 +3,7 @@
   "Title": "CASSETTE",
   "Blurb": "Projectiles can explode again after they already exploded.",
   "Icon": "ui/traits/CASETTE-64x64.png",
-  "Pack": "Rocket",
+  "Rarity": "Rare",
   "MaxLevel": 3,
   "InPool": true,
   "Sort": 18,

@@ -3,7 +3,7 @@
   "Title": "ELECTRIFY",
   "Blurb": "HOLD TO ZAP.",
   "Icon": "ui/traits/ELECTRIFY-64x64.png",
-  "Pack": "Laser",
+  "Rarity": "Uncommon",
   "MaxLevel": 3,
   "InPool": true,
   "Sort": 13,

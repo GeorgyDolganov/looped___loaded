@@ -1,7 +1,7 @@
 {
   "Id": "FRENZY",
   "Title": "FRENZY",
-  "Pack": "Rifle",
+  "Rarity": "Common",
   "MaxLevel": 1,
   "Sort": 32,
   "Icon": "ui/traits/FRENZY-rage-64x64.png",

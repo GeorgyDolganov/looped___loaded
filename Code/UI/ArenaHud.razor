@@ -433,7 +433,7 @@
 									<img class="col-portrait" src="@picked.IconPath" />
 									<div class="col-names">
 										<label class="col-title">@picked.ShownTitle</label>
-										<label class="col-rarity" style="color: @TraitInk(picked)">@GameSettings.Text.RarityOf(picked.Pack)</label>
+										<label class="col-rarity" style="color: @TraitInk(picked)">@GameSettings.Text.RarityOf(picked.Rarity)</label>
 										@if ( Trinkets.IsWeapon( picked ) )
 										{
 											<label class="col-weapon">@GameSettings.Text.Shop.Weapon</label>
@@ -692,7 +692,7 @@
 										<label class="weapon">@GameSettings.Text.Shop.Active</label>
 									}
 								</div>
-								<label class="rarity" style="color: @TraitInk(trait)">@GameSettings.Text.RarityOf(trait.Pack)</label>
+								<label class="rarity" style="color: @TraitInk(trait)">@GameSettings.Text.RarityOf(trait.Rarity)</label>
 								@if ( OfferBlurb( trait ) is { Length: > 0 } blurb )
 								{
 									<label class="blurb">@blurb</label>
@@ -864,7 +864,7 @@
 						<label class="weapon">@GameSettings.Text.Shop.Active</label>
 					}
 				</div>
-				<label class="rarity" style="color: @TraitInk(tip)">@GameSettings.Text.RarityOf(tip.Pack)</label>
+				<label class="rarity" style="color: @TraitInk(tip)">@GameSettings.Text.RarityOf(tip.Rarity)</label>
 				@if ( OfferBlurb( tip ) is { Length: > 0 } tipBlurb )
 				{
 					<label class="blurb">@tipBlurb</label>
@@ -1109,9 +1109,6 @@
 	{
 		if ( card is null || !Trinkets.ShowRank( card ) )
 			return "";
-
-		if ( card.Cap <= 1 )
-			return GameSettings.Text.F( GameSettings.Text.Shop.OfferRank, 1 );
 
 		return $"LV 1–{card.Cap}";
 	}
@@ -1913,20 +1910,20 @@
 
 	public string TraitBorder( TrinketDef trait )
 	{
-		var c = Trinkets.PackColor( trait );
+		var c = Trinkets.RarityColor( trait );
 		return $"rgba({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)}, 0.85)";
 	}
 
 	public string TraitInk( TrinketDef trait )
 	{
-		var pack = trait.Pack;
-		if ( pack is TraitPack.Rifle or TraitPack.Shotgun or TraitPack.Entry )
+		var rarity = trait.Rarity;
+		if ( rarity == Rarity.Common )
 			return "rgb(245, 245, 245)";
 
-		if ( pack == TraitPack.Abomination )
+		if ( rarity == Rarity.Epic )
 			return "rgb(226, 182, 255)";
 
-		var c = Trinkets.PackColor( trait );
+		var c = Trinkets.RarityColor( rarity );
 		if ( c.b > 0.7f && c.r < 0.1f && c.g < 0.6f )
 			c = Color.Lerp( c, Color.White, 0.42f );
 		else

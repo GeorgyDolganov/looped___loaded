@@ -1,7 +1,7 @@
 {
   "Id": "DODGE",
   "Title": "DODGE",
-  "Pack": "Entry",
+  "Rarity": "Common",
   "MaxLevel": 3,
   "Sort": 16,
   "Icon": "ui/traits/DOGE-64x64.png",

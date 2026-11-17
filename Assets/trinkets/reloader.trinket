@@ -1,7 +1,7 @@
 {
   "Id": "RELOADER",
   "Title": "RELOADER",
-  "Pack": "Nailgun",
+  "Rarity": "Uncommon",
   "MaxLevel": 3,
   "Sort": 17,
   "Icon": "ui/traits/RELOADER-64x64.png",

@@ -1,7 +1,7 @@
 {
   "Id": "RETURN",
   "Title": "RETURN",
-  "Pack": "Entry",
+  "Rarity": "Common",
   "MaxLevel": 3,
   "Sort": 52,
   "Icon": "ui/traits/RETURN-64x64.png",

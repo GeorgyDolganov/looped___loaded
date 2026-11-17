@@ -3,7 +3,7 @@
   "Title": "PIERCE",
   "Blurb": "Fill them with holes.",
   "Icon": "ui/traits/PIERCE-impact-64x64.png",
-  "Pack": "Rail",
+  "Rarity": "Rare",
   "MaxLevel": 3,
   "InPool": true,
   "Sort": 10,

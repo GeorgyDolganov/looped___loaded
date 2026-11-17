@@ -12,7 +12,7 @@ public static class TrinketCommands
 		{
 			var level = loadout?.TraitLevel( card ) ?? 0;
 			var pool = card.InPool ? "" : " (not in pool)";
-			Log.Info( $"{card.Id,-8} {level}/{card.Cap}  {card.Pack}{pool}" );
+			Log.Info( $"{card.Id,-8} {level}/{card.Cap}  {card.Rarity,-9}{pool}" );
 		}
 	}
 

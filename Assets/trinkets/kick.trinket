@@ -1,7 +1,7 @@
 {
   "Id": "KICK",
   "Title": "KICK",
-  "Pack": "Entry",
+  "Rarity": "Common",
   "MaxLevel": 3,
   "Sort": 6,
   "Icon": "ui/traits/KICK-64x64.png",

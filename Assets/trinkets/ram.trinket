@@ -1,7 +1,7 @@
 {
   "Id": "RAM",
   "Title": "RAM",
-  "Pack": "Rail",
+  "Rarity": "Rare",
   "MaxLevel": 1,
   "Sort": 26,
   "Icon": "ui/traits/PIERCE-damage-up-64x64.png",

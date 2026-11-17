@@ -2081,9 +2081,6 @@ public sealed class GameLoop : Component
 			{
 				if ( skip == trait )
 					return true;
-
-				if ( skip.Pack == trait.Pack && GameSettings.Traits.PackOf( trait.Pack ).Single )
-					return true;
 			}
 
 			return false;

@@ -3,7 +3,7 @@
   "Title": "FETCH",
   "Blurb": "Bullet flies straight back to you, through walls and bodies.",
   "Icon": "ui/traits/FETCH-64x64.png",
-  "Pack": "Rail",
+  "Rarity": "Rare",
   "MaxLevel": 2,
   "InPool": true,
   "Sort": 27,

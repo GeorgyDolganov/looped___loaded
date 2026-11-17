@@ -3,7 +3,7 @@
   "Title": "SLUG",
   "Blurb": "Set projectiles to 1 and gives bonuses for each removed projectile. Increases projectile size if it was smaller.",
   "Icon": "ui/traits/SLUG-64x64.png",
-  "Pack": "Abomination",
+  "Rarity": "Epic",
   "MaxLevel": 1,
   "InPool": true,
   "Sort": 8,

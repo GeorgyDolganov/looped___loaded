@@ -1,7 +1,7 @@
 {
   "Id": "LINGER",
   "Title": "LINGER",
-  "Pack": "Junior",
+  "Rarity": "Uncommon",
   "MaxLevel": 1,
   "Sort": 39,
   "Icon": "ui/traits/LINGER-64x64.png",

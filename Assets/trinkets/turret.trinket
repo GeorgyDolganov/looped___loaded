@@ -1,7 +1,7 @@
 {
   "Id": "TURRET",
   "Title": "TURRET",
-  "Pack": "Warrior",
+  "Rarity": "Rare",
   "MaxLevel": 3,
   "Sort": 54,
   "Icon": "ui/traits/TURRENT-64x64.png",

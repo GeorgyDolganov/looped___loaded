@@ -3,7 +3,7 @@
   "Title": "BARRIER",
   "Blurb": "Activate to raise a shield that absorbs the next hit.",
   "Icon": "ui/traits/BARRIER-64x64.png",
-  "Pack": "Entry",
+  "Rarity": "Common",
   "MaxLevel": 3,
   "InPool": true,
   "Sort": 56,

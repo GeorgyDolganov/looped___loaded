@@ -3,7 +3,7 @@
   "Title": "BLEED",
   "Blurb": "Any damage marks the body. It loses 1 health each second.",
   "Icon": "ui/traits/BLEED-64x64.png",
-  "Pack": "Warrior",
+  "Rarity": "Rare",
   "MaxLevel": 3,
   "InPool": true,
   "Sort": 14,

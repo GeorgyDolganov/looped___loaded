@@ -1,7 +1,7 @@
 {
   "Id": "STUN",
   "Title": "STUN",
-  "Pack": "Junior",
+  "Rarity": "Uncommon",
   "MaxLevel": 1,
   "Sort": 7,
   "Icon": "ui/traits/STUN-64x64.png",

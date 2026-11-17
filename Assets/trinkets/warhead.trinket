@@ -3,7 +3,7 @@
   "Title": "WARHEAD",
   "Blurb": "Area damage. Also damages you. No rocket jumping!",
   "Icon": "ui/traits/WARHEAD-64x64.png",
-  "Pack": "Rocket",
+  "Rarity": "Uncommon",
   "MaxLevel": 3,
   "InPool": true,
   "Sort": 12,

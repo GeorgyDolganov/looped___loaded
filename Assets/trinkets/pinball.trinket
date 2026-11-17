@@ -1,7 +1,7 @@
 {
   "Id": "PINBALL",
   "Title": "PINBALL",
-  "Pack": "Junior",
+  "Rarity": "Uncommon",
   "MaxLevel": 3,
   "Sort": 51,
   "Icon": "ui/traits/PINBALL-64x64.png",

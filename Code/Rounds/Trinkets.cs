@@ -14,9 +14,7 @@ public static class Trinkets
 		return card;
 	}
 
-	public static bool Generic( TraitPack pack ) => pack is TraitPack.Entry or TraitPack.Junior or TraitPack.Warrior or TraitPack.Abomination;
-
-	public static bool ShowRank( TrinketDef card ) => card is not null && (Generic( card.Pack ) || card.Cap > 1);
+	public static bool ShowRank( TrinketDef card ) => card is not null && card.Cap > 1;
 
 	public static bool IsWeapon( TrinketDef card )
 	{
@@ -72,7 +70,7 @@ public static class Trinkets
 		if ( card is null )
 			return 0;
 
-		var weight = Math.Max( 0, GameSettings.Traits.PackWeight( card.Pack ) );
+		var weight = Math.Max( 0, GameSettings.Traits.RarityWeight( card.Rarity ) );
 		if ( card.OwnedWeight > 0 && loadout is not null && loadout.TraitLevel( card ) > 0 )
 			return Math.Max( weight, card.OwnedWeight );
 
@@ -114,21 +112,15 @@ public static class Trinkets
 		return false;
 	}
 
-	public static Color PackColor( TrinketDef card )
-	{
-		if ( card is null )
-			return new Color( 0f, 0.439f, 0.867f );
+	public static Color RarityColor( TrinketDef card ) => RarityColor( card?.Rarity ?? Rarity.Common );
 
-		return card.Pack switch
-		{
-			TraitPack.Rifle or TraitPack.Shotgun => new Color( 0.616f, 0.616f, 0.616f ),
-			TraitPack.Nailgun or TraitPack.Junior => new Color( 0.118f, 1f, 0f ),
-			TraitPack.Warrior or TraitPack.Laser or TraitPack.Rail or TraitPack.Rocket => new Color( 0f, 0.439f, 0.867f ),
-			TraitPack.Abomination => new Color( 0.639f, 0.208f, 0.933f ),
-			TraitPack.Entry => new Color( 0.95f, 0.95f, 0.95f ),
-			_ => new Color( 0f, 0.439f, 0.867f )
-		};
-	}
+	public static Color RarityColor( Rarity rarity ) => rarity switch
+	{
+		Rarity.Uncommon => new Color( 0.118f, 1f, 0f ),
+		Rarity.Rare => new Color( 0f, 0.439f, 0.867f ),
+		Rarity.Epic => new Color( 0.639f, 0.208f, 0.933f ),
+		_ => new Color( 0.95f, 0.95f, 0.95f )
+	};
 
 	public static string Markdown()
 	{
@@ -153,35 +145,27 @@ public static class Trinkets
 			$"| DrumCycle | {Fmt( traits.DrumCycle )} |",
 			$"| LashWidth | {Fmt( traits.LashWidth )} |",
 			"",
-			"## Packs",
+			"## Rarities",
 			"",
-			"| Pack | Rarity | Price | Weight | Single |",
-			"| --- | --- | --- | --- | --- |"
+			"| Rarity | Label | Price | Weight |",
+			"| --- | --- | --- | --- |"
 		};
 
-		foreach ( var pack in Enum.GetValues<TraitPack>() )
-		{
-			var stats = traits.PackOf( pack );
-			lines.Add( $"| {pack} | {text.RarityOf( pack )} | {stats.Price} | {stats.Weight} | {(stats.Single ? "yes" : "")} |" );
-		}
+		foreach ( var rarity in Enum.GetValues<Rarity>() )
+			lines.Add( $"| {rarity} | {text.RarityOf( rarity )} | {traits.RarityPrice( rarity )} | {traits.RarityWeight( rarity )} |" );
 
-		TraitPack? section = null;
+		lines.Add( "" );
+		lines.Add( "## Cards" );
+
 		foreach ( var card in index.every )
 		{
-			if ( section != card.Pack )
-			{
-				section = card.Pack;
-				lines.Add( "" );
-				lines.Add( $"## {card.Pack}" );
-			}
-
 			lines.Add( "" );
 			lines.Add( $"### {card.ShownTitle}" );
 			lines.Add( "" );
 			lines.Add( "| Field | Value |" );
 			lines.Add( "| --- | --- |" );
 			lines.Add( $"| Id | {card.Id} |" );
-			lines.Add( $"| Pack | {card.Pack} |" );
+			lines.Add( $"| Rarity | {text.RarityOf( card.Rarity )} |" );
 			lines.Add( $"| InPool | {(card.InPool ? "yes" : "no")} |" );
 			lines.Add( $"| MaxLevel | {card.Cap} |" );
 			if ( card.Price > 0 )

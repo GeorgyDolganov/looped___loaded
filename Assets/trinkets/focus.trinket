@@ -1,7 +1,7 @@
 {
   "Id": "FOCUS",
   "Title": "FOCUS",
-  "Pack": "Junior",
+  "Rarity": "Uncommon",
   "MaxLevel": 1,
   "Sort": 34,
   "Icon": "ui/traits/FOCUS-64x64.png",

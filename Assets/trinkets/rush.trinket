@@ -1,7 +1,7 @@
 {
   "Id": "RUSH",
   "Title": "RUSH",
-  "Pack": "Rifle",
+  "Rarity": "Common",
   "MaxLevel": 3,
   "Sort": 15,
   "Icon": "ui/traits/RUSH-64x64.png",

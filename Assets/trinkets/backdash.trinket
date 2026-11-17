@@ -1,7 +1,7 @@
 {
   "Id": "BACKDASH",
   "Title": "BACKDASH",
-  "Pack": "Entry",
+  "Rarity": "Common",
   "MaxLevel": 1,
   "Sort": 1,
   "Icon": "ui/traits/BACKDASH-64x64.png",

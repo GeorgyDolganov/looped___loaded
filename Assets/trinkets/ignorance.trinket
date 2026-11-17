@@ -1,7 +1,7 @@
 {
   "Id": "IGNORANCE",
   "Title": "IGNORANCE",
-  "Pack": "Junior",
+  "Rarity": "Uncommon",
   "MaxLevel": 1,
   "Sort": 21,
   "Icon": "ui/traits/IGNORANCE-64x64.png",

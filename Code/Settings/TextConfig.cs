@@ -60,18 +60,15 @@ public class TextConfig : GameResource
 		}
 	}
 
-	public string RarityOf( TraitPack pack )
+	public string RarityOf( Rarity rarity )
 	{
-		var rarity = (Traits ??= new()).Rarity ??= new();
-		var label = pack switch
+		var copy = (Traits ??= new()).Rarity ??= new();
+		var label = rarity switch
 		{
-			TraitPack.Entry => rarity.Common,
-			TraitPack.Junior => rarity.Uncommon,
-			TraitPack.Warrior => rarity.Rare,
-			TraitPack.Abomination => rarity.Epic,
-			TraitPack.Rifle or TraitPack.Shotgun => rarity.Common,
-			TraitPack.Nailgun => rarity.Uncommon,
-			_ => rarity.Rare
+			Rarity.Uncommon => copy.Uncommon,
+			Rarity.Rare => copy.Rare,
+			Rarity.Epic => copy.Epic,
+			_ => copy.Common
 		};
 		return label ?? "";
 	}

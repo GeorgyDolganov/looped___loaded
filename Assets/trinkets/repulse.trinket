@@ -1,7 +1,7 @@
 {
   "Id": "REPULSE",
   "Title": "REPULSE",
-  "Pack": "Warrior",
+  "Rarity": "Rare",
   "MaxLevel": 3,
   "Sort": 55,
   "Icon": "ui/traits/REPULSE-64x64.png",
