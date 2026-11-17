@@ -5,7 +5,6 @@ public static class Progression
 	static ProgressionConfig C => GameSettings.Progression;
 
 	public static float ThreatRatio => C.ThreatRatio;
-	public static float SwarmRatio => C.SwarmRatio;
 	public static float PowerRatio => C.PowerRatio;
 	public static float CostRatio => C.CostRatio;
 	public static float TraitRatio => C.TraitRatio;
@@ -16,9 +15,6 @@ public static class Progression
 
 	public static float Threat( int lap, int location = 0 )
 		=> MathF.Pow( ThreatRatio, Math.Max( 0, lap - 1 ) ) * LocationMul( location );
-
-	public static float Swarm( int lap, int location = 0 )
-		=> MathF.Pow( SwarmRatio, Math.Max( 0, lap - 1 ) + Math.Max( 0, location ) );
 
 	public static float Pace( int lap ) => MathF.Min( C.PaceCap, MathF.Pow( PaceRatio, Math.Max( 0, lap - 1 ) ) );
 
@@ -65,13 +61,16 @@ public static class Progression
 	public static int Cost( int first, int level, float ratio )
 		=> Math.Max( 1, Whole( first * MathF.Pow( ratio, Math.Max( 0, level ) ) ) );
 
-	public static int TraitPrice( TrinketDef card, int ownedLevel, int lap = 1, int location = 0 )
+	// The price is the flat price of the rarity the card is about to reach, unless the card sets a custom price.
+	public static int TraitPrice( TrinketDef card, int ownedLevel )
 	{
 		if ( card is null )
 			return 1;
 
-		var first = card.Price > 0 ? card.Price : GameSettings.Traits.RarityPrice( card.Rarity );
-		return Math.Max( 1, Whole( Cost( first, Math.Max( 0, ownedLevel ) ) * Swarm( lap, location ) ) );
+		if ( card.CustomPrice )
+			return Math.Max( 0, card.Price );
+
+		return GameSettings.Traits.RarityPrice( card.RarityAt( Math.Max( 0, ownedLevel ) + 1 ) );
 	}
 
 	public static int KillScrap( EnemyKind kind, int lap, int location = 0 )

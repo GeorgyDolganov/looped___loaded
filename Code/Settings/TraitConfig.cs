@@ -23,6 +23,8 @@ public class TraitConfig : GameResource
 
 	public int RarityPrice( Rarity rarity ) => (Rarities ??= new()).Of( rarity ).Price;
 	public int RarityWeight( Rarity rarity ) => (Rarities ??= new()).Of( rarity ).Weight;
+	public int RarityLap( Rarity rarity ) => Math.Max( 1, (Rarities ??= new()).Of( rarity ).UnlockLap );
+	public bool RarityOpen( Rarity rarity, int lap ) => lap >= RarityLap( rarity );
 }
 
 public class TraitTiers
@@ -45,20 +47,21 @@ public class RarityStat
 {
 	[Property] public int Price { get; set; } = 6;
 	[Property] public int Weight { get; set; } = 1;
+	[Property] public int UnlockLap { get; set; } = 1;
 }
 
 public class RarityTable
 {
-	[Property] public RarityStat Common { get; set; } = new() { Price = 6, Weight = 6 };
-	[Property] public RarityStat Uncommon { get; set; } = new() { Price = 8, Weight = 4 };
-	[Property] public RarityStat Rare { get; set; } = new() { Price = 10, Weight = 2 };
-	[Property] public RarityStat Epic { get; set; } = new() { Price = 14, Weight = 1 };
+	[Property] public RarityStat Common { get; set; } = new() { Price = 12, Weight = 6, UnlockLap = 1 };
+	[Property] public RarityStat Uncommon { get; set; } = new() { Price = 35, Weight = 4, UnlockLap = 3 };
+	[Property] public RarityStat Rare { get; set; } = new() { Price = 100, Weight = 2, UnlockLap = 5 };
+	[Property] public RarityStat Epic { get; set; } = new() { Price = 180, Weight = 1, UnlockLap = 7 };
 
 	public RarityStat Of( Rarity rarity ) => rarity switch
 	{
-		Rarity.Uncommon => Uncommon ??= new() { Price = 8, Weight = 4 },
-		Rarity.Rare => Rare ??= new() { Price = 10, Weight = 2 },
-		Rarity.Epic => Epic ??= new() { Price = 14, Weight = 1 },
-		_ => Common ??= new() { Price = 6, Weight = 6 }
+		Rarity.Uncommon => Uncommon ??= new() { Price = 35, Weight = 4, UnlockLap = 3 },
+		Rarity.Rare => Rare ??= new() { Price = 100, Weight = 2, UnlockLap = 5 },
+		Rarity.Epic => Epic ??= new() { Price = 180, Weight = 1, UnlockLap = 7 },
+		_ => Common ??= new() { Price = 12, Weight = 6, UnlockLap = 1 }
 	};
 }

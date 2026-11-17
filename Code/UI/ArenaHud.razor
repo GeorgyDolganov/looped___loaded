@@ -70,13 +70,13 @@
 					<div class="upgrades-weapons">
 						@foreach ( var chip in WeaponChips )
 						{
-							<label class="upgrade-chip" @key="chip.Id">@chip.Label</label>
+							<label class="upgrade-chip @chip.Tier" @key="chip.Id">@chip.Label</label>
 						}
 					</div>
 					<div class="upgrades-gear">
 						@foreach ( var chip in GearChips )
 						{
-							<label class="upgrade-chip" @key="chip.Id">@chip.Label</label>
+							<label class="upgrade-chip @chip.Tier" @key="chip.Id">@chip.Label</label>
 						}
 					</div>
 				</div>
@@ -661,7 +661,7 @@
 							continue;
 
 						var bought = Loop.Offers[index].Bought;
-						<div class="card shop-offer @OfferClass(trait, bought)" style="border-color: @TraitBorder(trait)" @key="@(trait?.Id)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
+						<div class="card shop-offer @OfferClass(trait, bought)" style="border-color: @TraitBorder(OfferRarity(trait, bought))" @key="@(trait?.Id)" onmouseover="@(() => HoverShop(index))" onclick="@(() => PickOffer(index))">
 							<img class="shop-plate" src="@(Loop.Offers[index].LeftPlate ? "ui/Arena UI/element_shop_left_btn.png" : "ui/Arena UI/element_shop_right_btn.png")" />
 							@if ( Loop.Offers[index].Held && !bought )
 							{
@@ -692,7 +692,7 @@
 										<label class="weapon">@GameSettings.Text.Shop.Active</label>
 									}
 								</div>
-								<label class="rarity" style="color: @TraitInk(trait)">@GameSettings.Text.RarityOf(trait.Rarity)</label>
+								<label class="rarity" style="color: @TraitInk(OfferRarity(trait, bought))">@GameSettings.Text.RarityOf(OfferRarity(trait, bought))</label>
 								@if ( OfferBlurb( trait ) is { Length: > 0 } blurb )
 								{
 									<label class="blurb">@blurb</label>
@@ -713,10 +713,6 @@
 								</div>
 							</div>
 							<div class="shop-foot">
-								@if ( OfferRank( trait, bought ) is { Length: > 0 } rank )
-								{
-									<label class="rank">@rank</label>
-								}
 								<label class="cost">@OfferCost(trait, bought)</label>
 							</div>
 						</div>
@@ -849,7 +845,7 @@
 
 	@if ( HoveredUpgrade is TrinketDef tip )
 	{
-		<div class="card shop-offer upgrade-tip" style="border-color: @TraitBorder(tip)">
+		<div class="card shop-offer upgrade-tip" style="border-color: @TraitBorder(OfferRarity(tip, true))">
 			<img class="shop-plate" src="ui/Arena UI/element_shop_left_btn.png" />
 			<div class="shop-body">
 				<img class="shop-icon" src="@tip.IconPath" />
@@ -864,7 +860,7 @@
 						<label class="weapon">@GameSettings.Text.Shop.Active</label>
 					}
 				</div>
-				<label class="rarity" style="color: @TraitInk(tip)">@GameSettings.Text.RarityOf(tip.Rarity)</label>
+				<label class="rarity" style="color: @TraitInk(OfferRarity(tip, true))">@GameSettings.Text.RarityOf(OfferRarity(tip, true))</label>
 				@if ( OfferBlurb( tip ) is { Length: > 0 } tipBlurb )
 				{
 					<label class="blurb">@tipBlurb</label>
@@ -884,12 +880,7 @@
 					}
 				</div>
 			</div>
-			<div class="shop-foot">
-				@if ( OfferRank( tip, true ) is { Length: > 0 } tipRank )
-				{
-					<label class="rank">@tipRank</label>
-				}
-			</div>
+			<div class="shop-foot"></div>
 		</div>
 	}
 
@@ -1107,10 +1098,11 @@
 
 	string CollectionRank( TrinketDef card )
 	{
-		if ( card is null || !Trinkets.ShowRank( card ) )
+		if ( card is null || card.Cap <= 1 )
 			return "";
 
-		return $"LV 1–{card.Cap}";
+		var text = GameSettings.Text;
+		return $"{text.RarityOf( card.RarityAt( 1 ) )} – {text.RarityOf( card.RarityAt( card.Cap ) )}";
 	}
 
 	List<StatLine> CollectionStats( TrinketDef card )
@@ -1124,7 +1116,7 @@
 		{
 			foreach ( var line in StatSheet.Effects( card, rank ) )
 			{
-				var text = cap > 1 ? $"LV {rank}  {line.Text}" : line.Text;
+				var text = cap > 1 ? $"{GameSettings.Text.RarityOf( card.RarityAt( rank ) )}  {line.Text}" : line.Text;
 				lines.Add( new StatLine( text, line.Sign, line.Mixed ) );
 			}
 		}
@@ -1590,8 +1582,7 @@
 			if ( card is null || Trinkets.IsWeapon( card ) != weapons )
 				continue;
 
-			var label = pair.Value > 1 ? $"{card.ShownTitle} {pair.Value}" : card.ShownTitle;
-			chips.Add( new OwnedChip( card.Id, label ) );
+			chips.Add( new OwnedChip( card.Id, card.ShownTitle, card.RarityAt( pair.Value ).ToString().ToLowerInvariant() ) );
 		}
 
 		return chips;
@@ -1601,11 +1592,13 @@
 	{
 		public string Id { get; }
 		public string Label { get; }
+		public string Tier { get; }
 
-		public OwnedChip( string id, string label )
+		public OwnedChip( string id, string label, string tier )
 		{
 			Id = id;
 			Label = label;
+			Tier = tier;
 		}
 	}
 
@@ -1865,14 +1858,14 @@
 		return names.Length == 0 ? "" : GameSettings.Text.F( GameSettings.Text.Shop.Unlocks, names );
 	}
 
-	public string OfferRank( TrinketDef trait, bool bought )
+	// Rarity the card has (bought / owned) or is about to reach (still on offer).
+	public Rarity OfferRarity( TrinketDef trait, bool bought )
 	{
-		if ( !Trinkets.ShowRank( trait ) )
-			return "";
+		if ( trait is null )
+			return Rarity.Common;
 
 		var level = TraitLevel( trait );
-		var shown = bought ? Math.Max( 1, level ) : Math.Min( trait.Cap, level + 1 );
-		return GameSettings.Text.F( GameSettings.Text.Shop.OfferRank, shown );
+		return trait.RarityAt( bought ? Math.Max( 1, level ) : Math.Min( trait.Cap, level + 1 ) );
 	}
 
 	string OfferCost( TrinketDef trait, bool bought )
@@ -1908,15 +1901,18 @@
 		return "upgrade";
 	}
 
-	public string TraitBorder( TrinketDef trait )
+	public string TraitBorder( TrinketDef trait ) => TraitBorder( trait?.Rarity ?? Rarity.Common );
+
+	public string TraitBorder( Rarity rarity )
 	{
-		var c = Trinkets.RarityColor( trait );
+		var c = Trinkets.RarityColor( rarity );
 		return $"rgba({(int)(c.r * 255)},{(int)(c.g * 255)},{(int)(c.b * 255)}, 0.85)";
 	}
 
-	public string TraitInk( TrinketDef trait )
+	public string TraitInk( TrinketDef trait ) => TraitInk( trait?.Rarity ?? Rarity.Common );
+
+	public string TraitInk( Rarity rarity )
 	{
-		var rarity = trait.Rarity;
 		if ( rarity == Rarity.Common )
 			return "rgb(245, 245, 245)";
 
@@ -5577,6 +5573,18 @@
 		color: #f4ece0;
 		pointer-events: all;
 		cursor: pointer;
+	}
+
+	.upgrade-chip.uncommon {
+		color: #1eff00;
+	}
+
+	.upgrade-chip.rare {
+		color: #4da3ff;
+	}
+
+	.upgrade-chip.epic {
+		color: #c77dff;
 	}
 
 	.upgrade-chip:hover {

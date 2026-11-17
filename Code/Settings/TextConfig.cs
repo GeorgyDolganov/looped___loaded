@@ -442,7 +442,6 @@ public class ShopCopy
 	[Property] public string Bought { get; set; }
 	[Property] public string Locked { get; set; }
 	[Property] public string OfferBlurb { get; set; }
-	[Property] public string OfferRank { get; set; }
 	[Property] public string Weapon { get; set; }
 	[Property] public string Active { get; set; }
 	[Property] public string Unlocks { get; set; }

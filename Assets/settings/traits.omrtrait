@@ -17,20 +17,24 @@
   "LashWidth": 8,
   "Rarities": {
     "Common": {
-      "Price": 6,
-      "Weight": 6
+      "Price": 12,
+      "Weight": 6,
+      "UnlockLap": 1
     },
     "Uncommon": {
-      "Price": 8,
-      "Weight": 4
+      "Price": 35,
+      "Weight": 4,
+      "UnlockLap": 3
     },
     "Rare": {
-      "Price": 10,
-      "Weight": 2
+      "Price": 100,
+      "Weight": 2,
+      "UnlockLap": 5
     },
     "Epic": {
-      "Price": 14,
-      "Weight": 1
+      "Price": 180,
+      "Weight": 1,
+      "UnlockLap": 7
     }
   },
   "__references": [],

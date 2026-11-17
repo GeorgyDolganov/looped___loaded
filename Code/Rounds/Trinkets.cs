@@ -14,8 +14,6 @@ public static class Trinkets
 		return card;
 	}
 
-	public static bool ShowRank( TrinketDef card ) => card is not null && card.Cap > 1;
-
 	public static bool IsWeapon( TrinketDef card )
 	{
 		if ( card is null || card.Id == "BORE" || Live( card.Requires ).Count > 0 )
@@ -65,13 +63,23 @@ public static class Trinkets
 
 	public static bool TooEarly( TrinketDef card, int lap ) => card is not null && card.UnlockLap > 0 && lap < card.UnlockLap;
 
+	public static bool OfferOpen( TrinketDef card, RunLoadout loadout, int lap )
+	{
+		if ( card is null )
+			return false;
+
+		var owned = loadout?.TraitLevel( card ) ?? 0;
+		return GameSettings.Traits.RarityOpen( card.RarityAt( owned + 1 ), lap );
+	}
+
 	public static int Weight( TrinketDef card, RunLoadout loadout )
 	{
 		if ( card is null )
 			return 0;
 
-		var weight = Math.Max( 0, GameSettings.Traits.RarityWeight( card.Rarity ) );
-		if ( card.OwnedWeight > 0 && loadout is not null && loadout.TraitLevel( card ) > 0 )
+		var owned = loadout?.TraitLevel( card ) ?? 0;
+		var weight = Math.Max( 0, GameSettings.Traits.RarityWeight( card.RarityAt( owned + 1 ) ) );
+		if ( card.OwnedWeight > 0 && owned > 0 )
 			return Math.Max( weight, card.OwnedWeight );
 
 		return weight;
@@ -147,12 +155,12 @@ public static class Trinkets
 			"",
 			"## Rarities",
 			"",
-			"| Rarity | Label | Price | Weight |",
-			"| --- | --- | --- | --- |"
+			"| Rarity | Label | Price | Weight | Lap |",
+			"| --- | --- | --- | --- | --- |"
 		};
 
 		foreach ( var rarity in Enum.GetValues<Rarity>() )
-			lines.Add( $"| {rarity} | {text.RarityOf( rarity )} | {traits.RarityPrice( rarity )} | {traits.RarityWeight( rarity )} |" );
+			lines.Add( $"| {rarity} | {text.RarityOf( rarity )} | {traits.RarityPrice( rarity )} | {traits.RarityWeight( rarity )} | {traits.RarityLap( rarity )} |" );
 
 		lines.Add( "" );
 		lines.Add( "## Cards" );
@@ -165,10 +173,10 @@ public static class Trinkets
 			lines.Add( "| Field | Value |" );
 			lines.Add( "| --- | --- |" );
 			lines.Add( $"| Id | {card.Id} |" );
-			lines.Add( $"| Rarity | {text.RarityOf( card.Rarity )} |" );
+			lines.Add( $"| Entry rarity | {text.RarityOf( card.Rarity )} |" );
 			lines.Add( $"| InPool | {(card.InPool ? "yes" : "no")} |" );
-			lines.Add( $"| MaxLevel | {card.Cap} |" );
-			if ( card.Price > 0 )
+			lines.Add( $"| Rarity track | {string.Join( " > ", Enumerable.Range( 1, card.Cap ).Select( tier => text.RarityOf( card.RarityAt( tier ) ) ) )} |" );
+			if ( card.CustomPrice )
 				lines.Add( $"| Price | {card.Price} |" );
 			if ( card.OwnedWeight > 0 )
 				lines.Add( $"| OwnedWeight | {card.OwnedWeight} |" );
@@ -486,8 +494,8 @@ public static class Trinkets
 		var body = mod.Growth switch
 		{
 			ModGrowth.Tiers => TierText( mod.Tiers ),
-			ModGrowth.Linear => $"{Fmt( mod.Value )} x level",
-			ModGrowth.TraitRatio => $"{Fmt( mod.Value )} x rank",
+			ModGrowth.Linear => $"{Fmt( mod.Value )} x rarity step",
+			ModGrowth.TraitRatio => $"{Fmt( mod.Value )} x rarity ratio",
 			ModGrowth.PerRemoved => $"{Fmt( mod.Value )} per removed",
 			_ => Fmt( mod.Value )
 		};

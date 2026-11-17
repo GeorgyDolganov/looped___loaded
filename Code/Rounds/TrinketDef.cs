@@ -120,7 +120,8 @@ public class TrinketDef : GameResource
 	[Property] public bool InPool { get; set; } = true;
 	[Property] public int Sort { get; set; }
 	[Property] public int UnlockLap { get; set; }
-	[Property] public int Price { get; set; }
+	[Property] public bool CustomPrice { get; set; }
+	[Property, ShowIf( nameof( CustomPrice ), true )] public int Price { get; set; }
 	[Property] public int OwnedWeight { get; set; }
 	[Property] public TrinketHook Hook { get; set; }
 	[Property] public ActiveSkill Skill { get; set; }
@@ -130,7 +131,10 @@ public class TrinketDef : GameResource
 	[Property] public List<TrinketMod> Mods { get; set; } = new();
 	[Property] public List<TrinketNote> Notes { get; set; } = new();
 
-	public int Cap => MaxLevel > 0 ? MaxLevel : Math.Max( 1, GameSettings.Traits.MaxLevel );
+	// Rarity is the upgrade track: Rarity is the entry tier, every further copy climbs one rarity up to Epic.
+	public int Cap => Math.Min( MaxLevel > 0 ? MaxLevel : Math.Max( 1, GameSettings.Traits.MaxLevel ), (int)Rarity.Epic - (int)Rarity + 1 );
+
+	public Rarity RarityAt( int tier ) => (Rarity)Math.Clamp( (int)Rarity + Math.Max( 1, tier ) - 1, (int)Rarity, (int)Rarity.Epic );
 	public bool IsSkill => Skill != ActiveSkill.None;
 	public string ShownTitle => string.IsNullOrWhiteSpace( Title ) ? Id : Title;
 	public string ShownBlurb => Blurb ?? "";	public string IconPath => string.IsNullOrWhiteSpace( Icon ) ? "ui/traits/stick.png" : Icon;

@@ -10,10 +10,15 @@ public static class TrinketCommands
 		var loadout = loop.IsValid() && loop.Inventory.IsValid() ? loop.Inventory.Loadout : null;
 		foreach ( var card in Trinkets.Every )
 		{
-			var level = loadout?.TraitLevel( card ) ?? 0;
 			var pool = card.InPool ? "" : " (not in pool)";
-			Log.Info( $"{card.Id,-8} {level}/{card.Cap}  {card.Rarity,-9}{pool}" );
+			Log.Info( $"{card.Id,-8} {State( card, loadout ),-9} max {card.RarityAt( card.Cap )}{pool}" );
 		}
+	}
+
+	static string State( TrinketDef card, RunLoadout loadout )
+	{
+		var level = loadout?.TraitLevel( card ) ?? 0;
+		return level > 0 ? card.RarityAt( level ).ToString() : "-";
 	}
 
 	[ConCmd( "trinket_give" )]
@@ -30,7 +35,7 @@ public static class TrinketCommands
 		for ( var i = 0; i < Math.Max( 1, levels ); i++ )
 			loadout.Install( card );
 
-		Log.Info( $"trinket_give {card.Id} {loadout.TraitLevel( card )}/{card.Cap}" );
+		Log.Info( $"trinket_give {card.Id} {State( card, loadout )}" );
 	}
 
 	[ConCmd( "trinket_take" )]
@@ -44,7 +49,7 @@ public static class TrinketCommands
 		for ( var i = 0; i < Math.Max( 1, levels ); i++ )
 			loadout.Remove( card );
 
-		Log.Info( $"trinket_take {card.Id} {loadout.TraitLevel( card )}/{card.Cap}" );
+		Log.Info( $"trinket_take {card.Id} {State( card, loadout )}" );
 	}
 
 	[ConCmd( "trinket_clear" )]

@@ -1829,9 +1829,9 @@ public sealed class GameLoop : Component
 			return 0;
 
 		if ( !Inventory.IsValid() )
-			return Progression.TraitPrice( trait, 0, Lap, LocationIndex );
+			return Progression.TraitPrice( trait, 0 );
 
-		return Progression.TraitPrice( trait, Inventory.Loadout.TraitLevel( trait ), Lap, LocationIndex );
+		return Progression.TraitPrice( trait, Inventory.Loadout.TraitLevel( trait ) );
 	}
 
 	public bool TraitLocked( TrinketDef trait )
@@ -2014,6 +2014,9 @@ public sealed class GameLoop : Component
 			if ( loadout.TraitLevel( trait ) >= trait.Cap )
 				continue;
 
+			if ( !Trinkets.OfferOpen( trait, loadout, Lap ) )
+				continue;
+
 			available.Add( trait );
 		}
 
@@ -2029,7 +2032,8 @@ public sealed class GameLoop : Component
 			{
 				var keep = old.Held && !old.Bought && old.Trait is not null
 					&& !Trinkets.Blocked( old.Trait, loadout )
-					&& loadout.TraitLevel( old.Trait ) < old.Trait.Cap;
+					&& loadout.TraitLevel( old.Trait ) < old.Trait.Cap
+					&& Trinkets.OfferOpen( old.Trait, loadout, Lap );
 
 				slots.Add( keep ? old : null );
 				if ( !keep )
@@ -2105,7 +2109,7 @@ public sealed class GameLoop : Component
 			foreach ( var trait in pool )
 			{
 				var level = loadout is null ? 0 : loadout.TraitLevel( trait );
-				if ( Progression.TraitPrice( trait, level, Lap, LocationIndex ) <= budget )
+				if ( Progression.TraitPrice( trait, level ) <= budget )
 					cheap.Add( trait );
 			}
 
@@ -2284,7 +2288,7 @@ public sealed class GameLoop : Component
 			if ( offer.Bought || offer.Trait is null || Trinkets.Blocked( offer.Trait, scratch ) )
 				continue;
 
-			sum += Progression.TraitPrice( offer.Trait, scratch.TraitLevel( offer.Trait ), Lap, LocationIndex );
+			sum += Progression.TraitPrice( offer.Trait, scratch.TraitLevel( offer.Trait ) );
 			scratch.Install( offer.Trait );
 		}
 
