@@ -1776,7 +1776,6 @@ public sealed class GameLoop : Component
 
 		RollShop();
 		ArenaSounds.Pickup();
-		Announce( T.F( T.Announce.ShopRefresh, ShopRefreshCost, Scrap ) );
 	}
 
 	public void ChooseToggleHold( int index )
@@ -1802,14 +1801,18 @@ public sealed class GameLoop : Component
 		}
 
 		var price = ShopLockCost;
-		if ( Scrap < price )
+		if ( price > 0 )
 		{
-			ArenaSounds.Deny();
-			Announce( T.F( T.Announce.NeedScrap, price - Scrap ) );
-			return;
+			if ( Scrap < price )
+			{
+				ArenaSounds.Deny();
+				Announce( T.F( T.Announce.NeedScrap, price - Scrap ) );
+				return;
+			}
+
+			Scrap -= price;
 		}
 
-		Scrap -= price;
 		offer.Held = true;
 		ArenaSounds.MenuOk();
 	}
@@ -1968,7 +1971,6 @@ public sealed class GameLoop : Component
 		GrantContinueRounds();
 		BeginTraitPick();
 		ArenaSounds.Pickup();
-		Announce( T.Announce.ContinueRounds );
 	}
 
 	void ContinueBoss()

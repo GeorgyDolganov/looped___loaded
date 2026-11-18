@@ -673,7 +673,7 @@
 								<div class="shop-hold @(held ? "on" : "")" onclick="@((Sandbox.UI.PanelEvent e) => ToggleHold( index, e ))">
 									<img class="hold-plate" src="ui/Arena UI/buttons_left.png" />
 									<label class="hold-title">@(held ? GameSettings.Text.Shop.Unlock : GameSettings.Text.Shop.Lock)</label>
-									@if ( !held )
+									@if ( !held && Loop.ShopLockCost > 0 )
 									{
 										<label class="hold-cost @(Loop.Scrap < Loop.ShopLockCost ? "poor" : "")">@GameSettings.Text.F( GameSettings.Text.Shop.Cost, Loop.ShopLockCost )</label>
 									}
@@ -1610,8 +1610,7 @@
 				return "";
 
 			if ( Loop.Paused )
-				return GameSettings.Text.Help.Paused;
-
+				return GameSettings.Text.Help.Paused; 
 			if ( Loop.Phase == RunPhase.Menu && Loop.MenuView == MenuPage.Saves )
 				return GameSettings.Text.Help.Saves;
 
