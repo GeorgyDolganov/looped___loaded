@@ -2470,6 +2470,13 @@ public sealed class GameLoop : Component
 		var hp = BodyHealth( lap );
 		var count = RosterCount( lap );
 		Add( EnemyKind.Chaser, offset, hunt, hp );
+		if ( lap <= 1 )
+		{
+			// First lap: just more plain chasers (6 total, 2 bones each = 12).
+			Add( EnemyKind.Chaser, offset + 2.1f, mid, hp );
+			Add( EnemyKind.Chaser, offset + 4.2f, hunt, hp );
+		}
+
 		if ( count >= 2 )
 			Add( WaveCloak( EnemyKind.Chaser ), offset + 3.1f, hunt, hp );
 		if ( count >= 3 )
@@ -2496,6 +2503,9 @@ public sealed class GameLoop : Component
 		var hp = BodyHealth( lap );
 		var count = RosterCount( lap );
 		add( EnemyKind.Splinter, offset, hunt, hp );
+		if ( lap <= 1 )
+			add( EnemyKind.Splinter, offset + 3.1f, mid, hp );
+
 		if ( count >= 2 )
 			add( WaveCloak( EnemyKind.Splinter ), offset + 1.4f, mid, hp );
 		if ( count >= 3 )
